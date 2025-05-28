@@ -1458,7 +1458,7 @@ fun SubmoduleListScreen(
 
             }
         } catch (e: Exception) {
-            MyLog.e(TAG, "$TAG#LaunchedEffect() err:"+e.stackTraceToString())
+            MyLog.e(TAG, "$TAG#LaunchedEffect() err: "+e.stackTraceToString())
 //            ("LaunchedEffect: job cancelled")
         }
     }

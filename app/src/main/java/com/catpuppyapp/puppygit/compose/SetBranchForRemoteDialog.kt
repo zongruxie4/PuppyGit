@@ -187,8 +187,8 @@ fun SetBranchForRemoteDialog(
                 }
 
             } catch (e: Exception) {
-                Msg.requireShowLongDuration("err:" + e.localizedMessage)
-                createAndInsertError(curRepo.id, "err:${e.localizedMessage}")
+                Msg.requireShowLongDuration("err: " + e.localizedMessage)
+                createAndInsertError(curRepo.id, "err: ${e.localizedMessage}")
                 MyLog.e(TAG, "#LaunchedEffect: err: ${e.stackTraceToString()}")
             }
         }

@@ -261,7 +261,7 @@ object ChangeListFunctions {
             }
 
             if(ret.hasError()) {  //创建commit失败
-                MyLog.d(TAG, "#doCommit, createCommit failed, has error:"+ret.msg)
+                MyLog.d(TAG, "#doCommit, createCommit failed, has error: "+ret.msg)
 
                 Msg.requireShowLongDuration(ret.msg)
 
@@ -367,7 +367,7 @@ object ChangeListFunctions {
                 //记录到日志
                 //显示提示
                 //保存数据库(给用户看的，消息尽量简单些)
-                showErrAndSaveLog(TAG, "#doFetch() err:"+e.stackTraceToString(), "fetch err:"+e.localizedMessage, requireShowToast, curRepoFromParentPage.id)
+                showErrAndSaveLog(TAG, "#doFetch() err: "+e.stackTraceToString(), "fetch err: "+e.localizedMessage, requireShowToast, curRepoFromParentPage.id)
 
                 return@doFetch false
             }
@@ -492,7 +492,7 @@ object ChangeListFunctions {
             //log
             showErrAndSaveLog(
                 logTag = TAG,
-                logMsg = "#doMerge(trueMergeFalseRebase=$trueMergeFalseRebase) err:"+e.stackTraceToString(),
+                logMsg = "#doMerge(trueMergeFalseRebase=$trueMergeFalseRebase) err: "+e.stackTraceToString(),
                 showMsg = "${if(trueMergeFalseRebase) "merge" else "rebase"} err: "+e.localizedMessage,
                 showMsgMethod = requireShowToast,
                 repoId = curRepoFromParentPage.id,

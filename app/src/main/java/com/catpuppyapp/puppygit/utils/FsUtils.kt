@@ -510,8 +510,8 @@ object FsUtils {
 //            val retFileName = if(fileName.isEmpty()) getFileNameFromCanonicalPath(fileFullPath) else fileName
             return Ret.createSuccess(null)
         }catch (e:Exception) {
-            MyLog.e(TAG, "#saveFileAndGetResult() err:"+e.stackTraceToString())
-            return Ret.createError(null, "save file failed:${e.localizedMessage}", Ret.ErrCode.saveFileErr)
+            MyLog.e(TAG, "#saveFileAndGetResult() err: "+e.stackTraceToString())
+            return Ret.createError(null, "save file failed: ${e.localizedMessage}", Ret.ErrCode.saveFileErr)
         }
     }
 
@@ -787,7 +787,7 @@ object FsUtils {
             MyLog.e(TAG, "#simpleSafeFastSave: err: "+e.stackTraceToString())
             //若返回错误，百分百保存文件失败或未保存，但快照可能有成功创建，需要检查对应path是否为空来判断
             val writeContentToTargetFileSuccess = false
-            return Ret.createError(Triple(writeContentToTargetFileSuccess, contentAndFileSnapshotPathPair.first, contentAndFileSnapshotPathPair.second), "SSFS: save err:"+e.localizedMessage)
+            return Ret.createError(Triple(writeContentToTargetFileSuccess, contentAndFileSnapshotPathPair.first, contentAndFileSnapshotPathPair.second), "SSFS: save err: "+e.localizedMessage)
         }
 
     }
@@ -1118,7 +1118,7 @@ object FsUtils {
                     || path.startsWith(AppModel.getOrCreateSubmoduleDotGitBackupDir().canonicalPath)
                     || path.startsWith(Lg2HomeUtils.getLg2Home().canonicalPath)
         }catch (e:Exception) {
-            MyLog.e(TAG, "#isReadOnlyDir err:${e.stackTraceToString()}")
+            MyLog.e(TAG, "#isReadOnlyDir err: ${e.stackTraceToString()}")
             false
         }
 

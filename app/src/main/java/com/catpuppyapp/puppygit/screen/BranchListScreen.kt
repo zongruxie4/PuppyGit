@@ -561,11 +561,11 @@ fun BranchListScreen(
                 val curBranchShortName = curObjInPage.value.shortName
 
                 //显示通知
-                Msg.requireShowLongDuration("clear upstream err:" + e.localizedMessage)
+                Msg.requireShowLongDuration("clear upstream err: " + e.localizedMessage)
                 //给用户看到错误
                 createAndInsertError(
                     repoId,
-                    "clear upstream for '$curBranchShortName' err:" + e.localizedMessage
+                    "clear upstream for '$curBranchShortName' err: " + e.localizedMessage
                 )
                 //给开发者debug看的错误
                 MyLog.e(
@@ -608,16 +608,16 @@ fun BranchListScreen(
                 }
 
                 //显示通知
-                Msg.requireShowLongDuration("set upstream err:" + e.localizedMessage)
+                Msg.requireShowLongDuration("set upstream err: " + e.localizedMessage)
                 //给用户看到错误
                 createAndInsertError(
                     repoId,
-                    "set upstream for '$curBranchShortName' err:" + e.localizedMessage
+                    "set upstream for '$curBranchShortName' err: " + e.localizedMessage
                 )
                 //给开发者debug看的错误
                 MyLog.e(
                     TAG,
-                    "set upstream for '$curBranchShortName' of '$repoName' err! user input branch is '$upstreamShortName', selected remote is $remote, user checked use same name with local is '$upstreamSameWithLocal'\nerr:" + e.stackTraceToString()
+                    "set upstream for '$curBranchShortName' of '$repoName' err! user input branch is '$upstreamShortName', selected remote is $remote, user checked use same name with local is '$upstreamSameWithLocal'\nerr: " + e.stackTraceToString()
                 )
 
 
@@ -1309,7 +1309,7 @@ fun BranchListScreen(
                             Msg.requireShow(activityContext.getString(R.string.success))
                         }
                     }catch (e:Exception) {
-                        showErrAndSaveLog(TAG, "#PublishBranchDialog(force=$force) err:"+e.stackTraceToString(), "Publish branch error:"+e.localizedMessage, Msg.requireShowLongDuration, repoId)
+                        showErrAndSaveLog(TAG, "#PublishBranchDialog(force=$force) err: "+e.stackTraceToString(), "Publish branch error: "+e.localizedMessage, Msg.requireShowLongDuration, repoId)
                     }finally {
                         changeStateTriggerRefreshPage(needRefresh)
                     }
@@ -1904,7 +1904,7 @@ fun BranchListScreen(
                 triggerReFilter((filterResultNeedRefresh))
             }
         } catch (e: Exception) {
-            MyLog.e(TAG, "#LaunchedEffect() err:"+e.stackTraceToString())
+            MyLog.e(TAG, "#LaunchedEffect() err: "+e.stackTraceToString())
 //            ("LaunchedEffect: job cancelled")
         }
     }

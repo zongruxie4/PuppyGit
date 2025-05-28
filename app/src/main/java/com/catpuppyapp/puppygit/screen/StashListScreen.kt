@@ -745,7 +745,7 @@ fun StashListScreen(
                 triggerReFilter(filterResultNeedRefresh)
             }
         } catch (e: Exception) {
-            MyLog.e(TAG, "BranchListScreen#LaunchedEffect() err:"+e.stackTraceToString())
+            MyLog.e(TAG, "BranchListScreen#LaunchedEffect() err: "+e.stackTraceToString())
 //            ("LaunchedEffect: job cancelled")
         }
     }

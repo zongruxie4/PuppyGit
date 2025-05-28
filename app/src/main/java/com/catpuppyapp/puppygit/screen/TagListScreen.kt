@@ -1047,7 +1047,7 @@ fun TagListScreen(
                 triggerReFilter(filterResultNeedRefresh)
             }
         } catch (e: Exception) {
-            MyLog.e(TAG, "#LaunchedEffect() err:"+e.stackTraceToString())
+            MyLog.e(TAG, "#LaunchedEffect() err: "+e.stackTraceToString())
         }
     }
 

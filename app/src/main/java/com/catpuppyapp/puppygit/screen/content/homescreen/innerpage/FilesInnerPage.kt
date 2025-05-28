@@ -2032,7 +2032,7 @@ fun FilesInnerPage(
                 }catch (cancelled: CancellationException){
                     Msg.requireShow(activityContext.getString(R.string.canceled))
                 }catch (e:Exception) {
-                    MyLog.e(TAG, "#SafImportOrExportDialog err:"+e.stackTraceToString())
+                    MyLog.e(TAG, "#SafImportOrExportDialog err: "+e.stackTraceToString())
                     val errorMsg = "err: ${e.localizedMessage}"
                     //都显示弹窗了就不用toast了
 //                    Msg.requireShow(errorMsg)
@@ -2133,7 +2133,7 @@ fun FilesInnerPage(
                                     safDiffResultStr.value = openInputStreamFailed.localizedMessage ?: errMsg
                                     Msg.requireShow(errMsg)
                                 }catch (e:Exception) {
-                                    MyLog.e(TAG, "#SafDiffDialog err:"+e.stackTraceToString())
+                                    MyLog.e(TAG, "#SafDiffDialog err: "+e.stackTraceToString())
                                     val errorMsg = "err: ${e.localizedMessage}"
                                     //都显示弹窗了就不用toast了
 //                    Msg.requireShow(errorMsg)
@@ -2198,7 +2198,7 @@ fun FilesInnerPage(
                 }catch (cancelled: CancellationException){
                     Msg.requireShow(activityContext.getString(R.string.canceled))
                 }catch (e:Exception) {
-                    MyLog.e(TAG, "#exportSaf@ err:"+e.stackTraceToString())
+                    MyLog.e(TAG, "#exportSaf@ err: "+e.stackTraceToString())
                     val exportErrStrRes = activityContext.getString(R.string.export_err)
                     Msg.requireShow(exportErrStrRes)
                     importExportErrorMsg.value = "$exportErrStrRes: "+e.localizedMessage
@@ -2311,7 +2311,7 @@ fun FilesInnerPage(
                     }catch (e:Exception) {
                         //出错的时候，importRepoResult的计数不一定准，有可能比实际成功和失败的少，不过不可能多
                         MyLog.e(TAG, "import repo from FilesPage err: importRepoResult=$importRepoResult, err="+e.stackTraceToString())
-                        Msg.requireShowLongDuration("err:${e.localizedMessage}")
+                        Msg.requireShowLongDuration("err: ${e.localizedMessage}")
                     }finally {
                         // because import doesn't change Files page, so need not do anything yet
                     }
@@ -2787,7 +2787,7 @@ fun FilesInnerPage(
                         }catch (e:Exception) {
                             //检查目标文件是否存在，如果存在，删除 。 算了，不删了，让用户自己看着办吧！如果拷贝失败，有可能依然创建了文件，但文件大小为0，但如果不为0呢？我还得判断，算了，不管了，让用户自己看着办吧！算了，还是删一下吧！
                             failedCnt++
-                            sb.appendLine((it?.path?:"/fileNameIsNull/") + ": error:"+e.localizedMessage)
+                            sb.appendLine((it?.path?:"/fileNameIsNull/") + ": error: "+e.localizedMessage)
 
                             //检查，确保target更新了而不是上个文件，避免target更新前就异常导致删除之前成功复制的target，如果target确实更新了且执行失败，且文件大小为0，删除文件
                             try {

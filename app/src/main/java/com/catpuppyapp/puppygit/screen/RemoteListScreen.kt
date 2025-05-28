@@ -320,11 +320,11 @@ fun RemoteListScreen(
                     }
 
                 }catch (e:Exception){
-                    val errMsg = "fetch all err:"+e.localizedMessage
+                    val errMsg = "fetch all err: "+e.localizedMessage
                     Msg.requireShowLongDuration(errMsg)
                     createAndInsertError(curRepo.value.id, errMsg)
 
-                    MyLog.e(TAG, "fetch all err:"+e.stackTraceToString())
+                    MyLog.e(TAG, "fetch all err: "+e.stackTraceToString())
 
                 }finally {
                     changeStateTriggerRefreshPage(needRefresh)
@@ -576,8 +576,8 @@ fun RemoteListScreen(
             //保存数据库(给用户看的，消息尽量简单些)
             showErrAndSaveLog(
                 TAG,
-                "#doFetch() from RemoteList Page err:" + e.stackTraceToString(),
-                "fetch err:" + e.localizedMessage,
+                "#doFetch() from RemoteList Page err: " + e.stackTraceToString(),
+                "fetch err: " + e.localizedMessage,
                 Msg.requireShowLongDuration,
                 curRepo.id
             )
@@ -985,7 +985,7 @@ fun RemoteListScreen(
 
             }
         } catch (e: Exception) {
-            MyLog.e(TAG, "$TAG#LaunchedEffect() err:"+e.stackTraceToString())
+            MyLog.e(TAG, "$TAG#LaunchedEffect() err: "+e.stackTraceToString())
         }
     }
 

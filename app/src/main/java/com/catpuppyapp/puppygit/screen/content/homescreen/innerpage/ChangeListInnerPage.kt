@@ -847,7 +847,7 @@ fun ChangeListInnerPage(
                                     dbContainer = dbContainer
                                 )
                             }catch (e:Exception){
-                                showErrAndSaveLog(TAG,"require sync error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
+                                showErrAndSaveLog(TAG,"require sync error: "+e.stackTraceToString(), activityContext.getString(R.string.sync_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
                             }finally {
                                 changeListRequireRefreshFromParentPage(curRepo)
                             }
@@ -928,7 +928,7 @@ fun ChangeListInnerPage(
                             }
 
                         }catch (e:Exception){
-                            showErrAndSaveLog(TAG,"require push error:"+e.stackTraceToString(), activityContext.getString(R.string.push_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
+                            showErrAndSaveLog(TAG,"require push error: "+e.stackTraceToString(), activityContext.getString(R.string.push_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
                         }finally {
                             changeListRequireRefreshFromParentPage(curRepo)
                         }
@@ -1691,7 +1691,7 @@ fun ChangeListInnerPage(
                             if(ret.code != Ret.ErrCode.alreadyUpToDate) {  //如果错误码不是 Already up-to-date ，就log下
 
                                 //选提交时记日志把files改成commits用来区分
-                                createAndInsertError(repoId, "cherrypick files changes of '$shortParent..$shortTarget' err:"+ret.msg)
+                                createAndInsertError(repoId, "cherrypick files changes of '$shortParent..$shortTarget' err: "+ret.msg)
                             }
                         }else {
                             Msg.requireShow(activityContext.getString(R.string.success))
@@ -1872,7 +1872,7 @@ fun ChangeListInnerPage(
                         val ret = Libgit2Helper.checkoutFiles(repo, checkoutTargetHash.value, pathSpecs, force=checkoutForce.value)
                         if(ret.hasError()) {
                             Msg.requireShowLongDuration(ret.msg)
-                            createAndInsertError(repoId, "checkout files err:"+ret.msg)
+                            createAndInsertError(repoId, "checkout files err: "+ret.msg)
                         }else {
                             Msg.requireShow(activityContext.getString(R.string.success))
                         }

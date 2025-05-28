@@ -686,28 +686,28 @@ fun doJobThenOffLoading(
             try {
                 loadingOn(loadingText)
             }catch (e:Exception) {
-                Msg.requireShowLongDuration("loadOn err:"+e.localizedMessage)
+                Msg.requireShowLongDuration("loadOn err: "+e.localizedMessage)
                 MyLog.e(TAG, "#doJobThenOffLoading(): #loadingOn error!\n" + e.stackTraceToString())
             }finally {
                 //执行操作
                 try {
                     job()
                 }catch (e:Exception) {
-                    Msg.requireShowLongDuration("job err:"+e.localizedMessage)
+                    Msg.requireShowLongDuration("job err: "+e.localizedMessage)
                     MyLog.e(TAG, "#doJobThenOffLoading(): #job error!\n" + e.stackTraceToString())
                 }finally {
                     try {
                         //最后解除loading
                         loadingOff()  //x 20240426job被trycatch包裹，实际上这个已经是百分百会解除了，索性放到finally里，百分百解除的意义更明确)这个要不要放到finally里？要不然一出异常，loading就无法解除了，不过解除不了也好，省得用户误操作
                     }catch (e:Exception) {
-                        Msg.requireShowLongDuration("loadOff err:"+e.localizedMessage)
+                        Msg.requireShowLongDuration("loadOff err: "+e.localizedMessage)
                         MyLog.e(TAG, "#doJobThenOffLoading(): #loadingOff error!\n" + e.stackTraceToString())
                     }
                 }
             }
         }
     }catch (e:Exception) {
-        Msg.requireShowLongDuration("coroutine err:"+e.localizedMessage)
+        Msg.requireShowLongDuration("coroutine err: "+e.localizedMessage)
         MyLog.e(TAG, "#doJobThenOffLoading(): #launch error!\n" + e.stackTraceToString())
         null
     }
@@ -859,8 +859,8 @@ fun<T> doActIfIndexGood(idx:Int, list:List<T>, act:(T)-> Unit):Ret<T?> {
         }
         return Ret.createError(null, "err:invalid index for list", Ret.ErrCode.invalidIdxForList)
     }catch (e:Exception) {
-        MyLog.e(TAG, "#doActIfIndexGood() err:"+e.stackTraceToString())
-        return Ret.createError(null, "err:"+e.localizedMessage, Ret.ErrCode.doActForItemErr)
+        MyLog.e(TAG, "#doActIfIndexGood() err: "+e.stackTraceToString())
+        return Ret.createError(null, "err: "+e.localizedMessage, Ret.ErrCode.doActForItemErr)
     }
 
 }

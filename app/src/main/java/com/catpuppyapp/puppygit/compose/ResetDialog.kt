@@ -159,7 +159,7 @@ fun ResetDialog(
 
                                 if(commitRet.hasError()) {
                                     Msg.requireShowLongDuration(commitRet.msg)
-                                    createAndInsertError(repoId, "Reset $type err, resolve commit failed:"+commitRet.msg)
+                                    createAndInsertError(repoId, "Reset $type err, resolve commit failed: "+commitRet.msg)
                                     return@job
                                 }
 
@@ -168,7 +168,7 @@ fun ResetDialog(
                                 val ret = Libgit2Helper.resetToRevspec(repo, commit.id().toString(), type)
                                 if (ret.hasError()) {
                                     Msg.requireShowLongDuration(ret.msg)
-                                    createAndInsertError(repoId, "Reset $type err:"+ret.msg)
+                                    createAndInsertError(repoId, "Reset $type err: "+ret.msg)
                                 } else {
                                     val oldHeadCommitOid = oldHead?.id()?.toString() ?: ""
                                     //如果操作成功，刷新页面

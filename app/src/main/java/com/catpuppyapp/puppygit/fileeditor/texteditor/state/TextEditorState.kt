@@ -292,7 +292,7 @@ class TextEditorState private constructor(
 
 
         }catch (e:Exception) {
-            Msg.requireShowLongDuration("err:"+e.localizedMessage)
+            Msg.requireShowLongDuration("err: "+e.localizedMessage)
             MyLog.e(TAG, "#$funName err: keyword=$keyword, toNext=$toNext, startPos=$startPos, err=${e.stackTraceToString()}")
             return SearchPosResult.NotFound
         }

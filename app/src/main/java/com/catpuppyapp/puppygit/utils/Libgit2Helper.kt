@@ -1142,7 +1142,7 @@ object Libgit2Helper {
             val gitObject = Revparse.single(repo, revspec)
             return gitObject
         }catch (e:Exception) {
-            MyLog.e(TAG, "#revparseSingle() error, params are (revspec=$revspec),\nerr is:"+e.stackTraceToString())
+            MyLog.e(TAG, "#revparseSingle() error, params are (revspec=$revspec),\nerr is: "+e.stackTraceToString())
             return null
         }
     }
@@ -1170,7 +1170,7 @@ object Libgit2Helper {
 
             return Ret.createSuccess(null)
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resetToRevspec() error:"+e.stackTraceToString())
+            MyLog.e(TAG, "#resetToRevspec() error: "+e.stackTraceToString())
             return Ret.createError(null, "reset err: ${e.localizedMessage}", Ret.ErrCode.resetErr)
         }
     }
@@ -1209,7 +1209,7 @@ object Libgit2Helper {
             return Ret.createSuccess(null)
         }catch (e:Exception) {
             MyLog.e(TAG, "#readyForContinueMerge err: "+e.stackTraceToString())
-            return Ret.createError(null, "err:"+e.localizedMessage)
+            return Ret.createError(null, "err: "+e.localizedMessage)
         }
     }
 
@@ -1232,7 +1232,7 @@ object Libgit2Helper {
             return Ret.createSuccess(null)
         }catch (e:Exception) {
             MyLog.e(TAG, "#$funName err: "+e.stackTraceToString())
-            return Ret.createError(null, "err:"+e.localizedMessage)
+            return Ret.createError(null, "err: "+e.localizedMessage)
         }
     }
 
@@ -1258,8 +1258,8 @@ object Libgit2Helper {
 
             return Ret.createSuccess(c)
         }catch (e:Exception) {
-            MyLog.e(TAG, "#rebaseGetCurCommitRet err:${e.stackTraceToString()}")
-            return Ret.createError(null, e.localizedMessage ?:"err when get cur commit of rebase", exception = e)
+            MyLog.e(TAG, "#rebaseGetCurCommitRet err: ${e.stackTraceToString()}")
+            return Ret.createError(null, e.localizedMessage ?: "err when get cur commit of rebase", exception = e)
         }
     }
 
@@ -1392,7 +1392,7 @@ object Libgit2Helper {
             }
         }catch (e:Exception) {
             MyLog.e(TAG, "#rebaseAccept err: params are: pathSpecList=$pathSpecList, acceptTheirs=$acceptTheirs\n"+e.stackTraceToString())
-            return Ret.createError(null, "rebase accept ${if(acceptTheirs) "theirs" else "ours"} err:"+e.localizedMessage)
+            return Ret.createError(null, "rebase accept ${if(acceptTheirs) "theirs" else "ours"} err: "+e.localizedMessage)
         }
     }
 
@@ -1423,7 +1423,7 @@ object Libgit2Helper {
             }
         }catch (e:Exception) {
             MyLog.e(TAG, "#cherrypickAccept err: params are: pathSpecList=$pathSpecList, acceptTheirs=$acceptTheirs\n"+e.stackTraceToString())
-            return Ret.createError(null, "cherrypick accept ${if(acceptTheirs) "theirs" else "ours"} err:"+e.localizedMessage)
+            return Ret.createError(null, "cherrypick accept ${if(acceptTheirs) "theirs" else "ours"} err: "+e.localizedMessage)
         }
     }
 
@@ -1486,7 +1486,7 @@ object Libgit2Helper {
             }
         }catch (e:Exception) {
             MyLog.e(TAG, "#mergeAccept err: params are: pathSpecList=$pathSpecList, acceptTheirs=$acceptTheirs\n"+e.stackTraceToString())
-            return Ret.createError(null, "merge accept ${if(acceptTheirs) "theirs" else "ours"} err:"+e.localizedMessage)
+            return Ret.createError(null, "merge accept ${if(acceptTheirs) "theirs" else "ours"} err: "+e.localizedMessage)
         }
     }
 
@@ -1687,7 +1687,7 @@ object Libgit2Helper {
 //                    但实际上却是在@@之后加上了下面一行的内容，不过我后来发现pc git
 //                    （在看cmake openssl脚本的patch文件时发现的，那个patch应该就是diff输出，
 //                    但@@后面有东西）好像有时候也会在@@后面有东西？所以可能不是bug？
-            MyLog.d(TAG, "#$funName(): hunk header:"+hunkAndLines.hunk.header)
+            MyLog.d(TAG, "#$funName(): hunk header: "+hunkAndLines.hunk.header)
 
             diffItem.hunks.add(hunkAndLines)
             val lines = hunkAndLines.lines
@@ -2160,8 +2160,8 @@ object Libgit2Helper {
 
             return Ret.createSuccess(null)
         }catch (e:Exception) {
-            MyLog.e(TAG, "#setRemoteFetchRefSpecToGitConfig err:"+e.stackTraceToString())
-            return Ret.createError(null, "update branch err:"+e.localizedMessage)
+            MyLog.e(TAG, "#setRemoteFetchRefSpecToGitConfig err: "+e.stackTraceToString())
+            return Ret.createError(null, "update branch err: "+e.localizedMessage)
         }
 
     }
@@ -2750,7 +2750,7 @@ object Libgit2Helper {
 
             return u
         }catch (e:Exception) {
-            MyLog.e(TAG, "#getUpstreamOfBranch() error:"+e.stackTraceToString())
+            MyLog.e(TAG, "#getUpstreamOfBranch() error: "+e.stackTraceToString())
             //发生异常，返回一个空upstream
             return Upstream()  //确保出异常返回空上游，所以这里新创建一个
         }
@@ -2851,7 +2851,7 @@ object Libgit2Helper {
 //                MyLog.d(TAG,"#isUpstreamActuallyExistOnLocal(): exist=$exist")
             return exist
         }catch (e:Exception) {
-            MyLog.e(TAG, "#isUpstreamActuallyExistOnLocal() error:"+e.stackTraceToString())
+            MyLog.e(TAG, "#isUpstreamActuallyExistOnLocal() error: "+e.stackTraceToString())
             return false
         }
     }
@@ -2935,7 +2935,7 @@ object Libgit2Helper {
                 // only show err once, avoid toast hell
                 if(neverShowErr) {
                     neverShowErr = false
-                    Msg.requireShowLongDuration("stage '$fileName' err:${e.localizedMessage}")
+                    Msg.requireShowLongDuration("stage '$fileName' err: ${e.localizedMessage}")
                 }
             }
         }
@@ -3179,9 +3179,9 @@ object Libgit2Helper {
             repoDb.updateIsShallow(repoFromDb.id, Cons.dbCommonFalse)
             return Ret.createSuccess(null)
         }catch (e:Exception) {
-            MyLog.e(TAG, "#unshallowRepo(): err:"+e.stackTraceToString())
+            MyLog.e(TAG, "#unshallowRepo(): err: "+e.stackTraceToString())
 
-            val errMsg = "unshallow err:"+e.localizedMessage
+            val errMsg = "unshallow err: "+e.localizedMessage
             createAndInsertError(repoFromDb.id, errMsg)
             return Ret.createError(null, errMsg, Ret.ErrCode.unshallowRepoErr)
         }
@@ -3594,11 +3594,11 @@ object Libgit2Helper {
 //                val commitResult = doCreateCommit(repo, msg, username, email, branchFullRefName, parent)
             val commitResult = createCommit(repo, msg, username, email, branchFullRefName, indexItemList = null, parent, settings = settings)
             if(commitResult.hasError()) {
-                return Ret.createError(null, "merge failed:"+commitResult.msg, Ret.ErrCode.mergeFailedByCreateCommitFaild)
+                return Ret.createError(null, "merge failed: "+commitResult.msg, Ret.ErrCode.mergeFailedByCreateCommitFaild)
             }
 
             //合并并且成功创建了提交，返回成功
-            return Ret.createSuccess(commitResult.data, "merge success, new commit oid:"+commitResult.data.toString())
+            return Ret.createSuccess(commitResult.data, "merge success, new commit oid: "+commitResult.data.toString())
         }
 
     }
@@ -4067,8 +4067,8 @@ object Libgit2Helper {
         val state = repo.state()
         //先检查仓库状态
         if(state != Repository.StateT.NONE) {
-            MyLog.d(TAG, "#checkoutByHash:"+"repo state is not NONE, it is:"+state.toString())
-            return Ret.createError(null, "repo state is not NONE",Ret.ErrCode.repoStateIsNotNone)
+            MyLog.d(TAG, "#checkoutByHash: repo state is not NONE, it is: '$state'")
+            return Ret.createError(null, "repo state is not NONE", Ret.ErrCode.repoStateIsNotNone)
         }
 
         //仓库状态正常，准备执行checkout
@@ -4080,13 +4080,13 @@ object Libgit2Helper {
 
         val targetCommit = resolveCommitByHash(repo, commitHash)
         if(targetCommit==null) {
-            MyLog.d(TAG, "#checkoutByHash:"+"target commit not found, hash is:"+commitHash)
+            MyLog.d(TAG, "#checkoutByHash: target commit not found, hash is: "+commitHash)
             return Ret.createError(null,"target commit not found!",Ret.ErrCode.targetCommitNotFound)
         }
 
         val errno = Checkout.tree(repo, targetCommit, ckOpts)
         if(errno < 0) {
-            MyLog.d(TAG, "#checkoutByHash:"+"Checkout.tree() err, errno="+errno)
+            MyLog.d(TAG, "#checkoutByHash: Checkout.tree() err, errno="+errno)
             return Ret.createError(null, "Checkout Tree err(errno=$errno)!", Ret.ErrCode.checkoutTreeError)
         }
 
@@ -4106,7 +4106,7 @@ object Libgit2Helper {
             val ref = if(trueUseDwimFalseUseLookup) Reference.dwim(repo, refNameShortOrFull) else Reference.lookup(repo, refNameShortOrFull)
             return ref?.resolve()  //resolve reference to direct ref, direct ref is point to commit, not symbolicTarget
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveRefName(): resolve refname err! refname="+refNameShortOrFull+", trueUseDwimFalseUseLookup=$trueUseDwimFalseUseLookup, err is:"+e.stackTraceToString())
+            MyLog.e(TAG, "#resolveRefName(): resolve refname err! refname="+refNameShortOrFull+", trueUseDwimFalseUseLookup=$trueUseDwimFalseUseLookup, err is: "+e.stackTraceToString())
             return null
         }
     }
@@ -4136,7 +4136,7 @@ object Libgit2Helper {
             val gitObj = GitObject.lookup(repo, targetOid, type)
             return gitObj
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveGitObject(): resolve GitObject err! targetOid=$targetOid, type=${type.name} \n Exception is:"+e.stackTraceToString())
+            MyLog.e(TAG, "#resolveGitObject(): resolve GitObject err! targetOid=$targetOid, type=${type.name} \n Exception is: "+e.stackTraceToString())
             return null
         }
     }
@@ -4148,7 +4148,7 @@ object Libgit2Helper {
             return resolved
         }catch (e:Exception) {
             //这个解析经常错，也不太重要，所以改成debug等级了
-            MyLog.d(TAG, "#resolveCommitByHash() error, param is (shortOrLongHash=$shortOrLongHash):\nerr is:"+e.stackTraceToString())
+            MyLog.d(TAG, "#resolveCommitByHash() error, param is (shortOrLongHash=$shortOrLongHash):\nerr is: "+e.stackTraceToString())
             return null
         }
     }
@@ -4160,7 +4160,7 @@ object Libgit2Helper {
             MyLog.d(TAG, "#resolveBranchRemotePrefix: in: fullRemoteBranchRefSpec=$fullRemoteBranchRefSpec; out: remoteName=$remoteName")
             return remoteName
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveBranchRemotePrefix() error, param is (fullRemoteBranchRefSpec=$fullRemoteBranchRefSpec) :\nerr is:"+e.stackTraceToString())
+            MyLog.e(TAG, "#resolveBranchRemotePrefix() error, param is (fullRemoteBranchRefSpec=$fullRemoteBranchRefSpec) :\nerr is: "+e.stackTraceToString())
             return ""
         }
     }
@@ -4170,7 +4170,7 @@ object Libgit2Helper {
             val remoteObj = Remote.lookup(repo, remoteName)
             return remoteObj
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveRemote() error, param is (remoteName=$remoteName):\nerr is:"+e.stackTraceToString())
+            MyLog.e(TAG, "#resolveRemote() error, param is (remoteName=$remoteName):\nerr is: "+e.stackTraceToString())
             return null
         }
     }
@@ -4218,7 +4218,7 @@ object Libgit2Helper {
             val ref = Branch.lookup(repo, branchShortName, type)
             return ref
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveBranch() error, params are (branchShortName=$branchShortName, type=${type.name}),\nerr is:"+e.stackTraceToString())
+            MyLog.e(TAG, "#resolveBranch() error, params are (branchShortName=$branchShortName, type=${type.name}),\nerr is: "+e.stackTraceToString())
             return null
         }
     }
@@ -4239,7 +4239,7 @@ object Libgit2Helper {
             val tree = Tree.lookup(repo, Revparse.lookup(repo, "$revspec^{tree}").getFrom().id(), GitObject.Type.TREE) as? Tree
             return tree
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveTree() error, params are (revspec=$revspec),\nerr is:"+e.stackTraceToString())
+            MyLog.e(TAG, "#resolveTree() error, params are (revspec=$revspec),\nerr is: "+e.stackTraceToString())
             return null
         }
 
@@ -4582,7 +4582,7 @@ object Libgit2Helper {
                 //更新迭代器
                 next = revwalk.next()
             }catch (e:Exception) {
-//                    MyLog.e(TAG, "#$funName():err:"+e.stackTraceToString())
+//                    MyLog.e(TAG, "#$funName():err: "+e.stackTraceToString())
                 throw e
             }
 
@@ -4757,7 +4757,7 @@ object Libgit2Helper {
                 //更新迭代器
                 next = revwalk.next()
             }catch (e:Exception) {
-//                    MyLog.e(TAG, "#getCommitList():err:"+e.stackTraceToString())
+//                    MyLog.e(TAG, "#getCommitList():err: "+e.stackTraceToString())
                 throw e
             }
 
@@ -5579,7 +5579,7 @@ object Libgit2Helper {
             return Ret.createSuccess(null)
         }catch (e:Exception) {
             MyLog.e(TAG, "#$funName err: "+e.stackTraceToString())
-            return Ret.createError(null, "err:"+e.localizedMessage)
+            return Ret.createError(null, "err: "+e.localizedMessage)
         }
     }
 
@@ -5772,7 +5772,7 @@ object Libgit2Helper {
             )
 
         }catch (e:Exception) {
-            MyLog.e(TAG, "#$funName err:${e.stackTraceToString()}")
+            MyLog.e(TAG, "#$funName err: ${e.stackTraceToString()}")
             return Ret.createError(null, e.localizedMessage ?: "save patch err", exception = e)
         }
     }
@@ -5866,7 +5866,7 @@ object Libgit2Helper {
             val tag = Tag.lookupPrefix(repo, oidFullOrShortStr)
             return tag
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveTag() error, params are (oidFullOrShortStr=$oidFullOrShortStr}),\nerr is:"+e.stackTraceToString())
+            MyLog.e(TAG, "#resolveTag() error, params are (oidFullOrShortStr=$oidFullOrShortStr}),\nerr is: "+e.stackTraceToString())
             return null
         }
     }
@@ -5882,7 +5882,7 @@ object Libgit2Helper {
 
             return cid
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveCommitOidByRef() error, params are (shortOrFullRefSpec=$shortOrFullRefSpec}),\nerr is:"+e.stackTraceToString())
+            MyLog.e(TAG, "#resolveCommitOidByRef() error, params are (shortOrFullRefSpec=$shortOrFullRefSpec}),\nerr is: "+e.stackTraceToString())
 
             return null
         }
@@ -5918,7 +5918,7 @@ object Libgit2Helper {
 
             return resolveCommitByHash(repo, cid.toString())
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveCommitByRef() error, params are (shortOrFullRefSpec=$shortOrFullRefSpec}),\nerr is:"+e.stackTraceToString())
+            MyLog.e(TAG, "#resolveCommitByRef() error, params are (shortOrFullRefSpec=$shortOrFullRefSpec}),\nerr is: "+e.stackTraceToString())
 
             return null
         }
@@ -5952,7 +5952,7 @@ object Libgit2Helper {
             return Ret.createSuccess(c)
 
         }catch (e:Exception) {
-            MyLog.e(TAG, "#$funName() error, params are (hashOrBranchOrTag=$hashOrBranchOrTag}),\nerr is:"+e.stackTraceToString())
+            MyLog.e(TAG, "#$funName() error, params are (hashOrBranchOrTag=$hashOrBranchOrTag}),\nerr is: "+e.stackTraceToString())
             return Ret.createError(null, e.localizedMessage ?:"resolve commit err: param=$hashOrBranchOrTag", exception = e)
         }
     }
@@ -7260,7 +7260,7 @@ object Libgit2Helper {
                             e.localizedMessage ?: unknownErrWhenCloning
                         //如果出错，删除仓库目录
                         deleteIfFileOrDirExist(repoDir)
-                        MyLog.e(TAG, "cloneErr:" + e.stackTraceToString())
+                        MyLog.e(TAG, "cloneErr: " + e.stackTraceToString())
                     }
 
                     repo2ndQuery.baseFields.baseUpdateTime = getSecFromTime()
@@ -7275,7 +7275,7 @@ object Libgit2Helper {
                             repoDb.update(repo2ndQuery)
                         }
                     } catch (e: Exception) {
-                        MyLog.e(TAG, "clone success but update db err:" + e.stackTraceToString())
+                        MyLog.e(TAG, "clone success but update db err: " + e.stackTraceToString())
                     }
 
 

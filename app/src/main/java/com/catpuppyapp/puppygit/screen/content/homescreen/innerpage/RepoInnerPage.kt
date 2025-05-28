@@ -499,7 +499,7 @@ fun RepoInnerPage(
 
                 }catch (e:Exception) {
                     MyLog.e(TAG, "import repo from ReposPage err: "+e.stackTraceToString())
-                    Msg.requireShowLongDuration("err:${e.localizedMessage}")
+                    Msg.requireShowLongDuration("err: ${e.localizedMessage}")
                 }finally {
                     changeStateTriggerRefreshPage(needRefreshRepoPage)
 
@@ -1347,11 +1347,11 @@ fun RepoInnerPage(
                 val curBranchShortName = curBranchShortNameForSetUpstreamDialog.value
 
                 //显示通知
-                Msg.requireShowLongDuration("clear upstream err:" + e.localizedMessage)
+                Msg.requireShowLongDuration("clear upstream err: " + e.localizedMessage)
                 //给用户看到错误
                 createAndInsertError(
                     repoId,
-                    "clear upstream for '$curBranchShortName' err:" + e.localizedMessage
+                    "clear upstream for '$curBranchShortName' err: " + e.localizedMessage
                 )
                 //给开发者debug看的错误
                 MyLog.e(
@@ -1382,22 +1382,22 @@ fun RepoInnerPage(
                 val remote = try {
                     remoteList[selectedRemoteIndex]
                 } catch (e: Exception) {
-                    MyLog.e(TAG,"err when get remote by index from remote list of '$repoName': remoteIndex=$selectedRemoteIndex, remoteList=$remoteList\nerr info:${e.stackTraceToString()}")
+                    MyLog.e(TAG,"err when get remote by index from remote list of '$repoName': remoteIndex=$selectedRemoteIndex, remoteList=$remoteList\nerr info: ${e.stackTraceToString()}")
                     Msg.requireShowLongDuration(activityContext.getString(R.string.err_selected_remote_is_invalid))
                     return@onErr
                 }
 
                 //显示通知
-                Msg.requireShowLongDuration("set upstream err:" + e.localizedMessage)
+                Msg.requireShowLongDuration("set upstream err: " + e.localizedMessage)
                 //给用户看到错误
                 createAndInsertError(
                     repoId,
-                    "set upstream for '$curBranchShortName' err:" + e.localizedMessage
+                    "set upstream for '$curBranchShortName' err: " + e.localizedMessage
                 )
                 //给开发者debug看的错误
                 MyLog.e(
                     TAG,
-                    "set upstream for '$curBranchShortName' of '$repoName' err! user input branch is '$upstreamShortName', selected remote is $remote, user checked use same name with local is '$upstreamSameWithLocal'\nerr:" + e.stackTraceToString()
+                    "set upstream for '$curBranchShortName' of '$repoName' err! user input branch is '$upstreamShortName', selected remote is $remote, user checked use same name with local is '$upstreamSameWithLocal'\nerr: " + e.stackTraceToString()
                 )
 
 

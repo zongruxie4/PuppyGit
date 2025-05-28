@@ -557,13 +557,13 @@ fun CheckoutDialog(
                 }
 
                 //显示通知
-                Msg.requireShowLongDuration("err:" + e.localizedMessage)
+                Msg.requireShowLongDuration("err: " + e.localizedMessage)
                 val refName = if(shortName.isNotBlank() && shortName==curCommitOidOrRefName) shortName else "$shortName($curCommitOidOrRefName)"
                 //给用户看的错误
                 //"checkout main(abcdef1) err" or "checkout abcef12 err"
-                createAndInsertError(repoId, "checkout '" + refName + "' err:" + e.localizedMessage)
+                createAndInsertError(repoId, "checkout '" + refName + "' err: " + e.localizedMessage)
                 //给开发者debug看的错误
-                MyLog.e(TAG, "checkout '" + refName + "' err:" + e.stackTraceToString())
+                MyLog.e(TAG, "checkout '" + refName + "' err: " + e.stackTraceToString())
             }
         }
     }

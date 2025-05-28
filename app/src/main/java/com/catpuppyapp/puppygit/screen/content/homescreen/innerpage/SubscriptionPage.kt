@@ -92,7 +92,7 @@ fun SubscriptionPage(contentPadding: PaddingValues, needRefresh: MutableState<St
 //                                val caller="buyButtonOnClick@"
 //                                Billing.doBuyIfReady(appContext, productDetails) { e:Exception ->
 //                                    // exceptionHandler
-//                                    Msg.requireShowLongDuration("buy err:"+e.localizedMessage)
+//                                    Msg.requireShowLongDuration("buy err: "+e.localizedMessage)
 //                                    MyLog.e(TAG, "#$caller: err: ${e.stackTraceToString()}")
 //                                }
 //                            }

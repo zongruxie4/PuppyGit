@@ -439,7 +439,7 @@ object AppModel {
             //用原始设置文件初始化异常
             try {
                 //初始化设置，用备用设置文件，若成功则恢复备用到原始设置文件
-                MyLog.e(TAG, "#$funName init settings err:"+e.stackTraceToString())
+                MyLog.e(TAG, "#$funName init settings err: "+e.stackTraceToString())
                 MyLog.w(TAG, "#$funName init origin settings err, will try use backup")
 
                 SettingsUtil.init(settingsSaveDir, useBak = true)
@@ -451,7 +451,7 @@ object AppModel {
                 MyLog.w(TAG, "#$funName restore bak settings to origin success")
             }catch (e2:Exception) {
                 //用备用文件初始化设置也异常，尝试重建设置项，用户设置会丢失
-                MyLog.e(TAG, "#$funName init settings with bak err:"+e2.stackTraceToString())
+                MyLog.e(TAG, "#$funName init settings with bak err: "+e2.stackTraceToString())
                 MyLog.w(TAG, "#$funName init bak settings err, will clear origin settings, user settings will lost!")
 
                 // delete settings files
@@ -495,7 +495,7 @@ object AppModel {
 //                try {
 //                    AppModel.dbContainer.passEncryptRepository.migrateIfNeed(AppModel.dbContainer.credentialRepository)
 //                }catch (e:Exception) {
-//                    MyLog.e(TAG, "#$funName migrate password err:"+e.stackTraceToString())
+//                    MyLog.e(TAG, "#$funName migrate password err: "+e.stackTraceToString())
 //                    MyLog.w(TAG, "#$funName migrate password err, user's password may will be invalid :(")
 //                }
 
@@ -513,7 +513,7 @@ object AppModel {
                 keepInDays = settings.editor.editCacheKeepInDays
             )
         }catch (e:Exception) {
-            MyLog.e(TAG, "#$funName init EditCache err:"+e.stackTraceToString())
+            MyLog.e(TAG, "#$funName init EditCache err: "+e.stackTraceToString())
         }
 
 
@@ -526,7 +526,7 @@ object AppModel {
                 enableFileSnapshotForDiffInitValue = settings.diff.createSnapShotForOriginFileBeforeSave
             )
         }catch (e:Exception) {
-            MyLog.e(TAG, "#$funName init SnapshotUtil err:"+e.stackTraceToString())
+            MyLog.e(TAG, "#$funName init SnapshotUtil err: "+e.stackTraceToString())
         }
 
         try {
@@ -542,7 +542,7 @@ object AppModel {
                 requireClearOldSettingsEditedHistory = false
             )
         }catch (e:Exception) {
-            MyLog.e(TAG, "#$funName init FileOpenHistoryMan err:"+e.stackTraceToString())
+            MyLog.e(TAG, "#$funName init FileOpenHistoryMan err: "+e.stackTraceToString())
         }
 
         try {
@@ -558,7 +558,7 @@ object AppModel {
                 oldSettingsLastSelectedPath = null
             )
         }catch (e:Exception) {
-            MyLog.e(TAG, "#$funName init StoragePathsMan err:"+e.stackTraceToString())
+            MyLog.e(TAG, "#$funName init StoragePathsMan err: "+e.stackTraceToString())
         }
 
 
@@ -567,14 +567,14 @@ object AppModel {
                 //删除过期日志文件
                 MyLog.delExpiredFiles()
             }catch (e:Exception) {
-                MyLog.e(TAG, "#$funName del expired log files err:"+e.stackTraceToString())
+                MyLog.e(TAG, "#$funName del expired log files err: "+e.stackTraceToString())
             }
 
             //删除过期的编辑缓存文件
             try {
                 EditCache.delExpiredFiles()
             }catch (e:Exception) {
-                MyLog.e(TAG, "#$funName del expired edit cache files err:"+e.stackTraceToString())
+                MyLog.e(TAG, "#$funName del expired edit cache files err: "+e.stackTraceToString())
             }
 
             //删除过期的快照文件
@@ -585,7 +585,7 @@ object AppModel {
 
                 //                 //   AppModel.getOrCreateFileSnapshotDir()  // is delete expired files, is not del the folder, so no need call this make sure folder exist
             }catch (e:Exception) {
-                MyLog.e(TAG, "#$funName del expired snapshot files err:"+e.stackTraceToString())
+                MyLog.e(TAG, "#$funName del expired snapshot files err: "+e.stackTraceToString())
             }
         }
 

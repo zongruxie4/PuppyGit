@@ -284,7 +284,7 @@ fun EditorInnerPage(
             if (needRequireSave) {
                 requestFromParent.value = PageRequest.requireSave
             }
-            "justForSave:"+"uuid="+getShortUUID() + ", drawerIsOpen=" + drawIsOpen + ", isEdited=" + isEdited.value +", needRequireSave="+needRequireSave
+            "justForSave: "+"uuid="+getShortUUID() + ", drawerIsOpen=" + drawIsOpen + ", isEdited=" + isEdited.value +", needRequireSave="+needRequireSave
         }
     }
     justForSaveFileWhenDrawerOpen = justForSave.value  //得获取state值，不然不会触发计算，也就不会保存
@@ -1590,7 +1590,7 @@ private suspend fun doInit(
                         if (snapRet.hasError()) {
                             MyLog.e(TAG, "#loadFile: create content snapshot for '$requireOpenFilePath' err: ${snapRet.msg}")
 
-                            Msg.requireShowLongDuration("save content snapshot for '$fileName' err:" + snapRet.msg)
+                            Msg.requireShowLongDuration("save content snapshot for '$fileName' err: " + snapRet.msg)
                         }else {
                             isContentSnapshoted.value=true
                         }

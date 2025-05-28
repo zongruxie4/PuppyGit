@@ -1515,7 +1515,7 @@ fun CommitListScreen(
                             if(ret.code != Ret.ErrCode.alreadyUpToDate) {  //如果错误码不是 Already up-to-date ，就log下
 
                                 //选提交时记日志把files改成commit用来区分
-                                createAndInsertError(repoId, "create patch of '$shortParent..$shortTarget' err:"+ret.msg)
+                                createAndInsertError(repoId, "create patch of '$shortParent..$shortTarget' err: "+ret.msg)
                             }
                         }else {
                             //输出格式： /puppygitDataDir/patch/xxxx..xxxx，可前往Files页面通过Go To功能跳转到对应目录并选中文件
@@ -1666,7 +1666,7 @@ fun CommitListScreen(
                         if(ret.code != Ret.ErrCode.alreadyUpToDate) {  //如果错误码不是 Already up-to-date ，就log下
 
                             //选提交时记日志把files改成commit用来区分
-                            createAndInsertError(repoId, "cherrypick commit changes of '$shortParent..$shortTarget' err:"+ret.msg)
+                            createAndInsertError(repoId, "cherrypick commit changes of '$shortParent..$shortTarget' err: "+ret.msg)
                         }
                     }else {
                         Msg.requireShow(activityContext.getString(R.string.success))
