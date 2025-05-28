@@ -3299,10 +3299,11 @@ object Libgit2Helper {
 
 //            val ourHeadRef = repo.head()
 //            MyLog.d(TAG, "ourHeadRef == null:::"+(ourHeadRef==null))
-//            val analysisResult = Merge.analysisForRef(repo, ourHeadRef, theirHeads)  //需要我们自己取出head传给它，这样会增加jni中c和java的通信，也更容易出bug，所以不要用这个方法，能直接全在c做的就全在c做，全在java做的就全在java做，非必要，不通信(jni)
+        //需要我们自己取出head传给它，有点麻烦，直接用另一个自己解析当前仓库head的Merge.analysis()方法了
+//            val analysisResult = Merge.analysisForRef(repo, ourHeadRef, theirHeads)
 
         //分析我们的head和要合并的分支的状态，是否已经是最新，能否fast-forward之类的，Merge.analysis() 这个方法不需要你传headRef，它会自己查，然后内部也是调用 Merge.analysisRef()
-        val analysisResult = Merge.analysis(repo, theirHeads)  //内部自己取head
+        val analysisResult = Merge.analysis(repo, theirHeads)  //这个方法内部会自己取当前仓库的head
 //            MyLog.d(TAG, "analysisResult.analysis == null:::"+(analysisResult.analysis==null))
         //出现过空指针异常，原因不明，再出再查
         val analySet = analysisResult.analysisSet
