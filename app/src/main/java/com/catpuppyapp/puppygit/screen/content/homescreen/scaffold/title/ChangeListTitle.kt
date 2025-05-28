@@ -125,7 +125,7 @@ fun ChangeListTitle(
                 Text(
                     //  判断仓库是否处于detached，然后显示在这里(例如： "abc1234(detached)" )
                     // "main|StateT" or "main", eg, when merging show: "main|Merging", when 仓库状态正常时 show: "main"；如果是detached HEAD状态，则显示“提交号(Detached)|状态“，例如：abc2344(Detached) 或 abc2344(Detached)|Merging
-                    text = (if(dbIntToBool(changeListCurRepo.value.isDetached)) {changeListCurRepo.value.lastCommitHashShort+"(Detached)"} else {changeListCurRepo.value.branch+":"+changeListCurRepo.value.upstreamBranch}) + (if(needShowRepoState.value) {"|"+repoStateText.value} else {""}),
+                    text = (if(dbIntToBool(changeListCurRepo.value.isDetached)) Libgit2Helper.genDetachedText(changeListCurRepo.value.lastCommitHashShort) else Libgit2Helper.genLocalBranchAndUpstreamText(changeListCurRepo.value.branch, changeListCurRepo.value.upstreamBranch)) + (if(needShowRepoState.value) "|${repoStateText.value}" else ""),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = MyStyleKt.Title.secondLineFontSize,

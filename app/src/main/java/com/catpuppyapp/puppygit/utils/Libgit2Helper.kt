@@ -7560,4 +7560,13 @@ object Libgit2Helper {
             throw RuntimeException("force push canceled: upstream didn't match the expected refspec, upstream is `$latestUpstreamOidStr`, expected is `$expectedCommitOidStr`")
         }
     }
+
+    fun genDetachedText(shortHash:String?):String {
+        // 若hash为null，会显示 null (Detached)
+        return "$shortHash (Detached)"
+    }
+
+    fun genLocalBranchAndUpstreamText(localBranch:String, upstreamBranch:String):String {
+        return "$localBranch:$upstreamBranch"
+    }
 }

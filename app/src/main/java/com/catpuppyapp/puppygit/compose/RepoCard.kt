@@ -266,7 +266,7 @@ fun RepoCard(
 
                             ClickableText (
                                 //如果是detached，显示分支号，否则显示“本地分支:远程分支”
-                                text = if(repoStatusGood) {if(dbIntToBool(repoDto.isDetached)) repoDto.lastCommitHashShort+"("+ stringResource(R.string.detached)+")" else repoDto.branch+":"+repoDto.upstreamBranch} else "",
+                                text = if(repoStatusGood) {if(dbIntToBool(repoDto.isDetached)) Libgit2Helper.genDetachedText(repoDto.lastCommitHashShort) else Libgit2Helper.genLocalBranchAndUpstreamText(repoDto.branch, repoDto.upstreamBranch)} else "",
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = defaultFontWeight,
