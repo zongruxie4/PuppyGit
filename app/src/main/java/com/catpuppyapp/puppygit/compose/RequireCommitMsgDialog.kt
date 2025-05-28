@@ -198,7 +198,8 @@ fun RequireCommitMsgDialog(
                     MyCheckBox(text = stringResource(R.string.overwrite_author), value = overwriteAuthor)
                 }
 
-                //这个放外面，和checkbox分开，这样如果overwriteAuthor状态错误，就能看到这段文字，就能发现有问题了
+                //这个放外面，和checkbox分开，这样如果overwriteAuthor状态不该为true的时候为true，
+                // 就能看到这段文字，就能发现有问题了，不然若状态有误，有可能在用户不知情的情况下覆盖提交作者
                 if(overwriteAuthor.value){
                     MySelectionContainer {
                         DefaultPaddingText(text = stringResource(R.string.will_use_your_username_and_email_overwrite_original_commits_author_info))
