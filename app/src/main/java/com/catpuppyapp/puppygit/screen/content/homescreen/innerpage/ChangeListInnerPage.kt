@@ -1423,6 +1423,11 @@ fun ChangeListInnerPage(
         )
     }
 
+    val commitSuccessCallback = {
+        //如果提交成功，清掉提交信息
+        commitMsg.value = TextFieldValue("")
+    }
+
     if(showCommitMsgDialog.value) {
         val curRepo = curRepoFromParentPage.value
         val repoIsNotDetached = !dbIntToBool(curRepo.isDetached)
@@ -1442,7 +1447,6 @@ fun ChangeListInnerPage(
                 showCommitMsgDialog.value = false  //关闭弹窗
 
                 val cmtMsg = msgOrAmendMsg  //存上实际的提交信息，若勾选Amend实际值就是amendMsg的值否则是commitMsg的值
-                commitMsg.value = TextFieldValue("") //清空提交信息状态
 
                 doJobThenOffLoading(loadingOn, loadingOff,activityContext.getString(R.string.committing)) {
                     doActWithLock(curRepo) {
@@ -1486,6 +1490,8 @@ fun ChangeListInnerPage(
 
                             if(requireSync) {
                                 if(commitSuccess){
+                                    commitSuccessCallback()
+
                                     //更新loading提示文案
                                     loadingText.value = activityContext.getString(R.string.syncing)
 
@@ -1510,6 +1516,8 @@ fun ChangeListInnerPage(
                                 }
                             }else if(requirePush) {
                                 if(commitSuccess) {
+                                    commitSuccessCallback()
+
                                     loadingText.value = activityContext.getString(R.string.pushing)
 
                                     val success = ChangeListFunctions.doPush(

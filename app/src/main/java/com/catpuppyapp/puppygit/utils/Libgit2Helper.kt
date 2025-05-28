@@ -2613,9 +2613,14 @@ object Libgit2Helper {
 
 
         //如果msg为空，自动生成提交信息
-        val msg = if(msg.isBlank()) {  //maybe empty is better? no, blank better!
+        val msg = if(msg.isBlank()) {  //这里检测必须用isBlank()别用isEmpty()，因为空白提交信息有可能提交失败（没测试，但我猜测提交信息可能会trim()）
             if(amend) {
-                // amend, msg null, then use origin commit msg，如果原始提交信息也是空字符串呢？无所谓，正常来说不会，就算会，只要能提交，也没差，rebase/cherrypick时也可能有同样的问题，即使假设提交信息为空会提交失败也很好解决，只要用户手动填入一个提交信息就行了
+                // amend, msg null, then use origin commit msg，
+                // 如果原始提交信息也是空字符串呢？无所谓，正常来说不会，
+                // 就算会，只要能提交，也没差，
+                // rebase/cherrypick时也可能有同样的问题，
+                // 即使假设提交信息为空会提交失败也很好解决，
+                // 只要用户重新提交一下再手动填入一个提交信息就行了
                 null
             }else {  //生成提交信息
                 val genCommitMsgRet = genCommitMsg(repo, indexItemList, settings.commitMsgTemplate)
