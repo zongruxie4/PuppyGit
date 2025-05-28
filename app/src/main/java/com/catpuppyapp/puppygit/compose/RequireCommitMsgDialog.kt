@@ -1,6 +1,6 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +21,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -62,9 +61,7 @@ fun RequireCommitMsgDialog(
 
     val repoStateIsCherrypick = repoState == Repository.StateT.CHERRYPICK.bit
 
-    fun getMsgEmptyNote():String {
-        return activityContext.getString(if(repoStateIsRebase || repoStateIsCherrypick || amend.value) R.string.leave_msg_empty_will_use_origin_commit_s_msg  else R.string.you_can_leave_msg_empty_will_auto_gen_one)
-    }
+
 
     //勾选amend时用此变量替代commitMsg
     //由于判断amend是否勾选的布尔值在外部，
@@ -150,9 +147,29 @@ fun RequireCommitMsgDialog(
                 Spacer(modifier = Modifier.height(10.dp))
                 Row {
                     MySelectionContainer {
-                        Text(text = "("+getMsgEmptyNote()+")",
-                            color = MyStyleKt.TextColor.highlighting_green
-                        )
+                        Column {
+                            //正常来说这几个条件不会同时为真
+                            if(repoStateIsRebase || repoStateIsCherrypick || amend.value) {
+                                MultiLineClickableText(stringResource(R.string.leave_msg_empty_will_use_origin_commit_s_msg)) {
+                                    Repository.open(repoPath).use { repo ->
+                                        val oldMsg = if (repoStateIsRebase) Libgit2Helper.rebaseGetCurCommitMsg(repo) else if(repoStateIsCherrypick) Libgit2Helper.getCherryPickHeadCommitMsg(repo) else Libgit2Helper.getHeadCommitMsg(repo)
+
+                                        if(amend.value) {
+                                            amendMsg.value = TextFieldValue(oldMsg)
+                                        }else {
+                                            commitMsg.value = TextFieldValue(oldMsg)
+                                        }
+                                    }
+                                }
+                            }else {
+                                Text(text = "("+stringResource(R.string.you_can_leave_msg_empty_will_auto_gen_one)+")",
+                                    color = MyStyleKt.TextColor.highlighting_green
+                                )
+                            }
+
+                            Spacer(Modifier.height(10.dp))
+                        }
+
                     }
                 }
 
@@ -175,36 +192,13 @@ fun RequireCommitMsgDialog(
                     })
                 }
 
-                //正常来说这两个不会同时为真
-                if(repoStateIsRebase || repoStateIsCherrypick || amend.value) {
-                    MySelectionContainer {
-                        ClickableText(
-//                        text = if(repoStateIsRebase || repoStateIsCherrypick || amend.value) stringResource(R.string.origin_commit_msg) else stringResource(R.string.last_commit_msg),
-                            text = stringResource(R.string.origin_commit_msg),
-                            fontWeight = FontWeight.Light,
-                            modifier = MyStyleKt.ClickableText.modifierNoPadding
-                                .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
-                                .clickable(onClick = {
-                                    Repository.open(repoPath).use { repo ->
-                                        val oldMsg = if (repoStateIsRebase) Libgit2Helper.rebaseGetCurCommitMsg(repo) else if(repoStateIsCherrypick) Libgit2Helper.getCherryPickHeadCommitMsg(repo) else Libgit2Helper.getHeadCommitMsg(repo)
-
-                                        if(amend.value) {
-                                            amendMsg.value = TextFieldValue(oldMsg)
-                                        }else {
-                                            commitMsg.value = TextFieldValue(oldMsg)
-                                        }
-                                    }
-                                })
-                        )
-                    }
-                }
-
 
                 // amend或rebase时可覆盖旧commit的作者信息，按钮一样，但含义不同，普通状态下commit覆盖的是上一个commit的信息，rebase状态下覆盖的是被pick的commit的信息
                 if(repoStateIsRebase || repoStateIsCherrypick || amend.value) {
                     MyCheckBox(text = stringResource(R.string.overwrite_author), value = overwriteAuthor)
                 }
 
+                //这个放外面，和checkbox分开，这样如果overwriteAuthor状态错误，就能看到这段文字，就能发现有问题了
                 if(overwriteAuthor.value){
                     MySelectionContainer {
                         DefaultPaddingText(text = stringResource(R.string.will_use_your_username_and_email_overwrite_original_commits_author_info))
