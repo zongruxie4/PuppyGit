@@ -2123,7 +2123,7 @@ fun ChangeListInnerPage(
     val initImportAsRepo = {selectedItemList:List<StatusTypeEntrySaver> ->
         val tmplist = selectedItemList.filter { it.toFile().isDirectory }
         if(tmplist.isEmpty()) {
-            Msg.requireShow(activityContext.getString(R.string.no_dir_selected))
+            Msg.requireShowLongDuration(activityContext.getString(R.string.no_dir_selected))
         }else {
             importList.value.clear()
             importList.value.addAll(tmplist)
@@ -2223,8 +2223,8 @@ fun ChangeListInnerPage(
 
     val goToSub = { item:StatusTypeEntrySaver ->
         val target = changeListRepoList?.value?.find { item.toFile().canonicalPath == it.fullSavePath }
-        if(target==null) {
-            Msg.requireShow(activityContext.getString(R.string.dir_not_imported))
+        if(target == null) {
+            Msg.requireShowLongDuration(activityContext.getString(R.string.plz_import_repo_then_try_again))
         }else {
             goToChangeListPage(target)
         }
