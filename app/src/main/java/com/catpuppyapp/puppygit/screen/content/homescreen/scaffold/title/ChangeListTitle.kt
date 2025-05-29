@@ -177,10 +177,9 @@ fun ChangeListTitle(
 
                 // 如果请求跳转到目标仓库，跳转
                 val (requestType, targetRepoFullPath) = getRequestDataByState<String?>(needReQueryRepoList.value)
-                if(requestType == StateRequestType.jumpAfterImport && targetRepoFullPath.let { it != null && it.isNotBlank() } ) {
-                    val targetRepo = readyRepoListFromDb.find { it.fullSavePath == targetRepoFullPath }
-                    if(targetRepo != null) {
-                        goToChangeListPage(targetRepo)
+                if(requestType == StateRequestType.jumpAfterImport && targetRepoFullPath.let { it != null && it.isNotBlank() }) {
+                    readyRepoListFromDb.find { it.fullSavePath == targetRepoFullPath }?.let {
+                        goToChangeListPage(it)
                     }
                 }
 
