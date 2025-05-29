@@ -129,6 +129,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.doJobWithMainContext
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.getSecFromTime
+import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.isRepoReadyAndPathExist
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
@@ -475,6 +476,19 @@ fun ChangeListInnerPage(
         loadingText.value = ""
         isLoading.value=false
 //        changeStateTriggerRefreshPage(needRefreshChangeListPage)
+    }
+
+    // 解决切换仓库后当前仓库的loading状态被上个仓库给取消的bug
+    val loadingToken = rememberSaveable { mutableStateOf("") }
+    val loadingOnByToken = { token:String, loadingText:String ->
+        loadingToken.value = token
+        loadingOn(loadingText)
+    }
+
+    val loadingOffByToken = { token:String ->
+        if(token == loadingToken.value) {
+            loadingOff()
+        }
     }
 
     val mustSelectAllConflictBeforeCommitStrRes = stringResource(R.string.must_resolved_conflict_and_select_them_before_commit)
@@ -3523,8 +3537,17 @@ fun ChangeListInnerPage(
             //这个最新pageId似乎可省略啊？虽然不省略逻辑上更清晰
             newestPageId.value = currentPageId
 
+            val loadingToken = getShortUUID()
             //初始化
-            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
+            doJobThenOffLoading(
+                loadingOn={ loadingText ->
+                    loadingOnByToken(loadingToken, loadingText)
+                },
+                loadingOff={
+                    loadingOffByToken(loadingToken)
+                },
+                loadingText = activityContext.getString(R.string.loading)
+            ) {
                 try {
                     changeListInit(
                         dbContainer = dbContainer,
