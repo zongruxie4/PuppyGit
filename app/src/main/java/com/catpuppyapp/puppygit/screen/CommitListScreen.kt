@@ -850,6 +850,7 @@ fun CommitListScreen(
             onCancel = closeSquashDialog
         ) {
             closeSquashDialog()
+
             val commitMsg = commitMsgForSquashDialog.value.text.ifBlank { genSquashCommitMsg() }
             val targetFullOid = targetCommitFullOidForSquashDialog.value
 //            val headOid = headCommitFullOidForSquashDialog.value

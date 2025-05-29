@@ -110,8 +110,8 @@ fun RequireCommitMsgDialog(
         text = {
             ScrollableColumn {
                 if(repoState==Repository.StateT.NONE.bit && amend.value.not() && indexIsEmptyForCommitDialog.value) {
-                    Row(modifier = Modifier.padding(5.dp)) {
-                        MySelectionContainer {
+                    MySelectionContainer {
+                        Row(modifier = Modifier.padding(5.dp)) {
                             Text(text = stringResource(R.string.warn_index_is_empty_will_create_a_empty_commit), color = MyStyleKt.TextColor.danger())
                         }
                     }
@@ -148,34 +148,34 @@ fun RequireCommitMsgDialog(
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
-                Row {
-                    MySelectionContainer {
-                        Column {
-                            //正常来说这几个条件不会同时为真
-                            if(repoStateIsRebase || repoStateIsCherrypick || amend.value) {
-                                MultiLineClickableText(stringResource(R.string.leave_msg_empty_will_use_origin_commit_s_msg)) {
-                                    Repository.open(repoPath).use { repo ->
-                                        val oldMsg = if (repoStateIsRebase) Libgit2Helper.rebaseGetCurCommitMsg(repo) else if(repoStateIsCherrypick) Libgit2Helper.getCherryPickHeadCommitMsg(repo) else Libgit2Helper.getHeadCommitMsg(repo)
 
-                                        if(amend.value) {
-                                            amendMsg.value = TextFieldValue(oldMsg)
-                                        }else {
-                                            commitMsg.value = TextFieldValue(oldMsg)
-                                        }
-                                    }
-                                }
-                            }else {
-                                MultiLineClickableText(stringResource(R.string.you_can_leave_msg_empty_will_auto_gen_one)) {
-                                    Repository.open(repoPath).use { repo ->
-                                        commitMsg.value = TextFieldValue(Libgit2Helper.genCommitMsgNoFault(repo, itemList = null, settings.commitMsgTemplate))
+                //提示提交信息可留空的文案
+                MySelectionContainer {
+                    Column {
+                        //正常来说这几个条件不会同时为真
+                        if(repoStateIsRebase || repoStateIsCherrypick || amend.value) {
+                            MultiLineClickableText(stringResource(R.string.leave_msg_empty_will_use_origin_commit_s_msg)) {
+                                Repository.open(repoPath).use { repo ->
+                                    val oldMsg = if (repoStateIsRebase) Libgit2Helper.rebaseGetCurCommitMsg(repo) else if(repoStateIsCherrypick) Libgit2Helper.getCherryPickHeadCommitMsg(repo) else Libgit2Helper.getHeadCommitMsg(repo)
+
+                                    if(amend.value) {
+                                        amendMsg.value = TextFieldValue(oldMsg)
+                                    }else {
+                                        commitMsg.value = TextFieldValue(oldMsg)
                                     }
                                 }
                             }
-
-                            Spacer(Modifier.height(10.dp))
+                        }else {
+                            MultiLineClickableText(stringResource(R.string.you_can_leave_msg_empty_will_auto_gen_one)) {
+                                Repository.open(repoPath).use { repo ->
+                                    commitMsg.value = TextFieldValue(Libgit2Helper.genCommitMsgNoFault(repo, itemList = null, settings.commitMsgTemplate))
+                                }
+                            }
                         }
 
+                        Spacer(Modifier.height(10.dp))
                     }
+
                 }
 
                 //repo状态正常才显示amend，rebase和merge时不会显示
@@ -205,7 +205,7 @@ fun RequireCommitMsgDialog(
 
                 //这个放外面，和checkbox分开，这样如果overwriteAuthor状态不该为true的时候为true，
                 // 就能看到这段文字，就能发现有问题了，不然若状态有误，有可能在用户不知情的情况下覆盖提交作者
-                if(overwriteAuthor.value){
+                if(overwriteAuthor.value) {
                     MySelectionContainer {
                         DefaultPaddingText(text = stringResource(R.string.will_use_your_username_and_email_overwrite_original_commits_author_info))
                     }
