@@ -977,6 +977,7 @@ fun HomeScreen(
                                     enableAction = changeListEnableAction.value,
                                     repoList = changeListRepoList,
                                     needReQueryRepoList=needReQueryRepoListForChangeListTitle,
+                                    goToChangeListPage = goToChangeListPage,
                                 )
                             }
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Settings) {

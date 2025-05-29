@@ -2453,10 +2453,7 @@ fun CommitListScreen(
 
         doJobThenOffLoading job@{
             //这里只用来获取是否需要forceReload的值，且这个值只需获取一次，所以getThenDel设置为true（其实多次获取也没事，只是会导致无意义查询）
-            val (requestType, data) = getRequestDataByState<Any?>(
-                needRefresh.value,
-                getThenDel = true
-            )
+            val (requestType, data) = getRequestDataByState<Any?>(needRefresh.value)
             val forceReload = (requestType == StateRequestType.forceReload)
 
             if(forceReload || curRepo.value.id.isBlank() || headOidOfThisScreen.value.isNullOrEmptyOrZero) {

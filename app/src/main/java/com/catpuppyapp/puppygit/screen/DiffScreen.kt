@@ -2268,10 +2268,7 @@ fun DiffScreen(
     }
 
     LaunchedEffect(needRefresh.value) {
-        val (requestType, requestData) = getRequestDataByState<Any?>(
-            needRefresh.value,
-            getThenDel = true
-        )
+        val (requestType, requestData) = getRequestDataByState<Any?>(needRefresh.value)
 
         //切换条目后回到列表顶部
         if(requestType == StateRequestType.requireGoToTop) {

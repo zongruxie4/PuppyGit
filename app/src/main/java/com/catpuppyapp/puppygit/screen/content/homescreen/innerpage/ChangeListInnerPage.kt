@@ -94,6 +94,7 @@ import com.catpuppyapp.puppygit.dev.ignoreWorktreeFilesTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.tagsTestPassed
 import com.catpuppyapp.puppygit.dev.treeToTreeBottomBarActAtLeastOneTestPassed
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.IgnoreItem
 import com.catpuppyapp.puppygit.git.ImportRepoResult
@@ -2077,21 +2078,25 @@ fun ChangeListInnerPage(
                 val repoNameSuffix = Libgit2Helper.genRepoNameSuffixForSubmodule(curRepo.repoName)
                 val parentRepoId = curRepo.id
 //                val importList = selectedItemList.value.toList().filter { it.cloned }
-
+                val importList = importList.value.toList()
                 val credentialList = credentialList.value.toList()
                 val selectedCredentialId = credentialList[selectedCredentialIdx.intValue].id
 
                 val repoDb = AppModel.dbContainer.repoRepository
                 val importRepoResult = ImportRepoResult()
 
+                val importSuccess = Box(false)
+
                 try {
-                    importList.value.forEach {
+                    importList.forEach {
                         val result = repoDb.importRepos(dir=it.canonicalPath, isReposParent=false, repoNameSuffix = repoNameSuffix, parentRepoId = parentRepoId, credentialId = selectedCredentialId)
                         importRepoResult.all += result.all
                         importRepoResult.success += result.success
                         importRepoResult.failed += result.failed
                         importRepoResult.existed += result.existed
                     }
+
+                    importSuccess.value = true
 
                     Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_imported), listOf(""+importRepoResult.success)))
                 }catch (e:Exception) {
@@ -2104,7 +2109,14 @@ fun ChangeListInnerPage(
                     //require refresh repo list for go to submodule after import
                     // since only worktree(ChangeList) can go to sub, so only need pass this param to ChangeList page, index and treeToTree page no need yet
                     if(needReQueryRepoList != null) {
-                        changeStateTriggerRefreshPage(needReQueryRepoList)
+                        if(importSuccess.value && jumpAfterImportRepo.value && importList.isNotEmpty()) {
+                            val firstItem = importList.getOrNull(0)
+                            if(firstItem != null) {
+                                changeStateTriggerRefreshPage(needReQueryRepoList, requestType = StateRequestType.jumpAfterImport, data=firstItem.canonicalPath)
+                            }
+                        }else {
+                            changeStateTriggerRefreshPage(needReQueryRepoList)
+                        }
                     }
 
                     // refresh ChangeList page is unnecessary yet
@@ -3462,10 +3474,7 @@ fun ChangeListInnerPage(
                 MyLog.d(TAG, "#LaunchedEffect: naviTarget.value=${naviTarget.value}")
             }
 
-            val (requestType, payloadRepoId) = getRequestDataByState<String?>(
-                refreshRequiredByParentPage,
-                getThenDel = true
-            )
+            val (requestType, payloadRepoId) = getRequestDataByState<String?>(refreshRequiredByParentPage)
 
 
             if(AppModel.devModeOn) {

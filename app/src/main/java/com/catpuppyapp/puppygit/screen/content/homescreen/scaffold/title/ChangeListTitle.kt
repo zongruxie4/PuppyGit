@@ -26,10 +26,12 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.github.git24j.core.Repository
@@ -46,7 +48,8 @@ fun ChangeListTitle(
     scope: CoroutineScope,
     enableAction:Boolean,
     repoList:CustomStateListSaveable<RepoEntity>,
-    needReQueryRepoList:MutableState<String>
+    needReQueryRepoList:MutableState<String>,
+    goToChangeListPage:(RepoEntity)->Unit,
 ) {
 
     // 测试下，不禁用点击title是否会出错，不出错就永远启用，不然有时候一点某个仓库文件很多，加载等半天，然后我想切换到别的仓库也切换不了，恶心
@@ -171,10 +174,19 @@ fun ChangeListTitle(
                 val readyRepoListFromDb = repoDb.getReadyRepoList(requireSyncRepoInfoWithGit = false)
                 repoList.value.clear()
                 repoList.value.addAll(readyRepoListFromDb)
-//                repoList.requireRefreshView()
+
+                // 如果请求跳转到目标仓库，跳转
+                val (requestType, targetRepoFullPath) = getRequestDataByState<String?>(needReQueryRepoList.value)
+                if(requestType == StateRequestType.jumpAfterImport && targetRepoFullPath.let { it != null && it.isNotBlank() } ) {
+                    val targetRepo = readyRepoListFromDb.find { it.fullSavePath == targetRepoFullPath }
+                    if(targetRepo != null) {
+                        goToChangeListPage(targetRepo)
+                    }
+                }
+
             }
         } catch (cancel: Exception) {
-//            ("LaunchedEffect: job cancelled")
+
         }
     }
 }
