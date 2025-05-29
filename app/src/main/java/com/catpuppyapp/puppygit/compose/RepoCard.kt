@@ -231,7 +231,8 @@ fun RepoCard(
 
                     //不等于NONE就显示状态，若状态为null，可能仓库文件夹被删了或改名了，这时提示invalid
                     //20240822 仓库执行fetching/pushing等操作时也会变成null，因此增加了临时状态的判断，仅当临时状态为空时，gitRepoState才可信，否则若设了临时状态，就当作仓库没问题（因为正在执行某个操作，所以肯定没损坏）
-                    if(!repoNotReady && repoDto.gitRepoState != Repository.StateT.NONE && repoDto.tmpStatus.isBlank()) {  //没执行任何操作，状态又不为NONE，就代表仓库可能出问题了
+                    // 仓库的gitRepoState如果为null，临时状态那行(Status)会显示错误，所以这里就不需要显示这个状态了
+                    if(!repoNotReady && repoDto.gitRepoState != null && repoDto.gitRepoState != Repository.StateT.NONE && repoDto.tmpStatus.isBlank()) {  //没执行任何操作，状态又不为NONE，就代表仓库可能出问题了
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
