@@ -2331,11 +2331,10 @@ object Libgit2Helper {
                     MyLog.e(TAG, "#genCommitMsgNoFault: generate commit msg err! errCode=${it.code}, errMsg=${it.msg}, commitMsgRet.data='${it.data}'")
                 }
 
-                it.data ?: throw RuntimeException("commit msg is null")
+                it.data ?: Cons.fallbackCommitMsg
             }
         } catch (e: Exception) {
-            //索引为空就会data为null，然后抛异常，日志等级不必太高，一般问题不大
-            MyLog.d(TAG, "#genCommitMsgNoFault: generate commit msg err: ${e.stackTraceToString()}")
+            MyLog.e(TAG, "#genCommitMsgNoFault: generate commit msg err: ${e.stackTraceToString()}")
             Cons.fallbackCommitMsg
         }
     }
