@@ -5112,8 +5112,12 @@ object Libgit2Helper {
 
                 //更新workstatus
                 val repoState = repo.state()
-                //仓库状态正常(NONE)，检查是否有未提交修改；否则检查仓库状态
-                if(repoState == Repository.StateT.NONE) {
+
+                //注：就算仓库状态正常也有可能存在冲突条目，所以必须先检测是否有冲突。
+                // 例如 stash文件a，然后pull，pull后修改了文件a，再unstash，文件a就会被标记为冲突，但这时仓库状态是NONE
+                if(hasConflictItemInRepo(repo)) {  //有冲突条目，这个检查起来很快，所以就在这直接查了
+                    repoFromDb.workStatus = Cons.dbRepoWorkStatusHasConflicts
+                }else if(repoState == Repository.StateT.NONE) { //仓库状态正常(NONE)，检查是否有未提交修改；否则检查仓库状态
                     //更新临时状态为loading，因为下面查询仓库是否有未提交修改可能会耗费很多时间
                     //废弃：不需要在这里设置，调用者自己决定检查git status时由它自己设置tmp status，我这不用管
 //                            tmpStatusIfHave = AppModel.activityContext.getString(R.string.loading)
@@ -5122,9 +5126,7 @@ object Libgit2Helper {
                     repoFromDb.pendingTask = RepoPendingTask.NEED_CHECK_UNCOMMITED_CHANGES
 
                 }else { // repoState != NONE
-                    if(hasConflictItemInRepo(repo)) {  //有冲突条目，这个检查起来很快，所以就在这直接查了
-                        repoFromDb.workStatus = Cons.dbRepoWorkStatusHasConflicts
-                    }else if(repoState == Repository.StateT.MERGE) {  //不一定有冲突条目，但仓库处于merge状态，这个必须处理，不然changelist能看出来在merge状态，仓库页面卡片还显示错误的up-to-date，之前遇到过几次，容易让人迷惑
+                    if(repoState == Repository.StateT.MERGE) {  //不一定有冲突条目，但仓库处于merge状态，这个必须处理，不然changelist能看出来在merge状态，仓库页面卡片还显示错误的up-to-date，之前遇到过几次，容易让人迷惑
                         repoFromDb.workStatus = Cons.dbRepoWorkStatusMerging
                     }else if(repoState==Repository.StateT.REBASE_MERGE) {
                         repoFromDb.workStatus = Cons.dbRepoWorkStatusRebasing
