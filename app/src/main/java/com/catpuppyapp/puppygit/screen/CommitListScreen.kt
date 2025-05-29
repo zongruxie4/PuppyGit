@@ -90,6 +90,7 @@ import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadMore
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.MultiLineClickableText
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
@@ -159,6 +160,7 @@ import com.github.git24j.core.Revwalk
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.use
 
 private const val TAG = "CommitListScreen"
 
@@ -756,16 +758,16 @@ fun CommitListScreen(
 
     val clipboardManager = LocalClipboardManager.current
 
-    val showSquashDialog = rememberSaveable { mutableStateOf(false)}
-    val forceSquash = rememberSaveable { mutableStateOf(false)}
-    val headFullNameForSquashDialog = rememberSaveable { mutableStateOf("")} // branch full name or HEAD
-    val headCommitFullOidForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val headCommitShortOidForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val targetCommitFullOidForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val targetCommitShortOidForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val commitMsgForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val usernameForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val emailForSquashDialog = rememberSaveable { mutableStateOf("")}
+    val showSquashDialog = rememberSaveable { mutableStateOf(false) }
+    val forceSquash = rememberSaveable { mutableStateOf(false) }
+    val headFullNameForSquashDialog = rememberSaveable { mutableStateOf("") } // branch full name or HEAD
+    val headCommitFullOidForSquashDialog = rememberSaveable { mutableStateOf("") }
+    val headCommitShortOidForSquashDialog = rememberSaveable { mutableStateOf("") }
+    val targetCommitFullOidForSquashDialog = rememberSaveable { mutableStateOf("") }
+    val targetCommitShortOidForSquashDialog = rememberSaveable { mutableStateOf("") }
+    val commitMsgForSquashDialog = mutableCustomStateOf(stateKeyTag, "commitMsgForSquashDialog") { TextFieldValue("") }
+    val usernameForSquashDialog = rememberSaveable { mutableStateOf("") }
+    val emailForSquashDialog = rememberSaveable { mutableStateOf("") }
     val closeSquashDialog = {
         showSquashDialog.value = false
     }
@@ -778,7 +780,7 @@ fun CommitListScreen(
         targetCommitFullOidForSquashDialog.value = targetFullOid
         targetCommitShortOidForSquashDialog.value = targetShortOid
 
-        commitMsgForSquashDialog.value = Libgit2Helper.squashCommitsGenCommitMsg(targetShortOid, headCommitShortOidForSquashDialog.value)
+
 
         usernameForSquashDialog.value = username
         emailForSquashDialog.value = email
@@ -786,6 +788,14 @@ fun CommitListScreen(
         forceSquash.value = false
 
         showSquashDialog.value = true
+    }
+
+    val clearCommitMsg = {
+        commitMsgForSquashDialog.value = TextFieldValue("")
+    }
+
+    val genSquashCommitMsg = {
+        Libgit2Helper.squashCommitsGenCommitMsg(targetCommitShortOidForSquashDialog.value, headCommitShortOidForSquashDialog.value)
     }
 
     if(showSquashDialog.value) {
@@ -805,17 +815,8 @@ fun CommitListScreen(
                     Spacer(Modifier.height(15.dp))
 
                     TextField(
+                        maxLines = MyStyleKt.defaultMultiLineTextFieldMaxLines,
                         modifier = Modifier.fillMaxWidth(),
-                        isError = commitMsgForSquashDialog.value.isBlank(),
-                        trailingIcon = {
-                            if (commitMsgForSquashDialog.value.isBlank()) {
-                                Icon(
-                                    imageVector=Icons.Filled.Error,
-                                    contentDescription=null,
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        },
                         value = commitMsgForSquashDialog.value,
                         onValueChange = {
                             commitMsgForSquashDialog.value = it
@@ -827,6 +828,12 @@ fun CommitListScreen(
                             Text(stringResource(R.string.input_your_commit_message))
                         }
                     )
+                    Spacer(Modifier.height(10.dp))
+                    MultiLineClickableText(stringResource(R.string.you_can_leave_msg_empty_will_auto_gen_one)) {
+                        Repository.open(curRepo.value.fullSavePath).use { repo ->
+                            commitMsgForSquashDialog.value = TextFieldValue(genSquashCommitMsg())
+                        }
+                    }
                     Spacer(Modifier.height(10.dp))
 
                     MyCheckBox(stringResource(R.string.force), forceSquash)
@@ -840,11 +847,10 @@ fun CommitListScreen(
 
                 }
             },
-            okBtnEnabled = commitMsgForSquashDialog.value.isNotBlank(),
             onCancel = closeSquashDialog
         ) {
             closeSquashDialog()
-            val commitMsg = commitMsgForSquashDialog.value
+            val commitMsg = commitMsgForSquashDialog.value.text.ifBlank { genSquashCommitMsg() }
             val targetFullOid = targetCommitFullOidForSquashDialog.value
 //            val headOid = headCommitFullOidForSquashDialog.value
             val headFullName = headFullNameForSquashDialog.value
@@ -878,6 +884,8 @@ fun CommitListScreen(
                         // update fullOid for refresh list of this screen
                         fullOid.value = ret.data!!.toString()
                     }
+
+                    clearCommitMsg()
 
                     Msg.requireShow(activityContext.getString(R.string.success))
 

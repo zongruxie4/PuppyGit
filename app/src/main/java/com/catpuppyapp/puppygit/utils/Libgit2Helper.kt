@@ -2316,18 +2316,42 @@ object Libgit2Helper {
         return Pair(username, email)
     }
 
+    /**
+     * 不会失败，一定会返回一个非空的提交信息
+     */
+    fun genCommitMsgNoFault(
+        repo: Repository,
+        itemList: List<StatusTypeEntrySaver>?,
+        msgTemplate: String,
+    ):String {
+        return try {
+            genCommitMsg(repo, itemList, msgTemplate).let {
+                //如果生成提交信息出错，记个日志
+                if(it.hasError() || it.data.isNullOrBlank()) {
+                    MyLog.e(TAG, "#genCommitMsgNoFault: generate commit msg err! errCode=${it.code}, errMsg=${it.msg}, commitMsgRet.data='${it.data}'")
+                }
+
+                it.data ?: throw RuntimeException("commit msg is null")
+            }
+        } catch (e: Exception) {
+            MyLog.e(TAG, "#genCommitMsgNoFault: generate commit msg err: ${e.stackTraceToString()}")
+            Cons.fallbackCommitMsg
+        }
+    }
+
     fun genCommitMsg(
         repo:Repository,
         itemList: List<StatusTypeEntrySaver>?,
         msgTemplate:String,
     ): Ret<String?> {
+
         val repoState = repo.state()
         var actuallyItemList = itemList
         if(actuallyItemList.isNullOrEmpty()) { //如果itemList为null或一个元素都没有，查询一下实际的index列表
             val (isIndexEmpty, indexItemList) = checkIndexIsEmptyAndGetIndexList(repo, "", onlyCheckEmpty = false)  //这里期望获得列表，所以仅检查空传假
-            if(repoState!=Repository.StateT.MERGE && (isIndexEmpty || indexItemList.isNullOrEmpty())) {  //如果实际的index没条目，直接返回错误
-                MyLog.w(TAG, "#genCommitMsg() error: repoState=$repoState, isIndexEmpty = "+isIndexEmpty+", indexItemList.isNullOrEmpty() = "+indexItemList.isNullOrEmpty())
-                return Ret.createError(null, "index is Empty!",Ret.ErrCode.indexIsEmpty)
+            if(repoState != Repository.StateT.MERGE && (isIndexEmpty || indexItemList.isNullOrEmpty())) {  //如果实际的index没条目，直接返回错误
+                MyLog.e(TAG, "#genCommitMsg(): repo state may incorrect, state is not MERGE but index is empty, params are: repoState=$repoState, isIndexEmpty=$isIndexEmpty, indexItemList.isNullOrEmpty()=${indexItemList.isNullOrEmpty()}")
+                return Ret.createError(null, "index is Empty!", Ret.ErrCode.indexIsEmpty)
             }
 
             //执行到这index一定是有东西的，或者是解决冲突的提交，index空也无所谓
@@ -2623,15 +2647,7 @@ object Libgit2Helper {
                 // 只要用户重新提交一下再手动填入一个提交信息就行了
                 null
             }else {  //生成提交信息
-                val genCommitMsgRet = genCommitMsg(repo, indexItemList, settings.commitMsgTemplate)
-
-                var cmtmsg = genCommitMsgRet.data
-                if(genCommitMsgRet.hasError() || cmtmsg.isNullOrBlank()) {
-                    MyLog.e(TAG, "#$funName: generate commit msg err! errcode=${genCommitMsgRet.code}, errmsg=${genCommitMsgRet.msg}")
-                    cmtmsg = "Update files"
-                }
-
-                cmtmsg
+                genCommitMsgNoFault(repo, indexItemList, settings.commitMsgTemplate)
             }
         }else {
             msg
@@ -3546,7 +3562,7 @@ object Libgit2Helper {
         }else {  //合并完无冲突，创建提交
             // merge成功后创建的提交应该有两个父提交： HEAD 和 targetBranch.
             val headName = Cons.gitHeadStr
-            val parent = mutableListOf<Commit>()
+            val parents = mutableListOf<Commit>()
             val headRef = resolveRefByName(repo, headName)
             if(headRef==null) {
                 return Ret.createError(null, "resolve HEAD error!", Ret.ErrCode.headIsNull)
@@ -3558,7 +3574,7 @@ object Libgit2Helper {
                 return Ret.createError(null, "get current HEAD latest commit failed", Ret.ErrCode.mergeFailedByGetRepoHeadCommitFaild)
             }
 
-            parent.add(headCommit)
+            parents.add(headCommit)
 
             //添加其他父提交
             val branchNames = StringBuilder()
@@ -3583,17 +3599,27 @@ object Libgit2Helper {
                 branchNames.append(branchNameOrRefShortHash).append(suffix)  //拼接字符串，形如："分支名, "
 
                 //添加提交节点到父节点列表
-                parent.add(c)
+                parents.add(c)
             }
 
 
             //产生字符串： "merge 'branch1, branch2, c, d' into 'main' "
-            val msg = "merge '${branchNames.removeSuffix(suffix)}' into '${headRef.shorthand()}'"  //移除最后一个 ", "
+            val msg = "Merge '${branchNames.removeSuffix(suffix)}' into '${headRef.shorthand()}'"
             val branchFullRefName: String = headRef.name()
 
             //创建提交
 //                val commitResult = doCreateCommit(repo, msg, username, email, branchFullRefName, parent)
-            val commitResult = createCommit(repo, msg, username, email, branchFullRefName, indexItemList = null, parent, settings = settings)
+            val commitResult = createCommit(
+                repo = repo,
+                msg = msg,
+                username = username,
+                email = email,
+                branchFullRefName = branchFullRefName,
+                indexItemList = null,
+                parents = parents,
+                settings = settings
+            )
+
             if(commitResult.hasError()) {
                 return Ret.createError(null, "merge failed: "+commitResult.msg, Ret.ErrCode.mergeFailedByCreateCommitFaild)
             }
@@ -5418,10 +5444,10 @@ object Libgit2Helper {
     }
 
     /**
-     * @return "stash@datetime#random"
+     * @return "Stash@datetime#random"
      */
     fun stashGenMsg():String {
-        return "stash@"+ getNowInSecFormatted(Cons.dateTimeFormatterCompact)+"#"+getShortUUID()
+        return "Stash@"+ getNowInSecFormatted(Cons.dateTimeFormatterCompact)+"#"+getShortUUID()
     }
 
     fun getReflogList(repo:Repository, name:String, out: MutableList<ReflogEntryDto>, settings: AppSettings):List<ReflogEntryDto> {
@@ -6843,7 +6869,7 @@ object Libgit2Helper {
     }
 
     fun squashCommitsGenCommitMsg(targetShortOidStr:String, headShortOidStr:String):String {
-        return "squash: ${targetShortOidStr}..${headShortOidStr}"
+        return "Squash: ${getLeftToRightShortHash(targetShortOidStr, headShortOidStr)}"
     }
 
     /**
@@ -6974,6 +7000,10 @@ object Libgit2Helper {
         } else {
             getLeftToRightFullHash(left, right)
         }
+    }
+
+    fun getLeftToRightShortHash(left:String, right:String):String {
+        return getLeftToRightFullHash(getShortOidStrByFull(left), getShortOidStrByFull(right))
     }
 
     fun getLeftToRightFullHash(left:String, right:String):String {

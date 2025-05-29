@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.cache.Cache
@@ -61,6 +63,7 @@ fun RequireCommitMsgDialog(
 
     val repoStateIsCherrypick = repoState == Repository.StateT.CHERRYPICK.bit
 
+    val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
 
     //勾选amend时用此变量替代commitMsg
@@ -162,9 +165,11 @@ fun RequireCommitMsgDialog(
                                     }
                                 }
                             }else {
-                                Text(text = "("+stringResource(R.string.you_can_leave_msg_empty_will_auto_gen_one)+")",
-                                    color = MyStyleKt.TextColor.highlighting_green
-                                )
+                                MultiLineClickableText(stringResource(R.string.you_can_leave_msg_empty_will_auto_gen_one)) {
+                                    Repository.open(repoPath).use { repo ->
+                                        commitMsg.value = TextFieldValue(Libgit2Helper.genCommitMsgNoFault(repo, itemList = null, settings.commitMsgTemplate))
+                                    }
+                                }
                             }
 
                             Spacer(Modifier.height(10.dp))

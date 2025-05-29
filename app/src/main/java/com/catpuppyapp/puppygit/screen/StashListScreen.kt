@@ -56,6 +56,7 @@ import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.MultiLineClickableText
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.PageCenterIconButton
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
@@ -87,6 +88,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
+import kotlin.use
 
 private const val TAG = "StashListScreen"
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -235,12 +237,12 @@ fun StashListScreen(
     }
     //Details弹窗，结束
 
-    val showPopDialog = rememberSaveable { mutableStateOf(false)}
-    val showApplyDialog = rememberSaveable { mutableStateOf( false)}
-    val showDelDialog = rememberSaveable { mutableStateOf( false)}
-    val showCreateDialog = rememberSaveable { mutableStateOf( false)}
+    val showPopDialog = rememberSaveable { mutableStateOf(false) }
+    val showApplyDialog = rememberSaveable { mutableStateOf(false) }
+    val showDelDialog = rememberSaveable { mutableStateOf(false) }
+    val showCreateDialog = rememberSaveable { mutableStateOf(false) }
 
-    val stashMsgForCreateDialog = rememberSaveable { mutableStateOf( "")}
+    val stashMsgForCreateDialog = mutableCustomStateOf(stateKeyTag, "stashMsgForCreateDialog") { TextFieldValue("") }
 
 
     if(showPopDialog.value) {
@@ -327,6 +329,14 @@ fun StashListScreen(
         }
     }
 
+    val clearCommitMsg = {
+        stashMsgForCreateDialog.value = TextFieldValue("")
+    }
+
+    val genStashMsg = {
+        Libgit2Helper.stashGenMsg()
+    }
+
     if(showCreateDialog.value) {
         ConfirmDialog2(
             title = stringResource(R.string.create),
@@ -334,6 +344,7 @@ fun StashListScreen(
             textCompose = {
                 ScrollableColumn {
                     TextField(
+                        maxLines = MyStyleKt.defaultMultiLineTextFieldMaxLines,
                         modifier = Modifier.fillMaxWidth()
                             .onGloballyPositioned { layoutCoordinates ->
 //                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
@@ -353,21 +364,20 @@ fun StashListScreen(
                         label = {
                             Text(stringResource(R.string.msg))
                         },
-                        placeholder = {
-                        }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Row {
-                        Text(text = "(" + activityContext.getString(R.string.you_can_leave_msg_empty_will_auto_gen_one) + ")",
-                            color = MyStyleKt.TextColor.highlighting_green
-                            )
+                        MultiLineClickableText(stringResource(R.string.you_can_leave_msg_empty_will_auto_gen_one)) {
+                            Repository.open(curRepo.value.fullSavePath).use { repo ->
+                                stashMsgForCreateDialog.value = TextFieldValue(genStashMsg())
+                            }
+                        }
                     }
                 }
             },
             onCancel = { showCreateDialog.value=false}
         ) onOk@{
             showCreateDialog.value=false
-
 
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
@@ -378,9 +388,11 @@ fun StashListScreen(
                             return@doJobThenOffLoading
                         }
 
-                        val msg = stashMsgForCreateDialog.value.ifEmpty { Libgit2Helper.stashGenMsg() }
+                        val msg = stashMsgForCreateDialog.value.text.ifBlank { genStashMsg() }
                         Libgit2Helper.stashSave(repo, stasher = Libgit2Helper.createSignature(username, email, settings), msg=msg)
                     }
+
+                    clearCommitMsg()
                     Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {
                     val errPrefix = "create stash err: "
