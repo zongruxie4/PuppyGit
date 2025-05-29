@@ -703,11 +703,13 @@ object AppModel {
     // app销毁时调用此函数，其实就是把这函数扔 Activity 的destoryer()里了
     fun destroyer() {
         runCatching {
-            //退出app清提交缓存
-            runBlocking { CommitCache.clear() }
-
             //清文件管理器页面列表滚动状态缓存
             Cache.clearFilesListStates()
+        }
+
+        runCatching {
+            //退出app清提交缓存
+            runBlocking { CommitCache.clear() }
         }
     }
 
