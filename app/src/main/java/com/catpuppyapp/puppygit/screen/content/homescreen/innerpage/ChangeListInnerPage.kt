@@ -2048,7 +2048,9 @@ fun ChangeListInnerPage(
 
 //    val fullPathForImport = StateUtil.getRememberSaveableState("")
     val importList = mutableCustomStateListOf(stateKeyTag, "importList", listOf<StatusTypeEntrySaver>())
-    val showImportToReposDialog = rememberSaveable { mutableStateOf(false)}
+    //导入仓库后跳转到对应仓库
+    val jumpAfterImportRepo = rememberSaveable { mutableStateOf(false) }
+    val showImportToReposDialog = rememberSaveable { mutableStateOf(false) }
     if(showImportToReposDialog.value){
         ConfirmDialog2(
             title = activityContext.getString(R.string.import_as_repo),
@@ -2120,11 +2122,17 @@ fun ChangeListInnerPage(
                             else listOf()  //这个应该不会执行到
      */
 
-    val initImportAsRepo = {selectedItemList:List<StatusTypeEntrySaver> ->
+    fun initImportAsRepo(
+        selectedItemList:List<StatusTypeEntrySaver>,
+
+        // 若为true，导入仓库后跳转到列表`selectedItemList`中第一个仓库 (p.s. 根据完整路径跳转)
+        jumpAfterImport:Boolean = false,
+    ) {
         val tmplist = selectedItemList.filter { it.toFile().isDirectory }
         if(tmplist.isEmpty()) {
             Msg.requireShowLongDuration(activityContext.getString(R.string.no_dir_selected))
         }else {
+            jumpAfterImportRepo.value = jumpAfterImport
             importList.value.clear()
             importList.value.addAll(tmplist)
             showImportToReposDialog.value=true
@@ -2224,7 +2232,9 @@ fun ChangeListInnerPage(
     val goToSub = { item:StatusTypeEntrySaver ->
         val target = changeListRepoList?.value?.find { item.toFile().canonicalPath == it.fullSavePath }
         if(target == null) {
-            Msg.requireShowLongDuration(activityContext.getString(R.string.plz_import_repo_then_try_again))
+//            Msg.requireShowLongDuration(activityContext.getString(R.string.plz_import_repo_then_try_again))
+            // 如果没导入仓库，导入，并在导入后跳转
+            initImportAsRepo(listOf(item), jumpAfterImport = true)
         }else {
             goToChangeListPage(target)
         }
