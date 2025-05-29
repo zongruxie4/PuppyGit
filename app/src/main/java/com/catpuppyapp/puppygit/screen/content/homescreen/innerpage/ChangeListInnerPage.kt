@@ -123,6 +123,7 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.ThumbCache
+import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -2101,7 +2102,7 @@ fun ChangeListInnerPage(
                     //require refresh repo list for go to submodule after import
                     // since only worktree(ChangeList) can go to sub, so only need pass this param to ChangeList page, index and treeToTree page no need yet
                     if(needReQueryRepoList != null) {
-                        changeListRequireRefreshFromParentPage(curRepo)
+                        changeStateTriggerRefreshPage(needReQueryRepoList)
                     }
 
                     // refresh ChangeList page is unnecessary yet
