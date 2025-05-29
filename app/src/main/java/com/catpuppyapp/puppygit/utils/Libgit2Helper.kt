@@ -7602,4 +7602,10 @@ object Libgit2Helper {
     fun genLocalBranchAndUpstreamText(localBranch:String, upstreamBranch:String):String {
         return "$localBranch:$upstreamBranch"
     }
+
+    /**
+     * suffix of "submoduleName_of_parentRepoName"
+     */
+    fun genRepoNameSuffixForSubmodule(parentRepoName:String) = "_of_$parentRepoName";
+
 }

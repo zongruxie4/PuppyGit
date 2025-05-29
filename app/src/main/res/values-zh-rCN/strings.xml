@@ -891,7 +891,7 @@
     <string name="match_credential_by_domain">根据域名匹配凭据</string>
     <string name="domains">域名</string>
     <string name="domain">域名</string>
-    <string name="import_repos_link_credential_note">选中凭据将被关联到仓库的远程仓库，通常是“origin”</string>
+    <string name="import_repos_link_credential_note">选中凭据将被关联到仓库的远程仓库，通常是 \'origin\'</string>
     <string name="desc">详情</string>
     <string name="location">位置</string>
     <string name="check_only">仅检查</string>

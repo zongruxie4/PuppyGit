@@ -589,7 +589,7 @@ fun SubmoduleListScreen(
             showImportToReposDialog.value = false
 
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.importing)) {
-                val repoNameSuffix = "_of_${curRepo.value.repoName}"
+                val repoNameSuffix = Libgit2Helper.genRepoNameSuffixForSubmodule(curRepo.value.repoName)
                 val parentRepoId = curRepo.value.id
 //                val importList = selectedItemList.value.toList().filter { it.cloned }
                 val importList = selectedItemList.value.toList()  // just import all selected, will fail if must fail

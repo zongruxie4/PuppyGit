@@ -2072,7 +2072,7 @@ fun ChangeListInnerPage(
 
             val curRepo = curRepoFromParentPage.value
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.importing)) {
-                val repoNameSuffix = "_of_${curRepo.repoName}"
+                val repoNameSuffix = Libgit2Helper.genRepoNameSuffixForSubmodule(curRepo.repoName)
                 val parentRepoId = curRepo.id
 //                val importList = selectedItemList.value.toList().filter { it.cloned }
 
