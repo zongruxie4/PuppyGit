@@ -763,6 +763,9 @@ fun DiffScreen(
             val leftCommit = treeOid1Str.value
             val rightCommit = treeOid2Str.value
             val createPatchList = createPatchList.value.toList()
+            //因为存在 fromTo 等于 tree to tree，但比较的是index to local的情况，所以这里需要判断下
+            //fromTo有点败笔，当初应该凭leftCommit和rightCommit来判断，决定采用哪个 diff 函数就对了
+            val fromTo = if(leftCommit == Cons.git_IndexCommitHash && rightCommit == Cons.git_LocalWorktreeCommitHash) Cons.gitDiffFromIndexToWorktree else fromTo;
 
             doJobThenOffLoading(loadingOn,loadingOff, activityContext.getString(R.string.creating_patch)) job@{
                 try {
