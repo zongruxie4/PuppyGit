@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -237,7 +238,7 @@ fun RepoCard(
 //                            Text(text = stringResource(R.string.state) + ": ")
 
                             InLineIcon(
-                                icon = Icons.Filled.Info,
+                                icon = Icons.Outlined.Info,
                                 tooltipText = stringResource(R.string.state)
                             )
 
