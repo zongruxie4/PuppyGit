@@ -119,6 +119,7 @@ fun AskGitUsernameAndEmailDialogWithSelection(
                 }
 
                 TextField(
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
 
 //                            modifier = Modifier.focusRequester(focusRequester),
@@ -137,6 +138,7 @@ fun AskGitUsernameAndEmailDialogWithSelection(
 
                 }
                 TextField(
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
 
                     value = email.value,
