@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -113,7 +111,8 @@ fun EditorInnerPage(
     stateKeyTag:String,
 
     loadLock:Mutex,  // 避免重复加载的锁
-    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
+    softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
+    softKbVisibleWhenLeavingEditor2: CustomBoxSaveable<Boolean>,
     previewLoading:MutableState<Boolean>,
     editorPreviewFileDto: CustomStateSaveable<FileSimpleDto>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
@@ -1297,7 +1296,8 @@ fun EditorInnerPage(
         FileEditor(
             stateKeyTag = stateKeyTag,
 
-            ignoreFocusOnce = ignoreFocusOnce,
+            softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
+            softKbVisibleWhenLeavingEditor2 = softKbVisibleWhenLeavingEditor2,
             requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
             requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
             isSubPageMode = isSubPageMode,
@@ -1413,7 +1413,8 @@ fun EditorInnerPage(
                 doActWithLockIfFree(loadLock, "EditorInnerPage#Init#${needRefreshEditorPage.value}#${editorPageShowingFilePath.value.ioPath}") {
                     doInit(
                         requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
-                        ignoreFocusOnce = ignoreFocusOnce,
+                        softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
+                        softKbVisibleWhenLeavingEditor2 = softKbVisibleWhenLeavingEditor2,
                         isPreviewModeOn = isPreviewModeOn,
                         previewPath = previewPath,
                         updatePreviewPath = updatePreviewPath,
@@ -1477,7 +1478,8 @@ fun EditorInnerPage(
 
 private suspend fun doInit(
     requirePreviewScrollToEditorCurPos: MutableState<Boolean>,
-    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
+    softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
+    softKbVisibleWhenLeavingEditor2: CustomBoxSaveable<Boolean>,
     isPreviewModeOn: MutableState<Boolean>,
     previewPath: String,
     updatePreviewPath: (String)->Unit,
@@ -1638,8 +1640,9 @@ private suspend fun doInit(
             editorPageIsInitDone.value=false
             editorLastScrollEvent.value=null
 
-            // 创建新textEditorState则把这个值重置为初始值
-            ignoreFocusOnce.value = false
+            // 新打开文件，隐藏键盘
+            softKbVisibleWhenLeavingEditor.value = false
+            softKbVisibleWhenLeavingEditor2.value = false
 
             //读取文件内容
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))

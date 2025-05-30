@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.screen.shared
 
 import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 
 
@@ -34,4 +35,5 @@ object SharedState {
     val fileChooser_FilePath = mutableStateOf("")  //如果用app内置 File Picker 选文件，用这个做state
 
 
+    val editor_softKeyboardIsVisible = Box(false)
 }

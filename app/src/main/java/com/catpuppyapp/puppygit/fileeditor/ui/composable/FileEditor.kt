@@ -6,14 +6,17 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
@@ -59,6 +62,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.MarkDownContainer
@@ -74,6 +79,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.getClipboardText
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -95,12 +101,13 @@ import me.saket.swipe.SwipeableActionsBox
 
 private const val TAG = "FileEditor"
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun FileEditor(
     stateKeyTag:String,
 
-    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
+    softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
+    softKbVisibleWhenLeavingEditor2: CustomBoxSaveable<Boolean>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     isSubPageMode:Boolean,
@@ -259,7 +266,7 @@ fun FileEditor(
 
 
     //只需要contentPadding的上和下，不然横屏会因为底部导航栏而有偏差
-    val swipeIconModifier = Modifier.padding(top = contentPadding.calculateTopPadding(), bottom = contentPadding.calculateBottomPadding()).padding(horizontal = 10.dp)
+    val swipeIconModifier = Modifier.padding(top = contentPadding.calculateTopPadding(), bottom = contentPadding.calculateBottomPadding()).padding(horizontal = 10.dp);
 
     //左边操作总是启用，但需要确定是否显示动画
     val leftToRightAct = SwipeAction(
@@ -367,12 +374,28 @@ fun FileEditor(
                     }
                 }
             } else {
+                //更新键盘显示状态
+                SharedState.editor_softKeyboardIsVisible.value = WindowInsets.isImeVisible
 
                 DisposableEffect(Unit) {
-                    // 避免离开页面又切换回来后弹键盘
-                    onDispose { ignoreFocusOnce.value = true }
+                    onDispose {
+                        MyLog.d(TAG, "FileEditor#DisposableEffect#onDispose: called, imeVisible=${SharedState.editor_softKeyboardIsVisible.value}")
+                        softKbVisibleWhenLeavingEditor.value = SharedState.editor_softKeyboardIsVisible.value
+                    }
                 }
 
+                LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+                    MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_PAUSE: called, imeVisible=${SharedState.editor_softKeyboardIsVisible.value}")
+                    // 如果离开页面时，软键盘状态是隐藏，则切换回来后不弹出键盘
+                    softKbVisibleWhenLeavingEditor2.value = SharedState.editor_softKeyboardIsVisible.value
+                }
+
+
+
+
+
+
+                // Show Text Editor
                 val showLineNum = showLineNum.value
                 val bottomLineWidth = remember { 1.dp }
                 val changeTypeWidth = remember(showLineNum) { if(showLineNum) 5.dp else 10.dp }
@@ -380,7 +403,8 @@ fun FileEditor(
                 TextEditor(
                     stateKeyTag = stateKeyTag,
 
-                    ignoreFocusOnce = ignoreFocusOnce,
+                    softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
+                    softKbVisibleWhenLeavingEditor2 = softKbVisibleWhenLeavingEditor2,
                     undoStack = undoStack,
                     curPreviewScrollState = curPreviewScrollState,
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,

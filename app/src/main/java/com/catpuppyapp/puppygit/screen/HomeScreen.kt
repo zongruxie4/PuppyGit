@@ -530,7 +530,8 @@ fun HomeScreen(
 
     //初始值不用忽略，因为打开文件后默认focusing line idx为null，所以这个值是否忽略并没意义
     //这个值不能用state，不然修改state后会重组，然后又触发聚焦，就没意义了
-    val editorIgnoreFocusOnce = mutableCustomBoxOf(stateKeyTag, "editorIgnoreFocusOnce") { false }
+    val softKbVisibleWhenLeavingEditor = mutableCustomBoxOf(stateKeyTag, "softKbVisibleWhenLeavingEditor") { false }
+    val softKbVisibleWhenLeavingEditor2 = mutableCustomBoxOf(stateKeyTag, "softKbVisibleWhenLeavingEditor2") { false }
 
     val editorPageLoadingOn = {msg:String ->
         loadingText.value = msg
@@ -1354,7 +1355,8 @@ fun HomeScreen(
                 EditorInnerPage(
 //                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
                     stateKeyTag = stateKeyTag,
-                    ignoreFocusOnce = editorIgnoreFocusOnce,
+                    softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
+                    softKbVisibleWhenLeavingEditor2 = softKbVisibleWhenLeavingEditor2,
                     previewLoading = editorPagePreviewLoading,
                     editorPreviewFileDto = editorPreviewFileDto,
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
