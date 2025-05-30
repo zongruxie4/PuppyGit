@@ -380,7 +380,8 @@ fun FileEditor(
                 DisposableEffect(Unit) {
                     onDispose {
                         MyLog.d(TAG, "FileEditor#DisposableEffect#onDispose: called, imeVisible=${SharedState.editor_softKeyboardIsVisible.value}")
-                        softKbVisibleWhenLeavingEditor.value = SharedState.editor_softKeyboardIsVisible.value
+                        softKbVisibleWhenLeavingEditor.value = softKbVisibleWhenLeavingEditor2.value || SharedState.editor_softKeyboardIsVisible.value
+                        softKbVisibleWhenLeavingEditor2.value = false
                     }
                 }
 
@@ -404,7 +405,6 @@ fun FileEditor(
                     stateKeyTag = stateKeyTag,
 
                     softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
-                    softKbVisibleWhenLeavingEditor2 = softKbVisibleWhenLeavingEditor2,
                     undoStack = undoStack,
                     curPreviewScrollState = curPreviewScrollState,
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,

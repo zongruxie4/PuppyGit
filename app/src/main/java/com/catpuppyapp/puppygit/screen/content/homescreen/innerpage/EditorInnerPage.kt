@@ -1414,7 +1414,6 @@ fun EditorInnerPage(
                     doInit(
                         requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
                         softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
-                        softKbVisibleWhenLeavingEditor2 = softKbVisibleWhenLeavingEditor2,
                         isPreviewModeOn = isPreviewModeOn,
                         previewPath = previewPath,
                         updatePreviewPath = updatePreviewPath,
@@ -1479,7 +1478,6 @@ fun EditorInnerPage(
 private suspend fun doInit(
     requirePreviewScrollToEditorCurPos: MutableState<Boolean>,
     softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
-    softKbVisibleWhenLeavingEditor2: CustomBoxSaveable<Boolean>,
     isPreviewModeOn: MutableState<Boolean>,
     previewPath: String,
     updatePreviewPath: (String)->Unit,
@@ -1640,9 +1638,8 @@ private suspend fun doInit(
             editorPageIsInitDone.value=false
             editorLastScrollEvent.value=null
 
-            // 新打开文件，隐藏键盘
-            softKbVisibleWhenLeavingEditor.value = false
-            softKbVisibleWhenLeavingEditor2.value = false
+            // 新打开文件，当作显示键盘，不然无法聚焦
+            softKbVisibleWhenLeavingEditor.value = true
 
             //读取文件内容
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))

@@ -43,7 +43,6 @@ private const val TAG = "MyTextField"
 @Composable
 internal fun MyTextField(
     softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
-    softKbVisibleWhenLeavingEditor2: CustomBoxSaveable<Boolean>,
     focusThisLine:Boolean,
     textFieldState: TextFieldState,
     enabled: Boolean,
@@ -136,14 +135,11 @@ internal fun MyTextField(
 
 
     if(focusThisLine) {
-        if(softKbVisibleWhenLeavingEditor.value || softKbVisibleWhenLeavingEditor2.value) {
-            MyLog.d(TAG, "TextEditor#MyTextField: will show SoftKeyboard")
-
+        if(softKbVisibleWhenLeavingEditor.value) {
             LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
-
-            //上面都请求聚焦了这里肯定是显示软键盘为真，必须设一下，不然影响后续聚焦行
+        }else {
+            MyLog.d(TAG, "TextEditor#MyTextField: ignore popup SoftKeyboard once")
             softKbVisibleWhenLeavingEditor.value = true
-            softKbVisibleWhenLeavingEditor2.value = true
         }
     }
 
