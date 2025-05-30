@@ -1,0 +1,1 @@
+- restore ime visible when return Editor

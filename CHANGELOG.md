@@ -1,7 +1,16 @@
 
 
 ---
-1.1.2.1v97 - 20250525:
+1.1.2.2v98 - 20250530:
+- restore ime visible when return Editor
+
+
+
+- 返回Editor时恢复显示软键盘
+
+
+---
+1.1.2.1v97 - 20250530:
 - support compare left/right commit to local at commits changelist
 - support set commit msg template
 - fix: compare two difference commits mis-considered they are same
