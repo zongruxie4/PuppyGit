@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
+import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.InfoDialog
 import com.catpuppyapp.puppygit.compose.LinkOrUnLinkCredentialAndRemoteDialog
@@ -60,6 +61,7 @@ import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -301,6 +303,20 @@ fun CredentialRemoteListScreen(
         navController.navigate(Cons.nav_CredentialRemoteListScreen + "/" + credentialId + "/0")
     }
 
+
+
+    val initLoadingText = rememberSaveable { mutableStateOf("") }
+    val initLoading = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
+    val initLoadingOn = { msg:String ->
+        initLoadingText.value = msg
+        initLoading.value = true
+    }
+
+    val initLoadingOff = {
+        initLoading.value = false
+    }
+
+
     BackHandler {
         if(filterModeOn.value) {
             filterModeOn.value = false
@@ -457,17 +473,23 @@ fun CredentialRemoteListScreen(
             onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
         ) {
             if(list.value.isEmpty()) {
-                PageCenterIconButton(
-                    contentPadding = contentPadding,
-                    onClick = goToCreateLinkPage,
-                    icon = Icons.Filled.Add,
-                    iconDesc = stringResource(R.string.create_link),
-                    text = stringResource(R.string.create_link),
-                    condition = isShowLink,
-                    elseContent = {
-                        Text(stringResource(R.string.item_list_is_empty))
+                if(initLoading.value) {
+                    FullScreenScrollableColumn(contentPadding) {
+                        Text(initLoadingText.value)
                     }
-                )
+                } else {
+                    PageCenterIconButton(
+                        contentPadding = contentPadding,
+                        onClick = goToCreateLinkPage,
+                        icon = Icons.Filled.Add,
+                        iconDesc = stringResource(R.string.create_link),
+                        text = stringResource(R.string.create_link),
+                        condition = isShowLink,
+                        elseContent = {
+                            Text(stringResource(R.string.item_list_is_empty))
+                        }
+                    )
+                }
             }else {
 
                 //根据关键字过滤条目
@@ -551,10 +573,11 @@ fun CredentialRemoteListScreen(
 
     }
 
+
     //compose创建时的副作用
     LaunchedEffect(needRefresh.value) {
         try {
-            doJobThenOffLoading {
+            doJobThenOffLoading(initLoadingOn, initLoadingOff, activityContext.getString(R.string.loading)) {
                 val remoteDb = AppModel.dbContainer.remoteRepository
                 val credentialDb = AppModel.dbContainer.credentialRepository
                 //这个页面用不到密码，所以查询的是加密后的密码，没解密
