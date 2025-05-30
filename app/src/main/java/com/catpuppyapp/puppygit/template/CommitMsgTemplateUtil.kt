@@ -45,7 +45,8 @@ object CommitMsgTemplateUtil {
                 if(itemList.isNullOrEmpty()) {
                     ""
                 }else {
-                    itemList.joinToString(", ") { it.fileName }
+                    //默认 ", " 分隔，不需要改
+                    itemList.joinToString { it.fileName }
                 }
             )
     }

@@ -1057,7 +1057,7 @@ fun FilesInnerPage(
     }
 
 
-    val createFileOrFolderErrMsg = rememberSaveable { mutableStateOf("")}
+    val createFileOrFolderErrMsg = rememberSaveable { mutableStateOf("") }
 
     val fileNameForCreateDialog = mutableCustomStateOf(stateKeyTag, "fileNameForCreateDialog") { TextFieldValue("") }
 //    val fileTypeOptionsForCreateDialog = remember {listOf(activityContext.getString(R.string.file), activityContext.getString(R.string.folder))}  // idx: 0 1

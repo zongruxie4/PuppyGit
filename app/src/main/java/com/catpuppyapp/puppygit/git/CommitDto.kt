@@ -108,11 +108,14 @@ data class CommitDto (
         return formatMinutesToUtc(minuteOffset)
     }
 
+    // 在列表条目使用的缓存信息
     fun getCachedOneLineMsg(): String = (cached_OneLineMsg ?: Libgit2Helper.zipOneLineMsg(msg).let { cached_OneLineMsg = it; it });
     fun cachedBranchShortNameList():String = cached_BranchShortNameList ?: branchShortNameList.joinToString { it }.let { cached_BranchShortNameList=it; it };
     fun cachedTagShortNameList():String = cached_TagShortNameList ?: tagShortNameList.joinToString { it }.let { cached_TagShortNameList=it; it };
     fun cachedParentShortOidStrList():String = cached_ParentShortOidStrList ?: parentShortOidStrList.joinToString { it }.let { cached_ParentShortOidStrList=it; it };
 
+    // 在详情弹窗使用的缓存信息
+    // 先换行，然后每行一个
     fun cachedLineSeparatedBranchList():String = cached_LineSeparated_BranchShortNameList ?: branchShortNameList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_BranchShortNameList=it; it };
     fun cachedLineSeparatedTagList():String = cached_LineSeparated_TagShortNameList ?: tagShortNameList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_TagShortNameList=it; it };
     fun cachedLineSeparatedParentFullOidList():String = cached_LineSeparated_ParentFullOidStrList ?: parentOidStrList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_ParentFullOidStrList=it; it };
