@@ -42,7 +42,7 @@ private const val TAG = "MyTextField"
 
 @Composable
 internal fun MyTextField(
-    softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
+    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     focusThisLine:Boolean,
     textFieldState: TextFieldState,
     enabled: Boolean,
@@ -135,11 +135,11 @@ internal fun MyTextField(
 
 
     if(focusThisLine) {
-        if(softKbVisibleWhenLeavingEditor.value) {
-            LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
+        if(ignoreFocusOnce.value) {
+            MyLog.d(TAG, "TextEditor#MyTextField: ignore focus once")
+            ignoreFocusOnce.value = false
         }else {
-            MyLog.d(TAG, "TextEditor#MyTextField: ignore popup SoftKeyboard once")
-            softKbVisibleWhenLeavingEditor.value = true
+            LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
         }
     }
 

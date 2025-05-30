@@ -111,8 +111,8 @@ fun EditorInnerPage(
     stateKeyTag:String,
 
     loadLock:Mutex,  // 避免重复加载的锁
+    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
-    softKbVisibleWhenLeavingEditor2: CustomBoxSaveable<Boolean>,
     previewLoading:MutableState<Boolean>,
     editorPreviewFileDto: CustomStateSaveable<FileSimpleDto>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
@@ -1296,8 +1296,8 @@ fun EditorInnerPage(
         FileEditor(
             stateKeyTag = stateKeyTag,
 
+            ignoreFocusOnce = ignoreFocusOnce,
             softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
-            softKbVisibleWhenLeavingEditor2 = softKbVisibleWhenLeavingEditor2,
             requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
             requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
             isSubPageMode = isSubPageMode,
@@ -1413,7 +1413,7 @@ fun EditorInnerPage(
                 doActWithLockIfFree(loadLock, "EditorInnerPage#Init#${needRefreshEditorPage.value}#${editorPageShowingFilePath.value.ioPath}") {
                     doInit(
                         requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
-                        softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
+                        ignoreFocusOnce = ignoreFocusOnce,
                         isPreviewModeOn = isPreviewModeOn,
                         previewPath = previewPath,
                         updatePreviewPath = updatePreviewPath,
@@ -1477,7 +1477,7 @@ fun EditorInnerPage(
 
 private suspend fun doInit(
     requirePreviewScrollToEditorCurPos: MutableState<Boolean>,
-    softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
+    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     isPreviewModeOn: MutableState<Boolean>,
     previewPath: String,
     updatePreviewPath: (String)->Unit,
@@ -1638,8 +1638,8 @@ private suspend fun doInit(
             editorPageIsInitDone.value=false
             editorLastScrollEvent.value=null
 
-            // 新打开文件，当作显示键盘，不然无法聚焦
-            softKbVisibleWhenLeavingEditor.value = true
+            // 新打开文件，重置此值，不然会聚焦失败一次
+            ignoreFocusOnce.value = false
 
             //读取文件内容
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))

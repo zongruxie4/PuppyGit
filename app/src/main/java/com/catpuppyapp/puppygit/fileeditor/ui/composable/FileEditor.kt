@@ -106,8 +106,8 @@ private const val TAG = "FileEditor"
 fun FileEditor(
     stateKeyTag:String,
 
+    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
-    softKbVisibleWhenLeavingEditor2: CustomBoxSaveable<Boolean>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     isSubPageMode:Boolean,
@@ -380,15 +380,15 @@ fun FileEditor(
                 DisposableEffect(Unit) {
                     onDispose {
                         MyLog.d(TAG, "FileEditor#DisposableEffect#onDispose: called, imeVisible=${SharedState.editor_softKeyboardIsVisible.value}")
-                        softKbVisibleWhenLeavingEditor.value = softKbVisibleWhenLeavingEditor2.value || SharedState.editor_softKeyboardIsVisible.value
-                        softKbVisibleWhenLeavingEditor2.value = false
+                        ignoreFocusOnce.value = softKbVisibleWhenLeavingEditor.value.not() && SharedState.editor_softKeyboardIsVisible.value.not();
+                        softKbVisibleWhenLeavingEditor.value = false
                     }
                 }
 
                 LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
                     MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_PAUSE: called, imeVisible=${SharedState.editor_softKeyboardIsVisible.value}")
                     // 如果离开页面时，软键盘状态是隐藏，则切换回来后不弹出键盘
-                    softKbVisibleWhenLeavingEditor2.value = SharedState.editor_softKeyboardIsVisible.value
+                    softKbVisibleWhenLeavingEditor.value = SharedState.editor_softKeyboardIsVisible.value
                 }
 
 
@@ -404,7 +404,7 @@ fun FileEditor(
                 TextEditor(
                     stateKeyTag = stateKeyTag,
 
-                    softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
+                    ignoreFocusOnce = ignoreFocusOnce,
                     undoStack = undoStack,
                     curPreviewScrollState = curPreviewScrollState,
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
