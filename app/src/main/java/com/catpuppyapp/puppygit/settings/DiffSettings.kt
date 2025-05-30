@@ -19,7 +19,7 @@ data class DiffSettings (
      * +1 abc2
      * +2 def4
      */
-    var groupDiffContentByLineNum:Boolean = true,
+    var groupDiffContentByLineNum:Boolean = false,
 
     var diffContentSizeMaxLimit:Long = 0L,  // 0=no limit, unit is Byte, e.g. 1MB should set to 1000000L,
 
