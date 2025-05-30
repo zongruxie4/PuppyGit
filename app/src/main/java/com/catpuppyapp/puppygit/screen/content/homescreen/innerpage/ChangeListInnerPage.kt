@@ -144,6 +144,7 @@ import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Repository.StateT
+import kotlinx.coroutines.delay
 
 
 private const val TAG = "ChangeListInnerPage"
@@ -3508,8 +3509,13 @@ fun ChangeListInnerPage(
                 //最后一个else是TreeToTree
                 val lastClickedItemKey = if(fromTo == Cons.gitDiffFromIndexToWorktree) SharedState.homeChangeList_LastClickedItemKey.value else if(fromTo == Cons.gitDiffFromHeadToIndex) SharedState.index_LastClickedItemKey.value else SharedState.treeToTree_LastClickedItemKey.value
 
-                UIHelper.scrollByPredicate(scope, actuallyList, actuallyListState) { idx, item ->
-                    item.getItemKey() == lastClickedItemKey
+                doJobThenOffLoading {
+                    //需要delay一下，等列表加载完，不然过滤开启时，从Diff页面返回会重新过滤列表，列表还没加载出来时跳转会无效
+                    delay(500)
+
+                    UIHelper.scrollByPredicate(scope, actuallyList, actuallyListState) { idx, item ->
+                        item.getItemKey() == lastClickedItemKey
+                    }
                 }
 
 
