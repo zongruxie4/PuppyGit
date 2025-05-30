@@ -208,7 +208,7 @@ fun EditorInnerPage(
 
     val recentFilesLimit = remember(settings.editor.recentFilesLimit) { settings.editor.recentFilesLimit }
 
-    val saveLock = remember(editorPageShowingFilePath.value.ioPath) { Cache.getOrPutByType(generateKeyForSaveLock(editorPageShowingFilePath.value.ioPath), default = { Mutex() }) }
+    val saveLock = remember(editorPageShowingFilePath.value.ioPath) { Cache.getSaveLockOfFile(editorPageShowingFilePath.value.ioPath) }
 //    val saveLock = Mutex()  //其实这样也行，不过根据路径创建锁更严谨，跨页面也适用，比如如果首页的Editor正在保存，然后打开子页面，这时子页面必须等首页保存完成，但如果用这个和页面生命周期一样的锁，就无法实现那种效果了，但和页面生命周期一样的锁其实也够用
 
 //    val isEdited = rememberSaveable{ mutableStateOf(false) }
@@ -217,8 +217,8 @@ fun EditorInnerPage(
 //    val editorPageShowingFileText = rememberSaveable{ mutableStateOf("") }  //BasicTextField用的文本，用来存储打开的文件的所有内容
 //    val editorPageEditorFocusRequester = remember{ FocusRequester() }  //BasicTextField用的focusRequester
 //    val lastFilePath = StateUtil.getRememberSaveableState(initValue = "")
-    val editorPageShowingFileHasErr = rememberSaveable { mutableStateOf(false)}  //BasicTextField用的文本，用来存储打开的文件的所有内容
-    val editorPageShowingFileErrMsg = rememberSaveable { mutableStateOf("")}  //BasicTextField用的文本，用来存储打开的文件的所有内容
+    val editorPageShowingFileHasErr = rememberSaveable { mutableStateOf(false) }  //BasicTextField用的文本，用来存储打开的文件的所有内容
+    val editorPageShowingFileErrMsg = rememberSaveable { mutableStateOf("") }  //BasicTextField用的文本，用来存储打开的文件的所有内容
 
 //    val editorPageFileSavedSuccess = stringResource(R.string.file_saved)
     val unknownErrStrRes = stringResource(R.string.unknown_err)
@@ -1847,12 +1847,4 @@ private fun getBackHandler(
 //    }
 
     return backHandlerOnBack
-}
-
-/**
- * generate cache key for save lock, you can use this key get lock obj from Cache for saving file
- * @return a cache key, e.g. "editor_save_lock:/path/to/file"
- */
-private fun generateKeyForSaveLock(filePath:String):String {
-    return Cache.Key.editorPageSaveLockPrefix + Cache.keySeparator + filePath
 }

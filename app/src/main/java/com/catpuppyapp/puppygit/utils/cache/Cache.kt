@@ -4,6 +4,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.catpuppyapp.puppygit.utils.getShortUUID
+import kotlinx.coroutines.sync.Mutex
 
 /**
  * this is default cache instance
@@ -34,6 +35,28 @@ object Cache:CacheStoreImpl(){
 
         val diffableList_of_fromDiffScreenBackToWorkTreeChangeList = "diffableList_of_fromDiffScreenBackToWorkTreeChangeList"
 //        val diffableList_of_fromDiffScreenBackToIndexChangeList = "diffableList_of_fromDiffScreenBackToIndexChangeList"
+    }
+
+
+    /**
+     * 这个估计占不了多少内存，所以就不清了，如果清的话有点麻烦，需要避免清掉当前editor打开的文件的key，不然可能会有多个协程保存同一个文件
+     * generate cache key for save lock, you can use this key get lock obj from Cache for saving file
+     * @return a cache key, e.g. "editor_save_lock:/path/to/file"
+     */
+    private fun getKeyOfSaveLock(filePath:String):String {
+        return Key.editorPageSaveLockPrefix + keySeparator + filePath
+    }
+
+    fun getSaveLockOfFile(filePath:String):Mutex {
+        return getOrPutByType(getKeyOfSaveLock(filePath), default = { Mutex() })
+    }
+
+    /**
+     * 一般这个不用清，占不了多少内存，用户估计打开不了几个文件
+     * TODO 如果清的话有点麻烦，需要避免清掉当前editor打开的文件的key，不然可能会有多个协程保存同一个文件，考虑下怎么避免
+     */
+    fun clearFileSaveLock() {
+        clearByKeyPrefix(Key.editorPageSaveLockPrefix + keySeparator)
     }
 
     private fun getFilesListStateKey(path:String):String {
