@@ -206,6 +206,10 @@ fun CredentialItem(
                     icon = Icons.Filled.Edit,
                     iconContentDesc = stringResource(R.string.edit),
                 ) {
+                    //更新最后点击条目
+                    lastClickedItemKey.value = thisItem.id
+
+                    //跳转到编辑页面
                     AppModel.navController.navigate(Cons.nav_CredentialNewOrEditScreen+"/"+thisItem.id)
                 }
             }
