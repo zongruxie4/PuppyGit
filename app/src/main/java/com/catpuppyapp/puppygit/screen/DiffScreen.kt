@@ -286,15 +286,7 @@ fun DiffScreen(
         }
     }
 
-    val scrollToCurrentItemHeader = { relativePath:String ->
-        val targetIdx = getTargetIdxOfLazyColumnByRelativePath(relativePath)
 
-        if(AppModel.devModeOn) {
-            MyLog.d(TAG, "#scrollToCurrentItemHeader: targetIdx=$targetIdx")
-        }
-
-        UIHelper.scrollToItem(scope, listState, targetIdx)
-    }
 
     val firstTimeLoad = rememberSaveable { mutableStateOf(true) }
 
@@ -346,6 +338,17 @@ fun DiffScreen(
     val curItemIndex = rememberSaveable { mutableIntStateOf(curItemIndexAtDiffableItemList) }
     val curItemIndexAtDiffableItemList = Unit  // avoid mistake using
 
+    val scrollToCurrentItemHeader = { relativePath:String ->
+        val targetIdx = getTargetIdxOfLazyColumnByRelativePath(relativePath)
+
+        curItemIndex.intValue = targetIdx
+
+        if(AppModel.devModeOn) {
+            MyLog.d(TAG, "#scrollToCurrentItemHeader: targetIdx=$targetIdx")
+        }
+
+        UIHelper.scrollToItem(scope, listState, targetIdx)
+    }
 
     val naviUp = {
         //把当前条目设为上次点击条目，这样返回列表后就会滚动到在这个页面最后看的条目了
@@ -1329,6 +1332,9 @@ fun DiffScreen(
                             val newVisible = visible.not()
                             //切换条目
                             diffableItemList[diffableItemIdx] = diffableItem.copy(visible = newVisible)
+
+                            //点了谁就把当前条目更新成谁
+                            curItemIndex.intValue = diffableItemIdx
 
                             //如果展开当前条目 且 当前条目未加载则加载(懒加载)
                             if(newVisible && diffableItem.neverLoadedDifferences()) {
