@@ -11,6 +11,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import com.catpuppyapp.puppygit.constants.Cons
@@ -1231,3 +1232,9 @@ fun paddingLineNumber(lineNum:String, expectLength:Int): String {
     return lineNum.padStart(expectLength, ' ')
 }
 
+fun getRangeForRenameFile(fileName:String):TextRange {
+    val lastIndexOfDot = fileName.lastIndexOf('.')
+
+    // 如果'.'在文件名开头或没有'.'，选中整个文件名；否则选中'.'之前的部分，不包括'.'本身
+    return TextRange(0, if(lastIndexOfDot > 0) lastIndexOfDot else fileName.length)
+}
