@@ -63,9 +63,10 @@ data class DiffItemSaver (
      * 为line生成假索引，有可能会用来判断一些东西，目前只用来在预览diff内容时首行加top padding
      */
     fun generateFakeIndexForGroupedLines() {
-        var index = -1
-
         for(h in hunks) {
+            //每个hunk的索引都应从0开始数（这里-1没写错，写成-1后面直接用++index一路往下走就行，省事）
+            var index = -1
+
             for((_, lines) in h.groupedLines) {
                 //顺序是context/del/add
                 lines.get(Diff.Line.OriginType.CONTEXT.toString())?.let { it.fakeIndexOfGroupedLine = ++index }
