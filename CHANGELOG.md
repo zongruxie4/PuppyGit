@@ -3,10 +3,12 @@
 ---
 1.1.2.2v98 - 20250530:
 - restore ime visible when return Editor
+- support Arabic language (thx https://github.com/Hussain96o)
 
 
 
 - 返回Editor时恢复显示软键盘
+- 支持阿拉伯语 (感谢 https://github.com/Hussain96o)
 
 
 ---
