@@ -2328,7 +2328,7 @@ object Libgit2Helper {
             genCommitMsg(repo, itemList, msgTemplate).let {
                 //如果生成提交信息出错，记个日志
                 if(it.hasError() || it.data.isNullOrBlank()) {
-                    MyLog.e(TAG, "#genCommitMsgNoFault: generate commit msg err! errCode=${it.code}, errMsg=${it.msg}, commitMsgRet.data='${it.data}'")
+                    MyLog.w(TAG, "#genCommitMsgNoFault: generate commit msg err! will use fallback commit msg! errCode=${it.code}, errMsg=${it.msg}, commitMsgRet.data='${it.data}'")
                 }
 
                 it.data ?: Cons.fallbackCommitMsg
@@ -2339,7 +2339,7 @@ object Libgit2Helper {
         }
     }
 
-    fun genCommitMsg(
+    private fun genCommitMsg(
         repo:Repository,
         itemList: List<StatusTypeEntrySaver>?,
         msgTemplate:String,
@@ -2350,8 +2350,10 @@ object Libgit2Helper {
         if(actuallyItemList.isNullOrEmpty()) { //如果itemList为null或一个元素都没有，查询一下实际的index列表
             val (isIndexEmpty, indexItemList) = checkIndexIsEmptyAndGetIndexList(repo, "", onlyCheckEmpty = false)  //这里期望获得列表，所以仅检查空传假
             if(repoState != Repository.StateT.MERGE && (isIndexEmpty || indexItemList.isNullOrEmpty())) {  //如果实际的index没条目，直接返回错误
-                MyLog.e(TAG, "#genCommitMsg(): repo state may incorrect, state is not MERGE but index is empty, params are: repoState=$repoState, isIndexEmpty=$isIndexEmpty, indexItemList.isNullOrEmpty()=${indexItemList.isNullOrEmpty()}")
-                return Ret.createError(null, "index is Empty!", Ret.ErrCode.indexIsEmpty)
+                MyLog.w(TAG, "#genCommitMsg(): WARN: repo state may incorrect, state is not MERGE but index is empty, params are: repoState=$repoState, isIndexEmpty=$isIndexEmpty, indexItemList.isNullOrEmpty()=${indexItemList.isNullOrEmpty()}")
+
+                //警告下就行，没必要返回错误，只是生成提交信息而已
+//                return Ret.createError(null, "Index is empty!", Ret.ErrCode.indexIsEmpty)
             }
 
             //执行到这index一定是有东西的，或者是解决冲突的提交，index空也无所谓
@@ -2427,7 +2429,7 @@ object Libgit2Helper {
 //                val (isIndexEmpty, indexItemList) = checkIndexIsEmptyAndGetIndexList(repo, "", onlyCheckEmpty = false)  //这里期望获得列表，所以仅检查空传假
 //                if(isIndexEmpty || indexItemList.isNullOrEmpty()) {
 //                    MyLog.d(TAG, "#genCommitMsg() error! isIndexEmpty = "+isIndexEmpty+", indexItemList.isNullOrEmpty() = "+indexItemList.isNullOrEmpty())
-//                    return Ret.createError(null, "index is Empty!",Ret.ErrCode.indexIsEmpty)
+//                    return Ret.createError(null, "Index is empty!",Ret.ErrCode.indexIsEmpty)
 //                }
 //
 //                actuallyItemList = indexItemList
@@ -5663,7 +5665,7 @@ object Libgit2Helper {
         if(indexIsEmpty(repo)) {  // 这里隐含的完整条件为：index为空且无冲突条目，冲突条目在上面ready里判断了，所以这里无需再判断
 //                cherrypickAbort(repo) //用abort不太合适，太重量级，hardReset还可能覆盖用户内容
             cleanRepoState(repo)  //简单清下状态就行
-            return Ret.createError(null, "index is empty, cherrypick canceled")
+            return Ret.createError(null, "Index is empty, cherrypick canceled")
         }
 
         //创建提交
