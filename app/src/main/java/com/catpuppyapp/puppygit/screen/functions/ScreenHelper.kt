@@ -26,6 +26,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.NaviCache
+import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.doJobWithMainContext
 import com.catpuppyapp.puppygit.utils.generateRandomString
@@ -466,5 +467,49 @@ fun goToCloneScreen(repoId: String="") {
         AppModel.navController.navigate(
             Cons.nav_CloneScreen+"/${repoId.ifBlank { Cons.dbInvalidNonEmptyId }}"
         )
+    }
+}
+
+
+fun getFilesGoToPath(
+    lastPressedPath: MutableState<String>,
+    getCurrentPath:()->String,
+    updateCurrentPath:(String)->Unit,
+    needRefresh: MutableState<String>
+): (String)->Unit {
+    val funName = "getFilesGoToPath"
+
+    return { newPath:String ->
+        val oldPath = getCurrentPath()
+
+        try {
+            try {
+                //为了找上次路径的结束位置的起始索引
+                val startIndexForFindEndOfLastPath = newPath.length + 1;
+                lastPressedPath.value = if(newPath.length < oldPath.length && startIndexForFindEndOfLastPath < oldPath.length && oldPath.startsWith(newPath)) {
+                    // e.g. newPath = /abc/def, oldPath = /abc/def/ghi,
+                    // newPath.length+1, so the cursor at 'g', which is our expect to find the target path
+                    //这里不可能越界，因为 if 有判断 `startIndexForFindEndOfLastPath < oldPath.length`
+                    val indexOfSlash = oldPath.indexOf(Cons.slashChar, startIndex = startIndexForFindEndOfLastPath)
+                    //截出当前目录在新目录中的path，例如当前目录为 /abc/def 新目录为 /abc，则找到def，若当前目录为 /abc/def/ghi，新目录为 /abc，则截取 /abc/def
+                    oldPath.substring(0, if(indexOfSlash < 0) oldPath.length else indexOfSlash)
+                } else {
+                    oldPath
+                }
+            }catch (e: Exception) {
+                MyLog.d(TAG, "#$funName: resolve `lastPressedPath` failed! oldPath='$oldPath', newPath='$newPath', err=${e.stackTraceToString()}")
+            }
+
+            if(AppModel.devModeOn) {
+                MyLog.v(TAG, "#$funName: lastPressedPath: ${lastPressedPath.value}")
+            }
+
+            updateCurrentPath(newPath)
+            changeStateTriggerRefreshPage(needRefresh)
+        }catch (e: Exception) {
+            MyLog.e(TAG, "#$funName: change path failed! oldPath='$oldPath', newPath='$newPath', err=${e.stackTraceToString()}")
+            Msg.requireShowLongDuration("err: change dir failed")
+        }
+
     }
 }

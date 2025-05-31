@@ -92,6 +92,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTi
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
+import com.catpuppyapp.puppygit.screen.functions.getFilesGoToPath
 import com.catpuppyapp.puppygit.screen.functions.getInitTextEditorState
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
@@ -347,9 +348,17 @@ fun HomeScreen(
         initValue = TextFieldValue("")
     )
 
-    val filesPageCurrentPath = rememberSaveable { mutableStateOf("")}
-    val filesPageLastPathByPressBack = rememberSaveable { mutableStateOf("")}
-    val showCreateFileOrFolderDialog = rememberSaveable { mutableStateOf(false)}
+    val filesPageCurrentPath = rememberSaveable { mutableStateOf("") }
+    val filesGetCurrentPath = {
+        filesPageCurrentPath.value
+    }
+    val filesUpdateCurrentPath = { path:String ->
+        filesPageCurrentPath.value = path
+    }
+
+
+    val filesPageLastPathByPressBack = rememberSaveable { mutableStateOf("") }
+    val showCreateFileOrFolderDialog = rememberSaveable { mutableStateOf(false) }
     val filesPageCurPathFileItemDto = mutableCustomStateOf(stateKeyTag, "filesPageCurPathFileItemDto") { FileItemDto() }
     val filesPageCurrentPathBreadCrumbList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageCurrentPathBreadCrumbList", initValue = listOf<FileItemDto>())
 
@@ -650,7 +659,7 @@ fun HomeScreen(
         filesPageEnableFilterState.value = false  //过滤模式是否真的被应用（显示输入框并且有关键字）
 
         //设置路径
-        filesPageCurrentPath.value = path
+        filesUpdateCurrentPath(path)
         //跳转页面
         currentHomeScreen.intValue = Cons.selectedItem_Files
 
@@ -674,6 +683,10 @@ fun HomeScreen(
 
 
     val filesPageKeepFilterResultOnce = rememberSaveable { mutableStateOf(false) }
+
+    val filesGoToPath = getFilesGoToPath(filesPageLastPathByPressBack, filesGetCurrentPath, filesUpdateCurrentPath, needRefreshFilesPage)
+
+
 
     val requireEditorScrollToPreviewCurPos = rememberSaveable { mutableStateOf(false) }
     val requirePreviewScrollToEditorCurPos = rememberSaveable { mutableStateOf(false) }
@@ -933,7 +946,8 @@ fun HomeScreen(
                             }
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Files){
                             FilesTitle(
-                                currentPath = filesPageCurrentPath,
+                                currentPath = filesGetCurrentPath,
+                                goToPath = filesGoToPath,
                                 allRepoParentDir = allRepoParentDir,
                                 needRefreshFilesPage = needRefreshFilesPage,
                                 filesPageGetFilterMode = filesPageGetFilterMode,
@@ -1316,7 +1330,8 @@ fun HomeScreen(
                     editorPageShowingFilePath = editorPageShowingFilePath,
                     editorPageShowingFileIsReady = editorPageShowingFileIsReady,
                     needRefreshFilesPage = needRefreshFilesPage,
-                    currentPath=filesPageCurrentPath,
+                    currentPath=filesGetCurrentPath,
+                    updateCurrentPath=filesUpdateCurrentPath,
                     showCreateFileOrFolderDialog=showCreateFileOrFolderDialog,
                     requireImportFile=filesPageRequireImportFile,
                     requireImportUriList=filesPageRequireImportUriList,
@@ -1346,7 +1361,7 @@ fun HomeScreen(
                     filterList = filesPageFilterList,
                     lastPosition = filesLastPosition,
                     keepFilterResultOnce = filesPageKeepFilterResultOnce,
-
+                    goToPath = filesGoToPath,
                 )
             }
             else if(currentHomeScreen.intValue == Cons.selectedItem_Editor) {

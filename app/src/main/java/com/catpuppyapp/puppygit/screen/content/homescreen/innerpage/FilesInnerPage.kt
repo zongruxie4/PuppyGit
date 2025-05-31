@@ -201,7 +201,8 @@ fun FilesInnerPage(
     editorPageShowingFilePath: MutableState<FilePath>,
     editorPageShowingFileIsReady: MutableState<Boolean>,
     needRefreshFilesPage: MutableState<String>,
-    currentPath: MutableState<String>,
+    currentPath: ()->String,
+    updateCurrentPath:(String)->Unit,
     showCreateFileOrFolderDialog: MutableState<Boolean>,
     requireImportFile: MutableState<Boolean>,
     requireImportUriList: CustomStateListSaveable<Uri>,
@@ -237,7 +238,8 @@ fun FilesInnerPage(
     enableFilterState:MutableState<Boolean>,
     filterList:CustomStateListSaveable<FileItemDto>,
     lastPosition:MutableState<Int>,
-    keepFilterResultOnce:MutableState<Boolean>
+    keepFilterResultOnce:MutableState<Boolean>,
+    goToPath:(String)->Unit,
 ) {
     val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
@@ -413,10 +415,6 @@ fun FilesInnerPage(
     }
 
 
-    val goToPath = {path:String ->
-        currentPath.value = path
-        changeStateTriggerRefreshPage(needRefreshFilesPage)
-    }
 
     val showGoToPathDialog = rememberSaveable { mutableStateOf(false)}
     val pathToGo = mutableCustomStateOf(stateKeyTag, "pathToGo") { TextFieldValue("") }
@@ -428,7 +426,7 @@ fun FilesInnerPage(
 
             //取出用户输入的path 和 当前路径（用来跳转相对路径）
             val pathToGoRaw = pathToGo.value.text
-            val currentPath = currentPath.value
+            val currentPath = currentPath()
 
             doJobThenOffLoading {
                 // remove '\n'
@@ -684,7 +682,7 @@ fun FilesInnerPage(
         details_FilesCount.intValue = list.size - details_FoldersCount.intValue
         details_AllCount.intValue = list.size
 
-        showCurPathDirAndFolderCount.value = (list.size == 1 && list.first().fullPath == currentPath.value)
+        showCurPathDirAndFolderCount.value = (list.size == 1 && list.first().fullPath == currentPath())
 
         //count files/folders size
         doJobThenOffLoading {
@@ -871,7 +869,7 @@ fun FilesInnerPage(
         filesPageFilterModeOff = filesPageFilterModeOff,
         filesPageSimpleFilterOn = filesPageSimpleFilterOn,
         openDrawer = openDrawer,
-        lastPathByPressBack = lastPathByPressBack
+        goToPath = goToPath,
 
     )
 
@@ -1071,7 +1069,7 @@ fun FilesInnerPage(
                 //do create file or folder
                 try {
                     // if current path already deleted, then show err and abort create
-                    if(!File(currentPath.value).exists()) {
+                    if(!File(currentPath()).exists()) {
                         throw RuntimeException(activityContext.getString(R.string.current_dir_doesnt_exist_anymore))
                     }
 
@@ -1080,7 +1078,7 @@ fun FilesInnerPage(
                         createFileOrFolderErrMsg.value = fileOrFolderNameCheckRet.msg
                         return@f false
                     }else {  //文件名ok，检查文件是否存在
-                        val file = File(currentPath.value, fileOrFolderName)
+                        val file = File(currentPath(), fileOrFolderName)
                         if (file.exists()) {  //文件存在
                             createFileOrFolderErrMsg.value = fileAlreadyExistStrRes
                             return@f false
@@ -1288,10 +1286,10 @@ fun FilesInnerPage(
                     //update settings
                     settingsSnapshot.value = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
                         if(onlyForThisFolderStateBuf.value) {
-                            it.files.dirAndViewSort_Map.set(currentPath.value, newViewAndSort)
+                            it.files.dirAndViewSort_Map.set(currentPath(), newViewAndSort)
                         }else {  // set global sort method
                             // try remove, if hase dir specified sort method, if hasn't remove is ok as well, will not throw exception
-                            it.files.dirAndViewSort_Map.remove(currentPath.value)
+                            it.files.dirAndViewSort_Map.remove(currentPath())
 
                             it.files.defaultViewAndSort = newViewAndSort
                         }
@@ -1353,7 +1351,7 @@ fun FilesInnerPage(
                                 val curItemIsRoot = idx==0  // root path '/'
 //                            val curPathIsRoot = currentPath.value == separator
 //                            val curPathIsRootAndCurItemIsRoot = curPathIsRoot && curItemIsRoot
-                                val textColor = if(it.fullPath.startsWith(currentPath.value+separator)) Color.Gray else Color.Unspecified
+                                val textColor = if(it.fullPath.startsWith(currentPath()+separator)) Color.Gray else Color.Unspecified
 
                                 //非根路径显示路径分割符
                                 if(curItemIsRoot.not()) {
@@ -1363,20 +1361,21 @@ fun FilesInnerPage(
                                 Text(
                                     text = it.name,
                                     color = textColor,
-                                    fontWeight = if(it.fullPath == currentPath.value) FontWeight.Bold else FontWeight.Normal,
+                                    fontWeight = if(it.fullPath == currentPath()) FontWeight.Bold else FontWeight.Normal,
                                     modifier = Modifier.combinedClickable(
                                         onLongClick = {  //long press will show menu for pressed path
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             breadCrumbDropDownMenuExpandState.value = true
                                         }
                                     ) { //onClick
-                                        //点击跳转路径
-                                        currentPath.value = it.fullPath
-                                        filesPageSimpleFilterKeyWord.value = TextFieldValue("")  //清空过滤关键字
-                                        //刷新页面（然后面包屑也会重新生成）
-                                        changeStateTriggerRefreshPage(needRefreshFilesPage)
-                                    }
-                                        .padding(horizontal = 10.dp)  //整宽点，好点击，不然名字很短，手按不到
+
+                                        //清空过滤关键字
+                                        filesPageSimpleFilterKeyWord.value = TextFieldValue("")
+
+                                        //跳转路径
+                                        goToPath(it.fullPath)
+
+                                    }.padding(horizontal = 10.dp)  //整宽点，好点击，不然名字很短，手按不到
                                 )
 
 
@@ -1466,7 +1465,7 @@ fun FilesInnerPage(
                     val scrollToCurPath = remember {
                         derivedStateOf {
                             //若当前目录在面包屑中的条目不可见，滚动使其可见
-                            val indexOfCurPath = currentPathBreadCrumbList.value.indexOfFirst { it.fullPath == currentPath.value }
+                            val indexOfCurPath = currentPathBreadCrumbList.value.indexOfFirst { it.fullPath == currentPath() }
                             if(indexOfCurPath != -1) {
                                 //滚动到当前条目前2个位置，不然当前条目在屏幕最左边，而比较顺眼的位置是最右边。。。。。不过滚动前2个位置只是粗略调整，没任何依据，如果当前文件夹名非常长的话，这样滚动就看不见了。。。。
                                 UIHelper.scrollToItem(scope, breadCrumbListState, indexOfCurPath-2)
@@ -1514,7 +1513,7 @@ fun FilesInnerPage(
                         resetSearchVars = resetFilesSearchVars,
                         match = { idx, it -> true },
                         customTask = {
-                            val curDir = File(currentPath.value)
+                            val curDir = File(currentPath())
                             if(curDir.canRead().not()) {  //目录不可读，提示下
                                 Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
                             }else { //目录可读，执行搜索
@@ -1554,7 +1553,7 @@ fun FilesInnerPage(
                     ) { index, it ->
                         // 没测试，我看其他文件管理器针对目录都没open with，所以直接隐藏了) 需要测试：能否针对目录执行openwith？如果不能，对目录移除openwith选项
                         FileListItem(
-                            fullPathOfTopNoEndSlash = if(enableFilter) currentPath.value else "",
+                            fullPathOfTopNoEndSlash = if(enableFilter) currentPath() else "",
                             item = it,
                             lastPathByPressBack = lastPathByPressBack.value,
                             isPasteMode = isPasteMode,
@@ -1666,12 +1665,7 @@ fun FilesInnerPage(
                                     filesPageSimpleFilterKeyWord.value = TextFieldValue("")  //清空过滤关键字
 
                                     //打开目录
-                                    currentPath.value = it.fullPath
-                                    //更新面包屑，重组吧还是
-//                                val willUpdateList = if(currentPathBreadCrumbList.intValue == 1) currentPathBreadCrumbList1 else currentPathBreadCrumbList2
-//                                willUpdateList.add(it)
-                                    //刷新页面
-                                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+                                    goToPath(it.fullPath)
                                 }
                             }
                         }
@@ -1923,7 +1917,7 @@ fun FilesInnerPage(
     val initSafImportDialog = {
         //检查目录是否可读
         val curPathReadable = try {
-            File(currentPath.value).canRead()
+            File(currentPath()).canRead()
         }catch (e:Exception) {
             false
         }
@@ -2013,7 +2007,7 @@ fun FilesInnerPage(
                     }else {
                         FsUtils.recursiveImportFiles_Saf(
                             contentResolver = activityContext.contentResolver,
-                            targetDir = File(currentPath.value),
+                            targetDir = File(currentPath()),
                             srcFiles = chosenDir.listFiles() ?: arrayOf<DocumentFile>(),
                             canceled = { requireCancelAct.value },
                             conflictStrategy = conflictStrategy
@@ -2109,7 +2103,7 @@ fun FilesInnerPage(
                                     SafAndFileCmpUtil.recursiveCompareFiles_Saf(
                                         contentResolver = activityContext.contentResolver,
                                         safFiles = chosenDir.listFiles() ?: arrayOf(),
-                                        files = File(currentPath.value).listFiles() ?: arrayOf(),
+                                        files = File(currentPath()).listFiles() ?: arrayOf(),
                                         result = result,
                                         canceled = { requireCancelAct.value }
                                     )
@@ -2464,7 +2458,7 @@ fun FilesInnerPage(
                 //过滤模式关闭 且 当前目录是仓库workdir根目录则刷新页面
                 //过滤模式不刷新页面：过滤模式涉及递归搜索，忽略文件没必要重新过滤，顶多遗漏一个新增的.gitignore文件，可以接受
                 //当前目录非仓库workdir根目录不刷新页面：因为只有仓库根目录可能的.gitignore文件可能会被创建或更新，所以只有当前目录为仓库workdir根目录，才有必要刷新
-                if(enableFilterState.value.not() && currentPath.value == repoWorkDirFullPath) {
+                if(enableFilterState.value.not() && currentPath() == repoWorkDirFullPath) {
                     //因为有可能会添加 .gitignore 文件，所以需要刷新下页面
                     changeStateTriggerRefreshPage(needRefreshFilesPage)
                 }
@@ -2534,7 +2528,7 @@ fun FilesInnerPage(
         val selectionModeIconOnClickList = if(isFileChooserAndSingleDirType){
             listOf(
                 confirm@{
-                    confirmForChooser(currentPath.value)
+                    confirmForChooser(currentPath())
                 }
             )
         } else {
@@ -2628,7 +2622,7 @@ fun FilesInnerPage(
             {
                 //只要当前目录可读，就启用import
                 try {
-                    File(currentPath.value).canRead()
+                    File(currentPath()).canRead()
                 }catch (_:Exception) {
                     false
                 }
@@ -2709,7 +2703,7 @@ fun FilesInnerPage(
                     var succCnt = 0
                     var failedCnt = 0
 
-                    val dest = currentPath.value
+                    val dest = currentPath()
                     var previousFilePath=""
                     var curTarget:File?=null
 
@@ -2936,7 +2930,7 @@ fun FilesInnerPage(
         )
         val iconOnClickList = listOf(
             paste@{
-                copyOrMoveOrExportFile(selectedItems.value, currentPath.value, pasteMode.intValue == pasteMode_Move)  //最后一个参数代表是否删除源，如果是move，则删除
+                copyOrMoveOrExportFile(selectedItems.value, currentPath(), pasteMode.intValue == pasteMode_Move)  //最后一个参数代表是否删除源，如果是move，则删除
                 Unit
             },
             cutOrCopyIndicator@{},
@@ -3044,7 +3038,7 @@ fun FilesInnerPage(
 
     if(filesPageRequestFromParent.value==PageRequest.safExport) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
-            val curFile = File(currentPath.value)
+            val curFile = File(currentPath())
             val curPathReadable = try {
                 curFile.canRead()
             }catch (e:Exception) {
@@ -3131,13 +3125,13 @@ fun FilesInnerPage(
 
     if(filesPageRequestFromParent.value==PageRequest.copyFullPath) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
-            copyThenShowCopied(currentPath.value)
+            copyThenShowCopied(currentPath())
         }
     }
 
     if(filesPageRequestFromParent.value==PageRequest.copyRepoRelativePath) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
-            copyRepoRelativePath(currentPath.value)
+            copyRepoRelativePath(currentPath())
         }
     }
 
@@ -3177,6 +3171,7 @@ fun FilesInnerPage(
                     doInit(
                         isFileChooser = isFileChooser,
                         currentPath = currentPath,
+                        updateCurrentPath = updateCurrentPath,
                         currentPathFileList = currentPathFileList,
                         currentPathBreadCrumbList = currentPathBreadCrumbList,
                         settingsSnapshot = settingsSnapshot,
@@ -3225,7 +3220,8 @@ fun FilesInnerPage(
 
 private suspend fun doInit(
     isFileChooser:Boolean,
-    currentPath: MutableState<String>,
+    currentPath: ()->String,
+    updateCurrentPath: (String)->Unit,
     currentPathFileList: CustomStateListSaveable<FileItemDto>,
     currentPathBreadCrumbList: CustomStateListSaveable<FileItemDto>,
     settingsSnapshot:CustomStateSaveable<AppSettings>,
@@ -3266,8 +3262,8 @@ private suspend fun doInit(
     val lastOpenedPathFromSettings = settingsSnapshot.value.files.lastOpenedPath
 
     //如果路径为空，从配置文件读取上次打开的路径
-    if(currentPath.value.isBlank()) {
-        currentPath.value = lastOpenedPathFromSettings
+    if(currentPath().isBlank()) {
+        updateCurrentPath(lastOpenedPathFromSettings)
     }
 
     //先清下列表，感觉在开头清比较好，如果加载慢，先白屏，然后出东西；放后面清的话，如果加载慢，会依然显示旧条目列表，感觉没变化，像卡了一样，用户可能重复点击
@@ -3275,15 +3271,15 @@ private suspend fun doInit(
 
     val repoBaseDirPath = AppModel.allRepoParentDir.canonicalPath
 
-    currentPath.value = if(currentPath.value.isBlank()) {
+    updateCurrentPath(if(currentPath().isBlank()) {
         repoBaseDirPath
     }else {
         // make path canonical first, elst dir/ will return once dir, that make must press 2 times back for back to parent dir
-        File(currentPath.value).canonicalPath
-    }
+        File(currentPath()).canonicalPath
+    })
 
     //更新当前目录的文件列表
-    var currentDir = File(currentPath.value)
+    var currentDir = File(currentPath())
     var currentFile:File? = null
 
     //无论对应文件是否存在，只要currentDir不是文件夹（其实也可能不是文件），都尝试取出其上级目录作为即将打开的目录
@@ -3294,7 +3290,7 @@ private suspend fun doInit(
         if(parent!=null && parent.exists() && parent.isDirectory) {
             currentFile = currentDir
             currentDir = parent
-            currentPath.value = currentDir.canonicalPath
+            updateCurrentPath(currentDir.canonicalPath)
         }
     }
 
@@ -3312,26 +3308,26 @@ private suspend fun doInit(
 
         currentFile=null  // 如果进入这个判断，currentFile已无意义，设为null，方便后面判断快速得到结果而不用继续比较path
         currentDir = File(repoBaseDirPath)
-        currentPath.value = repoBaseDirPath
+        updateCurrentPath(repoBaseDirPath)
     }
 
 
     //执行到这，路径一定存在（要么路径存在，要么不存在被替换成了所有仓库的父目录，然后路径存在）
 
     //更新配置文件中记录的最后打开路径，如果需要
-    if(lastOpenedPathFromSettings != currentPath.value) {
+    if(lastOpenedPathFromSettings != currentPath()) {
         //更新页面变量
-        settingsSnapshot.value.files.lastOpenedPath = currentPath.value
+        settingsSnapshot.value.files.lastOpenedPath = currentPath()
 
         //更新配置文件，避免卡顿，可开个协程，但其实没必要，因为最有可能造成卡顿的io操作其实已经放到协程里执行了
         SettingsUtil.update {  //这里并不是把页面的settingsSnapshot状态变量完全写入到配置文件，而是获取一份当下最新设置项的拷贝，然后修改我在这个代码块里修改的变量，再写入文件，所以，在这修改的设置项其实和页面的设置项可能会有出入，但我只需要currentPath关联的一个值而已，所以有差异也无所谓
-            it.files.lastOpenedPath = currentPath.value
+            it.files.lastOpenedPath = currentPath()
         }
     }
 
 
     //文件列表排序算法
-    val (viewAndSortOnlyForThisFolder, viewAndSort) = getViewAndSortForPath(currentPath.value, settingsSnapshot.value)
+    val (viewAndSortOnlyForThisFolder, viewAndSort) = getViewAndSortForPath(currentPath(), settingsSnapshot.value)
     viewAndSortState.value = viewAndSort
     viewAndSortOnlyForThisFolderState.value = viewAndSortOnlyForThisFolder
 
@@ -3428,7 +3424,7 @@ private suspend fun doInit(
     currentPathFileList.value.addAll(dirSortedSet)
     currentPathFileList.value.addAll(fileSortedSet)
     //恢复或新建当前路径的list state
-    curListState.value = getListState(currentPath.value)
+    curListState.value = getListState(currentPath())
 //    currentPathFileList.requireRefreshView()
     //当curpath是文件时，如果文件确实存在并且已选中，则跳转到对应文件的索引
     if(curFileFromCurPathAlreadySelected && curFileFromCurPathFileDto!=null) {
@@ -3536,7 +3532,7 @@ private fun getBackHandler(
     appContext: Context,
     isFileSelectionMode: MutableState<Boolean>,
     filesPageQuitSelectionMode: () -> Unit,
-    currentPath: MutableState<String>,
+    currentPath: ()->String,
     allRepoParentDir: File,
     needRefreshFilesPage: MutableState<String>,
     exitApp: () -> Unit,
@@ -3544,8 +3540,7 @@ private fun getBackHandler(
     filesPageFilterModeOff:()->Unit,
     filesPageSimpleFilterOn: MutableState<Boolean>,
     openDrawer:()->Unit,
-    lastPathByPressBack:MutableState<String>,
-
+    goToPath:(String)->Unit,
 ): () -> Unit {
     val backStartSec =  rememberSaveable { mutableLongStateOf(0) }
     val ceilingPaths = rememberSaveable { FsUtils.getAppCeilingPaths() }
@@ -3566,13 +3561,9 @@ private fun getBackHandler(
             // 20250107: 这个过滤模式好像已经废弃了？？？
             filesPageFilterModeOff()
 //        }else if (currentPath.value.startsWith(FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/")) { //如果在文件管理器页面且不在仓库根目录
-        }else if (ceilingPaths.contains(currentPath.value).not()) { //如果在文件管理器页面且未抵达任一天花板目录，则打开上级目录，否则显示“再按返回则退出”的提示
-            lastPathByPressBack.value = currentPath.value
+        }else if (ceilingPaths.contains(currentPath()).not()) { //如果在文件管理器页面且未抵达任一天花板目录，则打开上级目录，否则显示“再按返回则退出”的提示
             //返回上级目录
-            currentPath.value = currentPath.value.substring(0, currentPath.value.lastIndexOf(File.separator).coerceAtLeast(0)).ifEmpty { FsUtils.rootPath }
-//            currentPath.value = File(currentPath.value).parent ?: FsUtils.rootPath
-            //刷新页面
-            changeStateTriggerRefreshPage(needRefreshFilesPage)
+            goToPath(currentPath().let { it.substring(0, it.lastIndexOf(Cons.slashChar).coerceAtLeast(0)) }.ifEmpty { FsUtils.rootPath })
         }else if(isFileChooser){
             naviUp()
         } else {

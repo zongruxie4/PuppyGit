@@ -34,6 +34,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.FilesInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.FilesPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.FilesTitle
+import com.catpuppyapp.puppygit.screen.functions.getFilesGoToPath
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
@@ -179,6 +180,13 @@ fun FileChooserScreen(
         mutableStateOf(initPath)
     }
 
+    val filesGetCurrentPath = {
+        filesPageCurrentPath.value
+    }
+    val filesUpdateCurrentPath = { path:String ->
+        filesPageCurrentPath.value = path
+    }
+
     val filesPageLastPathByPressBack = rememberSaveable { mutableStateOf("")}
     val showCreateFileOrFolderDialog = rememberSaveable { mutableStateOf(false)}
     val filesPageCurPathFileItemDto = mutableCustomStateOf(stateKeyTag, "filesPageCurPathFileItemDto") { FileItemDto() }
@@ -220,6 +228,9 @@ fun FileChooserScreen(
     val filesPageSetErr = { errMsg:String -> filesPageOpenDirErr.value = errMsg }
     val filesPageHasErr = { filesPageOpenDirErr.value.isNotBlank() }
 
+
+    val filesGoToPath = getFilesGoToPath(filesPageLastPathByPressBack, filesGetCurrentPath, filesUpdateCurrentPath, needRefreshFilesPage)
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -230,7 +241,8 @@ fun FileChooserScreen(
                 ),
                 title = {
                     FilesTitle(
-                        currentPath = filesPageCurrentPath,
+                        currentPath = filesGetCurrentPath,
+                        goToPath = filesGoToPath,
                         allRepoParentDir = allRepoParentDir,
                         needRefreshFilesPage = needRefreshFilesPage,
                         filesPageGetFilterMode = filesPageGetFilterMode,
@@ -333,7 +345,7 @@ fun FileChooserScreen(
             editorPageShowingFilePath = editorPageShowingFilePath,
             editorPageShowingFileIsReady = editorPageShowingFileIsReady,
             needRefreshFilesPage = needRefreshFilesPage,
-            currentPath=filesPageCurrentPath,
+            currentPath=filesGetCurrentPath,
             showCreateFileOrFolderDialog=showCreateFileOrFolderDialog,
             requireImportFile=filesPageRequireImportFile,
             requireImportUriList=filesPageRequireImportUriList,
@@ -341,6 +353,7 @@ fun FileChooserScreen(
             filesPageFilterKeyword=filesPageFilterKeyword,
             filesPageFilterModeOff = filesPageFilterOff,
             currentPathFileList = filesPageCurrentPathFileList,
+            updateCurrentPath = filesUpdateCurrentPath,
             filesPageRequestFromParent = filesPageRequestFromParent,
             requireInnerEditorOpenFile = requireInnerEditorOpenFile,
             filesPageSimpleFilterOn = filesPageSimpleFilterOn,
@@ -363,7 +376,7 @@ fun FileChooserScreen(
             filterList = filesPageFilterList,
             lastPosition = filesLastPosition,
             keepFilterResultOnce = filesPageKeepFilterResultOnce,  //这个页面其实用不到这个变量
-
+            goToPath = filesGoToPath
         )
 
     }
