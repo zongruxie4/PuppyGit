@@ -203,8 +203,6 @@
     <string name="type">النوع</string>
     <string name="unlink_all">إلغاء ربط الكل</string>
     <string name="edit">تعديل</string>
-    <string name="http_https" translatable="false">http/https</string>
-    <string name="ssh" translatable="false">ssh</string>
     <string name="edit_credential">تعديل بيانات الاعتماد</string>
     <string name="abort_merge_failed">فشل إحباط الدمج</string>
     <string name="aborting_merge">جارٍ إحباط الدمج…</string>
@@ -462,7 +460,6 @@
     <string name="err_no_conflict_item_selected">خطأ: لم يتم تحديد أي عنصر تعارض!</string>
     <string name="continue_merge_err">خطأ في متابعة الدمج</string>
     <string name="current_branch">الفرع الحالي</string>
-    <string name="head" translatable="false">HEAD</string>
     <string name="err_selected_remote_is_invalid">خطأ: الخادم البعيد المحدد غير صالح</string>
     <string name="err_restart_app_may_resolve">خطأ! إعادة تشغيل التطبيق قد تحل المشكلة…</string>
     <string name="reset">إعادة تعيين</string>
@@ -881,13 +878,8 @@
     <string name="require_restart_app">يتطلب إعادة تشغيل التطبيق</string>
     <string name="language">اللغة</string>
     <string name="unsupported">غير مدعوم</string>
-    <string name="lang_name_english" translatable="false">English</string>
-    <string name="lang_name_russian" translatable="false">Русский</string>
-    <string name="lang_name_chinese_simplified" translatable="false">中文(简体)</string>
-    <string name="lang_name_turkish" translatable="false">Türkçe</string>
     <string name="log_level">مستوى السجل</string>
     <string name="warn">تحذير</string>
-    <string name="debug" translatable="false">Debug</string>
     <string name="verbose">مفصل</string>
     <string name="edit_cache">تعديل ذاكرة التخزين المؤقت</string>
     <string name="enable">تمكين</string>
@@ -1002,7 +994,6 @@
     <string name="clear_compare">مسح المقارنة</string>
     <string name="username_or_private_key">اسم المستخدم/المفتاح الخاص</string>
     <string name="password_or_passphrase">كلمة المرور/عبارة المرور</string>
-    <string name="http_https_ssh" translatable="false">http/https/ssh</string>
     <string name="ssh_credential">بيانات اعتماد SSH</string>
     <string name="edit_known_hosts_file">تعديل ملف \'known_hosts\'</string>
     <string name="reset_known_hosts">إعادة تعيين \'known_hosts\'</string>
@@ -1022,7 +1013,6 @@
     <string name="forget">نسيان</string>
     <string name="allowed_plz_re_try_clone_fetch_push">تم السماح، يرجى إعادة محاولة الاستنساخ/الجلب/الدفع</string>
     <string name="http_s_credential">بيانات اعتماد http(s)</string>
-    <string name="http_s" translatable="false">http(s)</string>
     <string name="fetch_url">رابط الجلب</string>
     <string name="fetching_remotename">جارٍ جلب ph_a3f241dc_1…</string>
     <string name="repo_state">حالة المستودع</string>
@@ -1114,7 +1104,6 @@
     <string name="document">المستند</string>
     <string name="list_of_tokens">قائمة الرموز المميزة</string>
     <string name="list_of_ips">قائمة عناوين IP</string>
-    <string name="api" translatable="false">Api</string>
     <string name="progress_notification">إشعار التقدم</string>
     <string name="do_you_want_to_edit_the_file_or_import_it">هل تريد تعديل الملف أم استيراده؟</string>
     <string name="ask">سؤال</string>
@@ -1172,8 +1161,6 @@
     <string name="patch_mode">وضع التصحيح</string>
     <string name="no_commit">لا يوجد تثبيت</string>
     <string name="repo_no_commit_note">مستودعك لا يحتوي على أي تثبيتات بعد، يرجى إنشاء بعض الملفات ثم تثبيتها.</string>
-    <string name="with_lease" translatable="false">with-lease</string>
-    <string name="refspec" translatable="false">Refspec</string>
     <string name="expected_refspec">المواصفة المرجعية المتوقعة (Refspec)</string>
     <string name="push_force_with_lease_note">سيتم الدفع الإجباري فقط عندما يكون آخر تثبيت للمصدر الأعلى هو نفسه المتوقع</string>
     <string name="checking">جارٍ التحقق…</string>
