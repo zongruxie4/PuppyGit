@@ -2339,6 +2339,13 @@ object Libgit2Helper {
         }
     }
 
+    /**
+     * 不建议调用这个，建议调用`genCommitMsgNoFault()`
+     *
+     * 注：如果期望index为空返回失败，应该在调用此方法前检测，
+     * 而不是依赖这个方法的返回值，因为目前这个方法已经不会在index为空时返回错误了
+     * （此方法曾经会在index为空时返回错误，不过我检查了下，并没依赖这个方法来判断index是否为空的，所以其他地方不用修改）
+     */
     private fun genCommitMsg(
         repo:Repository,
         itemList: List<StatusTypeEntrySaver>?,

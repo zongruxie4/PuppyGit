@@ -1505,10 +1505,12 @@ fun ChangeListInnerPage(
 //                            showPushForCommitDialog=showPushForCommitDialog
                             )
 
-                            if(requireSync) {
-                                if(commitSuccess){
-                                    commitSuccessCallback()
+                            if(commitSuccess) {  //提交成功
+                                //清提交信息
+                                commitSuccessCallback()
 
+                                //检查是否点的同步或推送
+                                if(requireSync) {
                                     //更新loading提示文案
                                     loadingText.value = activityContext.getString(R.string.syncing)
 
@@ -1528,13 +1530,8 @@ fun ChangeListInnerPage(
                                         loadingText = loadingText,
                                         dbContainer = dbContainer
                                     )
-                                }else {
-                                    requireShowToast(activityContext.getString(R.string.sync_canceled_by_commit_failed))
-                                }
-                            }else if(requirePush) {
-                                if(commitSuccess) {
-                                    commitSuccessCallback()
 
+                                }else if(requirePush) {
                                     loadingText.value = activityContext.getString(R.string.pushing)
 
                                     val success = ChangeListFunctions.doPush(
@@ -1554,10 +1551,16 @@ fun ChangeListInnerPage(
                                     }else {
                                         requireShowToast(activityContext.getString(R.string.push_failed))
                                     }
-                                }else {
+                                }
+                            }else {  //提交失败
+                                //若提交失败，只打印sync和push取消的信息即可，不需要打印提交失败的信息，因为在doCommit已经打印了
+                                if(requireSync) {
+                                    requireShowToast(activityContext.getString(R.string.sync_canceled_by_commit_failed))
+                                }else if(requirePush) {
                                     requireShowToast(activityContext.getString(R.string.push_canceled_by_commit_failed))
                                 }
                             }
+
 
                             //关闭底栏
 //                        bottomBarActDoneCallback("")
