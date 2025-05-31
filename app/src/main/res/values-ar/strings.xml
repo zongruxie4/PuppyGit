@@ -475,7 +475,7 @@
     <string name="err_resolve_remote_failed">خطأ: فشل تحديد الخادم البعيد</string>
     <string name="all">الكل</string>
     <string name="specify">تحديد</string>
-    <string name="branches_split_by_sign">الفروع مفصولة بـ 'ph_a3f241dc_1'</string>
+    <string name="branches_split_by_sign">الفروع مفصولة بـ \'ph_a3f241dc_1\'</string>
     <string name="branches_placeholder">branch1,branch2,etc</string>
     <string name="err_branch_list_is_empty">خطأ: قائمة الفروع فارغة!</string>
     <string name="err_branches_str_is_invalid">خطأ: سلسلة الفروع غير صالحة!</string>
@@ -552,7 +552,7 @@
     <string name="annotated">مع تعليق توضيحي</string>
     <string name="tagger">الواسم</string>
     <string name="new_tag">وسم جديد</string>
-    <string name="err_must_set_username_and_email_before_create_annotate_tag">خطأ: يجب عليك تعيين 'اسم المستخدم' و 'البريد الإلكتروني' للمستودع قبل إنشاء 'وسم مع تعليق توضيحي'</string>
+    <string name="err_must_set_username_and_email_before_create_annotate_tag">خطأ: يجب عليك تعيين \'اسم المستخدم\' و \'البريد الإلكتروني\' للمستودع قبل إنشاء \'وسم مع تعليق توضيحي\'</string>
     <string name="create_tag">إنشاء وسم</string>
     <string name="deleting">جارٍ الحذف…</string>
     <string name="filter">تصفية</string>
@@ -575,7 +575,7 @@
     <string name="or_str">أو</string>
     <string name="warn_remote_tag_override_local_tag">تحذير: الخادم البعيد سيجبر على تجاوز الوسوم المحلية ذات الاسم نفسه، حتى لو لم تكن قابلة للتقديم السريع</string>
     <string name="warn_local_tag_override_remote_tag">تحذير: المحلي سيجبر على تجاوز الوسوم البعيدة ذات الاسم نفسه، حتى لو لم تكن قابلة للتقديم السريع</string>
-    <string name="note_as_default_remote_will_not_override_local_tags">ملاحظة: بشكل افتراضي، الخادم البعيد [لن يتجاوز] الوسوم المحلية ذات الاسم نفسه، إلا إذا قمت بتحديد 'إجباري'</string>
+    <string name="note_as_default_remote_will_not_override_local_tags">ملاحظة: بشكل افتراضي، الخادم البعيد [لن يتجاوز] الوسوم المحلية ذات الاسم نفسه، إلا إذا قمت بتحديد \'إجباري\'</string>
     <string name="note_as_default_local_will_override_remote_tags">ملاحظة: بشكل افتراضي، بالنسبة للوسوم خفيفة الوزن، المحلي [سيتجاوز] الخادم البعيد إذا كان قابلاً للتقديم السريع</string>
     <string name="load_to_end">تحميل حتى النهاية</string>
     <string name="creating">جارٍ الإنشاء…</string>
@@ -605,7 +605,7 @@
     <string name="diff_commits">الفرق بين التثبيتات</string>
     <string name="first_commit_hash">هاش التثبيت الأول</string>
     <string name="second_commit_hash">هاش التثبيت الثاني</string>
-    <string name="note_leave_commit_hash_empty_to_compare_with_local_worktree">ملاحظة: اترك هاش التثبيت فارغًا للمقارنة مع 'المحلي' (شجرة العمل)</string>
+    <string name="note_leave_commit_hash_empty_to_compare_with_local_worktree">ملاحظة: اترك هاش التثبيت فارغًا للمقارنة مع \'المحلي\' (شجرة العمل)</string>
     <string name="num2_commits_same">التثبيتان متماثلتان</string>
     <string name="swap_commits">تبديل التثبيتات</string>
     <string name="swap_commits_on">تبديل التثبيتات: تشغيل</string>
@@ -791,7 +791,7 @@
     <string name="current_dir_doesnt_exist_anymore">المجلد الحالي لم يعد موجودًا</string>
     <string name="first_line">السطر الأول</string>
     <string name="last_line">السطر الأخير</string>
-    <string name="compare_left_to_right">مقارنة 'اليسار' بـ 'اليمين'</string>
+    <string name="compare_left_to_right">مقارنة \'اليسار\' بـ \'اليمين\'</string>
     <string name="selected_str">محدد</string>
     <string name="path_under_repo">المسار تحت المستودع</string>
     <string name="submodules">الوحدات الفرعية</string>
@@ -819,7 +819,7 @@
     <string name="sync_configs">مزامنة الإعدادات</string>
     <string name="del_config">حذف الإعدادات</string>
     <string name="del_files">حذف الملفات</string>
-    <string name="submodule_del_config_info_note">سيتم حذف معلومات الوحدة الفرعية من '.gitmodules' و '.git/config' للمستودع الأب</string>
+    <string name="submodule_del_config_info_note">سيتم حذف معلومات الوحدة الفرعية من \'.gitmodules\' و \'.git/config\' للمستودع الأب</string>
     <string name="submodule_del_files_on_disk_note">سيتم حذف ملفات الوحدة الفرعية من القرص، بما في ذلك مجلد العمل ومجلد .git الخاص بها</string>
     <string name="parent_config">إعدادات الأب</string>
     <string name="submodule_config">إعدادات الوحدة الفرعية</string>
@@ -837,7 +837,7 @@
     <string name="will_init_selected_folders_to_git_repos_are_you_sure">سيتم تهيئة المجلدات المحددة كمستودعات Git، هل أنت متأكد؟</string>
     <string name="n_inited">تم تهيئة ph_a3f241dc_1</string>
     <string name="no_credential_will_be_used">لن يتم استخدام أي بيانات اعتماد</string>
-    <string name="credential_match_by_domain_note">سيتم مطابقة بيانات الاعتماد حسب النطاق، يمكنك ربط النطاق وبيانات الاعتماد في صفحة 'مدير بيانات الاعتماد'</string>
+    <string name="credential_match_by_domain_note">سيتم مطابقة بيانات الاعتماد حسب النطاق، يمكنك ربط النطاق وبيانات الاعتماد في صفحة \'مدير بيانات الاعتماد\'</string>
     <string name="credential_match_by_domain_note_short">مطابقة بيانات الاعتماد حسب النطاق</string>
     <string name="reset_to_target">إعادة التعيين إلى الهدف</string>
     <string name="resetting">جارٍ إعادة التعيين…</string>
@@ -851,7 +851,7 @@
     <string name="match_credential_by_domain">مطابقة بيانات الاعتماد حسب النطاق</string>
     <string name="domains">النطاقات</string>
     <string name="domain">النطاق</string>
-    <string name="import_repos_link_credential_note">سيتم ربط بيانات الاعتماد المحددة بالخوادم البعيدة للمستودع، عادةً ما تكون 'origin'</string>
+    <string name="import_repos_link_credential_note">سيتم ربط بيانات الاعتماد المحددة بالخوادم البعيدة للمستودع، عادةً ما تكون \'origin\'</string>
     <string name="desc">الوصف</string>
     <string name="location">الموقع</string>
     <string name="check_only">تحقق فقط</string>
@@ -914,8 +914,8 @@
     <string name="permissions">الأذونات</string>
     <string name="manage_storage">إدارة التخزين</string>
     <string name="if_you_want_to_clone_repo_into_external_storage_this_permission_is_required">إذا كنت ترغب في استنساخ مستودع في التخزين الخارجي، فهذا الإذن مطلوب.</string>
-    <string name="merge_left_into_right">دمج 'ph_a3f241dc_1' في 'ph_a3f241dc_2'</string>
-    <string name="rebase_left_onto_right">إعادة تأسيس 'ph_a3f241dc_1' على 'ph_a3f241dc_2'</string>
+    <string name="merge_left_into_right">دمج \'ph_a3f241dc_1\' في \'ph_a3f241dc_2\'</string>
+    <string name="rebase_left_onto_right">إعادة تأسيس \'ph_a3f241dc_1\' على \'ph_a3f241dc_2\'</string>
     <string name="last_modified">آخر تعديل</string>
     <string name="is_merged">تم دمجه</string>
     <string name="not_merged">لم يتم دمجه</string>
@@ -951,7 +951,7 @@
     <string name="content">المحتوى</string>
     <string name="insert">إدراج</string>
     <string name="append">إلحاق</string>
-    <string name="note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file">ملاحظة: إذا لم يكن 'رقم السطر' موجودًا، فسيتم إلحاق المحتوى بنهاية الملف</string>
+    <string name="note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file">ملاحظة: إذا لم يكن \'رقم السطر\' موجودًا، فسيتم إلحاق المحتوى بنهاية الملف</string>
     <string name="copy_mode">وضع النسخ</string>
     <string name="show_change_type">إظهار نوع التغيير</string>
     <string name="replace">استبدال</string>
@@ -966,7 +966,7 @@
     <string name="no_repo_found">لم يتم العثور على مستودع</string>
     <string name="path_not_under_repo">المسار ليس تحت المستودع</string>
     <string name="file_history">سجل الملف</string>
-    <string name="err_file_under_git_dir">خطأ: الملف تحت مجلد '.git'</string>
+    <string name="err_file_under_git_dir">خطأ: الملف تحت مجلد \'.git\'</string>
     <string name="plz_import_repo_then_try_again">يرجى استيراد المستودع ثم المحاولة مرة أخرى</string>
     <string name="entry_id">معرف الإدخال</string>
     <string name="commit_id">معرف التثبيت</string>
@@ -1004,11 +1004,11 @@
     <string name="password_or_passphrase">كلمة المرور/عبارة المرور</string>
     <string name="http_https_ssh" translatable="false">http/https/ssh</string>
     <string name="ssh_credential">بيانات اعتماد SSH</string>
-    <string name="edit_known_hosts_file">تعديل ملف 'known_hosts'</string>
-    <string name="reset_known_hosts">إعادة تعيين 'known_hosts'</string>
+    <string name="edit_known_hosts_file">تعديل ملف \'known_hosts\'</string>
+    <string name="reset_known_hosts">إعادة تعيين \'known_hosts\'</string>
     <string name="allow_unknown_hosts">السماح بالمضيفين غير المعروفين</string>
     <string name="confirm">تأكيد</string>
-    <string name="will_reset_the_unknown_hosts_file">سيتم إعادة تعيين ملف 'known_hosts'</string>
+    <string name="will_reset_the_unknown_hosts_file">سيتم إعادة تعيين ملف \'known_hosts\'</string>
     <string name="forget_hostkeys">نسيان مفاتيح المضيف</string>
     <string name="if_enable_will_allow_unknown_hosts_as_default_else_will_ask">إذا تم التمكين، سيسمح بالمضيفين غير المعروفين بشكل افتراضي، وإلا سيسأل</string>
     <string name="after_forgetting_the_host_keys_may_ask_confirm_again">بعد نسيان مفاتيح المضيف، عند الاتصال بمضيف عبر SSH مرة أخرى، قد يطلب منك التأكيد مرة أخرى.</string>
@@ -1038,7 +1038,7 @@
     <string name="cleared">تم المسح</string>
     <string name="clear_recent_files_confirm_text">سيتم مسح قائمة الملفات الأخيرة ونسيان آخر مواضع تعديل لها</string>
     <string name="match_by_words">مطابقة بالكلمات</string>
-    <string name="cache_your_input_into_editcache_dir_path">تخزين إدخالك مؤقتًا في 'ph_a3f241dc_1'</string>
+    <string name="cache_your_input_into_editcache_dir_path">تخزين إدخالك مؤقتًا في \'ph_a3f241dc_1\'</string>
     <string name="switch_reference">تبديل المرجع</string>
     <string name="switch_item">تبديل العنصر</string>
     <string name="count_n">العدد: ph_a3f241dc_1</string>
@@ -1110,7 +1110,7 @@
     <string name="if_empty_will_reject_all_requests">إذا كان فارغًا، سيرفض جميع الطلبات</string>
     <string name="ip_whitelist">القائمة البيضاء لـ IP</string>
     <string name="per_line_one_ip">عنوان IP واحد لكل سطر</string>
-    <string name="use_asterisk_to_match_all_ips">استخدم '*' لمطابقة جميع عناوين IP</string>
+    <string name="use_asterisk_to_match_all_ips">استخدم \'*\' لمطابقة جميع عناوين IP</string>
     <string name="document">المستند</string>
     <string name="list_of_tokens">قائمة الرموز المميزة</string>
     <string name="list_of_ips">قائمة عناوين IP</string>
@@ -1130,7 +1130,7 @@
     <string name="unlinked_repos">المستودعات غير المرتبطة</string>
     <string name="will_auto_pull_push_linked_repos_when_selected_apps_enter_exit">سيتم السحب/الدفع التلقائي للمستودعات المرتبطة عند دخول/خروج التطبيقات المحددة</string>
     <string name="app_info">معلومات التطبيق</string>
-    <string name="intro_go_to_app_info_to_allow_autostart_and_disable_battery_optimization">ربما ترغب في الانتقال إلى معلومات التطبيق لـ 'السماح بالتشغيل التلقائي' و 'تعطيل تحسين البطارية'</string>
+    <string name="intro_go_to_app_info_to_allow_autostart_and_disable_battery_optimization">ربما ترغب في الانتقال إلى معلومات التطبيق لـ \'السماح بالتشغيل التلقائي\' و \'تعطيل تحسين البطارية\'</string>
     <string name="set_upstream_err_remote_is_invalid">خطأ في تعيين المصدر الأعلى، الخادم البعيد غير صالح</string>
     <string name="welcome_please_set_git_username_and_email">أهلاً بك! يرجى تعيين اسم مستخدم وبريد إلكتروني Git! هذا ضروري لإنشاء التثبيتات!</string>
     <string name="click_to_switch_selected_unselected_long_click_to_config_linked_repos">انقر للتبديل بين محدد/غير محدد، انقر مطولاً على تطبيق محدد لتكوين المستودعات المرتبطة</string>
