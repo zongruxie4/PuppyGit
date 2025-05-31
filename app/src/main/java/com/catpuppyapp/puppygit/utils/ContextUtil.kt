@@ -34,15 +34,16 @@ object ContextUtil {
         // split language codes, e.g. split "zh-rCN" to "zh" and "CN"
         val (language, country) = LanguageUtil.splitLanguageCode(languageCode)
         val locale = if (country.isBlank()) Locale(language) else Locale(language, country)
-        return setLocalToContext(locale, baseContext)
+        return setLocalForContext(locale, baseContext)
     }
 
     private fun createDefaultContextForUnsupportedLanguage(baseContext: Context): Context {
-        val systemDefaultLocal = baseContext.resources.configuration.locales.get(0)
-        return setLocalToContext(systemDefaultLocal, baseContext)
+        //这个api不受`Activity#attachBaseContext()`影响，总是获取系统默认Locale
+        val systemDefaultLocal = Locale.getDefault()
+        return setLocalForContext(systemDefaultLocal, baseContext)
     }
 
-    private fun setLocalToContext(locale: Locale, baseContext:Context):Context {
+    private fun setLocalForContext(locale: Locale, baseContext:Context):Context {
         Locale.setDefault(locale)
         val config = baseContext.resources.configuration
         config.setLocale(locale)
