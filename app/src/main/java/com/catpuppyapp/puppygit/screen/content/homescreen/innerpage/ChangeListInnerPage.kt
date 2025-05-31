@@ -1567,7 +1567,7 @@ fun ChangeListInnerPage(
 
                         }catch (e:Exception){
 //                        e.printStackTrace()
-                            MyLog.e(TAG, "#doCommit at showCommitMsgDialog #onOk:" + e.stackTraceToString())
+                            MyLog.e(TAG, "#doCommit at showCommitMsgDialog #onOk: " + e.stackTraceToString())
                         }
                     }
                 }
