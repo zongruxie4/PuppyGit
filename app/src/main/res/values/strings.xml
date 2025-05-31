@@ -927,6 +927,7 @@
 
 <!--    non-translatable or no need translate(such as language name text) -->
 <!--    order by language code a-z-->
+    <string name="lang_name_arabic" translatable="false">العربية</string>
     <string name="lang_name_english" translatable="false">English</string>
     <string name="lang_name_russian" translatable="false">Русский</string>
     <string name="lang_name_chinese_simplified" translatable="false">中文(简体)</string>

@@ -15,6 +15,7 @@ object LanguageUtil {
         LangCode.auto,
 
         // order by a-z
+        LangCode.ar,
         LangCode.en,
         LangCode.ru,
         LangCode.tr,
@@ -56,6 +57,10 @@ object LanguageUtil {
         }
 
         // order by a-z
+        if(languageCode == LangCode.ar) {
+            return context.getString(R.string.lang_name_arabic)
+        }
+
         if(languageCode == LangCode.en) {
             return context.getString(R.string.lang_name_english)
         }
