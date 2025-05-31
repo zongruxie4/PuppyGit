@@ -15,7 +15,7 @@ object ContextUtil {
 //               // throw RuntimeException("found unsupported lang in config, will try auto detect language")
 
                 // auto detected or unsupported language
-                return newBase
+                return createDefaultContextForUnsupportedLanguage(newBase)
             }
 
 
@@ -34,6 +34,15 @@ object ContextUtil {
         // split language codes, e.g. split "zh-rCN" to "zh" and "CN"
         val (language, country) = LanguageUtil.splitLanguageCode(languageCode)
         val locale = if (country.isBlank()) Locale(language) else Locale(language, country)
+        return setLocalToContext(locale, baseContext)
+    }
+
+    private fun createDefaultContextForUnsupportedLanguage(baseContext: Context): Context {
+        val systemDefaultLocal = baseContext.resources.configuration.locales.get(0)
+        return setLocalToContext(systemDefaultLocal, baseContext)
+    }
+
+    private fun setLocalToContext(locale: Locale, baseContext:Context):Context {
         Locale.setDefault(locale)
         val config = baseContext.resources.configuration
         config.setLocale(locale)
