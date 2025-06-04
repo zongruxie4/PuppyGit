@@ -29,7 +29,9 @@ fun CredentialSelector(
 
     val note = rememberSaveable { mutableStateOf("")}
 
-    DefaultPaddingText("$title: ")
+    MySelectionContainer {
+        DefaultPaddingText("$title: ")
+    }
 
     SingleSelectList(
         optionsList = credentialList,
@@ -49,7 +51,9 @@ fun CredentialSelector(
 
     if(note.value.isNotBlank()) {
         Spacer(Modifier.height(5.dp))
-        DefaultPaddingText(note.value, color = MyStyleKt.TextColor.highlighting_green)
+        MySelectionContainer {
+            DefaultPaddingText(note.value, color = MyStyleKt.TextColor.highlighting_green)
+        }
     }
 
     Spacer(Modifier.height(15.dp))

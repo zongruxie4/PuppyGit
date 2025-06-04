@@ -1799,11 +1799,14 @@ fun ChangeListInnerPage(
 
             doJobThenOffLoading(loadingOn,loadingOff, activityContext.getString(R.string.creating_patch)) job@{
                 try {
+                    val left = getCommitLeft()
+                    val right = getCommitRight()
+
                     val savePatchRet = ChangeListFunctions.createPath(
                         curRepo = curRepo,
-                        leftCommit = getCommitLeft(),
-                        rightCommit = getCommitRight(),
-                        fromTo = fromTo,
+                        leftCommit = left,
+                        rightCommit = right,
+                        fromTo = if(left == Cons.git_IndexCommitHash && right == Cons.git_LocalWorktreeCommitHash) Cons.gitDiffFromIndexToWorktree else fromTo,
                         relativePaths = selectedItemList.value.map { it.relativePathUnderRepo }
                     );
 
@@ -1864,11 +1867,14 @@ fun ChangeListInnerPage(
                             }
                         },
                         modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
-                        )
+                    )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Text(text = stringResource(R.string.will_checkout_selected_files_are_you_sure),
+                    Text(
+                        text = stringResource(R.string.will_checkout_selected_files_are_you_sure),
                         modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
-                        )
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+
                     MyCheckBox(text = stringResource(R.string.force), value = checkoutForce)
                     if(checkoutForce.value) {
                         DefaultPaddingText(
@@ -2062,14 +2068,19 @@ fun ChangeListInnerPage(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    DefaultPaddingText(stringResource(R.string.will_try_import_selected_dirs_as_repos))
+                    MySelectionContainer {
+                        DefaultPaddingText(stringResource(R.string.will_try_import_selected_dirs_as_repos))
+                    }
+
                     Spacer(Modifier.height(15.dp))
 
 //                    Text(stringResource(R.string.will_import_selected_submodules_to_repos))
                     CredentialSelector(credentialList.value.toList(), selectedCredentialIdx)
 
                     Spacer(Modifier.height(10.dp))
-                    DefaultPaddingText(stringResource(R.string.import_repos_link_credential_note))
+                    MySelectionContainer {
+                        DefaultPaddingText(stringResource(R.string.import_repos_link_credential_note))
+                    }
                 }
             },
             onCancel = { showImportToReposDialog.value = false },
