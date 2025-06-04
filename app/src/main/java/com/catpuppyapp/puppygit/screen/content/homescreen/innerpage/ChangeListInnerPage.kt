@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.DoneAll
@@ -63,6 +64,7 @@ import com.catpuppyapp.puppygit.compose.ChangeListItem
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
@@ -1662,30 +1664,36 @@ fun ChangeListInnerPage(
             title = stringResource(R.string.cherrypick),
             requireShowTextCompose = true,
             textCompose = {
-                Column{
-                    Text(text =  buildAnnotatedString {
-                        append(stringResource(R.string.target)+": ")
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold)) {
-                            append(shortTarget)
-                        }
-                    },
+                CopyScrollableColumn {
+                    Text(
+                        text =  buildAnnotatedString {
+                            append(stringResource(R.string.target)+": ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold)) {
+                                append(shortTarget)
+                            }
+                        },
                         modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
                     )
-                    Text(text =  buildAnnotatedString {
-                        append(stringResource(R.string.parent)+": ")
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold)) {
-                            append(shortParent)
-                        }
-                    },
+                    Text(
+                        text =  buildAnnotatedString {
+                            append(stringResource(R.string.parent)+": ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold)) {
+                                append(shortParent)
+                            }
+                        },
                         modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Text(text = stringResource(R.string.will_cherrypick_changes_of_selected_files_are_you_sure),
+                    Text(
+                        text = stringResource(R.string.will_cherrypick_changes_of_selected_files_are_you_sure),
                         modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
                     )
+
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    MyCheckBox(text = stringResource(R.string.auto_commit), value = cherrypickAutoCommit)
+                    DisableSelection {
+                        MyCheckBox(text = stringResource(R.string.auto_commit), value = cherrypickAutoCommit)
+                    }
                 }
             },
             onCancel = { showCherrypickDialog.value = false }
@@ -1789,7 +1797,9 @@ fun ChangeListInnerPage(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Text(text = stringResource(R.string.will_create_patch_for_selected_files_are_you_sure))
+                    MySelectionContainer {
+                        Text(text = stringResource(R.string.will_create_patch_for_selected_files_are_you_sure))
+                    }
                 }
             },
             onCancel = { showCreatePatchDialog.value = false }

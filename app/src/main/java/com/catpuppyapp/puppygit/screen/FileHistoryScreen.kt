@@ -572,24 +572,6 @@ fun FileHistoryScreen(
 
 
 
-    val showCreatePatchDialog = rememberSaveable { mutableStateOf(false)}
-    val createPatchTargetHash = rememberSaveable { mutableStateOf("")}
-    val createPatchParentHash = rememberSaveable { mutableStateOf("")}
-    val createPatchParentList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "createPatchParentList", listOf<String>())
-
-    val initCreatePatchDialog = { targetFullHash:String, defaultParentFullHash:String, parentList:List<String> ->
-        createPatchParentList.value.clear()
-        createPatchParentList.value.addAll(parentList)
-
-        createPatchTargetHash.value = targetFullHash
-        createPatchParentHash.value = defaultParentFullHash
-
-
-        showCreatePatchDialog.value = true
-    }
-
-
-
 
     val showSetPageSizeDialog = rememberSaveable { mutableStateOf(false) }
     val pageSizeForDialog = mutableCustomStateOf(stateKeyTag, "pageSizeForDialog") { TextFieldValue("") }

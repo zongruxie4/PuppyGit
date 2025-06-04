@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -1541,13 +1542,14 @@ fun CommitListScreen(
             title = stringResource(R.string.cherrypick),
             requireShowTextCompose = true,
             textCompose = {
-                Column{
-                    Text(text =  buildAnnotatedString {
-                        append(stringResource(R.string.target)+": ")
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold)) {
-                            append(shortTarget)
-                        }
-                    },
+                CopyScrollableColumn {
+                    Text(
+                        text =  buildAnnotatedString {
+                            append(stringResource(R.string.target)+": ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold)) {
+                                append(shortTarget)
+                            }
+                        },
                         modifier = Modifier.padding(horizontal = padding)
                     )
 
@@ -1555,23 +1557,26 @@ fun CommitListScreen(
                         Text(text = stringResource(R.string.select_a_parent_for_find_changes)+":")
                     }
 
-
-                    SingleSelectList(
-                        optionsList = cherrypickParentList.value,
-                        selectedOptionIndex = null,
-                        selectedOptionValue = cherrypickParentHash.value,
-                        menuItemSelected = {_, value-> value==cherrypickParentHash.value},
-                        menuItemOnClick = {idx, value ->
-                            cherrypickParentHash.value = value
-                        },
-                        menuItemFormatter = {_, value ->
-                            Libgit2Helper.getShortOidStrByFull(value?:"")
-                        }
-                    )
+                    DisableSelection {
+                        SingleSelectList(
+                            optionsList = cherrypickParentList.value,
+                            selectedOptionIndex = null,
+                            selectedOptionValue = cherrypickParentHash.value,
+                            menuItemSelected = {_, value-> value==cherrypickParentHash.value},
+                            menuItemOnClick = {idx, value ->
+                                cherrypickParentHash.value = value
+                            },
+                            menuItemFormatter = {_, value ->
+                                Libgit2Helper.getShortOidStrByFull(value?:"")
+                            }
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(padding))
 
-                    MyCheckBox(text = stringResource(R.string.auto_commit), value = cherrypickAutoCommit)
+                    DisableSelection {
+                        MyCheckBox(text = stringResource(R.string.auto_commit), value = cherrypickAutoCommit)
+                    }
                 }
             },
             onCancel = { showCherrypickDialog.value = false }

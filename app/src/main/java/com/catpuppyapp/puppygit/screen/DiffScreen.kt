@@ -754,7 +754,9 @@ fun DiffScreen(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Text(text = stringResource(R.string.are_you_sure))
+                    MySelectionContainer {
+                        Text(text = stringResource(R.string.are_you_sure))
+                    }
                 }
             },
             onCancel = { showCreatePatchDialog.value = false }
