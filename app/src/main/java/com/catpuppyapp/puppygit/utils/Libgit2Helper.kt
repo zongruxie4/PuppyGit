@@ -2076,8 +2076,9 @@ object Libgit2Helper {
 //传参数则会把remote和branch替换为传来的参数，若想获得某个branch的singlebranch refspec，把期望的branch传进来即可，
 // 以默认remote origin举例，返回值形如：+refs/heads/yourbranch:refs/remotes/origin/yourbranch
     fun getGitRemoteFetchRefSpec(remote:String=Cons.gitDefaultRemoteOrigin, branch:String=Cons.gitFetchAllBranchSign):String {
-        val replacedRemoteStr = Cons.gitFetchRefSpecRemoteAndBranchReplacer.replace(Cons.gitRemotePlaceholder, remote)
-        return replacedRemoteStr.replace(Cons.gitBranchPlaceholder, branch)
+        return Cons.gitFetchRefSpecRemoteAndBranchReplacer
+            .replace(Cons.gitRemotePlaceholder, remote)
+            .replace(Cons.gitBranchPlaceholder, branch)
     }
 
     //向配置文件追加条目，key一样，但value不一样，同一个key可以有多个value，形成一个列表，例如：
