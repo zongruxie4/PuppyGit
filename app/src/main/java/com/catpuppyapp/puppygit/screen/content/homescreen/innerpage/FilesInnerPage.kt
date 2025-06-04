@@ -1461,11 +1461,13 @@ fun FilesInnerPage(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        if(hasErr){
-                            Text(getErr(), color = MyStyleKt.TextColor.error())
-                        }else if(folderIsEmpty) {
-                            Text(stringResource(R.string.folder_is_empty))
-                        }  // else maybe
+                        MySelectionContainer {
+                            if(hasErr){
+                                Text(getErr(), color = MyStyleKt.TextColor.error())
+                            }else if(folderIsEmpty) {
+                                Text(stringResource(R.string.folder_is_empty))
+                            }  // else maybe
+                        }
                     }
                 }else {
                     val keyword = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
