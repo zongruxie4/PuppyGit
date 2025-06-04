@@ -2,8 +2,8 @@ package com.catpuppyapp.puppygit.utils.cache
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.rememberSaveable
 import com.catpuppyapp.puppygit.utils.getShortUUID
+import com.catpuppyapp.puppygit.utils.state.Saver.rememberSaveableString
 import kotlinx.coroutines.sync.Mutex
 
 /**
@@ -103,8 +103,16 @@ object Cache:CacheStoreImpl(){
      */
     @Composable
     fun getSubPageKey(stateKeyTag:String):String {
+        // use a custom saver for avoid rememberSaveable crashing the LazyColumn, is a bug of LazyColumn
         // e.g. "sub_pages_key_prefix:DiffScreen:ak1idkjgkk"
-        return rememberSaveable { StringBuilder(Key.subPagesStateKeyPrefix).append(keySeparator).append(stateKeyTag).append(keySeparator).append(getShortUUID()).toString() }
+        return rememberSaveableString {
+            StringBuilder(Key.subPagesStateKeyPrefix)
+                .append(keySeparator)
+                .append(stateKeyTag)
+                .append(keySeparator)
+                .append(getShortUUID())
+                .toString()
+        }
     }
 
     /**
@@ -117,7 +125,14 @@ object Cache:CacheStoreImpl(){
     fun getComponentKey(parentKey:String, stateKeyTag:String): String {
         // e.g. 子页面："sub_pages_key_prefix:DiffScreen:ak1idkjgkk:DiffRow:13idgiwkfd"
         //      顶级页面："HomeScreen:abcdef12345:DiffRow:abcdef12345"
-        return rememberSaveable { StringBuilder(parentKey).append(keySeparator).append(stateKeyTag).append(keySeparator).append(getShortUUID()).toString() }
+        return rememberSaveableString {
+            StringBuilder(parentKey)
+                .append(keySeparator)
+                .append(stateKeyTag)
+                .append(keySeparator)
+                .append(getShortUUID())
+                .toString()
+        }
     }
     // 自定义状态存储器key相关函数：结束
 
