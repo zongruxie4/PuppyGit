@@ -242,7 +242,10 @@ object Cons {
     const val gitFetchRefSpecRemoteAndBranchReplacer = "+refs/heads/$gitBranchPlaceholder:refs/remotes/$gitRemotePlaceholder/$gitBranchPlaceholder"
 
 
-    val gitShortCommitHashRange = IntRange(start=0, endInclusive=7)  //0到7，共8位，git之前默认7位，现在（20250605）默认8位
+    //0到7，共8位，git之前默认7位，但我发现现在（20250605）有的仓库，
+    // push后显示的提交号是8位，但有的仍然是7位，
+    // 可能有某种检测机制决定短提交显示几位（例如：如果提交历史超过一定数量，则增加短提交位数，我没考证过）
+    val gitShortCommitHashRange = IntRange(start=0, endInclusive=7)
     const val maxGitSha1HashStrLength = 40
     // [7,40] 位，16进制字符，小写字母，当然，小于7位也可能是hash，但小于7位根本没必要截断显示，所以这里不判断是否小于7位
     //主要用来在截断hash时判断一个字符串是否是hash，若是则截断，若不是（例如origin/main），则不截断
