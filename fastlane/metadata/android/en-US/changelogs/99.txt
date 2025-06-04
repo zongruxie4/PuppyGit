@@ -1,0 +1,1 @@
+- can choose checkout left or right when compare two commits

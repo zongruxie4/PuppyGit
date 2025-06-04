@@ -1,6 +1,15 @@
 
 
 ---
+1.1.2.3v99 - 20250604:
+- can choose checkout left or right when compare two commits
+
+
+
+- 比较两个提交时可选检出左边或右边的文件
+
+
+---
 1.1.2.2v98 - 20250530:
 - restore ime visible when return Editor
 - support Arabic language (thx https://github.com/Hussain96o)
