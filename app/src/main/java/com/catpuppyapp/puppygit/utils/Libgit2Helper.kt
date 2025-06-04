@@ -5096,7 +5096,7 @@ object Libgit2Helper {
     suspend fun updateRepoInfo(
         repoFromDb: RepoEntity,
         requireQueryParentInfo:Boolean=true,
-        settings: AppSettings = SettingsUtil.getSettingsSnapshot()
+        settings: AppSettings = SettingsUtil.getSettingsSnapshot(),
     ) {
         val funName = "updateRepoInfo"
 

@@ -23,6 +23,7 @@ import com.catpuppyapp.puppygit.data.entity.RemoteEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.ImportRepoResult
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -229,8 +230,10 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
         val list = dao.getAll()
 
         if(updateRepoInfo) {
+            val settings = SettingsUtil.getSettingsSnapshot()
+
             list.forEach {
-                Libgit2Helper.updateRepoInfo(it)
+                Libgit2Helper.updateRepoInfo(it, settings = settings)
             }
         }
 
@@ -274,8 +277,9 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
     override suspend fun getAReadyRepo(): RepoEntity? {
         val repos = getAll()
         if(repos.isEmpty()) {
-            return null;
+            return null
         }
+
         for(r in repos) {
             if (isRepoReadyAndPathExist(r)){
                 Libgit2Helper.updateRepoInfo(r)
@@ -283,6 +287,7 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
                 return r
             }
         }
+
         return null;
     }
 
@@ -291,11 +296,14 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
 
         val repos = getAll()
 
+        val settings = SettingsUtil.getSettingsSnapshot()
+
         for(r in repos) {
-            if (isRepoReadyAndPathExist(r)){
+            if (isRepoReadyAndPathExist(r)) {
                 if(requireSyncRepoInfoWithGit) {
-                    Libgit2Helper.updateRepoInfo(r)
+                    Libgit2Helper.updateRepoInfo(r, settings = settings)
                 }
+
                 repoList.add(r)
             }
         }
