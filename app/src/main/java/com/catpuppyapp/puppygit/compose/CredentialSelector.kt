@@ -27,11 +27,13 @@ fun CredentialSelector(
 
     val activityContext = LocalContext.current
 
-    val note = rememberSaveable { mutableStateOf("")}
+    val note = rememberSaveable { mutableStateOf("") }
 
     MySelectionContainer {
         DefaultPaddingText("$title: ")
     }
+
+    Spacer(Modifier.height(5.dp))
 
     SingleSelectList(
         optionsList = credentialList,
