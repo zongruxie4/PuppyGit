@@ -16,15 +16,9 @@ object Saver {
         restore = { it }
     )
 
-
     @Composable
-    fun rememberSaveableString(value:String):String {
-        return rememberSaveable(saver = STRING) { value }
-    }
-
-    @Composable
-    fun rememberSaveableString(value: ()->String):String {
-        return rememberSaveable(saver = STRING) { value() }
+    fun rememberSaveableString(init: ()->String):String {
+        return rememberSaveable(saver = STRING, init = init)
     }
 
 }
