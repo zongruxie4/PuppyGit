@@ -1,10 +1,12 @@
 package com.catpuppyapp.puppygit.compose
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -12,7 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.style.MyStyleKt
 
 /**
  * 左边一个圆圈的那种单选列表，适合条目不太多的选项，条目太多建议用dropdown list
@@ -23,34 +27,50 @@ fun <T> SingleSelection(
     selected:(idx:Int, T)->Boolean,
     text:(idx:Int, T)->String,
     onClick:(idx:Int, T)->Unit,
+    skip:(idx:Int, T)->Boolean = {idx, item -> false }, // will not show item if skip return true
+    itemDescContext: (@Composable (idx:Int, T) ->Unit)? = null,
+    minHeight:Dp = MyStyleKt.RadioOptions.minHeight
 ) {
-    for ((idx, item) in itemList.withIndex()) {
-        val selected = selected(idx, item)
+    Column(
+        modifier = Modifier.selectableGroup()
+    ) {
+        for ((idx, item) in itemList.withIndex()) {
+            if(skip(idx, item)) {
+                continue
+            }
 
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min=40.dp)
-                .selectable(
+            val selected = selected(idx, item)
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = minHeight)
+                    .selectable(
+                        selected = selected,
+                        onClick = {
+                            onClick(idx, item)
+                        },
+                        role = Role.RadioButton
+                    )
+                    .padding(horizontal = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
                     selected = selected,
-                    onClick = {
-                        onClick(idx, item)
-                    },
-                    role = Role.RadioButton
+                    onClick = null // null recommended for accessibility with screenreaders
                 )
-                .padding(horizontal = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RadioButton(
-                selected = selected,
-                onClick = null // null recommended for accessibility with screenreaders
-            )
-            ScrollableRow {
-                Text(
-                    text = text(idx, item),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
+
+                MySelectionContainer {
+                    ScrollableRow {
+                        Text(
+                            text = text(idx, item),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 10.dp)
+                        )
+                    }
+                }
+
+                itemDescContext?.invoke(idx, item)
             }
         }
     }

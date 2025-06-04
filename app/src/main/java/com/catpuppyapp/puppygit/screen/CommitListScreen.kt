@@ -1448,44 +1448,7 @@ fun CommitListScreen(
                         }
                     )
 
-//
-//                    MyLazyColumn(
-//                        modifier = Modifier.heightIn(max=150.dp),
-//                        requireUseParamModifier = true,
-//                        contentPadding = PaddingValues(0.dp),
-//                        list = createPatchParentList.value,
-//                        listState = StateUtil.getRememberLazyListState(),
-//                        requireForEachWithIndex = true,
-//                        requirePaddingAtBottom =false
-//                    ) {k, optext ->
-//                        Row(
-//                            Modifier
-//                                .fillMaxWidth()
-//                                .heightIn(min = MyStyleKt.RadioOptions.minHeight)
-//
-//                                .selectable(
-//                                    selected = createPatchParentHash.value == optext,
-//                                    onClick = {
-//                                        //更新选择值
-//                                        createPatchParentHash.value = optext
-//                                    },
-//                                    role = Role.RadioButton
-//                                )
-//                                .padding(horizontal = padding),
-//                            verticalAlignment = Alignment.CenterVertically
-//                        ) {
-//                            RadioButton(
-//                                selected = createPatchParentHash.value == optext,
-//                                onClick = null // null recommended for accessibility with screenreaders
-//                            )
-//                            Text(
-//                                text = Libgit2Helper.getShortOidStrByFull(optext),
-//                                style = MaterialTheme.typography.bodyLarge,
-//                                modifier = Modifier.padding(start = padding)
-//                            )
-//                        }
-//
-//                    }
+
                 }
             },
             onCancel = { showCreatePatchDialog.value = false }
@@ -1605,47 +1568,6 @@ fun CommitListScreen(
                             Libgit2Helper.getShortOidStrByFull(value?:"")
                         }
                     )
-
-//
-//                    MyLazyColumn(
-//                        modifier = Modifier.heightIn(max=150.dp),
-//                        requireUseParamModifier = true,
-//                        contentPadding = PaddingValues(0.dp),
-//                        list = cherrypickParentList.value,
-//                        listState = StateUtil.getRememberLazyListState(),
-//                        requireForEachWithIndex = true,
-//                        requirePaddingAtBottom =false
-//                    ) {k, optext ->
-//                        Row(
-//                            Modifier
-//                                .fillMaxWidth()
-//                                .heightIn(min = MyStyleKt.RadioOptions.minHeight)
-//
-//                                .selectable(
-//                                    selected = cherrypickParentHash.value == optext,
-//                                    onClick = {
-//                                        //更新选择值
-//                                        cherrypickParentHash.value = optext
-//                                    },
-//                                    role = Role.RadioButton
-//                                )
-//                                .padding(horizontal = padding),
-//                            verticalAlignment = Alignment.CenterVertically
-//                        ) {
-//                            RadioButton(
-//                                selected = cherrypickParentHash.value == optext,
-//                                onClick = null // null recommended for accessibility with screenreaders
-//                            )
-//                            Text(
-//                                text = Libgit2Helper.getShortOidStrByFull(optext),
-//                                style = MaterialTheme.typography.bodyLarge,
-//                                modifier = Modifier.padding(start = padding)
-//                            )
-//                        }
-//
-//                    }
-
-
 
                     Spacer(modifier = Modifier.height(padding))
 

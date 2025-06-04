@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -35,7 +33,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -64,6 +61,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.DepthTextField
 import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.InternalFileChooser
@@ -71,6 +69,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.SingleSelectList
+import com.catpuppyapp.puppygit.compose.SingleSelection
 import com.catpuppyapp.puppygit.compose.TokenInsteadOfPasswordHint
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
@@ -835,57 +834,26 @@ fun CloneScreen(
 
 
             HorizontalDivider(modifier = Modifier.padding(spacerPadding))
+            Spacer(Modifier.height(10.dp))
+            // if empty, no credentials, no need show select credential option
+            val skipSelect = allCredentialList.value.isEmpty()
+
             //choose credential
-            Column(modifier = Modifier
-                .padding(top = 10.dp)
-                .selectableGroup(),
-            ) {
-                //如果对应类型的集合为空，就不显示“选择凭据”选项了
-//                val skipSelect = (curCredentialType.intValue == Cons.dbCredentialTypeHttp && credentialHttpList.value.isEmpty()) || (curCredentialType.intValue==Cons.dbCredentialTypeSsh && credentialSshList.value.isEmpty())
-                val skipSelect = allCredentialList.value.isEmpty()
-
-
-                //如果设置了有效gitUrl，显示新建和选择凭据，否则只显示无凭据
-                for(k in credentialRadioOptions.indices){
+            SingleSelection(
+                itemList = credentialRadioOptions,
+                selected = {idx, item -> credentialSelectedOption == idx},
+                text = {idx, item -> item},
+                onClick = {idx, item -> onCredentialOptionSelected(idx)},
+                skip = {idx, item ->
                     // make sure show private key/passphrase for ssh url
-                    if(k == optNumNewCredential) {
+                    if(idx == optNumNewCredential) {
                         curCredentialType.intValue = Libgit2Helper.getCredentialTypeByUrl(gitUrl.value)
                     }
 
-                    if(skipSelect && k == optNumSelectCredential) {
-                        continue
-                    }
-
-                    val optext = credentialRadioOptions[k]
-
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = MyStyleKt.RadioOptions.minHeight)
-
-                            .selectable(
-                                selected = (credentialSelectedOption == k),
-                                onClick = {
-                                    //更新选择值
-                                    onCredentialOptionSelected(k)
-                                },
-                                role = Role.RadioButton
-                            )
-                            .padding(horizontal = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = (credentialSelectedOption == k),
-                            onClick = null // null recommended for accessibility with screenreaders
-                        )
-                        Text(
-                            text = optext,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 10.dp)
-                        )
-                    }
+                    skipSelect && idx == optNumSelectCredential
                 }
-            }
+            )
+
             if(credentialSelectedOption == optNumNewCredential) {
                 //显示新建credential的输入框
                 TextField(
@@ -1051,8 +1019,10 @@ fun CloneScreen(
                     }
                 }
             }else if(credentialSelectedOption == optNumMatchCredentialByDomain) {
-                Row (modifier = Modifier.padding(10.dp)){
-                    Text(stringResource(R.string.credential_match_by_domain_note), color = MyStyleKt.TextColor.highlighting_green, fontWeight = FontWeight.Light)
+                MySelectionContainer {
+                    DefaultPaddingRow {
+                        Text(stringResource(R.string.credential_match_by_domain_note), color = MyStyleKt.TextColor.highlighting_green, fontWeight = FontWeight.Light)
+                    }
                 }
             }
         }

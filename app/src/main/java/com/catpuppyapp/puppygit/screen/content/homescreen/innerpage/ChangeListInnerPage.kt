@@ -1863,7 +1863,7 @@ fun ChangeListInnerPage(
             requireShowTextCompose = true,
             textCompose = {
                 Column {
-                    PaddingText(stringResource(R.string.target)+":", fontWeight = FontWeight.ExtraBold)
+//                    PaddingText(stringResource(R.string.target)+":", fontWeight = FontWeight.ExtraBold)
                     SingleSelection(
                         itemList = checkoutList.value,
                         selected = {idx, item -> item == checkoutTarget.value},

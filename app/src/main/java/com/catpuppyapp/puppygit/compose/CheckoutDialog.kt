@@ -2,12 +2,10 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -19,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -81,7 +78,8 @@ fun CheckoutDialog(
     val checkoutOptionDefault = if(showJustCheckout) checkoutOptionJustCheckoutForLocalBranch else checkoutOptionCreateBranch  //默认选中创建分支，detach head如果没reflog，有可能丢数据
     val checkoutRemoteOptions = listOf(
         activityContext.getString(R.string.dont_update_head),
-        activityContext.getString(R.string.detach_head),
+//        activityContext.getString(R.string.detach_head),
+        Cons.gitDetachHeadStr,  //这个感觉不翻译好一些
         activityContext.getString(R.string.new_branch) + "(" + activityContext.getString(R.string.recommend) + ")",
         stringResource(R.string.just_checkout)
     )
@@ -213,45 +211,16 @@ fun CheckoutDialog(
                     Text(text = activityContext.getString(R.string.plz_choose_a_checkout_type) + ":")
                 }
 
-                for ((k, optext) in checkoutRemoteOptions.withIndex()) {
-                    //免费用户不支持 "Don't update head"
-                    //直接continue对应选项即可，这样就不会在界面显示了，索引也可正常工作，完美
-                    if(!proFeatureEnabled(dontUpdateHeadWhenCheckoutTestPassed) && k == checkoutOptionDontUpdateHead) {
-                        continue
-                    }
 
-                    //只有在checkout本地分支时才显示just checkout选项
-                    if(!showJustCheckout && k==checkoutOptionJustCheckoutForLocalBranch) {
-                        continue
-                    }
+                //单选框，选择检出类型
+                SingleSelection(
+                    itemList = checkoutRemoteOptions,
+                    selected = {idx, item -> checkoutSelectedOption.intValue == idx},
+                    text = {idx, item -> item},
+                    onClick = {idx, item -> checkoutSelectedOption.intValue = idx},
+                    skip = {idx, item -> (idx == checkoutOptionDontUpdateHead && !proFeatureEnabled(dontUpdateHeadWhenCheckoutTestPassed)) || (idx == checkoutOptionJustCheckoutForLocalBranch && !showJustCheckout)}
+                )
 
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = MyStyleKt.RadioOptions.minHeight)
-
-                            .selectable(
-                                selected = checkoutSelectedOption.intValue == k,
-                                onClick = {
-                                    //更新选择值
-                                    checkoutSelectedOption.intValue = k
-                                },
-                                role = Role.RadioButton
-                            )
-                            .padding(horizontal = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = checkoutSelectedOption.intValue == k,
-                            onClick = null // null recommended for accessibility with screenreaders
-                        )
-                        Text(
-                            text = optext,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 10.dp)
-                        )
-                    }
-                }
                 //如果选择的是创建分支，显示一个输入框
                 if (checkoutSelectedOption.intValue == checkoutOptionCreateBranch) {
                     Row(modifier = Modifier.padding(5.dp)) {
@@ -272,6 +241,8 @@ fun CheckoutDialog(
 //                                Text(stringResource(R.string.branch_name))
 //                            }
                     )
+
+                    Spacer(Modifier.height(10.dp))
 
                     if(isCheckoutRemoteBranch && remotePrefixMaybe.isNotBlank() && remoteBranchShortNameMaybe.isNotBlank()) {
                         MyCheckBox(text = stringResource(R.string.set_upstream), value = setUpstream)
@@ -319,6 +290,8 @@ fun CheckoutDialog(
                 val showForceCheckout = (!(checkoutSelectedOption.intValue == checkoutOptionCreateBranch && dontCheckout.value)) && proFeatureEnabled(forceCheckoutTestPassed)
                 //仅当选中createbranch且勾选dontCheckout时才隐藏force，否则显示
                 if(showForceCheckout) {
+                    Spacer(Modifier.height(10.dp))
+
                     // show force checkbox
                     MyCheckBox(text = stringResource(R.string.force), value = forceCheckout)
 

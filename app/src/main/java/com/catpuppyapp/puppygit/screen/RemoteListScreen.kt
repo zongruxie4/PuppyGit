@@ -252,6 +252,7 @@ fun RemoteListScreen(
 
     if(showSetBranchDialog.value) {
         SetBranchForRemoteDialog(
+            stateKeyTag = stateKeyTag,
             curRepo = curRepo.value,
             remoteName = curObjInState.value.remoteName,
             isAllInitValue = curObjInState.value.branchMode == Cons.dbRemote_Fetch_BranchMode_All,

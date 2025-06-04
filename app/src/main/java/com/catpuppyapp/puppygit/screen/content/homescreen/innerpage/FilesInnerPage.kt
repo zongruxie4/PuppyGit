@@ -19,13 +19,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -43,7 +41,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -67,7 +64,6 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
@@ -97,6 +93,7 @@ import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
+import com.catpuppyapp.puppygit.compose.SingleSelection
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -1217,36 +1214,13 @@ fun FilesInnerPage(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    for (sortMethodEnumType in sortMethods) {
-                        val code = sortMethodEnumType.code
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = MyStyleKt.RadioOptions.middleHeight)
-
-                                .selectable(
-                                    selected = viewAndSortStateBuf.value.sortMethod == code,
-                                    onClick = {
-                                        //更新选择值
-                                        // should acceptable for performance
-                                        viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(sortMethod = code)
-                                    },
-                                    role = Role.RadioButton
-                                )
-                                .padding(horizontal = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = viewAndSortStateBuf.value.sortMethod == code,
-                                onClick = null // null recommended for accessibility with screenreaders
-                            )
-                            Text(
-                                text = SortMethod.getText(sortMethodEnumType, activityContext),
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(start = 10.dp)
-                            )
-                        }
-                    }
+                    SingleSelection(
+                        itemList = sortMethods,
+                        selected = {idx, item -> viewAndSortStateBuf.value.sortMethod == item.code},
+                        text = {idx, item -> SortMethod.getText(item, activityContext)},
+                        onClick = {idx, item -> viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(sortMethod = item.code)},
+                        minHeight = MyStyleKt.RadioOptions.middleHeight,
+                    )
 
                     Spacer(Modifier.height(height))
                     MyCheckBox2(stringResource(R.string.ascend), viewAndSortStateBuf.value.ascend) { newValue ->

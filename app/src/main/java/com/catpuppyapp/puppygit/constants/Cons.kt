@@ -227,6 +227,7 @@ object Cons {
     const val gitGlobMatchAllSign="*"
     const val gitDetachedHeadPrefix = "(Detached HEAD):"
     const val gitDetachedHead = "Detached HEAD"
+    const val gitDetachHeadStr = "Detach HEAD"
     const val gitHeadStr = "HEAD"
     const val gitDefaultRemoteOrigin="origin"
     // git ref example: "refs/remotes/origin/branch"，其中 origin和branch是可变的，前面的部分基本固定不变
