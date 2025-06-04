@@ -15,6 +15,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.getSecFromTime
+import com.catpuppyapp.puppygit.utils.getShortTimeIfPossible
 import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.github.git24j.core.Repository
 
@@ -149,6 +150,9 @@ data class RepoEntity(
     var lastCommitDateTime:String=""
         private set
 
+    // this filed no need set in copy, will re-generate and cache the value at first time getting
+    @Ignore
+    private var lastUpdateTimeFormattedCached:String? = null
 
     /**
      * 拷贝所有字段，包括不在data class构造器的字段
@@ -208,10 +212,14 @@ data class RepoEntity(
 
     fun updateCommitDateTimeWithRepo(repo: Repository, settings: AppSettings) {
         lastCommitDateTime = try {
-            Libgit2Helper.getSingleCommit(repo, repoId = id, commitOidStr = lastCommitHash, settings).dateTime
+            getShortTimeIfPossible(Libgit2Helper.getSingleCommit(repo, repoId = id, commitOidStr = lastCommitHash, settings).dateTime)
         }catch (e: Exception) {
             MyLog.e(TAG, "#updateCommitDateTimeWithRepo: resolve commit hash failed! hash=$lastCommitHash, err=${e.localizedMessage}")
             ""
         }
+    }
+
+    fun cachedLastUpdateTime():String {
+        return lastUpdateTimeFormattedCached ?: getShortTimeIfPossible(lastUpdateTime).let { lastUpdateTimeFormattedCached = it; it }
     }
 }

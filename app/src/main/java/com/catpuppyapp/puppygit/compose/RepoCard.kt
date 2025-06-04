@@ -68,7 +68,6 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.copyAndShowCopied
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
@@ -290,7 +289,7 @@ fun RepoCard(
                             tooltipText = stringResource(R.string.repo_label_last_update_time)
                         )
                         Text(
-                            text = getFormatTimeFromSec(repoDto.lastUpdateTime),
+                            text = repoDto.cachedLastUpdateTime(),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = MyStyleKt.ClickableText.modifier,

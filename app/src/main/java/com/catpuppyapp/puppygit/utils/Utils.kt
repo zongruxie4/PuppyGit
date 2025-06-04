@@ -224,6 +224,48 @@ fun boolToDbInt(b:Boolean):Int {
 
 
 /**
+ * @param originDateTimeFormatted "yyyy-MM-dd HH:mm:ss" formatted date time expected
+ *
+ * @return same date return "HH:mm:ss"; same year return "MM-dd HH:mm:ss"; else return fully origin date time
+ */
+fun getShortTimeIfPossible(originDateTimeFormatted:String) : String {
+    return try {
+        val nowFormatted = getNowInSecFormatted()
+        val nowDateTime = nowFormatted.split(' ')
+        val nowYmd = nowDateTime[0]
+
+        val originDateTime = originDateTimeFormatted.split(' ')
+        val originYmd = originDateTime[0]
+        val originHms = originDateTime[1]
+
+        if(nowYmd == originYmd) { // same date
+            // HH:mm:ss
+            originHms
+        }else {
+            val nowYmdArr = nowYmd.split('-')
+            val originYmdArr = originYmd.split('-')
+            if(nowYmdArr[0] == originYmdArr[0]) {  // same year
+                // MM-dd HH:mm:ss
+                "${originYmdArr[1]}-${originYmdArr[2]} $originHms"
+            }else { // year and date totally difference, return fully origin date time
+                // yyyy-MM-dd HH:mm:ss
+                originDateTimeFormatted
+            }
+        }
+    }catch (e: Exception) {
+        MyLog.e(TAG, "#getShortTimeIfPossible(String) err: originDateTimeFormatted=$originDateTimeFormatted, err=${e.localizedMessage}")
+        ""
+    }
+}
+
+/**
+ * @param sec utc+0 seconds expected, this param should not add offset, will be add when formatting
+ */
+fun getShortTimeIfPossible(sec: Long) : String {
+    return getShortTimeIfPossible(getFormatTimeFromSec(sec))
+}
+
+/**
  * @return secs from utc
  */
 fun getSecFromTime():Long {
