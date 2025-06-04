@@ -211,7 +211,7 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
             return null
         }
 
-        if(onlyReturnReadyRepo && !isRepoReady(repo)) {
+        if(onlyReturnReadyRepo && repoIsNotReady(repo)) {
             return null
         }
 
@@ -281,7 +281,7 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
         }
 
         for(r in repos) {
-            if (isRepoReady(r)){
+            if (repoIsReady(r)){
                 Libgit2Helper.updateRepoInfo(r)
 
                 return r
@@ -299,7 +299,7 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
         val settings = SettingsUtil.getSettingsSnapshot()
 
         for(r in repos) {
-            if (isRepoReady(r)) {
+            if (repoIsReady(r)) {
                 if(requireSyncRepoInfoWithGit) {
                     Libgit2Helper.updateRepoInfo(r, settings = settings)
                 }
@@ -579,9 +579,11 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
         dao.updateRepoName(repoId, name)
     }
 
-    private fun isRepoReady(repoEntity: RepoEntity?): Boolean {
+    private fun repoIsReady(repoEntity: RepoEntity?): Boolean {
         return isRepoReadyAndPathExist(repoEntity)
     }
+
+    private fun repoIsNotReady(repoEntity: RepoEntity?) = repoIsReady(repoEntity).not();
 
     /*
         suspend fun exampleWithTransaction(){
