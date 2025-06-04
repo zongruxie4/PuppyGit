@@ -139,6 +139,10 @@ data class RepoEntity(
             return Libgit2Helper.getShortOidStrByFull(lastCommitHash).let { field = it; it }
         }
 
+    @Ignore
+    var lastCommitDateTime:String=""
+
+
     /**
      * 拷贝所有字段，包括不在data class构造器的字段
      */
@@ -150,6 +154,7 @@ data class RepoEntity(
         newInstance.parentRepoValid = parentRepoValid
         newInstance.otherText = otherText
         newInstance.pendingTask = pendingTask
+        newInstance.lastCommitDateTime = lastCommitDateTime
 
         return newInstance
     }

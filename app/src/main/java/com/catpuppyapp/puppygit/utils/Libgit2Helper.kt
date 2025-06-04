@@ -5093,7 +5093,11 @@ object Libgit2Helper {
      *   if pass false to this value, all repo's parentXXXX filed will not update, that means they maybe invalid, except parentRepoId
      *   如果不传此值，将不会查询parent repo，也不会更新当前仓库的parent相关字段(例如parentRepoName)，这时，除了parentRepoId以外的其他parent相关字段都可能不准确
      */
-    suspend fun updateRepoInfo(repoFromDb: RepoEntity, requireQueryParentInfo:Boolean=true) {
+    suspend fun updateRepoInfo(
+        repoFromDb: RepoEntity,
+        requireQueryParentInfo:Boolean=true,
+        settings: AppSettings = SettingsUtil.getSettingsSnapshot()
+    ) {
         val funName = "updateRepoInfo"
 
         try {
@@ -5139,6 +5143,12 @@ object Libgit2Helper {
                 repoFromDb.branch = head?.shorthand()?:""
                 repoFromDb.lastCommitHash = head?.id()?.toString() ?: ""  // no commit hash will show empty str
                 repoFromDb.lastCommitHashShort = getShortOidStrByFull(repoFromDb.lastCommitHash)
+
+                if(repoFromDb.lastCommitHash.isNotBlank()) {
+                    val headCommit = Libgit2Helper.getSingleCommit(repo = repo, repoId = repoFromDb.id, commitOidStr = repoFromDb.lastCommitHash, settings = settings)
+                    repoFromDb.lastCommitDateTime = headCommit.dateTime
+                }
+
                 repoFromDb.isDetached = boolToDbInt(repo.headDetached())
                 if(!dbIntToBool(repoFromDb.isDetached)) {  //只有非detached才有upstream
                     //这里并不是最终的workStatus值，后面还会检查是否有冲突，如果有会再更新

@@ -311,7 +311,9 @@ fun RepoCard(
                                 tooltipText = stringResource(R.string.repo_label_last_commit)
                             )
                             ClickableText (
-                                text = if(repoStatusGood) repoDto.lastCommitHashShort ?: "" else "",
+                                text = (if(repoStatusGood) repoDto.lastCommitHashShort ?: "" else "") +
+                                        (repoDto.lastCommitDateTime.let { if(it.isBlank()) "" else " ($it)"})
+                                ,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
