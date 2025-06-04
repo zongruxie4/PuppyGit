@@ -17,6 +17,9 @@ import com.catpuppyapp.puppygit.utils.receiverFlags
 private const val TAG = "TileHttpService"
 
 
+// 注意: TileService没重写 onCreate 也没执行 AppMode 的init系列函数，但不会出问题，因为onClick被触发时，会启动HttpService，其内部有执行初始化
+// note: tile service haven't overwrite onCreate and execute `AppMode.init_` serial functions,
+//   but is ok, cause HttpService will do init when Tile service onClick triggered
 @TargetApi(Build.VERSION_CODES.N)  // tile support by android 24 and above
 class TileHttpService: TileService() {
     companion object {
