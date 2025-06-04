@@ -456,7 +456,9 @@ fun FilesInnerPage(
             textCompose = {
                 ScrollableColumn {
                     TextField(
-                        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester),
                         value = pathToGo.value,
 //                        singleLine = true,
                         onValueChange = {
@@ -489,15 +491,20 @@ fun FilesInnerPage(
 
 
 
-    val showApplyAsPatchDialog = rememberSaveable { mutableStateOf(false)}
+    val showApplyAsPatchDialog = rememberSaveable { mutableStateOf(false) }
+    val errMsgForApplyPatch = rememberSaveable { mutableStateOf("") }
     val loadingRepoList = rememberSaveable { mutableStateOf(false) }
     val loadingRepoListJob = mutableCustomBoxOf<Job?>(stateKeyTag, "loadingRepoListJob") { null }  //如果不remember，这个值会被反复赋值，导致之前存的任务被冲掉
     val fileFullPathForApplyAsPatch =  rememberSaveable { mutableStateOf("")}
     val allRepoList = mutableCustomStateListOf(stateKeyTag, "allRepoList", listOf<RepoEntity>())
-    val initApplyAsPatchDialog = { patchFileFullPath:String ->
+    val initApplyAsPatchDialog = { item: FileItemDto ->
         //这里如果仓库特别多，查特别慢，用户会有卡住的感觉，所以先显示弹窗，
         // 然后在弹窗显示个loading...，加载完成前不能点击确定，但能点击取消，
         // 同时异步查仓库列表，查完后再在弹窗显示就行了
+        errMsgForApplyPatch.value = ""
+
+        val patchFileFullPath = item.fullPath
+        val parentName = item.toFile().parentFile?.name ?: ""
 
 
         loadingRepoList.value = true
@@ -521,27 +528,40 @@ fun FilesInnerPage(
 
 
                 //检查当前选中的仓库是否仍有效
-                // if selectedRepo not in list(例如之前选过，然后被删除了), select first
-                val selectedRepoId = selectedRepo.value.id
-                if(listFromDb.indexOfFirst { selectedRepoId == it.id } < 0) {
-                    selectedRepo.value = listFromDb[0]
+                if(listFromDb.isNotEmpty()) {
+                    // if selectedRepo not in list(例如之前选过，然后被删除了), select first
+                    val selectedRepoId = selectedRepo.value.id
+                    val repoNameMatchedDirNameIdx = listFromDb.indexOfFirst { it.repoName == parentName }
+                    selectedRepo.value = if(repoNameMatchedDirNameIdx < 0) { //用仓库名匹配目录名失败
+                        //如果当前选中的条目id还有效，保持，否则选中第一个
+                        listFromDb[listFromDb.indexOfFirst { selectedRepoId == it.id }.coerceAtLeast(0)]
+                    }else { //用目录名匹配仓库名成功
+                        listFromDb[repoNameMatchedDirNameIdx]
+                    }
+
+                    delay(1)
                 }
 
-                delay(1)
                 loadingRepoList.value = false
             }
 
             if(result.isFailure) {
-                MyLog.e(TAG, "loading repo list for ApplyAsPatchDialog err: ${result.exceptionOrNull()?.localizedMessage}")
+                val errMsg = result.exceptionOrNull()?.localizedMessage ?: "load repos err"
+
+                errMsgForApplyPatch.value = errMsg
+                loadingRepoList.value = false
+
+                MyLog.e(TAG, "loading repo list for ApplyAsPatchDialog err: $errMsg")
             }
         }
 
         fileFullPathForApplyAsPatch.value = patchFileFullPath
         showApplyAsPatchDialog.value = true
     }
+
     if(showApplyAsPatchDialog.value) {
         ApplyPatchDialog(
-            showDialog = showApplyAsPatchDialog,
+            errMsg = errMsgForApplyPatch.value,
             checkOnly = checkOnly,
             selectedRepo=selectedRepo,
             patchFileFullPath = fileFullPathForApplyAsPatch.value,
@@ -780,7 +800,7 @@ fun FilesInnerPage(
 //        },
         renameFile ,
         applyAsPatch@{item:FileItemDto ->
-            initApplyAsPatchDialog(item.fullPath)
+            initApplyAsPatchDialog(item)
 //            Unit  // for make return type is Unit, or specify type at declare statement
         },
 //        copyPath@{
@@ -1335,20 +1355,22 @@ fun FilesInnerPage(
                                     text = it.name,
                                     color = textColor,
                                     fontWeight = if(it.fullPath == currentPath()) FontWeight.Bold else FontWeight.Normal,
-                                    modifier = Modifier.combinedClickable(
-                                        onLongClick = {  //long press will show menu for pressed path
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            breadCrumbDropDownMenuExpandState.value = true
+                                    modifier = Modifier
+                                        .combinedClickable(
+                                            onLongClick = {  //long press will show menu for pressed path
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                breadCrumbDropDownMenuExpandState.value = true
+                                            }
+                                        ) { //onClick
+
+                                            //清空过滤关键字
+                                            filesPageSimpleFilterKeyWord.value = TextFieldValue("")
+
+                                            //跳转路径
+                                            goToPath(it.fullPath)
+
                                         }
-                                    ) { //onClick
-
-                                        //清空过滤关键字
-                                        filesPageSimpleFilterKeyWord.value = TextFieldValue("")
-
-                                        //跳转路径
-                                        goToPath(it.fullPath)
-
-                                    }.padding(horizontal = 10.dp)  //整宽点，好点击，不然名字很短，手按不到
+                                        .padding(horizontal = 10.dp)  //整宽点，好点击，不然名字很短，手按不到
                                 )
 
 
