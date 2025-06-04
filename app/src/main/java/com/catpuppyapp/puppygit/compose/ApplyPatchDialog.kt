@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
@@ -49,7 +50,13 @@ fun ApplyPatchDialog(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(if(hasErr) errMsg else stringResource(if(loadingRepoList) R.string.loading else R.string.repo_list_is_empty))
+                        MySelectionContainer {
+                            if(hasErr) {
+                                Text(errMsg, color = MyStyleKt.TextColor.error())
+                            }else {
+                                Text(stringResource(if(loadingRepoList) R.string.loading else R.string.repo_list_is_empty))
+                            }
+                        }
                     }
                 } else {  //加载仓库列表完毕，并且列表非空
                     DefaultPaddingText(text = stringResource(R.string.select_target_repo)+":")

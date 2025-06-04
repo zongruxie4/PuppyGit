@@ -501,9 +501,12 @@ fun FilesInnerPage(
         //这里如果仓库特别多，查特别慢，用户会有卡住的感觉，所以先显示弹窗，
         // 然后在弹窗显示个loading...，加载完成前不能点击确定，但能点击取消，
         // 同时异步查仓库列表，查完后再在弹窗显示就行了
+
+        //clear err msg
         errMsgForApplyPatch.value = ""
 
         val patchFileFullPath = item.fullPath
+        //parent dir name, use to match repo name
         val parentName = item.toFile().parentFile?.name ?: ""
 
 
@@ -531,13 +534,10 @@ fun FilesInnerPage(
                 if(listFromDb.isNotEmpty()) {
                     // if selectedRepo not in list(例如之前选过，然后被删除了), select first
                     val selectedRepoId = selectedRepo.value.id
-                    val repoNameMatchedDirNameIdx = listFromDb.indexOfFirst { it.repoName == parentName }
-                    selectedRepo.value = if(repoNameMatchedDirNameIdx < 0) { //用仓库名匹配目录名失败
-                        //如果当前选中的条目id还有效，保持，否则选中第一个
-                        listFromDb[listFromDb.indexOfFirst { selectedRepoId == it.id }.coerceAtLeast(0)]
-                    }else { //用目录名匹配仓库名成功
-                        listFromDb[repoNameMatchedDirNameIdx]
-                    }
+
+                    // repo name match dir name first, it none match, check last selected repo id , if valid , use it, else use idx 0
+                    val repoNameMatchedDirNameIdx = listFromDb.indexOfFirst { it.repoName == parentName }.let { if(it < 0) listFromDb.indexOfFirst { selectedRepoId == it.id } else it }
+                    selectedRepo.value = listFromDb[repoNameMatchedDirNameIdx.coerceAtLeast(0)]
 
                     delay(1)
                 }
