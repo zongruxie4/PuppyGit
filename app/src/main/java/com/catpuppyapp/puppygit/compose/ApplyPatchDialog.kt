@@ -59,7 +59,10 @@ fun ApplyPatchDialog(
                         }
                     }
                 } else {  //加载仓库列表完毕，并且列表非空
-                    DefaultPaddingText(text = stringResource(R.string.select_target_repo)+":")
+                    MySelectionContainer {
+                        DefaultPaddingText(text = stringResource(R.string.select_target_repo)+":")
+                    }
+
                     Spacer(modifier = Modifier.height(5.dp))
 
                     SingleSelectList(optionsList = repoList,
@@ -74,7 +77,9 @@ fun ApplyPatchDialog(
 
                     MyCheckBox(stringResource(R.string.check_only), checkOnly)
                     if(checkOnly.value) {
-                        DefaultPaddingText(stringResource(R.string.apply_patch_check_note))
+                        MySelectionContainer {
+                            DefaultPaddingText(stringResource(R.string.apply_patch_check_note))
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
