@@ -81,6 +81,7 @@ import com.catpuppyapp.puppygit.compose.RequireCommitMsgDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
+import com.catpuppyapp.puppygit.compose.SingleSelection
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.AppContainer
@@ -1833,46 +1834,46 @@ fun ChangeListInnerPage(
 
 
 
-    val checkoutForce = rememberSaveable { mutableStateOf(false)}
-    val showCheckoutFilesDialog = rememberSaveable { mutableStateOf(false)}
-    val checkoutTargetHash = rememberSaveable { mutableStateOf("")}
-
+    val checkoutForce = rememberSaveable { mutableStateOf(false) }
+    val showCheckoutFilesDialog = rememberSaveable { mutableStateOf(false) }
+    val checkoutTarget = rememberSaveable { mutableStateOf("") }
+    val checkoutList = mutableCustomStateListOf(stateKeyTag, "checkoutList") { listOf<String>() }
     val initCheckoutDialog = { curRepo:RepoEntity, targetHash:String ->
-        doJobThenOffLoading job@{
-            Repository.open(curRepo.fullSavePath).use { repo ->
-                val ret = Libgit2Helper.resolveCommitByHashOrRef(repo, targetHash)
-                if (ret.hasError() || ret.data == null) {
-                    Msg.requireShowLongDuration(ret.msg)
-                    return@job
-                }
+        val left = getCommitLeft()
+        val right = getCommitRight()
 
-                checkoutTargetHash.value = ret.data!!.id().toString()
-                checkoutForce.value = false
-                showCheckoutFilesDialog.value = true
-            }
+        checkoutList.value.apply {
+            clear()
+            add(left)
+            add(right)
         }
 
+        // 没选过则选中第一个，否则保持不变
+        if(checkoutTarget.value != left && checkoutTarget.value != right) {
+            checkoutTarget.value = left
+        }
+
+        checkoutForce.value = false
+        showCheckoutFilesDialog.value = true
     }
 
     if(showCheckoutFilesDialog.value) {
-        ConfirmDialog(
+        ConfirmDialog2(
             title = stringResource(R.string.checkout),
             requireShowTextCompose = true,
             textCompose = {
-                Column{
-                    Text(text =  buildAnnotatedString {
-                            append(stringResource(R.string.target)+": ")
-                            withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold)) {
-                                append(Libgit2Helper.getShortOidStrByFull(checkoutTargetHash.value))
-                            }
-                        },
-                        modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
+                Column {
+                    PaddingText(stringResource(R.string.target)+":", fontWeight = FontWeight.ExtraBold)
+                    SingleSelection(
+                        itemList = checkoutList.value,
+                        selected = {idx, item -> item == checkoutTarget.value},
+                        text = {idx, item -> activityContext.getString(if(idx == 0) R.string.left else R.string.right) +": "+ item},
+                        onClick = {idx, item -> checkoutTarget.value = item}
                     )
+
                     Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = stringResource(R.string.will_checkout_selected_files_are_you_sure),
-                        modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
-                    )
+
+
                     Spacer(modifier = Modifier.height(10.dp))
 
                     MyCheckBox(text = stringResource(R.string.force), value = checkoutForce)
@@ -1886,21 +1887,51 @@ fun ChangeListInnerPage(
             },
             okTextColor = if(checkoutForce.value) MyStyleKt.TextColor.danger() else Color.Unspecified,
             onCancel = { showCheckoutFilesDialog.value = false }
-        ) {
+        ) onOk@{
             showCheckoutFilesDialog.value = false
+
+            // if target is local, no need checkout
+            if(checkoutTarget.value == Cons.git_LocalWorktreeCommitHash) {
+                Msg.requireShowLongDuration(activityContext.getString(R.string.already_up_to_date))
+                return@onOk
+            }
+
+
             val curRepo = curRepoFromParentPage.value
             val selectedItemList = selectedItemList.value.toList()
+            val targetHash = checkoutTarget.value
+            val checkoutForce = checkoutForce.value
+
+
 
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.checking_out)) {
-                doActWithLock(curRepo) {
+                doActWithLock(curRepo) job@{
                     val pathSpecs = selectedItemList.map{it.relativePathUnderRepo}
                     Repository.open(curRepo.fullSavePath).use { repo->
-                        val ret = Libgit2Helper.checkoutFiles(repo, checkoutTargetHash.value, pathSpecs, force=checkoutForce.value)
+                        val checkoutTargetHash = if(targetHash == Cons.git_IndexCommitHash) {  // if checkout index, no need resolve it to hash
+                            targetHash
+                        }else {
+                            val commitRet = Libgit2Helper.resolveCommitByHashOrRef(repo, targetHash)
+                            if (commitRet.hasError() || commitRet.data == null) {
+                                Msg.requireShowLongDuration(commitRet.msg)
+                                return@job
+                            }
+
+                            commitRet.data!!.id().toString()
+                        }
+
+                        val ret = Libgit2Helper.checkoutFiles(repo, checkoutTargetHash, pathSpecs, force=checkoutForce)
+
                         if(ret.hasError()) {
                             Msg.requireShowLongDuration(ret.msg)
                             createAndInsertError(repoId, "checkout files err: "+ret.msg)
                         }else {
                             Msg.requireShow(activityContext.getString(R.string.success))
+                        }
+
+                        // 如果checkout目标包含local，列表可能变化，需要刷新下列表
+                        if(checkoutList.value.contains(Cons.git_LocalWorktreeCommitHash)) {
+                            changeListRequireRefreshFromParentPage(curRepo)
                         }
                     }
                 }

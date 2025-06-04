@@ -2173,16 +2173,33 @@ object Libgit2Helper {
         return Pair<String,String>(config.getString(Cons.gitConfigKeyUserName).orElse(""), config.getString(Cons.gitConfigKeyUserEmail).orElse(""))
     }
 
+    fun getCheckoutStrategies(force:Boolean): EnumSet<Checkout.StrategyT> {
+        return if(force) {
+            EnumSet.of(
+                Checkout.StrategyT.FORCE,
+                Checkout.StrategyT.DISABLE_PATHSPEC_MATCH,  //禁用glob模糊匹配，就是通配符，星号之类的
+            )
+        }else {
+            EnumSet.of(
+                Checkout.StrategyT.SAFE,
+                Checkout.StrategyT.DISABLE_PATHSPEC_MATCH
+            )
+        }
+    }
+
     //把worktree的文件恢复为index中的版本。
-    fun revertFilesToIndexVersion(repo:Repository, pathSpecList:List<String>) {
+    // 多数情况下需要 force为true，不然恢复不会提示失败，但实际上失败
+    fun revertFilesToIndexVersion(repo:Repository, pathSpecList:List<String>, force: Boolean = true) {
         val checkoutOptions = Checkout.Options.defaultOptions()
         //FORCE 强制恢复worktree文件to index，DISABLE_PATHSPEC_MATCH 禁用通配符匹配，强制把文件路径理解成精确的文件名
-        checkoutOptions.strategy = EnumSet.of(
-            Checkout.StrategyT.FORCE,
-            Checkout.StrategyT.DISABLE_PATHSPEC_MATCH,  //禁用glob模糊匹配，就是通配符，星号之类的
-        )
+        checkoutOptions.strategy = getCheckoutStrategies(force)
 
         checkoutOptions.setPaths(pathSpecList.toTypedArray())
+
+        checkoutIndex(repo, checkoutOptions)
+    }
+
+    fun checkoutIndex(repo: Repository, checkoutOptions: Checkout.Options) {
         Checkout.index(repo, repo.index(), checkoutOptions)
     }
 
@@ -5995,19 +6012,20 @@ object Libgit2Helper {
         }
     }
 
-    fun checkoutFiles(repo: Repository, targetCommitHash:String, pathSpecs: List<String>, force: Boolean, checkoutOptions: Checkout.Options?=null):Ret<Unit?> {
+    fun checkoutFiles(
+        repo: Repository,
+        targetCommitHash:String,
+        pathSpecs: List<String>,
+        force: Boolean,
+        checkoutOptions: Checkout.Options?=null
+    ):Ret<Unit?> {
         val funName = "checkoutFiles"
-        try {
-            val targetTree = resolveTree(repo, targetCommitHash) ?: return Ret.createError(null, "resolve target tree failed")
 
+        try {
             //设置checkout选项
-            val checkoutOptions = if(checkoutOptions==null) {
+            val checkoutOptions = if(checkoutOptions == null) {
                 val opts = Checkout.Options.defaultOptions()
-                opts.strategy = if(force) {
-                    EnumSet.of(Checkout.StrategyT.FORCE, Checkout.StrategyT.DISABLE_PATHSPEC_MATCH)
-                }else {
-                    EnumSet.of(Checkout.StrategyT.SAFE, Checkout.StrategyT.DISABLE_PATHSPEC_MATCH)
-                }
+                opts.strategy = getCheckoutStrategies(force)
 
                 if(pathSpecs.isNotEmpty()) {
                     opts.setPaths(pathSpecs.toTypedArray())
@@ -6018,12 +6036,16 @@ object Libgit2Helper {
                 checkoutOptions
             }
 
-            Checkout.tree(repo, targetTree, checkoutOptions)
+            if(targetCommitHash == Cons.git_IndexCommitHash) {  // checkout index files
+                checkoutIndex(repo, checkoutOptions)
+            }else { // not index, reolove it to a tree
+                val targetTree = resolveTree(repo, targetCommitHash) ?: return Ret.createError(null, "resolve target tree failed")
+                Checkout.tree(repo, targetTree, checkoutOptions)
+            }
 
             return Ret.createSuccess(null)
-
         }catch (e:Exception) {
-            MyLog.e(TAG, "#$funName err: ${e.stackTraceToString()}")
+            MyLog.e(TAG, "#$funName err: targetCommitHash=$targetCommitHash, err=${e.stackTraceToString()}")
             return Ret.createError(null, e.localizedMessage ?: "checkout files err", exception = e)
         }
 
