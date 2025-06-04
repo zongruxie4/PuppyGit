@@ -319,7 +319,19 @@ fun TagListScreen(
             refreshPage = { oldHeadCommitOid, isDetached ->
                 //更新下仓库信息以使title在仓库为detached HEAD时显示出reset后的hash。非detached HEAD时只是更新分支指向的提交号分支本身不变，所以不用更新
                 if(isDetached) {
-                    curRepo.value = curRepo.value.copy(isDetached= Cons.dbCommonTrue, lastCommitHash = item.targetFullOidStr).apply { lastCommitHashShort = Libgit2Helper.getShortOidStrByFull(lastCommitHash) }
+                    curRepo.value = curRepo.value.let { it.copyAllFields(it.copy(isDetached = Cons.dbCommonTrue, lastCommitHash = item.targetFullOidStr)) }.apply {
+                        lastCommitHashShort = Libgit2Helper.getShortOidStrByFull(lastCommitHash)
+
+                        // update date time of commit
+                        lastCommitDateTime = try {
+                            Repository.open(fullSavePath).use { repo ->
+                                Libgit2Helper.getSingleCommit(repo, repoId = id, commitOidStr = lastCommitHash, settings).dateTime
+                            }
+                        }catch (e: Exception) {
+                            MyLog.e(TAG, "#ResetDialog#refreshPage(): resolve commit hash failed! hash=$lastCommitHash, err=${e.localizedMessage}")
+                            ""
+                        }
+                    }
                 }
             }
         )

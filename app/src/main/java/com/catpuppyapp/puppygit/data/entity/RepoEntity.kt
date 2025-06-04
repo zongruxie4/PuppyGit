@@ -146,9 +146,7 @@ data class RepoEntity(
     /**
      * 拷贝所有字段，包括不在data class构造器的字段
      */
-    fun copyAllFields():RepoEntity {
-        val newInstance = copy()
-
+    fun copyAllFields(newInstance: RepoEntity = copy()):RepoEntity {
         newInstance.gitRepoState = gitRepoState
         newInstance.parentRepoName = parentRepoName
         newInstance.parentRepoValid = parentRepoValid
