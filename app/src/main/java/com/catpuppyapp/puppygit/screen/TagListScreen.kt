@@ -293,7 +293,7 @@ fun TagListScreen(
     val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
 
-    // hardReset start
+    // reset start
 //    val acceptHardReset = StateUtil.getRememberSaveableState(initValue = false)
     val resetOid = rememberSaveable { mutableStateOf("") }
     val showResetDialog = rememberSaveable { mutableStateOf(false) }
@@ -319,16 +319,12 @@ fun TagListScreen(
             refreshPage = { oldHeadCommitOid, isDetached ->
                 //更新下仓库信息以使title在仓库为detached HEAD时显示出reset后的hash。非detached HEAD时只是更新分支指向的提交号分支本身不变，所以不用更新
                 if(isDetached) {
-                    curRepo.value = curRepo.value.let { it.copyAllFields(it.copy(isDetached = Cons.dbCommonTrue, lastCommitHash = item.targetFullOidStr)) }.apply {
-                        updateLastCommitHashShort()
-
-                        updateCommitDateTime(settings)
-                    }
+                    curRepo.value = curRepo.value.let { it.copyAllFields(it.copy(isDetached = Cons.dbCommonTrue, lastCommitHash = item.targetFullOidStr), settings) }
                 }
             }
         )
     }
-    // hardReset end
+    // reset end
 
 
     //checkout start

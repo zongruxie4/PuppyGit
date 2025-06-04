@@ -797,7 +797,7 @@ fun RepoInnerPage(
         doActIfIndexGood(idx,repoList) {
 //            it.tmpStatus = status
             //必须copy一下，要不然还得刷新页面才能显示状态（ps：刷新页面显示状态是通过map存临时状态实现的，比这个操作重量级，应能避免则避免）
-            repoList[idx]=it.copyAllFields(it.copy(tmpStatus = status))
+            repoList[idx] = it.copyAllFields(it.copy(tmpStatus = status), settings)
 //            repoList.requireRefreshView()
         }
         //设置仓库临时状态(把临时状态设置到缓存里，不退出app都有效，目的是为了使重新查列表后临时状态亦可见)，这样重新加载页面时依然能看到临时状态

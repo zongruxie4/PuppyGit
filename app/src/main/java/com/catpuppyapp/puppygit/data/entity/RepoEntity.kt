@@ -10,6 +10,7 @@ import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.entity.common.BaseFields
 import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.settings.AppSettings
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.dbIntToBool
@@ -152,13 +153,19 @@ data class RepoEntity(
     /**
      * 拷贝所有字段，包括不在data class构造器的字段
      */
-    fun copyAllFields(newInstance: RepoEntity = copy()):RepoEntity {
+    fun copyAllFields(
+        newInstance: RepoEntity = copy(),
+        settings: AppSettings = SettingsUtil.getSettingsSnapshot()
+    ):RepoEntity {
         newInstance.gitRepoState = gitRepoState
         newInstance.parentRepoName = parentRepoName
         newInstance.parentRepoValid = parentRepoValid
         newInstance.otherText = otherText
         newInstance.pendingTask = pendingTask
         newInstance.lastCommitDateTime = lastCommitDateTime
+
+        updateLastCommitHashShort()
+        updateCommitDateTime(settings)
 
         return newInstance
     }
