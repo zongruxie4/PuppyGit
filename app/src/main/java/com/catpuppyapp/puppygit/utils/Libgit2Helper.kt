@@ -5142,12 +5142,9 @@ object Libgit2Helper {
                 val head = resolveHEAD(repo)
                 repoFromDb.branch = head?.shorthand()?:""
                 repoFromDb.lastCommitHash = head?.id()?.toString() ?: ""  // no commit hash will show empty str
-                repoFromDb.lastCommitHashShort = getShortOidStrByFull(repoFromDb.lastCommitHash)
+                repoFromDb.updateLastCommitHashShort()
 
-                if(repoFromDb.lastCommitHash.isNotBlank()) {
-                    val headCommit = Libgit2Helper.getSingleCommit(repo = repo, repoId = repoFromDb.id, commitOidStr = repoFromDb.lastCommitHash, settings = settings)
-                    repoFromDb.lastCommitDateTime = headCommit.dateTime
-                }
+                repoFromDb.updateCommitDateTimeWithRepo(repo, settings)
 
                 repoFromDb.isDetached = boolToDbInt(repo.headDetached())
                 if(!dbIntToBool(repoFromDb.isDetached)) {  //只有非detached才有upstream
@@ -7263,7 +7260,7 @@ object Libgit2Helper {
                                 repo2ndQuery.branch = headRef.shorthand()
                                 //提交短id
                                 repo2ndQuery.lastCommitHash = headRef.id()?.toString() ?: ""
-                                repo2ndQuery.lastCommitHashShort = Libgit2Helper.getShortOidStrByFull(repo2ndQuery.lastCommitHash)
+                                repo2ndQuery.updateLastCommitHashShort()
                             }
 //                                    }  //如果用户填了branch且克隆成功，那branch是绝对正确的，这里就不需要更新repo2ndQuery的branch字段了
 //                                    else {  //用户填了branch的情况
