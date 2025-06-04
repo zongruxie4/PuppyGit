@@ -836,7 +836,7 @@ fun CloneScreen(
             HorizontalDivider(modifier = Modifier.padding(spacerPadding))
             Spacer(Modifier.height(10.dp))
             // if empty, no credentials, no need show select credential option
-            val skipSelect = allCredentialList.value.isEmpty()
+            val credentialListIsEmpty = allCredentialList.value.isEmpty()
 
             //choose credential
             SingleSelection(
@@ -844,13 +844,14 @@ fun CloneScreen(
                 selected = {idx, item -> credentialSelectedOption == idx},
                 text = {idx, item -> item},
                 onClick = {idx, item -> onCredentialOptionSelected(idx)},
-                skip = {idx, item ->
-                    // make sure show private key/passphrase for ssh url
+                beforeShowItem = {idx, item ->
+                    // update credential type when click "New Credential" to make sure show private key/passphrase for ssh url
                     if(idx == optNumNewCredential) {
                         curCredentialType.intValue = Libgit2Helper.getCredentialTypeByUrl(gitUrl.value)
                     }
-
-                    skipSelect && idx == optNumSelectCredential
+                },
+                skip = {idx, item ->
+                    credentialListIsEmpty && idx == optNumSelectCredential
                 }
             )
 

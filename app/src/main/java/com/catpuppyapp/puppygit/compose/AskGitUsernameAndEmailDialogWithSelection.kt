@@ -1,10 +1,8 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -63,19 +61,15 @@ fun AskGitUsernameAndEmailDialogWithSelection(
         },
         text = {
             ScrollableColumn {
-                Column(
-                    modifier = Modifier.selectableGroup(),
 
-                ) {
-                    //如果设置了有效gitUrl，显示新建和选择凭据，否则只显示无凭据
-                    //key should like: "1"; value should like "1: balbalba"
-                    SingleSelection(
-                        itemList = optionsList,
-                        selected = {idx, item -> selectedOption.intValue == idx},
-                        text = {idx, item -> item},
-                        onClick = {idx, item -> selectedOption.intValue = idx}
-                    )
-                }
+                //如果设置了有效gitUrl，显示新建和选择凭据，否则只显示无凭据
+                //key should like: "1"; value should like "1: balbalba"
+                SingleSelection(
+                    itemList = optionsList,
+                    selected = {idx, item -> selectedOption.intValue == idx},
+                    text = {idx, item -> item},
+                    onClick = {idx, item -> selectedOption.intValue = idx}
+                )
 
                 Row(modifier = Modifier.padding(5.dp)) {
 

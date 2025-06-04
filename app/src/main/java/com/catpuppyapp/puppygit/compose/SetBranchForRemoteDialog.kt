@@ -44,6 +44,7 @@ fun SetBranchForRemoteDialog(
     onOk: (remoteName:String, isAll: Boolean, branchCsvStr: String) -> Unit
 ) {
     val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
+
     val activityContext = LocalContext.current
     val selectedOption = mutableCustomStateOf(stateKeyTag, "selectedOption") { if(isAllInitValue) BranchMode.ALL else BranchMode.CUSTOM }
 
@@ -82,6 +83,8 @@ fun SetBranchForRemoteDialog(
                 )
 
                 if(selectedOption.value == BranchMode.CUSTOM) {
+                    Spacer(Modifier.height(5.dp))
+
                     TextField(
                         modifier = Modifier.fillMaxWidth(),
 

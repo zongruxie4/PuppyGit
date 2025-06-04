@@ -1206,7 +1206,6 @@ fun FilesInnerPage(
     val onlyForThisFolderState = rememberSaveable { mutableStateOf(false) }
     val onlyForThisFolderStateBuf = rememberSaveable { mutableStateOf(false) }
 
-    val sortMethods = remember {SortMethod.entries}
     if(showViewAndSortDialog.value) {
         val height = 10.dp
         ConfirmDialog2(
@@ -1215,7 +1214,7 @@ fun FilesInnerPage(
             textCompose = {
                 ScrollableColumn {
                     SingleSelection(
-                        itemList = sortMethods,
+                        itemList = SortMethod.entries,
                         selected = {idx, item -> viewAndSortStateBuf.value.sortMethod == item.code},
                         text = {idx, item -> SortMethod.getText(item, activityContext)},
                         onClick = {idx, item -> viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(sortMethod = item.code)},

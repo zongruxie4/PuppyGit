@@ -27,6 +27,7 @@ fun <T> SingleSelection(
     selected:(idx:Int, T)->Boolean,
     text:(idx:Int, T)->String,
     onClick:(idx:Int, T)->Unit,
+    beforeShowItem:((idx:Int, T)->Unit)? = null, // run for each item before it rendering
     skip:(idx:Int, T)->Boolean = {idx, item -> false }, // will not show item if skip return true
     itemDescContext: (@Composable (idx:Int, T) ->Unit)? = null,
     minHeight:Dp = MyStyleKt.RadioOptions.minHeight
@@ -35,6 +36,8 @@ fun <T> SingleSelection(
         modifier = Modifier.selectableGroup()
     ) {
         for ((idx, item) in itemList.withIndex()) {
+            beforeShowItem?.invoke(idx, item)
+
             if(skip(idx, item)) {
                 continue
             }
@@ -61,16 +64,19 @@ fun <T> SingleSelection(
                 )
 
                 MySelectionContainer {
-                    ScrollableRow {
-                        Text(
-                            text = text(idx, item),
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 10.dp)
-                        )
+                    Column {
+                        ScrollableRow {
+                            Text(
+                                text = text(idx, item),
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 10.dp)
+                            )
+                        }
+
+                        itemDescContext?.invoke(idx, item)
                     }
                 }
 
-                itemDescContext?.invoke(idx, item)
             }
         }
     }

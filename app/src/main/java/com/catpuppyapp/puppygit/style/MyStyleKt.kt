@@ -244,6 +244,7 @@ object MyStyleKt{
     object RadioOptions{
         val minHeight=30.dp
         val middleHeight=35.dp
+        val largeHeight=60.dp
     }
 
     object Title {

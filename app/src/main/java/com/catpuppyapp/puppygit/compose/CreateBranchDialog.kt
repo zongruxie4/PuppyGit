@@ -120,6 +120,8 @@ fun CreateBranchDialog(
                 )
 
                 if(selectedOption.intValue == optCommit) {
+                    Spacer(Modifier.height(5.dp))
+
                     TextField(
                         modifier = Modifier.fillMaxWidth(),
 

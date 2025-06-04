@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.createAndInsertError
@@ -88,16 +89,15 @@ fun ResetDialog(
                             ""
                         }
 
-                        MySelectionContainer {
+                        ScrollableRow {
                             PaddingText(
                                 text = desc,
                                 fontWeight = FontWeight.Light,
                             )
                         }
-
-                        Spacer(modifier = Modifier.height(10.dp))
                     },
-                    onClick = {idx, item -> selectedOpt.intValue = idx}
+                    onClick = {idx, item -> selectedOpt.intValue = idx},
+                    minHeight = MyStyleKt.RadioOptions.largeHeight
                 )
 
             }
