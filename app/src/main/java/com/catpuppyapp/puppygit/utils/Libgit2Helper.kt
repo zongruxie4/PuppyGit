@@ -4006,6 +4006,15 @@ object Libgit2Helper {
         }
         return oidStr
     }
+
+    fun getShortOidStrByFullIfIsHash(oidStr:String):String {
+        return if(maybeIsHash(oidStr)) {
+            getShortOidStrByFull(oidStr)
+        }else {
+            oidStr
+        }
+    }
+
     //参数值类似：origin/abc/def，返回值，1：origin，2 abc/def
     fun splitRemoteAndBranchFromRemoteShortRefName(shortRefName:String):Pair<String,String> {
         val indexOf = shortRefName.indexOf("/")

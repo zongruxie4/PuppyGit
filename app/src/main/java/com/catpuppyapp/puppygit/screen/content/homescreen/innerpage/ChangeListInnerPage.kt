@@ -1848,9 +1848,24 @@ fun ChangeListInnerPage(
     val showCheckoutFilesDialog = rememberSaveable { mutableStateOf(false) }
     val checkoutTarget = rememberSaveable { mutableStateOf("") }
     val checkoutList = mutableCustomStateListOf(stateKeyTag, "checkoutList") { listOf<String>() }
+    val leftFullHash = rememberSaveable { mutableStateOf("") }
+    val rightFullHash = rememberSaveable { mutableStateOf("") }
     val initCheckoutDialog = { curRepo:RepoEntity, targetHash:String ->
         val left = getCommitLeft()
         val right = getCommitRight()
+
+        try {
+            leftFullHash.value = ""
+            rightFullHash.value = ""
+
+            Repository.open(curRepo.fullSavePath).use { repo->
+                val (left, right) = Libgit2Helper.getLeftRightCommitDto(repo, left, right, repoId, settings)
+                leftFullHash.value = left.oidStr
+                rightFullHash.value = right.oidStr
+            }
+        }catch (e: Exception) {
+            MyLog.d(TAG, "resolve left and right to commit hash err: ${e.stackTraceToString()}")
+        }
 
         checkoutList.value.apply {
             clear()
@@ -1877,7 +1892,25 @@ fun ChangeListInnerPage(
                     SingleSelection(
                         itemList = checkoutList.value,
                         selected = {idx, item -> item == checkoutTarget.value},
-                        text = {idx, item -> activityContext.getString(if(idx == 0) R.string.left else R.string.right) +": "+ item},
+                        text = {idx, item ->
+                            val isLeft = idx == 0;
+
+                            val shortHash = Libgit2Helper.getShortOidStrByFullIfIsHash(item)
+
+                            val shortLeft = Libgit2Helper.getShortOidStrByFullIfIsHash(leftFullHash.value)
+                            val shortRight = Libgit2Helper.getShortOidStrByFullIfIsHash(rightFullHash.value)
+
+                            // 如果当前显示的不是hash，append hash
+                            activityContext.getString(if(isLeft) R.string.left else R.string.right) + ": " + shortHash + (
+                                    if(isLeft && shortHash != shortLeft) {
+                                        " ($shortLeft)"
+                                    }else if(isLeft.not() && shortHash != shortRight) {
+                                        " ($shortRight)"
+                                    }else {
+                                        ""
+                                    }
+                            )
+                        },
                         onClick = {idx, item -> checkoutTarget.value = item}
                     )
 
