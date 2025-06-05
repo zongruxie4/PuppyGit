@@ -1,6 +1,16 @@
 
 
 ---
+1.1.2.5v101 - 20250605:
+- fix repos loading slow
+
+
+
+- 修复仓库页面加载缓慢
+
+
+
+---
 1.1.2.4v100 - 20250605:
 - adjust time format for file list item
 
