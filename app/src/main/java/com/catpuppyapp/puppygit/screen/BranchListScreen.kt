@@ -404,10 +404,11 @@ fun BranchListScreen(
         )
     }
 
+    val branchNameForCheckout = rememberSaveable { mutableStateOf("") }
     val initUpstreamForCheckoutRemoteBranch = rememberSaveable { mutableStateOf("") }
     val remotePrefixMaybe = rememberSaveable { mutableStateOf("") }
-    val isCheckoutRemoteBranch = rememberSaveable { mutableStateOf(false)}
-    val checkoutLocalBranch = rememberSaveable { mutableStateOf(false)}
+    val isCheckoutRemoteBranch = rememberSaveable { mutableStateOf(false) }
+    val checkoutLocalBranch = rememberSaveable { mutableStateOf(false) }
     if(showCheckoutBranchDialog.value) {
         //注意：这种写法，如果curObjInPage.value被重新赋值，本代码块将会被重复调用！不过实际不会有问题，因为显示弹窗时无法再长按条目进而无法改变本对象。
         // 另外如果在onOk里取对象也会有此问题，假如显示弹窗后对象被改变，那视图会更新，变成新对象的值，onOk最终执行时取出的对象自然也会和“最初”弹窗显示的不一致 (onOk取出的和“现在”视图显示的对象是一致的，都是修改后的值，“最初”的值已被覆盖)，
@@ -417,7 +418,8 @@ fun BranchListScreen(
 
         CheckoutDialog(
             showCheckoutDialog=showCheckoutBranchDialog,
-            initBranchName = initUpstreamForCheckoutRemoteBranch.value,
+            branchName = branchNameForCheckout,
+            remoteBranchShortNameMaybe = initUpstreamForCheckoutRemoteBranch.value,
             remotePrefixMaybe = remotePrefixMaybe.value,
             isCheckoutRemoteBranch = isCheckoutRemoteBranch.value,
             from = CheckoutDialogFrom.BRANCH_LIST,
@@ -1594,6 +1596,11 @@ fun BranchListScreen(
                                     remotePrefixMaybe.value = ""
 
                                     ""
+                                }
+
+                                // if find remote branch name, set it as init new branch name
+                                if(initUpstreamForCheckoutRemoteBranch.value.isNotBlank()) {
+                                    branchNameForCheckout.value = initUpstreamForCheckoutRemoteBranch.value
                                 }
 
                             }else {  //非remote，清空相关字段

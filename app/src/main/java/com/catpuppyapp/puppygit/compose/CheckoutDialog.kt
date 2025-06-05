@@ -43,7 +43,10 @@ private const val TAG = "CheckoutDialog"
 
 @Composable
 fun CheckoutDialog(
-    initBranchName:String="",  // if checkout remote branch, init branch name  to remote branch name
+    branchName: MutableState<String>,
+    // this may will be remote branch short name without remote prefix when check out any remote branch
+    remoteBranchShortNameMaybe:String = "",
+
     isCheckoutRemoteBranch:Boolean=false,  // show set upstream checkbox if true
     remotePrefixMaybe:String="",
     showCheckoutDialog:MutableState<Boolean>,
@@ -64,8 +67,6 @@ fun CheckoutDialog(
     showJustCheckout:Boolean= false,  //参数原名：`checkoutLocalBranch`。 作用：显示一个just checkout选项并默认选中，一般只有checkout本地分支时才需要设此值为true
     findCurItemIdxInList:(oid:String)->Int,  //实现一个函数从list找到当前条目id，然后把id传给updateCurItem函数更新条目，若不需要更新列表条目，可返回-1
 ) {
-    // this may will be remote branch short name without remote prefix , if checking out any remote branch
-    val remoteBranchShortNameMaybe = initBranchName
 
     val repoId = curRepo.id
 
@@ -86,7 +87,6 @@ fun CheckoutDialog(
 
 
     val checkoutSelectedOption = rememberSaveable{ mutableIntStateOf(checkoutOptionDefault) }
-    val checkoutRemoteCreateBranchName = rememberSaveable { mutableStateOf(initBranchName) }
     val checkoutUserInputCommitHash = rememberSaveable { mutableStateOf("") }
     val forceCheckout = rememberSaveable { mutableStateOf(false) }
     val dontCheckout = rememberSaveable { mutableStateOf(false) }
@@ -95,7 +95,7 @@ fun CheckoutDialog(
 
     val getCheckoutOkBtnEnabled:()->Boolean = getCheckoutOkBtnEnabled@{
         //请求checkout时创建分支但没填分支，返回假
-        if(checkoutSelectedOption.intValue == checkoutOptionCreateBranch && checkoutRemoteCreateBranchName.value.isBlank()) {
+        if(checkoutSelectedOption.intValue == checkoutOptionCreateBranch && branchName.value.isBlank()) {
             return@getCheckoutOkBtnEnabled false
         }
 
@@ -147,7 +147,8 @@ fun CheckoutDialog(
         }
 
 
-    ConfirmDialog(title = activityContext.getString(R.string.checkout),
+    ConfirmDialog(
+        title = activityContext.getString(R.string.checkout),
         requireShowTextCompose = true,
         textCompose = {
             //只能有一个节点，因为这个东西会在lambda后返回，而lambda只能有一个返回值，弄两个布局就乱了，和react组件只能有一个root div一个道理 。
@@ -230,10 +231,10 @@ fun CheckoutDialog(
                     TextField(
                         modifier = Modifier.fillMaxWidth(),
 
-                        value = checkoutRemoteCreateBranchName.value,
+                        value = branchName.value,
                         singleLine = true,
                         onValueChange = {
-                            checkoutRemoteCreateBranchName.value = it
+                            branchName.value = it
                         },
                         label = {
                             Text(stringResource(R.string.branch_name))
@@ -326,7 +327,7 @@ fun CheckoutDialog(
         //如果使用用户输入，就使用用户输入；否则，如果请求检出commit，就用commit值；否则当作检出引用（分支 or tag），返回引用名
         val curCommitOidOrRefName = if(useUserInputHash) checkoutUserInputCommitHash else if(expectCheckoutType==Cons.checkoutType_checkoutCommitThenDetachHead) curCommitOid else fullName
         val curCommitShortOidOrShortRefName = if(useUserInputHash) checkoutUserInputCommitHash else if(expectCheckoutType==Cons.checkoutType_checkoutCommitThenDetachHead) curCommitShortOid else shortName
-        val localBranchWillCreate = checkoutRemoteCreateBranchName.value
+        val localBranchWillCreate = branchName.value
         val repoFullPath = curRepo.fullSavePath
 //                val curRepoId = curRepo.id  //这个和页面的repoId参数一样，所以直接用那个就行
         val curCommitIndex = if(useUserInputHash || curCommitIndex<0) -1 else curCommitIndex  //用于在checkout长按选择的当前提交失败时更新当前提交信息，如果checkout为分支，其实分两个步骤，一个创建分支，一个checkout分支，若1成功，2失败，则checkout返回失败，但这时当前提交已经改变，至少分支列表会多出刚才创建的那个分支，所以需要重新获取commit信息。如果是用户输入提交号checkout，则无需更新提交条目，此值应设为一个无效索引值，例如-1（当然，用户可能手动输入提交号，而那个提交号显示在列表中，这时其实需要更新那个提交条目的信息，但是无法预判用户会输入什么，而且不更新也问题不大，所以忽略）

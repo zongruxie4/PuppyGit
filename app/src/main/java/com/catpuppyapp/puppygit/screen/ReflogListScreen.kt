@@ -221,6 +221,8 @@ fun ReflogListScreen(
         showCheckoutDialog.value = true
     }
 
+    val branchNameForCheckout = rememberSaveable { mutableStateOf("") }
+
     if(showCheckoutDialog.value) {
         val id = (if(checkoutNew.value) curLongClickItem.value.idNew else curLongClickItem.value.idOld) ?: Cons.git_AllZeroOid
 
@@ -233,6 +235,7 @@ fun ReflogListScreen(
 
             CheckoutDialog(
                 showCheckoutDialog=showCheckoutDialog,
+                branchName = branchNameForCheckout,
                 from = CheckoutDialogFrom.OTHER,
                 expectCheckoutType = Cons.checkoutType_checkoutCommitThenDetachHead,
                 curRepo = curRepo.value,

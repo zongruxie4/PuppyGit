@@ -336,11 +336,14 @@ fun TagListScreen(
         showCheckoutDialog.value = true
     }
 
+    val branchNameForCheckout = rememberSaveable { mutableStateOf("") }
+
     if(showCheckoutDialog.value) {
         val item = selectedItemList.value.first()
 
         CheckoutDialog(
             showCheckoutDialog=showCheckoutDialog,
+            branchName = branchNameForCheckout,
             from = CheckoutDialogFrom.OTHER,
 //            expectCheckoutType = Cons.checkoutTypeCommit,  //用这个reflog不会包含tag名
             expectCheckoutType = Cons.checkoutType_checkoutRefThenDetachHead,  //用这个会包含tag名
