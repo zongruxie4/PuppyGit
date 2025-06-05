@@ -1,6 +1,15 @@
 
 
 ---
+1.1.2.4v100 - 20250605:
+- adjust time format for file list item
+
+
+
+- 调整文件列表条目的时间格式
+
+
+---
 1.1.2.3v99 - 20250604:
 - can choose checkout left or right when compare two commits
 - adjust time format for repo card
