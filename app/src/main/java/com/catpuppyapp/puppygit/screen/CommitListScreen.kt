@@ -1651,6 +1651,8 @@ fun CommitListScreen(
 
     val refreshCommitByPredicate = { curRepo:RepoEntity, predicate:(CommitDto)->Boolean ->
         Repository.open(curRepo.fullSavePath).use { repo ->
+            var commitQueryCache:CommitDto? = null
+
             //更新过滤列表
             val filterListIndex = filterList.value.indexOfFirst { predicate(it) }
             if(filterListIndex >= 0) {
@@ -1658,7 +1660,7 @@ fun CommitListScreen(
                 // 单查条目无法重建图形信息，所以保留原提交的图形信息
                 filterList.value[filterListIndex] = filterList.value[filterListIndex].let {
                     Libgit2Helper.getSingleCommit(repo, repoId = curRepo.id, commitOidStr = it.oidStr, settings)
-                        .copy(draw_inputs = it.draw_inputs, draw_outputs = it.draw_outputs)
+                        .copy(draw_inputs = it.draw_inputs, draw_outputs = it.draw_outputs).let { commitQueryCache = it; it }
                 }
             }
 
@@ -1666,8 +1668,13 @@ fun CommitListScreen(
             val srcListIndex = list.value.indexOfFirst { predicate(it) }
             if(srcListIndex >= 0) {
                 list.value[srcListIndex] = list.value[srcListIndex].let {
-                    Libgit2Helper.getSingleCommit(repo, repoId = curRepo.id, commitOidStr = it.oidStr, settings)
-                        .copy(draw_inputs = it.draw_inputs, draw_outputs = it.draw_outputs)
+                    // if same commit, use, else requery, most time should same, so no need re-query at here
+                    if(commitQueryCache != null && commitQueryCache.oidStr == it.oidStr) {
+                        commitQueryCache
+                    }else {  // not same, requery
+                        Libgit2Helper.getSingleCommit(repo, repoId = curRepo.id, commitOidStr = it.oidStr, settings)
+                            .copy(draw_inputs = it.draw_inputs, draw_outputs = it.draw_outputs)
+                    }
                 }
             }
         }
