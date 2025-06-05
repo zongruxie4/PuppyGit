@@ -1142,7 +1142,23 @@ fun CommitListScreen(
             loadingOn = loadingOn,
             loadingOff = loadingOff,
             onlyUpdateCurItem = useFullOid,
-            updateCurItem = {curItemIdx, fullOid-> updateCurCommitInfo(curRepo.value.fullSavePath, curItemIdx, fullOid, list.value)},
+            updateCurItem = {curItemIdx, fullOid, forceCreateBranch, branchName->
+                runCatching {
+                    // remove branch from commit list if force created checked
+                    if(forceCreateBranch) {
+                        refreshCommitByPredicate(curRepo.value) {
+                            it.branchShortNameList.contains(branchName)
+                        }
+                    }
+                }
+
+                // update target branch which created branch
+                runCatching {
+                    refreshCommitByPredicate(curRepo.value) {
+                        it.oidStr == fullOid
+                    }
+                }
+            },
             refreshPage = { fullyRefresh() },
             curCommitIndex = if(enableFilterState.value) -1 else curCommitIndex.intValue,  //若开了filter模式，则一律在原始列表重新查找条目索引（传无效索引-1即可触发查找），不然可能会更新错条目
             findCurItemIdxInList = { fullOid->

@@ -432,7 +432,7 @@ fun BranchListScreen(
             loadingOn = loadingOn,
             loadingOff = loadingOff,
             onlyUpdateCurItem = false,
-            updateCurItem = {curItemIdx, fullOid-> },  //不需要更新当前条目
+            updateCurItem = {_, _, _, _ -> },  //不需要更新当前条目
             refreshPage = {
                 changeStateTriggerRefreshPage(needRefresh)
             },

@@ -57,7 +57,7 @@ fun CheckoutDialog(
     loadingOn:(String)->Unit,
     loadingOff:()->Unit,
     onlyUpdateCurItem:Boolean,  //在操作完成后，若此值为true仅执行updateCurItem，否则执行refreshPage。（ps：创建分支或tag后，只需要更新当前条目，不用刷新整个页面，刷新页面会重置列表，所以不要轻易刷新
-    updateCurItem:(curItemIdx:Int, fullOid:String) -> Unit,  // curItemIdx代表需要更新的条目在列表中的索引; fullOid用来重新查询commit信息
+    updateCurItem:(curItemIdx:Int, fullOid:String, forceCreateBranch:Boolean, branchName:String) -> Unit,  // curItemIdx代表需要更新的条目在列表中的索引; fullOid用来重新查询commit信息
     refreshPage:()->Unit,  //刷新页面，若不需要刷新可传空
     curCommitIndex:Int,  //当前条目索引，若不需要调用updateCurItem更新当前item或期望通过findCurItemIdxInList查找索引，此值可传-1
     expectCheckoutType:Int,  //期望的checkout类型，不一定会采用，但可确定调用checkout的是谁，是远程分支还是本地分支还是别的
@@ -90,7 +90,7 @@ fun CheckoutDialog(
     val checkoutUserInputCommitHash = rememberSaveable { mutableStateOf("") }
     val forceCheckout = rememberSaveable { mutableStateOf(false) }
     val dontCheckout = rememberSaveable { mutableStateOf(false) }
-    val overwriteIfExist = rememberSaveable { mutableStateOf(false) }
+    val overwriteIfBranchExist = rememberSaveable { mutableStateOf(false) }
     val setUpstream = rememberSaveable { mutableStateOf(isCheckoutRemoteBranch) }
 
     val getCheckoutOkBtnEnabled:()->Boolean = getCheckoutOkBtnEnabled@{
@@ -211,6 +211,7 @@ fun CheckoutDialog(
                     Text(text = activityContext.getString(R.string.plz_choose_a_checkout_type) + ":")
                 }
 
+                Spacer(Modifier.height(5.dp))
 
                 //单选框，选择检出类型
                 SingleSelection(
@@ -249,8 +250,8 @@ fun CheckoutDialog(
                     }
 
                     if(proFeatureEnabled(overwriteExistWhenCreateBranchTestPassed)) {
-                        MyCheckBox(text = stringResource(R.string.overwrite_if_exist), value = overwriteIfExist)
-                        if(overwriteIfExist.value) {
+                        MyCheckBox(text = stringResource(R.string.overwrite_if_exist), value = overwriteIfBranchExist)
+                        if(overwriteIfBranchExist.value) {
                             Row {
                                 DefaultPaddingText(
                                     text = stringResource(R.string.will_overwrite_if_branch_already_exists),
@@ -404,7 +405,7 @@ fun CheckoutDialog(
                     MyLog.d(TAG, "checkout commit to new local branch: localBranchWillCreate=$localBranchWillCreate, baseCommitOid=$baseCommitOid")
 
                     //参数1，要创建的本地分支名；2是否基于HEAD创建分支，3如果不基于HEAD，提供一个引用名
-                    val createBranchRet = doCreateBranch(localBranchWillCreate, baseCommitOid, overwriteIfExist.value)  //创建分支
+                    val createBranchRet = doCreateBranch(localBranchWillCreate, baseCommitOid, overwriteIfBranchExist.value)  //创建分支
                     if (createBranchRet.success()) {
                         val (fullBranchRefspec, branchShortName, branchHeadFullHash) = createBranchRet.data!!  //第一个返回值是长分支名，二是短分支名，三是分支头hash
 
@@ -443,7 +444,7 @@ fun CheckoutDialog(
 
                             //把新创建的分支关联的commit条目更新一下，因为上面需要多显示一个新分支
                             // note: need not validate index at here, it will validate when into updateCurCommitInfo, if index invalid, nothing to do
-                            updateCurItem(commitIndexNeedUpdate, branchHeadFullHash)
+                            updateCurItem(commitIndexNeedUpdate, branchHeadFullHash, overwriteIfBranchExist.value, localBranchWillCreate)
                         }
 
                         Msg.requireShow(activityContext.getString(R.string.create_branch_success))
@@ -521,12 +522,9 @@ fun CheckoutDialog(
                         curCommitIndex
                     }
 
-                    updateCurItem(commitIndexNeedUpdate, curCommitOidOrRefName)
+                    updateCurItem(commitIndexNeedUpdate, curCommitOidOrRefName, overwriteIfBranchExist.value, localBranchWillCreate)
                 } catch (e: Exception) {
-                    MyLog.e(
-                        TAG,
-                        "err: try update item info failed when checkout, err=" + e.stackTraceToString()
-                    )
+                    MyLog.w(TAG, "err: try update item info failed when checkout, err=" + e.localizedMessage)
                 }
 
                 //显示通知
