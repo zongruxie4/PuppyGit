@@ -63,10 +63,10 @@ object Cons {
     const val git_AllZeroOidStr = "0000000000000000000000000000000000000000"  //40个0
     val git_AllZeroOid: Oid = Oid.of(git_AllZeroOidStr)  //40个0
 
-    // special commit hash, 'LOCAL' and 'INDEX' preserved by PuppyGit , 'HEAD' preserved by Git, don't name your branch/tag to these
-    const val git_LocalWorktreeCommitHash = "LOCAL"  //代表worktree
-    const val git_IndexCommitHash = "INDEX"  //代表index
-    const val git_HeadCommitHash = "HEAD"  //代表HEAD
+    // special commit hash, 'LOCAL' and 'INDEX' reserved by PuppyGit , 'HEAD' reserved by Git, don't name your branch/tag to these
+    const val git_LocalWorktreeCommitHash = "LOCAL"  //represent `worktree`
+    const val git_IndexCommitHash = "INDEX"  //represent `index`
+    const val git_HeadCommitHash = "HEAD"  //represent `HEAD`
 
     const val git_DotGitModules = ".gitmodules"
 

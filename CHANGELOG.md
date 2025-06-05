@@ -3,10 +3,12 @@
 ---
 1.1.2.3v99 - 20250604:
 - can choose checkout left or right when compare two commits
+- adjust time format for repo card
 
 
 
 - 比较两个提交时可选检出左边或右边的文件
+- 调整仓库卡片时间格式
 
 
 ---
