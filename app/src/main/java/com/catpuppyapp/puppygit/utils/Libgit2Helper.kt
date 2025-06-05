@@ -4417,12 +4417,12 @@ object Libgit2Helper {
         val commit = resolveCommitByHash(repo, commitOidStr)?:return errReturnDto
         return createCommitDto(
             commitOid = commitOid,
-            allBranchList = listOf(),
-            allTagList = listOf(),
+            allBranchList = null,
+            allTagList = null,
             commit = commit,
             repoId = repoId,
             repoIsShallow = false,
-            shallowOidList = listOf(),
+            shallowOidList = null,
             settings = settings,
             queryParents = false
         )
