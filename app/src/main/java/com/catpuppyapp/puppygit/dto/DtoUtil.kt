@@ -58,7 +58,8 @@ fun createCommitDto(
 
     repoIsShallow:Boolean,
     shallowOidList:List<String>,
-    settings:AppSettings
+    settings:AppSettings,
+    queryParents:Boolean = true,
 ): CommitDto {
     val c = CommitDto()
 
@@ -78,17 +79,20 @@ fun createCommitDto(
         }
     }
 
-    //添加parent列表，合并的提交就会有多个parent，一般都是1个
-    val parentCount = commit.parentCount()
-    if (parentCount > 0) {
-        var pc = 0
-        while (pc < parentCount) {
-            val parentOidStr = commit.parentId(pc).toString()
-            c.parentOidStrList.add(parentOidStr)
-            c.parentShortOidStrList.add(Libgit2Helper.getShortOidStrByFull(parentOidStr))
-            pc++
+    if(queryParents) {
+        //添加parent列表，合并的提交就会有多个parent，一般都是1个
+        val parentCount = commit.parentCount()
+        if (parentCount > 0) {
+            var pc = 0
+            while (pc < parentCount) {
+                val parentOidStr = commit.parentId(pc).toString()
+                c.parentOidStrList.add(parentOidStr)
+                c.parentShortOidStrList.add(Libgit2Helper.getShortOidStrByFull(parentOidStr))
+                pc++
+            }
         }
     }
+
     c.dateTime = Libgit2Helper.getDateTimeStrOfCommit(commit, settings)
     c.originTimeOffsetInMinutes = commit.timeOffset()
 

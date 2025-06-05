@@ -212,7 +212,7 @@ data class RepoEntity(
 
     fun updateCommitDateTimeWithRepo(repo: Repository, settings: AppSettings) {
         lastCommitDateTime = try {
-            getShortTimeIfPossible(Libgit2Helper.getSingleCommit(repo, repoId = id, commitOidStr = lastCommitHash, settings).dateTime)
+            getShortTimeIfPossible(Libgit2Helper.getSingleCommitSimple(repo, repoId = id, commitOidStr = lastCommitHash, settings).dateTime)
         }catch (e: Exception) {
             MyLog.e(TAG, "#updateCommitDateTimeWithRepo: resolve commit hash failed! hash=$lastCommitHash, err=${e.localizedMessage}")
             ""

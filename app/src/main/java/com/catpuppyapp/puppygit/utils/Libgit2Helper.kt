@@ -4368,7 +4368,12 @@ object Libgit2Helper {
         }
     }
 
-    fun getSingleCommit(repo: Repository, repoId: String, commitOidStr: String, settings: AppSettings) :CommitDto{
+    fun getSingleCommit(
+        repo: Repository,
+        repoId: String,
+        commitOidStr: String,
+        settings: AppSettings
+    ) :CommitDto{
         if(commitOidStr.isBlank()) {
             return CommitDto()
         }
@@ -4389,6 +4394,39 @@ object Libgit2Helper {
 
         val allTagList = getAllTags(repo, settings)
         return createCommitDto(commitOid, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList, settings)
+    }
+
+    fun getSingleCommitSimple(
+        repo: Repository,
+        repoId: String,
+        commitOidStr: String,
+        settings: AppSettings
+    ) :CommitDto{
+
+        if(commitOidStr.isBlank()) {
+            return CommitDto()
+        }
+        //后面如果出错会返回这个dto
+        val errReturnDto = CommitDto(oidStr = commitOidStr, shortOidStr = getShortOidStrByFull(commitOidStr))
+
+        val commitOid = runCatching { Oid.of(commitOidStr) }.getOrNull()
+        if(commitOid == null || commitOid.isNullOrEmptyOrZero) {
+            return errReturnDto
+        }
+
+        val commit = resolveCommitByHash(repo, commitOidStr)?:return errReturnDto
+        return createCommitDto(
+            commitOid = commitOid,
+            allBranchList = listOf(),
+            allTagList = listOf(),
+            commit = commit,
+            repoId = repoId,
+            repoIsShallow = false,
+            shallowOidList = listOf(),
+            settings = settings,
+            queryParents = false
+        )
+
     }
 
     fun createRevwalk(
