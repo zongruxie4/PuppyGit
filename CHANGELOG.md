@@ -1,13 +1,21 @@
 
 
 ---
+1.1.2.6v102 - 20250605:
+- fix sometimes commit info not update after create tag or branch
+
+
+
+- 修复某些情况下提交信息在创建tag或分支后不更新的bug
+
+
+---
 1.1.2.5v101 - 20250605:
 - fix repos loading slow
 
 
 
 - 修复仓库页面加载缓慢
-
 
 
 ---
