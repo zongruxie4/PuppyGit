@@ -128,7 +128,7 @@ fun FileListItem(
                 }
 
                 Row{
-                    Text(item.sizeInHumanReadable + ", " +item.lastModifiedTime, fontSize = 12.sp, color = fontColor)
+                    Text(item.getShortDesc(), fontSize = 12.sp, color = fontColor)
                 }
 
                 if(fullPathOfTopNoEndSlash.isNotBlank()) {
