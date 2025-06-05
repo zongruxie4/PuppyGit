@@ -1018,6 +1018,40 @@ fun CommitListScreen(
 
 
 
+
+    val refreshCommitByPredicate = { curRepo:RepoEntity, predicate:(CommitDto)->Boolean ->
+        Repository.open(curRepo.fullSavePath).use { repo ->
+            var commitQueryCache:CommitDto? = null
+
+            //更新过滤列表
+            val filterListIndex = filterList.value.indexOfFirst { predicate(it) }
+            if(filterListIndex >= 0) {
+                //重查条目信息并更新列表
+                // 单查条目无法重建图形信息，所以保留原提交的图形信息
+                filterList.value[filterListIndex] = filterList.value[filterListIndex].let {
+                    Libgit2Helper.getSingleCommit(repo, repoId = curRepo.id, commitOidStr = it.oidStr, settings)
+                        .copy(draw_inputs = it.draw_inputs, draw_outputs = it.draw_outputs).let { commitQueryCache = it; it }
+                }
+            }
+
+            //更新源列表
+            val srcListIndex = list.value.indexOfFirst { predicate(it) }
+            if(srcListIndex >= 0) {
+                list.value[srcListIndex] = list.value[srcListIndex].let {
+                    // if same commit, use, else requery, most time should same, so no need re-query at here
+                    if(commitQueryCache != null && commitQueryCache.oidStr == it.oidStr) {
+                        commitQueryCache
+                    }else {  // not same, requery
+                        Libgit2Helper.getSingleCommit(repo, repoId = curRepo.id, commitOidStr = it.oidStr, settings)
+                            .copy(draw_inputs = it.draw_inputs, draw_outputs = it.draw_outputs)
+                    }
+                }
+            }
+        }
+    }
+
+
+
     val nameOfNewTag = rememberSaveable { mutableStateOf("")}
     val overwriteIfNameExistOfNewTag = rememberSaveable { mutableStateOf(false)}  // force
     val showDialogOfNewTag = rememberSaveable { mutableStateOf(false)}
@@ -1043,35 +1077,32 @@ fun CommitListScreen(
             annotate = annotateOfNewTag,
             tagMsg = msgOfNewTag,
             force = overwriteIfNameExistOfNewTag,
-        ) success@{newTagOidStr ->
+        ) success@{ newTagOidStr ->
             if(newTagOidStr.isBlank()) {  //should never into here
                 Msg.requireShowLongDuration(activityContext.getString(R.string.tag_oid_invalid))
                 return@success
             }
 
-            // update item
-            val curOidStr = curCommit.value.oidStr
-            val curIdx = curCommitIndex.intValue
-
-            //如果没开filter模式且最终创建的tag和长按条目一致，直接更新长按条目；若开了filter模式，则必须更新原始列表，而这里设置的长按条目索引是filterList的，所以无效，需要重新从原始列表查找对应条目索引，然后更新原始列表以显示最新条目
-            if(!enableFilterState.value && newTagOidStr == curOidStr) {
-                //更新当前条目以显示新创建的tag(仅适用于更新当前长按条目)
-                updateCurCommitInfo(curRepo.value.fullSavePath, curIdx, curOidStr, list.value)
-            }else {  //最终创建的tag和长按条目不一致，查找并更新对应条目
-                //x 无需处理过滤列表，我测试了下，过滤模式创建分支和tag都没问题，能正常显示新tag和分支，因为只要更新原始列表相关代码就会重新执行，filterList也会重新生成) 更新过滤列表
-//                if(enableFilter) {
-//                    //更新filter列表
-//                }
-
-                //更新普通列表
-                val list = list.value
-                val idx = list.toList().indexOfFirst { it.oidStr==newTagOidStr }
-                if(idx != -1) {  //不等于-1代表找到了
-                    updateCurCommitInfo(curRepo.value.fullSavePath, idx, newTagOidStr, list)
+            // force checked, need remove old tag if exists
+            if(overwriteIfNameExistOfNewTag.value) {
+                // update old commit which pointed by tag
+                try {
+                    refreshCommitByPredicate(curRepo.value) {
+                        it.tagShortNameList.contains(nameOfNewTag.value)
+                    }
+                }catch (e: Exception) {
+                    //记不记没啥意义
+//                    MyLog.d(TAG, "remove tag from commit err")
                 }
-
             }
 
+            // update commit to let it add new tag to its tag list,
+            // the target commit is pointed by new tag (this commit is long pressed target by user)
+            runCatching {
+                refreshCommitByPredicate(curRepo.value) {
+                    it.oidStr == newTagOidStr
+                }
+            }
               //创建tag后没必要刷新整个页面，更新对应commit即可
         }
     }
@@ -1645,38 +1676,6 @@ fun CommitListScreen(
             filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
         } else {
             naviUp()
-        }
-    }
-
-
-    val refreshCommitByPredicate = { curRepo:RepoEntity, predicate:(CommitDto)->Boolean ->
-        Repository.open(curRepo.fullSavePath).use { repo ->
-            var commitQueryCache:CommitDto? = null
-
-            //更新过滤列表
-            val filterListIndex = filterList.value.indexOfFirst { predicate(it) }
-            if(filterListIndex >= 0) {
-                //重查条目信息并更新列表
-                // 单查条目无法重建图形信息，所以保留原提交的图形信息
-                filterList.value[filterListIndex] = filterList.value[filterListIndex].let {
-                    Libgit2Helper.getSingleCommit(repo, repoId = curRepo.id, commitOidStr = it.oidStr, settings)
-                        .copy(draw_inputs = it.draw_inputs, draw_outputs = it.draw_outputs).let { commitQueryCache = it; it }
-                }
-            }
-
-            //更新源列表
-            val srcListIndex = list.value.indexOfFirst { predicate(it) }
-            if(srcListIndex >= 0) {
-                list.value[srcListIndex] = list.value[srcListIndex].let {
-                    // if same commit, use, else requery, most time should same, so no need re-query at here
-                    if(commitQueryCache != null && commitQueryCache.oidStr == it.oidStr) {
-                        commitQueryCache
-                    }else {  // not same, requery
-                        Libgit2Helper.getSingleCommit(repo, repoId = curRepo.id, commitOidStr = it.oidStr, settings)
-                            .copy(draw_inputs = it.draw_inputs, draw_outputs = it.draw_outputs)
-                    }
-                }
-            }
         }
     }
 
