@@ -400,7 +400,7 @@ object UIHelper {
 
 
     fun getRunningStateColor(runningStatus: Boolean?):Color {
-        return if (runningStatus == null) MyStyleKt.TextColor.error() else if (runningStatus) MyStyleKt.TextColor.highlighting_green else Color.Unspecified
+        return if (runningStatus == null) MyStyleKt.TextColor.error() else if (runningStatus) MyStyleKt.TextColor.getHighlighting() else Color.Unspecified
     }
 
 

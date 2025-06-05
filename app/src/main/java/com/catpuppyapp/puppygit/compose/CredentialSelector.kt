@@ -54,7 +54,7 @@ fun CredentialSelector(
     if(note.value.isNotBlank()) {
         Spacer(Modifier.height(5.dp))
         MySelectionContainer {
-            DefaultPaddingText(note.value, color = MyStyleKt.TextColor.highlighting_green)
+            DefaultPaddingText(note.value, color = MyStyleKt.TextColor.getHighlighting())
         }
     }
 

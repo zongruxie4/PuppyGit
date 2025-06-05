@@ -414,7 +414,7 @@ fun SettingsInnerPage(
                                 }
 
                                 Row(modifier = Modifier.padding(top = 5.dp, start = 10.dp, end = 10.dp, bottom = 10.dp)) {
-                                    Text(stringResource(R.string.set_timezone_leave_empty_note), color = MyStyleKt.TextColor.highlighting_green)
+                                    Text(stringResource(R.string.set_timezone_leave_empty_note), color = MyStyleKt.TextColor.getHighlighting())
                                 }
                             }
                         }
@@ -542,7 +542,7 @@ fun SettingsInnerPage(
 
                     MySelectionContainer {
                         Column {
-                            DefaultPaddingText(stringResource(R.string.leave_new_password_empty_if_dont_want_to_use_master_password), color = MyStyleKt.TextColor.highlighting_green)
+                            DefaultPaddingText(stringResource(R.string.leave_new_password_empty_if_dont_want_to_use_master_password), color = MyStyleKt.TextColor.getHighlighting())
 
                             if(newMasterPassword.value.isNotEmpty()) {
                                 Spacer(Modifier.height(10.dp))
@@ -957,7 +957,7 @@ fun SettingsInnerPage(
         }) {
             Column {
                 Text(stringResource(R.string.timezone), fontSize = itemFontSize)
-                Text(getTimeZoneStr(), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = MyStyleKt.TextColor.highlighting_green)
+                Text(getTimeZoneStr(), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = MyStyleKt.TextColor.getHighlighting())
 //                Text(stringResource(R.string.timezone_when_viewing_commits), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
 
             }
@@ -1225,7 +1225,7 @@ fun SettingsInnerPage(
         }) {
             Column {
                 Text(stringResource(R.string.set_master_password), fontSize = itemFontSize)
-                Text(masterPassStatus.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = if(masterPassEnabled.value) MyStyleKt.TextColor.highlighting_green else MyStyleKt.TextColor.danger())
+                Text(masterPassStatus.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = if(masterPassEnabled.value) MyStyleKt.TextColor.getHighlighting() else MyStyleKt.TextColor.danger())
                 Text(stringResource(R.string.if_set_will_require_master_password_when_launching_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
 
             }

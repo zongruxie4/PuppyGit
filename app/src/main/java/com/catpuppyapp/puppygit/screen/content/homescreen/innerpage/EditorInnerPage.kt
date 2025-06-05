@@ -1051,7 +1051,7 @@ fun EditorInnerPage(
                     Row {
                         Text(
                             text = stringResource(id = R.string.open_file_failed)+"\n"+editorPageShowingFileErrMsg.value,
-                            color = MyStyleKt.ClickableText.errColor,
+                            color = MyStyleKt.TextColor.error(),
                             fontSize = fontSize
 
                         )

@@ -385,7 +385,7 @@ fun RemoteListScreen(
                     )
 
                     if(isPushUrl.value) {
-                        Text(text = stringResource(R.string.leave_it_empty_will_use_url), color=MyStyleKt.TextColor.highlighting_green)
+                        Text(text = stringResource(R.string.leave_it_empty_will_use_url), color=MyStyleKt.TextColor.getHighlighting())
                     }
                 }
             },

@@ -1022,7 +1022,7 @@ fun CloneScreen(
             }else if(credentialSelectedOption == optNumMatchCredentialByDomain) {
                 MySelectionContainer {
                     DefaultPaddingRow {
-                        Text(stringResource(R.string.credential_match_by_domain_note), color = MyStyleKt.TextColor.highlighting_green, fontWeight = FontWeight.Light)
+                        Text(stringResource(R.string.credential_match_by_domain_note), color = MyStyleKt.TextColor.getHighlighting(), fontWeight = FontWeight.Light)
                     }
                 }
             }

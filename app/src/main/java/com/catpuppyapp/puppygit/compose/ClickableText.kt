@@ -54,7 +54,7 @@ fun ClickableText(
     overflow: TextOverflow = TextOverflow.Ellipsis,
     fontWeight: FontWeight? = MyStyleKt.TextItem.defaultFontWeight(),
     style:TextStyle = MyStyleKt.ClickableText.getStyle(),
-    color:Color = MyStyleKt.ClickableText.color,
+    color:Color = MyStyleKt.ClickableText.getColor(),
     fontSize:TextUnit = MyStyleKt.ClickableText.fontSize,
     modifier: Modifier
 ) {
@@ -77,7 +77,7 @@ fun ClickableText(
     overflow: TextOverflow = TextOverflow.Ellipsis,
     fontWeight: FontWeight? = MyStyleKt.TextItem.defaultFontWeight(),
     style:TextStyle = MyStyleKt.ClickableText.getStyle(),
-    color:Color = MyStyleKt.ClickableText.color,
+    color:Color = MyStyleKt.ClickableText.getColor(),
     fontSize:TextUnit = MyStyleKt.ClickableText.fontSize,
     onClick: (() -> Unit)?
 ) {

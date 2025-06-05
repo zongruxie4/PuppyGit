@@ -160,7 +160,7 @@ fun RequireMasterPasswordScreen(
 
             ClickableText(
                 text = stringResource(R.string.i_forgot_my_master_password),
-                color = if(loading.value) UIHelper.getDisableTextColor() else MyStyleKt.ClickableText.color,
+                color = if(loading.value) UIHelper.getDisableTextColor() else MyStyleKt.ClickableText.getColor(),
                 fontWeight = FontWeight.Light,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable(
                     enabled = loading.value.not(),
@@ -183,7 +183,7 @@ fun RequireMasterPasswordScreen(
 
             if(loading.value) {
                 MySelectionContainer {
-                    Text(loadingText.value, fontWeight = FontWeight.Light, color = MyStyleKt.TextColor.highlighting_green)
+                    Text(loadingText.value, fontWeight = FontWeight.Light, color = MyStyleKt.TextColor.getHighlighting())
                 }
             }
 

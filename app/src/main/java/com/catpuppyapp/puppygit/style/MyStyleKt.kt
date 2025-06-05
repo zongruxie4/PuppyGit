@@ -46,8 +46,13 @@ object MyStyleKt{
         fun getStyle() = LocalTextStyle.current;  // 默认
 //        fun getStyle() = TextStyle(textDecoration = TextDecoration.Underline);  // 加下划线
 
-        val color = Color(0xFF0096FF)
-        val errColor = Color(0xFFFF5733)
+        val color_light = Color(0xFF0072EC)
+        val color_dark = Color(0xFF0096FF)
+
+        fun getColor(inDarkTheme: Boolean = Theme.inDarkTheme) = if(inDarkTheme) color_dark else color_light
+
+        fun getErrColor() = TextColor.error()
+
         val minClickableSize = 25.dp
 //        val modifier = Modifier.padding(start = 1.dp,top=15.dp, bottom = 0.dp, end=1.dp)
         //defaultMinSize为了确保基本的可点击范围，避免分支名字很小点不到的情况发生
@@ -56,7 +61,6 @@ object MyStyleKt{
 //        val modifier = Modifier.padding(start = 3.dp,top=0.dp, bottom = 0.dp, end=1.dp).defaultMinSize(minClickableSize)
         val fontSize = 16.sp
 
-        val textAlign = TextAlign.Center
     }
 
 //    object NormalText{
@@ -111,7 +115,10 @@ object MyStyleKt{
         val enable = Color.Unspecified
         val disable = Color.LightGray
         val disable_DarkTheme = Color(0xFF505050)
-        val highlighting_green =Color(0xFF1FAB26)
+        val highlighting_green_light =Color(0xFF04880D)
+        val highlighting_green_dark =Color(0xFF1FAB26)
+
+        fun getHighlighting(inDarkTheme: Boolean = Theme.inDarkTheme) = if(inDarkTheme) highlighting_green_dark else highlighting_green_light
 
         //Editor font color
         private val lineNum_forEditorInLightTheme = Color.Gray
@@ -141,7 +148,9 @@ object MyStyleKt{
         val fontColor = Color.Unspecified
         val darkThemeFontColor = Color.Gray
 
-        fun error() = if(Theme.inDarkTheme) Color(0xFFF53737) else Color.Red.copy(alpha = .8f)
+        val err_light = Color.Red.copy(alpha = .8f)
+        val err_dark = Color(0xFFF81A1A)
+        fun error() = if(Theme.inDarkTheme) err_dark else err_light
 //        fun error() = Color.Red.copy(alpha = .8f)
 
         fun danger() = error()

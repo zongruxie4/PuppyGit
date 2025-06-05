@@ -30,7 +30,7 @@ fun MarkDownContainer(
         markdown = content,
         linkifyMask = Linkify.EMAIL_ADDRESSES or Linkify.WEB_URLS,
         onLinkClicked = onLinkClicked,
-        linkColor = MyStyleKt.ClickableText.color,
+        linkColor = MyStyleKt.ClickableText.getColor(),
         style = LocalTextStyle.current.copy(fontSize = fontSize.sp, color = fontColor),
         isTextSelectable = true,
         syntaxHighlightColor = if(inDarkTheme) MaterialTheme.colorScheme.surfaceBright else MaterialTheme.colorScheme.surfaceDim,

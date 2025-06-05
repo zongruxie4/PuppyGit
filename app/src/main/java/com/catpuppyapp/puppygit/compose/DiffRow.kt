@@ -384,7 +384,7 @@ fun DiffRow (
                     }
                 ) {
                     MySelectionContainer {
-                        Text(stringResource(R.string.note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file), color = MyStyleKt.TextColor.highlighting_green)
+                        Text(stringResource(R.string.note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file), color = MyStyleKt.TextColor.getHighlighting())
                     }
                     Spacer(modifier = Modifier.height(10.dp))
 

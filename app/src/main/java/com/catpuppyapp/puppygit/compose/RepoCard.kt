@@ -361,7 +361,7 @@ fun RepoCard(
                                 modifier = MyStyleKt.ClickableText.modifier,
                                 fontWeight = defaultFontWeight,
                                 //出错，红色；已是最新，绿色；"加载中..."之类的非点击临时状态，默认颜色。
-                                color = if(nullNormalTrueUpToDateFalseError == null) Color.Unspecified else if(nullNormalTrueUpToDateFalseError == true) MyStyleKt.TextColor.highlighting_green else MyStyleKt.TextColor.error(),
+                                color = if(nullNormalTrueUpToDateFalseError == null) Color.Unspecified else if(nullNormalTrueUpToDateFalseError == true) MyStyleKt.TextColor.getHighlighting() else MyStyleKt.TextColor.error(),
 
                             )
                         } else {  //可点击的状态
@@ -443,7 +443,7 @@ fun RepoCard(
                             ClickableText (
                                 text = if (hasUncheckedErr) repoDto.latestUncheckedErrMsg else stringResource(R.string.repo_err_no_err_or_all_checked),
                                 maxLines = 1,
-                                color = if (hasUncheckedErr) MyStyleKt.ClickableText.errColor else MyStyleKt.ClickableText.color,
+                                color = if (hasUncheckedErr) MyStyleKt.ClickableText.getErrColor() else MyStyleKt.ClickableText.getColor(),
                                 fontWeight = defaultFontWeight,
                                 modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
                                     onLongClick = {

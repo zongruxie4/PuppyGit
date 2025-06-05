@@ -370,7 +370,7 @@ fun CredentialNewOrEdit(
                     Text(
                         text = stringResource(R.string.don_t_touch_the_password_passphrase_if_you_don_t_want_to_update_it),
                         fontWeight = FontWeight.Light,
-                        color = MyStyleKt.TextColor.highlighting_green
+                        color = MyStyleKt.TextColor.getHighlighting()
                     )
                 }
             }
