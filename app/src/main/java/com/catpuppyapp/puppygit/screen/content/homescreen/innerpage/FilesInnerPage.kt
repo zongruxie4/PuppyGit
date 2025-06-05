@@ -456,6 +456,7 @@ fun FilesInnerPage(
             textCompose = {
                 ScrollableColumn {
                     TextField(
+                        maxLines = MyStyleKt.defaultMultiLineTextFieldMaxLines,
                         modifier = Modifier
                             .fillMaxWidth()
                             .focusRequester(focusRequester),
