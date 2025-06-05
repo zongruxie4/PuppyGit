@@ -2087,6 +2087,37 @@ fun CommitListScreen(
                             showItemDetails(curCommit.value)
                         }
 
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.refresh)) {
+                            val curCommit = curCommit.value
+                            val curRepo = curRepo.value
+
+                            try {
+                                Repository.open(curRepo.fullSavePath).use { repo ->
+                                    //重查条目信息
+                                    val requeryedCommit = Libgit2Helper.getSingleCommit(repo, repoId = curRepo.id, commitOidStr = curCommit.oidStr, settings)
+
+                                    //更新过滤列表
+                                    val filterListIndex = filterList.value.indexOfFirst { it.oidStr == curCommit.oidStr }
+                                    if(filterListIndex >= 0) {
+                                        // 单查条目无法重建图形信息，所以保留原提交的图形信息
+                                        filterList.value[filterListIndex] = filterList.value[filterListIndex].let { requeryedCommit.copy(draw_inputs = it.draw_inputs, draw_outputs = it.draw_outputs) }
+                                    }
+
+                                    //更新源列表
+                                    val srcListIndex = list.value.indexOfFirst { it.oidStr == curCommit.oidStr }
+                                    if(srcListIndex >= 0) {
+                                        list.value[srcListIndex] = list.value[srcListIndex].let { requeryedCommit.copy(draw_inputs = it.draw_inputs, draw_outputs = it.draw_outputs) }
+                                    }
+                                }
+
+                                Msg.requireShow(activityContext.getString(R.string.success))
+                            }catch (e: Exception) {
+                                Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                                MyLog.e(TAG, "refresh commit err: commitOid=${curCommit.oidStr}, err=${e.stackTraceToString()}")
+                            }
+
+                        }
+
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.nodes)){
                             showNodesInfo(curCommit.value)
                         }
