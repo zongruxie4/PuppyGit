@@ -42,10 +42,8 @@ data class FileItemDto (
         //  cause need recursive calculate,
         //  may cause expensive cpu overhead
         return if(isDir) {
-            // "last modified time"
             cachedShortLastModifiedTime ?: ""
         }else {  // is file
-            // "size, last modified time"
             "$cachedShortLastModifiedTime, $sizeInHumanReadable"
         }
     }
