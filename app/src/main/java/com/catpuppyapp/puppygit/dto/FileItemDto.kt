@@ -46,7 +46,7 @@ data class FileItemDto (
             cachedShortLastModifiedTime ?: ""
         }else {  // is file
             // "size, last modified time"
-            "$sizeInHumanReadable, $cachedShortLastModifiedTime"
+            "$cachedShortLastModifiedTime, $sizeInHumanReadable"
         }
     }
 
