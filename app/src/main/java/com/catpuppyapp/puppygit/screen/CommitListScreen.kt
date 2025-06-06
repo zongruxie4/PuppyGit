@@ -1001,16 +1001,16 @@ fun CommitListScreen(
 //    }
 
 
-    val updateCurCommitInfo = {repoFullPath:String, curCommitIdx:Int, commitOid:String, list:MutableList<CommitDto> ->
-        doActIfIndexGood(curCommitIdx, list) {
-            Repository.open(repoFullPath).use { repo ->
-                val reQueriedCommitInfo = Libgit2Helper.getSingleCommit(repo, repoId, commitOid, settings)
-                val oldCommit = list[curCommitIdx]
-                list[curCommitIdx] = reQueriedCommitInfo.copy(draw_inputs = oldCommit.draw_inputs, draw_outputs=oldCommit.draw_outputs)
-            }
-        }
-
-    }
+    // 用索引更新bug频出，废弃
+//    val updateCurCommitInfo = {repoFullPath:String, curCommitIdx:Int, commitOid:String, list:MutableList<CommitDto> ->
+//        doActIfIndexGood(curCommitIdx, list) {
+//            Repository.open(repoFullPath).use { repo ->
+//                val reQueriedCommitInfo = Libgit2Helper.getSingleCommit(repo, repoId, commitOid, settings)
+//                val oldCommit = list[curCommitIdx]
+//                list[curCommitIdx] = reQueriedCommitInfo.copy(draw_inputs = oldCommit.draw_inputs, draw_outputs=oldCommit.draw_outputs)
+//            }
+//        }
+//    }
 
 
 
@@ -1142,9 +1142,9 @@ fun CommitListScreen(
             loadingOff = loadingOff,
             onlyUpdateCurItem = useFullOid,
             updateCurItem = {curItemIdx, fullOid, forceCreateBranch, branchName->
-                runCatching {
-                    // remove branch from commit list if force created checked
-                    if(forceCreateBranch) {
+                // remove branch from commit list if force created checked
+                if(forceCreateBranch) {
+                    runCatching {
                         refreshCommitByPredicate(curRepo.value) {
                             it.branchShortNameList.contains(branchName)
                         }
@@ -1181,65 +1181,41 @@ fun CommitListScreen(
             repoFullPath = curRepo.value.fullSavePath,
             repoId=curRepo.value.id,
             refreshPage = { oldHeadCommitOid, isDetached ->
+                val curRepo = curRepo.value
+                val curCommit = curCommit.value
+
                 //顺便更新下仓库的detached状态，因为若从分支条目进来，不怎么常刷新页面，所以仓库状态可能过时
-                curRepo.value.isDetached = boolToDbInt(isDetached)
+                curRepo.isDetached = boolToDbInt(isDetached)
 
                 //如果从仓库卡片点击提交号进入 或 从分支列表点击分支条目进入但点的是当前HEAD指向的分支，则刷新页面，重载列表
                 if(!useFullOid || isHEAD) {  // from repoCard tap commit hash in this page or from branch list tap branch of HEAD, will in this if block
                     //从分支页面进这个页面，不会强制重刷列表，但如果当前显示的分支是仓库的当前分支(被HEAD指向)，那如果reset hard 成功，就得更新下提交列表，于是，就通过更新fullOid来重设当前页面的起始hash
-                    fullOid.value=curCommit.value.oidStr  // only make sense when come this page from branch list page with condition `useFullOid==true && isCurrent==true`,update it for show latest commit list of current branch of repo when hard reset success.
+                    fullOid.value = curCommit.oidStr  // only make sense when come this page from branch list page with condition `useFullOid==true && isCurrent==true`,update it for show latest commit list of current branch of repo when hard reset success.
                     fullyRefresh()
-                }else {  //useFullOid==true && isCurrent==false, from branch list page tap a branch item which is not pointed by HEAD(isCurrent==false), will in this block
-                    val curCommitIdx = if(enableFilterState.value) {
-                        try {  //取出当前长按条目在源列表中的索引
-                            filterIdxList.value[curCommitIndex.intValue]
-                        }catch (_:Exception) {
-                            -1
-                        }
-                    } else {  //非过滤模式，此值直接就是源列表索引
-                        curCommitIndex.intValue
-                    }
+                }else if(!isDetached) {  //useFullOid==true && isCurrent==false, from branch list page tap a branch item which is not pointed by HEAD(isCurrent==false), will in this block
 
-                    val repoFullPath = curRepo.value.fullSavePath
-                    val commitList = list.value
                     //需要更新两个提交：一个是当前hard reset的目标提交，需要更新信息以使其显示刚才HEAD关联的分支名；一个是HEAD在reset之前指向的提交，需更新以使其删除HEAD当前关联的分支名。
                     //执行到这，代表在分支页面点击分支条目进入提交列表，然后长按某个commit执行了reset，这时，如果当前非detached HEAD，则当前HEAD指向的分支会指向当前提交，所以应当更新当前选中的提交信息以显示新指向它的分支
                     //遍历当前列表，若包含上个提交号，则更新其信息（目的是为了移除HEAD之前指向的分支的首个提交上的分支名，现在那个分支头已经被Hard Reset到新分支上了，不应再在旧提交上显示)
-                    if(!isDetached) { //如果当前非detached，遍历commits条目，把当前分支从旧commit的分支列表移除；if is detached, Hard Reset will not update any branch, so need not update commit info
-                        //更新新提交以显示HEAD指向的分支
+                    //如果当前非detached，遍历commits条目，把当前分支从旧commit的分支列表移除；if is detached, Hard Reset will not update any branch, so need not update commit info
 
-                        //非过滤模式，直接根据长按条目的索引更新条目信息；若是过滤模式，则会在下边遍历列表更新旧条目信息时顺便更新原始列表中当前长按条目的信息
 
-                        val curCommitOidStr= curCommit.value.oidStr  //当前长按触发reset的条目的full oid
+                    // update commit which contains cur branch to remove branch from it's branch list
+                    runCatching {
+                        val curBranch = curRepo.branch
 
-                        // 触发当前reset的被长按的条目是否被更新
-                        var curItemUpdated = if(isGoodIndexForList(curCommitIdx, commitList)) {
-                            updateCurCommitInfo(repoFullPath, curCommitIdx, curCommitOidStr, commitList)
-                            true  //非过滤模式，直接用长按条目索引更新此条目即可
-                        }else{
-                            false  //后续在循环中更新旧head关联的提交时顺便更新此条目
-                        }
-
-                        var oldUpdated = false  //之前指向被更新的分支的条目信息是否已刷新
-
-                        //更新旧提交以删除HEAD指向的提交
-                        for((idx, commit) in commitList.toList().withIndex()) {
-                            if(oldUpdated && curItemUpdated) {
-                                break
-                            }
-
-                            if(!curItemUpdated && commit.oidStr == curCommitOidStr) {
-                                updateCurCommitInfo(repoFullPath, idx, commit.oidStr, commitList)
-                                curItemUpdated = true
-                            }
-
-                            //有个小小缺陷，若当前条目和旧条目相同，会更新两次，不过问题不大
-                            if(!oldUpdated && commit.oidStr == oldHeadCommitOid) {
-                                updateCurCommitInfo(repoFullPath, idx, commit.oidStr, commitList)
-                                oldUpdated = true
-                            }
+                        refreshCommitByPredicate(curRepo) {
+                            it.branchShortNameList.contains(curBranch)
                         }
                     }
+
+                    // update target of reset to make it's branch list contains current branch
+                    runCatching {
+                        refreshCommitByPredicate(curRepo) {
+                            it.oidStr == curCommit.oidStr
+                        }
+                    }
+
                 }
             }
         )
