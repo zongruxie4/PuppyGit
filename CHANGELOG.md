@@ -1,6 +1,15 @@
 
 
 ---
+1.1.2.7v103 - 20250606:
+- add Thanks list in About screen
+
+
+
+- 关于页面添加感谢列表
+
+
+---
 1.1.2.6v102 - 20250605:
 - fix sometimes commit info not update after create tag or branch
 
