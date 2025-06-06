@@ -68,7 +68,13 @@ data class OpenSource(
     val licenseLink:String,
 )
 
-private val openSourceList= listOf(
+data class Contributor(
+    val name:String,
+    val link:String,
+    val desc:String,
+)
+
+private val openSourceList = listOf(
     OpenSource(projectName = "libgit2", projectLink = "https://github.com/libgit2/libgit2", licenseLink = "https://raw.githubusercontent.com/libgit2/libgit2/main/COPYING"),
     OpenSource(projectName = "git24j", projectLink = "https://github.com/git24j/git24j", licenseLink = "https://raw.githubusercontent.com/git24j/git24j/master/LICENSE"),
     OpenSource(projectName = "text-editor-compose", projectLink = "https://github.com/kaleidot725/text-editor-compose", licenseLink = "https://raw.githubusercontent.com/kaleidot725/text-editor-compose/main/LICENSE"),
@@ -76,6 +82,14 @@ private val openSourceList= listOf(
     OpenSource(projectName = "libssh2", projectLink = "https://github.com/libssh2/libssh2", licenseLink = "https://raw.githubusercontent.com/libssh2/libssh2/refs/heads/master/COPYING"),
     OpenSource(projectName = "compose-markdown", projectLink = "https://github.com/jeziellago/compose-markdown", licenseLink = "https://github.com/jeziellago/compose-markdown/blob/main/LICENSE"),
     OpenSource(projectName = "swipe", projectLink = "https://github.com/saket/swipe", licenseLink = "https://github.com/saket/swipe/blob/trunk/LICENSE.txt"),
+)
+
+
+private val contributorList = listOf(
+    Contributor(name = "triksterr", link = "https://github.com/triksterr", desc = "Russian translator"),
+    Contributor(name = "mikropsoft", link = "https://github.com/mikropsoft", desc = "Turkish translator"),
+    Contributor(name = "Hussain96o", link = "https://github.com/Hussain96o", desc = "Arabic translator"),
+    Contributor(name = "sebastien46", link = "https://github.com/sebastien46", desc = "Monochrome app icon"),
 )
 
 @Composable
@@ -290,11 +304,14 @@ fun AboutInnerPage(
 
             )
         }
+
         HorizontalDivider(modifier = Modifier.padding(10.dp))
+
         //开源项目列表
         Row (modifier = Modifier.padding(10.dp)){
             Text(text = stringResource(id = R.string.powered_by_open_source)+":")
         }
+
         openSourceList.forEach {
             Column (
                 modifier = Modifier.padding(5.dp),
@@ -315,6 +332,39 @@ fun AboutInnerPage(
                     modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                         //                        copy(it.projectLink)
                         ActivityUtil.openUrl(activityContext, it.licenseLink)
+                    },
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+            }
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(10.dp))
+
+        //开源项目列表
+        Row (modifier = Modifier.padding(10.dp)){
+            Text(text = "Thanks:")
+        }
+
+        contributorList.forEach {
+            Column (
+                modifier = Modifier.padding(5.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ){
+                ClickableText(
+                    text = it.name,
+//                    fontSize = 14.sp,
+                    modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                        ActivityUtil.openUrl(activityContext, it.link)
+                    },
+                )
+                Spacer(Modifier.height(2.dp))
+                ClickableText(
+                    text = "("+it.desc+")",
+                    fontSize = 12.sp,
+                    modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                        ActivityUtil.openUrl(activityContext, it.link)
                     },
                 )
 
