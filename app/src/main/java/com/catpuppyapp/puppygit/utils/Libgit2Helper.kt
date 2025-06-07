@@ -7347,6 +7347,7 @@ object Libgit2Helper {
                             //set remoteName and remoteUrl fields
 //                                    val defaultRemoteName = Remote.list(clonedRepo)[0]  // remote "origin"
 //                            val defaultRemoteName = Cons.gitDefaultRemoteOrigin  //"origin"就是默认的名字，根本不用执行上面的查询
+                            // 其实 ?: 后面的代码永远不会被执行，因为克隆后的仓库都至少有一个名为origin的remote
                             val defaultRemoteName = Remote.list(clonedRepo).getOrNull(0) ?: Cons.gitDefaultRemoteOrigin  //一般"origin"就是默认的名字，但还是查一下保险，以免和实际的 remote name 不符
                             repo2ndQuery.pullRemoteName = defaultRemoteName
                             repo2ndQuery.pullRemoteUrl = repo2ndQuery.cloneUrl
