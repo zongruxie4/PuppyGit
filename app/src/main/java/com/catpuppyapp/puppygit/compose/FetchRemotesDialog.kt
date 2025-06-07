@@ -27,7 +27,6 @@ fun FetchRemotesDialog(
     curRepo:RepoEntity,
     loadingOn:(loadingMsg:String)->Unit,
     loadingOff:()->Unit,
-    loadingText:String,
     refreshPage:()->Unit,
 ){
     val activityContext = LocalContext.current
@@ -41,7 +40,7 @@ fun FetchRemotesDialog(
     ) {
         closeDialog()
 
-        doJobThenOffLoading(loadingOn, loadingOff, loadingText) {
+        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.fetching)) {
             try {
                 if(remoteList.isEmpty()) {  // remotes列表为空，无需执行操作
                     Msg.requireShowLongDuration(activityContext.getString(R.string.err_remote_list_is_empty))

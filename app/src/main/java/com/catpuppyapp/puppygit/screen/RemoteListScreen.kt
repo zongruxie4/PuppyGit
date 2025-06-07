@@ -306,7 +306,6 @@ fun RemoteListScreen(
             curRepo = curRepo.value,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
-            loadingText = loadingText.value,
             refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
         )
     }
