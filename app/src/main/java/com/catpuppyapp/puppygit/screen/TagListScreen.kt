@@ -791,10 +791,11 @@ fun TagListScreen(
                     if(isInitLoading.value) {
                         Text(text = stringResource(R.string.loading))
                     }else {
-                        Row(modifier = Modifier.padding(horizontal = 10.dp)) {
+                        Row {
                             Text(text = stringResource(R.string.no_tags_found))
                         }
-                        Row(modifier = Modifier.padding(10.dp),
+
+                        Row(modifier = Modifier.padding(top = 10.dp),
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {

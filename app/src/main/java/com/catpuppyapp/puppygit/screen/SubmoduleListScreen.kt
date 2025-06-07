@@ -1152,9 +1152,7 @@ fun SubmoduleListScreen(
                     if(isInitLoading.value) {
                         Text(stringResource(R.string.loading))
                     }else {
-                        Row(
-                            modifier = Modifier.padding(top = 10.dp),
-                        ) {
+                        Row {
                             Text(text = stringResource(R.string.no_submodules_found))
                         }
 

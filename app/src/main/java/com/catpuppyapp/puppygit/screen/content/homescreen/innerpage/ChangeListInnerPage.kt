@@ -2664,12 +2664,12 @@ fun ChangeListInnerPage(
 
                                 val fontSizeOfPullPushSync = 16.sp
 
-                                val splitSign = " | "
+//                                val splitSign = " | "
                                 val splitHorizonPadding = 10.dp
 
                                 Column(
                                     modifier = Modifier
-                                        .padding(10.dp)
+                                        .padding(top = 10.dp)
                                     ,
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
@@ -2930,7 +2930,7 @@ fun ChangeListInnerPage(
                             //只有非detached HEAD 且 设置了上游（没发布也行） 才显示检查更新
                             if(!dbIntToBool(curRepoOnUi.isDetached) && curRepoUpstreamOnUi.branchRefsHeadsFullRefSpec.isNotBlank()) {
                                 MySelectionContainer {
-                                    Row {
+                                    Row(Modifier.padding(top = 10.dp)) {
 //                                LongPressAbleIconBtn(
 //                                    iconModifier = iconModifier,
 //                                    tooltipText = stringResource(id = R.string.check_update),
@@ -3056,7 +3056,7 @@ fun ChangeListInnerPage(
                                 }
                             }
 
-                        }else if(fromTo == Cons.gitDiffFromHeadToIndex) {  //index
+                        }else if(fromTo == Cons.gitDiffFromHeadToIndex) {  //Index Screen
                             MySelectionContainer {
                                 Text(text = stringResource(id = R.string.index_clean))
                             }
