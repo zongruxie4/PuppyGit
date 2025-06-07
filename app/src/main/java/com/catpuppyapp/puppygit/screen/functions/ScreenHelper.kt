@@ -513,3 +513,9 @@ fun getFilesGoToPath(
 
     }
 }
+
+fun goToErrScreen(repoId:String) {
+    doJobWithMainContext {
+        AppModel.navController.navigate(Cons.nav_ErrorListScreen + "/" + repoId)
+    }
+}

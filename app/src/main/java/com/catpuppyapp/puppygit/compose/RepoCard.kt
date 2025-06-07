@@ -29,6 +29,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
@@ -58,6 +59,7 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.goToCloneScreen
 import com.catpuppyapp.puppygit.screen.functions.goToCommitListScreen
+import com.catpuppyapp.puppygit.screen.functions.goToErrScreen
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -120,31 +122,55 @@ fun RepoCard(
     val defaultFontWeight = remember { MyStyleKt.TextItem.defaultFontWeight() }
 
     val clipboardManager = LocalClipboardManager.current
-    val viewDialogText = rememberSaveable { mutableStateOf("") }
-    val showViewDialog = rememberSaveable { mutableStateOf(false) }
-    if(showViewDialog.value) {
-        CopyableDialog(
-            title = stringResource(id = R.string.error_msg),
-            text = viewDialogText.value,
-            onCancel = {
-                showViewDialog.value=false
+    val errMsgDialogText = rememberSaveable { mutableStateOf("") }
+    val showErrMsgDialog = rememberSaveable { mutableStateOf(false) }
+    if(showErrMsgDialog.value) {
+        val closeDialog = { showErrMsgDialog.value = false }
+
+        CopyableDialog2(
+            title = stringResource(R.string.error_msg),
+            text = errMsgDialogText.value,
+            // use to dismiss dialog
+            onCancel = closeDialog,
+
+            cancelCompose = {
+                Row {
+                    TextButton(
+                        onClick = {
+                            closeDialog()
+                            goToErrScreen(repoDto.id)
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.all),
+                        )
+                    }
+
+                    TextButton(
+                        onClick = closeDialog
+                    ) {
+                        Text(
+                            text = stringResource(R.string.close),
+                        )
+                    }
+                }
             }
         ) { //复制到剪贴板
-            showViewDialog.value=false
-            clipboardManager.setText(AnnotatedString(viewDialogText.value))
+            showErrMsgDialog.value=false
+
+            clipboardManager.setText(AnnotatedString(errMsgDialogText.value))
             Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
-    val showErrMsg = { repoId:String, errMsg:String ->
-        doJobThenOffLoading {
-            //显示弹窗
-            viewDialogText.value = errMsg
-            showViewDialog.value = true
+    val initErrMsgDialog = { repoId:String, errMsg:String ->
+        //显示弹窗
+        errMsgDialogText.value = errMsg
+        showErrMsgDialog.value = true
 
+        doJobThenOffLoading {
             //清掉错误信息
-            val repoDb = AppModel.dbContainer.repoRepository
-            repoDb.updateErrFieldsById(repoId, Cons.dbCommonFalse, "")
+            AppModel.dbContainer.repoRepository.updateErrFieldsById(repoId, Cons.dbCommonFalse, "")
 
             //这里就不刷新仓库了，暂时仍显示错误信息，除非手动刷新页面，这么设计是为了缓解用户偶然点开错误没看完就关了，再想点开发现错误信息已被清的问题
         }
@@ -445,37 +471,22 @@ fun RepoCard(
                                 maxLines = 1,
                                 color = if (hasUncheckedErr) MyStyleKt.ClickableText.getErrColor() else MyStyleKt.ClickableText.getColor(),
                                 fontWeight = defaultFontWeight,
-                                modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
-                                    onLongClick = {
-                                        //只有当错误信息不为空时才显示弹窗
-                                        if (hasUncheckedErr) {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            // "repo:xxx\n\n err:errinfo"
-                                            val errMsg = StringBuilder("${activityContext.getString(R.string.repo)}: ")
-                                                .appendLine(repoDto.repoName)
-                                                .appendLine()
-                                                .append("${activityContext.getString(R.string.error)}: ")
-                                                .append(repoDto.latestUncheckedErrMsg)
-                                                .toString()
+                                modifier = MyStyleKt.ClickableText.modifier.clickable {
+                                    //show dialog when has unchecked error, else go to error list
+                                    if (hasUncheckedErr) {
+                                        // "repo:xxx\n\n err:errinfo"
+                                        val errMsg = StringBuilder("${activityContext.getString(R.string.repo)}: ")
+                                            .append(repoDto.repoName)
+                                            .append("\n\n")
+                                            .append("${activityContext.getString(R.string.error)}: ")
+                                            .append(repoDto.latestUncheckedErrMsg)
+                                            .toString()
 
-                                            showErrMsg(repoDto.id, errMsg)
-                                        }
-                                    },
-                                    onClick = {
-                                        //如果有未检查过的错误信息，字变红色，点击进入二级页面，显示当前仓库的错误日志，右上角有“清除所有记录”的按钮。
-                                        //如果不存在错误或者已经点过查看错误信息的按钮，就普通颜色，提示没错误或都已经检查过。
-                                        //错误信息包含时间戳和简短的描述。
-
-                                        //TODO 考虑下是从错误页面返回时更新仓库的 hasUncheckedErr和所有错误的isChecked字段，还是在进入错误页面时更新？哪个比较合适？
-//                        if(repoDto.hasUncheckedErr) {  //在存在错误的情况下点了这个按钮，就当作已经检查过错误，把有存在未检错误设为false
-//                            //TODO State有问题，改这个变量，不会触发重新渲染，得想办法解决一下
-//                            // 得拿到仓库list集合，和当前元素的索引，然后修改集合里的数据，页面就会更新了，以后再改吧
-//                            repoDto.hasUncheckedErr = false;
-//                            //TODO 更新数据库
-//                        }
-
-                                        navController.navigate(Cons.nav_ErrorListScreen + "/" + repoDto.id)
-                                    }) ,
+                                        initErrMsgDialog(repoDto.id, errMsg)
+                                    }else {
+                                        goToErrScreen(repoDto.id)
+                                    }
+                                } ,
                             )
                         }
                     }
