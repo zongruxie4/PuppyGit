@@ -939,11 +939,10 @@ fun RemoteListScreen(
     LaunchedEffect(needRefresh.value) {
         try {
             if(repoId.isNotBlank()) {
-                doJobThenOffLoading {
-                    list.value.clear()
+                doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                     val repoDb = AppModel.dbContainer.repoRepository
                     val repoFromDb = repoDb.getById(repoId)
-                    if(repoFromDb==null) {
+                    if(repoFromDb == null) {
                         Msg.requireShowLongDuration(activityContext.getString(R.string.repo_id_invalid))
                         return@doJobThenOffLoading
                     }
@@ -958,6 +957,7 @@ fun RemoteListScreen(
 //                        updateRemoteDtoList(repo, listFromDb)
 //                    }
 
+                    list.value.clear()
                     list.value.addAll(listFromDb)
 
                     triggerReFilter(filterResultNeedRefresh)
