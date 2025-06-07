@@ -3253,6 +3253,7 @@ object Libgit2Helper {
                     rac.fetchCredential = credential
                 }
             }
+
             if(requirePushCredential) {
                 var credential: CredentialEntity? = null
                 //用户名和密码至少一个不为空才创建凭据
@@ -3266,6 +3267,7 @@ object Libgit2Helper {
                     rac.pushCredential = credential
                 }
             }
+
             //添加进待fetch/push列表
             remoteCredentialList.add(rac)
         }

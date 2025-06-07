@@ -967,8 +967,10 @@ fun RemoteListScreen(
                     val repoDb = AppModel.dbContainer.repoRepository
                     val repoFromDb = repoDb.getById(repoId)
                     if(repoFromDb==null) {
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.repo_id_invalid))
                         return@doJobThenOffLoading
                     }
+
                     curRepo.value = repoFromDb
 
                     val remoteDb = AppModel.dbContainer.remoteRepository

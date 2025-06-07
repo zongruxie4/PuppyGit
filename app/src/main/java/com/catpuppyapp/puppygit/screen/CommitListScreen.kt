@@ -2133,7 +2133,7 @@ fun CommitListScreen(
 
 
 //                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.create_branch)){
-//                // TODO (日后再考虑是否实现这个) (这个选项个特点是“仅创建分支，但不checkout”，感觉意义不是很大，而且可以通过“先detach head检出commit，在去分支页面创建分支并不勾选checkout”来曲线实现)弹出确认框，提示基于当前commit创建分支，并有一个checkout勾选框，如果确定，则创建分支（并checkout(如果勾选了的话)）
+//                // 这个创建分支的特点是“仅创建分支，但不checkout”，但checkout本来就能创建分支并且可选是否检出，所以不需要重复实现了
 //                }
 //                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.view_hash)){
 //                    // onClick()

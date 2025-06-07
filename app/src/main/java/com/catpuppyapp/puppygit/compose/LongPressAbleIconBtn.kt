@@ -35,7 +35,7 @@ fun LongPressAbleIconBtn(
     iconModifier:Modifier=Modifier,
     tooltipText: String,
     icon: ImageVector,
-    iconContentDesc:String? = null,
+    iconContentDesc:String? = tooltipText.ifBlank { null },
     enabled:Boolean=true,
     iconColor:Color? = null,
     isInDarkTheme:Boolean = Theme.inDarkTheme,

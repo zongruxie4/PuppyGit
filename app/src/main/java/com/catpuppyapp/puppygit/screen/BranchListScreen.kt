@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CenterFocusWeak
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Refresh
@@ -157,13 +158,19 @@ fun BranchListScreen(
     //这个页面的滚动状态不用记住，每次点开重置也无所谓
     val listState = rememberLazyListState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = MyStyleKt.BottomSheet.skipPartiallyExpanded)
-    val showBottomSheet = rememberSaveable { mutableStateOf(false)}
-    val showCreateBranchDialog = rememberSaveable { mutableStateOf(false)}
+    val showBottomSheet = rememberSaveable { mutableStateOf(false) }
+    val showCreateBranchDialog = rememberSaveable { mutableStateOf(false) }
     // 创建分支，默认勾选checkout
-    val requireCheckout = rememberSaveable { mutableStateOf(true)}
-    val showCheckoutBranchDialog = rememberSaveable { mutableStateOf(false)}
-    val forceCheckoutForCreateBranch = rememberSaveable { mutableStateOf(false)}
+    val requireCheckout = rememberSaveable { mutableStateOf(true) }
+    val showCheckoutBranchDialog = rememberSaveable { mutableStateOf(false) }
+    val forceCheckoutForCreateBranch = rememberSaveable { mutableStateOf(false) }
 //    val showCheckoutRemoteBranchDialog = StateUtil.getRememberSaveableState(initValue = false)
+
+    val initCreateBranchDialog = {
+        forceCheckoutForCreateBranch.value = false
+        // 显示添加分支的弹窗
+        showCreateBranchDialog.value = true
+    }
 
     val needRefresh = rememberSaveable { mutableStateOf("")}
     val branchName = rememberSaveable { mutableStateOf("")}
@@ -1412,6 +1419,60 @@ fun BranchListScreen(
         isInitLoading.value = false
     }
 
+    val showFetchAllDialog = rememberSaveable { mutableStateOf(false) }
+    val initFetchAllDialog = {
+        showFetchAllDialog.value = true
+    }
+    if(showFetchAllDialog.value) {
+        ConfirmDialog(
+            title = stringResource(id = R.string.fetch_all),
+            text = stringResource(id = R.string.fetch_all_are_u_sure),
+            onCancel = { showFetchAllDialog.value = false }
+        ) {
+            showFetchAllDialog.value = false
+
+            val curRepo = curRepo.value
+
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.fetching_all)) {
+                try {
+                    val remoteList = AppModel.dbContainer.remoteRepository.getRemoteDtoListByRepoId(repoId)
+
+                    if(remoteList.isNotEmpty()) {  //remote列表如果是空就不用fetch all了
+                        //remote名和凭据组合的列表
+                        val remoteCredentialList = Libgit2Helper.genRemoteCredentialPairList(
+                            remoteList,
+                            AppModel.dbContainer.credentialRepository,
+                            requireFetchCredential = true,
+                            requirePushCredential = false
+                        )
+
+                        Repository.open(curRepo.fullSavePath).use { repo ->
+                            //fetch all
+                            Libgit2Helper.fetchRemoteListForRepo(repo, remoteCredentialList, curRepo)
+                            //显示成功通知
+                            Msg.requireShow(activityContext.getString(R.string.fetch_all_success))
+                        }
+                    }else {  // remotes列表为空，无需执行操作
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.err_remote_list_is_empty))
+                    }
+
+                }catch (e:Exception){
+                    val errMsg = "fetch all err: "+e.localizedMessage
+                    Msg.requireShowLongDuration(errMsg)
+                    createAndInsertError(curRepo.id, errMsg)
+
+                    MyLog.e(TAG, "fetch all err: "+e.stackTraceToString())
+
+                }finally {
+                    changeStateTriggerRefreshPage(needRefresh)
+                }
+
+
+            }
+
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -1528,13 +1589,19 @@ fun BranchListScreen(
                         }
 
                         LongPressAbleIconBtn(
+                            tooltipText = stringResource(R.string.fetch),
+                            icon =  Icons.Filled.Downloading,
+                            iconContentDesc = stringResource(R.string.fetch),
+                        ) {
+                            initFetchAllDialog()
+                        }
+
+                        LongPressAbleIconBtn(
                             tooltipText = stringResource(R.string.create_branch),
                             icon =  Icons.Filled.Add,
                             iconContentDesc = stringResource(R.string.create_branch),
                         ) {
-                            forceCheckoutForCreateBranch.value=false
-                            // 显示添加分支的弹窗
-                            showCreateBranchDialog.value=true
+                            initCreateBranchDialog()
                         }
                     }
                 },
@@ -1787,8 +1854,34 @@ fun BranchListScreen(
 
             if(list.value.isEmpty()) {
                 FullScreenScrollableColumn(contentPadding) {
-                    Text(stringResource(if(isInitLoading.value) R.string.loading else R.string.item_list_is_empty))
+                    if(isInitLoading.value) {
+                        Text(text = stringResource(R.string.loading))
+                    }else {
+                        Row {
+                            Text(text = stringResource(R.string.item_list_is_empty))
+                        }
+
+                        Row(modifier = Modifier.padding(top = 10.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            LongPressAbleIconBtn(
+                                icon = Icons.Filled.Downloading,
+                                tooltipText = stringResource(R.string.fetch),
+                            ) {
+                                initFetchAllDialog()
+                            }
+
+                            LongPressAbleIconBtn(
+                                icon = Icons.Filled.Add,
+                                tooltipText =  stringResource(R.string.create),
+                            ) {
+                                initCreateBranchDialog()
+                            }
+                        }
+                    }
                 }
+
             }else {
                 //根据关键字过滤条目
                 val keyword = filterKeyword.value.text.lowercase()  //关键字
