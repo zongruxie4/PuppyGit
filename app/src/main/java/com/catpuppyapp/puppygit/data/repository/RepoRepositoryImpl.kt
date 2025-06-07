@@ -245,14 +245,14 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
         val db = AppModel.dbContainer.db
 
         val remoteForSave = RemoteEntity(
-                                        remoteName = item.pullRemoteName,
-                                        remoteUrl = item.pullRemoteUrl,
-                                        isForPull = Cons.dbCommonTrue,
-                                        isForPush = Cons.dbCommonTrue,
-                                        credentialId = item.credentialIdForClone,
-                                        pushCredentialId = item.credentialIdForClone,
-                                        repoId = item.id,
-                            )
+            remoteName = item.pullRemoteName,
+            remoteUrl = item.pullRemoteUrl,
+            isForPull = Cons.dbCommonTrue,
+            isForPush = Cons.dbCommonTrue,
+            credentialId = item.credentialIdForClone,
+            pushCredentialId = item.credentialIdForClone,
+            repoId = item.id,
+        )
 
         //判断是否是singleBranch模式
         if(dbIntToBool(item.isSingleBranch)) {

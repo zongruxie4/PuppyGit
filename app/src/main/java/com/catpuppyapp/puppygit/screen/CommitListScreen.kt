@@ -1020,13 +1020,15 @@ fun CommitListScreen(
             var commitQueryCache:CommitDto? = null
 
             //更新过滤列表
-            val filterListIndex = filterList.value.indexOfFirst { predicate(it) }
-            if(filterListIndex >= 0) {
-                //重查条目信息并更新列表
-                // 单查条目无法重建图形信息，所以保留原提交的图形信息
-                filterList.value[filterListIndex] = filterList.value[filterListIndex].let {
-                    Libgit2Helper.getSingleCommit(repo, repoId = curRepo.id, commitOidStr = it.oidStr, settings)
-                        .copy(draw_inputs = it.draw_inputs, draw_outputs = it.draw_outputs).let { commitQueryCache = it; it }
+            if(enableFilterState.value) {
+                val filterListIndex = filterList.value.indexOfFirst { predicate(it) }
+                if(filterListIndex >= 0) {
+                    //重查条目信息并更新列表
+                    // 单查条目无法重建图形信息，所以保留原提交的图形信息
+                    filterList.value[filterListIndex] = filterList.value[filterListIndex].let {
+                        Libgit2Helper.getSingleCommit(repo, repoId = curRepo.id, commitOidStr = it.oidStr, settings)
+                            .copy(draw_inputs = it.draw_inputs, draw_outputs = it.draw_outputs).let { commitQueryCache = it; it }
+                    }
                 }
             }
 

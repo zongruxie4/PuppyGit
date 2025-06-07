@@ -180,6 +180,13 @@ fun ErrorListScreen(
 //    }.value
     // 向下滚动监听，结束
 
+    val removeItemByPredicate = { predicate:(ErrorEntity)->Boolean ->
+        if(enableFilterState.value) {
+            filterList.value.removeIf { predicate(it) }
+        }
+
+        list.value.removeIf { predicate(it) }
+    }
 
     val showTitleInfoDialog = rememberSaveable { mutableStateOf(false) }
     if(showTitleInfoDialog.value) {
@@ -353,14 +360,17 @@ fun ErrorListScreen(
 //                BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.view_msg)){
 //                    //弹窗显示错误信息，可复制
 //                }
-                BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger()){
-                    // onClick()
-                    //在这里可以直接用state curObj取到当前选中条目，curObjInState在长按条目后会被更新为当前被长按的条目
-                    // 不用确认，直接删除，可以有撤销的snackbar，但非必须
+                BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger()) {
+                    val target = curObjInState.value
+
                     doJobThenOffLoading {
-                        val errDb = AppModel.dbContainer.errorRepository
-                        errDb.delete(curObjInState.value)
-                        changeStateTriggerRefreshPage(needRefresh)
+                        // remove from db
+                        AppModel.dbContainer.errorRepository.delete(target)
+
+                        // remove from list/filterList
+                        removeItemByPredicate {
+                            it.id == target.id
+                        }
                     }
                 }
             }
