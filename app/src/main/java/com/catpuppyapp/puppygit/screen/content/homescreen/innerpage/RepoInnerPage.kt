@@ -214,19 +214,17 @@ fun RepoInnerPage(
 
     val inDarkTheme = Theme.inDarkTheme
 
-    val requireBlinkIdx = rememberSaveable{mutableIntStateOf(-1)}
+    val requireBlinkIdx = rememberSaveable { mutableIntStateOf(-1) }
 
-    val isLoading = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue)}
-    val loadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.loading))}
-    val loadingOn = {text:String->
-        loadingText.value = text
-
-        // disable this feel better, else screen will blank then restore, feel sick
-//        isLoading.value=true
+    val isInitLoading = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
+    val initLoadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.loading)) }
+    val initLoadingOn = {text:String->
+        initLoadingText.value = text
+        isInitLoading.value = true
     }
-    val loadingOff = {
-        isLoading.value=false
-        loadingText.value = ""
+    val initLoadingOff = {
+        isInitLoading.value = false
+        initLoadingText.value = ""
     }
 
 
@@ -463,12 +461,12 @@ fun RepoInnerPage(
         ) {
             val importRepoPath = importRepoPath.value
 
-            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.importing)) {
+            doJobThenOffLoading {
                 try {
                     val newPathRet = FsUtils.userInputPathToCanonical(importRepoPath)
 
                     if(newPathRet.hasError()) {
-                        Msg.requireShow(activityContext.getString(R.string.invalid_path))
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_path))
                         return@doJobThenOffLoading
                     }
 
@@ -489,7 +487,12 @@ fun RepoInnerPage(
                     }
 
 
+                    // close dialog
                     showImportRepoDialog.value = false
+
+                    // start import
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.importing))
+
 
                     val importRepoResult = AppModel.dbContainer.repoRepository.importRepos(dir=newPath, isReposParent=isReposParentFolderForImport.value)
 
@@ -1324,8 +1327,11 @@ fun RepoInnerPage(
         SetUpstreamDialog(
             callerTag = TAG,
             curRepo = curRepo,
-            loadingOn = loadingOn,
-            loadingOff = loadingOff,
+
+            // very fast, no need show loading
+            loadingOn = {},
+            loadingOff = {},
+
             onOkText = upstreamDialogOnOkText.value,
             remoteList = upstreamRemoteOptionsList.value,
             isCurrentBranchOfRepo = true,
@@ -1855,11 +1861,11 @@ fun RepoInnerPage(
     ) {
 
         if (repoList.value.isEmpty()) {  //无仓库，显示添加按钮
-            if(isLoading.value) {
+            if(isInitLoading.value) {
                 FullScreenScrollableColumn(contentPadding) {
-                    Text(stringResource(R.string.loading))
+                    Text(initLoadingText.value)
                 }
-            }else {
+            }else {  // loading finished, but the repo list still empty
                 val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
 
                 PageCenterIconButton(
@@ -1885,50 +1891,9 @@ fun RepoInnerPage(
                         )
                     }
                 )
-
             }
-        }
 
-
-        // 向下滚动监听，开始
-//    val firstVisible = remember { derivedStateOf { if(enableFilterState.value) filterListState.value.firstVisibleItemIndex else repoPageListState.firstVisibleItemIndex } }
-//    ScrollListener(
-//        nowAt = firstVisible.value,
-//        onScrollUp = {repoPageScrollingDown.value = false}
-//    ) { // onScrollDown
-//        repoPageScrollingDown.value = true
-//    }
-
-//
-//    val lastAt = remember { mutableIntStateOf(0) }
-//    val lastIsScrollDown = remember { mutableStateOf(false) }
-//    val forUpdateScrollState = remember {
-//        derivedStateOf {
-//            val nowAt = if(enableFilterState.value) {
-//                filterListState.firstVisibleItemIndex
-//            } else {
-//                repoPageListState.firstVisibleItemIndex
-//            }
-//
-//            val scrolledDown = nowAt > lastAt.intValue  // scroll down
-////            val scrolledUp = nowAt < lastAt.intValue
-//
-//            val scrolled = nowAt != lastAt.intValue  // scrolled
-//            lastAt.intValue = nowAt
-//
-//            // only update state when this scroll down and last is not scroll down, or this is scroll up and last is not scroll up
-//            if(scrolled && ((lastIsScrollDown.value && !scrolledDown) || (!lastIsScrollDown.value && scrolledDown))) {
-//                repoPageScrolled.value = true
-//            }
-//
-//            lastIsScrollDown.value = scrolledDown
-//        }
-//    }.value
-        // 向下滚动监听，结束
-
-
-        if(!isLoading.value && repoList.value.isNotEmpty()) {  //有仓库
-
+        }else {  //有仓库
             //根据关键字过滤条目
             val keyword = repoPageFilterKeyWord.value.text.lowercase()  //关键字
             val enableFilter = filterModeActuallyEnabled(repoPageFilterModeOn.value, keyword)
@@ -2618,7 +2583,7 @@ fun RepoInnerPage(
         try {
             val loadingText = activityContext.getString(R.string.loading)
 
-            doJobThenOffLoading(loadingOn, loadingOff, loadingText) {
+            doJobThenOffLoading(initLoadingOn, initLoadingOff, loadingText) {
                 try {
                     // 仓库页面检查仓库状态，对所有状态为notReadyNeedClone的仓库执行clone，卡片把所有状态为notReadyNeedClone的仓库都设置成不可操作，显示正在克隆loading信息
                     doInit(
