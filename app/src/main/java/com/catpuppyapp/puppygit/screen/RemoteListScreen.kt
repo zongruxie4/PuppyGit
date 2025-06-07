@@ -48,6 +48,7 @@ import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateRemoteDialog
+import com.catpuppyapp.puppygit.compose.FetchRemotesDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingTextSimple
@@ -297,45 +298,19 @@ fun RemoteListScreen(
     }
 
     if(showFetchAllDialog.value) {
-        ConfirmDialog(
-            title = stringResource(id = R.string.fetch_all),
-            text = stringResource(id = R.string.fetch_all_are_u_sure),
-            onCancel = { showFetchAllDialog.value = false }
-        ) {
-            showFetchAllDialog.value=false
-            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.fetching_all)) {
-                try {
-                    if(list.value.isNotEmpty()) {  //remote列表如果是空就不用fetch all了
-                        //remote名和凭据组合的列表
-                        val remoteCredentialList = Libgit2Helper.genRemoteCredentialPairList(list.value, AppModel.dbContainer.credentialRepository,
-                            requireFetchCredential = true, requirePushCredential = false)
-
-                        Repository.open(curRepo.value.fullSavePath).use { repo ->
-                            //fetch all
-                            Libgit2Helper.fetchRemoteListForRepo(repo, remoteCredentialList, curRepo.value)
-                            //显示成功通知
-                            Msg.requireShow(activityContext.getString(R.string.fetch_all_success))
-                        }
-                    }else {  // remotes列表为空，无需执行操作
-                        Msg.requireShowLongDuration(activityContext.getString(R.string.err_remote_list_is_empty))
-                    }
-
-                }catch (e:Exception){
-                    val errMsg = "fetch all err: "+e.localizedMessage
-                    Msg.requireShowLongDuration(errMsg)
-                    createAndInsertError(curRepo.value.id, errMsg)
-
-                    MyLog.e(TAG, "fetch all err: "+e.stackTraceToString())
-
-                }finally {
-                    changeStateTriggerRefreshPage(needRefresh)
-                }
-
-
-            }
-
-        }
+        FetchRemotesDialog(
+            title = stringResource(R.string.fetch_all),
+            text = stringResource(R.string.fetch_all_are_u_sure),
+            remoteList = list.value,
+            closeDialog = { showFetchAllDialog.value = false },
+            curRepo = curRepo.value,
+            loadingOn = loadingOn,
+            loadingOff = loadingOff,
+            loadingText = loadingText.value,
+            refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
+        )
     }
+
     if(showSetUrlDialog.value) {
         ConfirmDialog(
             okBtnEnabled = isPushUrl.value || urlTextForSetUrlDialog.value.isNotEmpty(),

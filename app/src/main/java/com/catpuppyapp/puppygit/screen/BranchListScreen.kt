@@ -62,6 +62,7 @@ import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateBranchDialog
 import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
+import com.catpuppyapp.puppygit.compose.FetchRemotesDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.ForcePushWithLeaseCheckBox
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
@@ -87,6 +88,7 @@ import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.rebaseTestPassed
 import com.catpuppyapp.puppygit.dev.resetByHashTestPassed
+import com.catpuppyapp.puppygit.dto.RemoteDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.play.pro.R
@@ -1420,57 +1422,30 @@ fun BranchListScreen(
     }
 
     val showFetchAllDialog = rememberSaveable { mutableStateOf(false) }
+    val remoteList = mutableCustomStateListOf(stateKeyTag, "remoteList") { listOf<RemoteDto>() }
     val initFetchAllDialog = {
-        showFetchAllDialog.value = true
-    }
-    if(showFetchAllDialog.value) {
-        ConfirmDialog(
-            title = stringResource(id = R.string.fetch_all),
-            text = stringResource(id = R.string.fetch_all_are_u_sure),
-            onCancel = { showFetchAllDialog.value = false }
-        ) {
-            showFetchAllDialog.value = false
-
-            val curRepo = curRepo.value
-
-            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.fetching_all)) {
-                try {
-                    val remoteList = AppModel.dbContainer.remoteRepository.getRemoteDtoListByRepoId(repoId)
-
-                    if(remoteList.isNotEmpty()) {  //remote列表如果是空就不用fetch all了
-                        //remote名和凭据组合的列表
-                        val remoteCredentialList = Libgit2Helper.genRemoteCredentialPairList(
-                            remoteList,
-                            AppModel.dbContainer.credentialRepository,
-                            requireFetchCredential = true,
-                            requirePushCredential = false
-                        )
-
-                        Repository.open(curRepo.fullSavePath).use { repo ->
-                            //fetch all
-                            Libgit2Helper.fetchRemoteListForRepo(repo, remoteCredentialList, curRepo)
-                            //显示成功通知
-                            Msg.requireShow(activityContext.getString(R.string.fetch_all_success))
-                        }
-                    }else {  // remotes列表为空，无需执行操作
-                        Msg.requireShowLongDuration(activityContext.getString(R.string.err_remote_list_is_empty))
-                    }
-
-                }catch (e:Exception){
-                    val errMsg = "fetch all err: "+e.localizedMessage
-                    Msg.requireShowLongDuration(errMsg)
-                    createAndInsertError(curRepo.id, errMsg)
-
-                    MyLog.e(TAG, "fetch all err: "+e.stackTraceToString())
-
-                }finally {
-                    changeStateTriggerRefreshPage(needRefresh)
-                }
-
-
+        doJobThenOffLoading {
+            AppModel.dbContainer.remoteRepository.getRemoteDtoListByRepoId(repoId).let {
+                remoteList.value.clear()
+                remoteList.value.addAll(it)
             }
 
+            showFetchAllDialog.value = true
         }
+    }
+
+    if(showFetchAllDialog.value) {
+        FetchRemotesDialog(
+            title = stringResource(R.string.fetch_all),
+            text = stringResource(R.string.fetch_all_are_u_sure),
+            remoteList = remoteList.value,
+            closeDialog = { showFetchAllDialog.value = false },
+            curRepo = curRepo.value,
+            loadingOn = loadingOn,
+            loadingOff = loadingOff,
+            loadingText = loadingText.value,
+            refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
+        )
     }
 
     Scaffold(
