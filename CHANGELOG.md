@@ -6,6 +6,7 @@
 - add Thanks list in About screen
 - support fetch remotes at Branches screen
 - update depend libs (libgit2 to 1.9.1, openssl to 3.5.0)
+- Diff: optimize default match strategy
 
 
 
@@ -13,6 +14,7 @@
 - 关于页面添加感谢列表
 - 支持在分支页面下载远程仓库
 - 更新依赖库 (libgit2 to 1.9.1, openssl to 3.5.0)
+- Diff: 优化默认匹配策略
 
 
 ---
