@@ -218,7 +218,7 @@ fun ErrorListScreen(
     val showViewDialog = rememberSaveable { mutableStateOf(false) }
     if(showViewDialog.value) {
         CopyableDialog(
-            title = stringResource(id = R.string.error_msg),
+            title = stringResource(R.string.error_msg),
             text = viewDialogText.value,
             onCancel = {
                 showViewDialog.value=false
@@ -423,14 +423,18 @@ fun ErrorListScreen(
             ) { idx, it ->
                 //在这个组件里更新了 state curObj，所以长按后直接用curObj就能获取到当前对象了
                 ErrorItem(showBottomSheet,curObjInState,idx, lastClickedItemKey, it) {
+                    val suffix = "\n\n"
                     val sb = StringBuilder()
-                    sb.append(activityContext.getString(R.string.id)).append(": ").appendLine(it.id).appendLine()
-                        .append(activityContext.getString(R.string.date)).append(": ").appendLine(it.date).appendLine()
-                        .append(activityContext.getString(R.string.msg)).append(": ").appendLine(it.msg)
 
-                    viewDialogText.value = sb.toString()
+                    sb.append(activityContext.getString(R.string.id)).append(": ").append(it.id).append(suffix)
+                    sb.append(activityContext.getString(R.string.date)).append(": ").append(it.date).append(suffix)
+                    sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).append(suffix)
+
+                    viewDialogText.value = sb.removeSuffix(suffix).toString()
+
                     showViewDialog.value = true
                 }
+
                 HorizontalDivider()
             }
 
