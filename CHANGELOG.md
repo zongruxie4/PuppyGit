@@ -4,11 +4,13 @@
 1.1.2.7v103 - 20250606:
 - fix: sometimes commit item not update after reset
 - add Thanks list in About screen
+- support fetch remotes at Branches screen
 
 
 
 - 修复提交条目在重置后不更新的bug
 - 关于页面添加感谢列表
+- 支持在分支页面下载远程仓库
 
 
 ---

@@ -1,2 +1,3 @@
 - fix: sometimes commit item not update after reset
 - add Thanks list in About screen
+- support fetch remotes at Branches screen
