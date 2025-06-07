@@ -4301,7 +4301,12 @@ object Libgit2Helper {
     //输入revspec，返回 Tree ，可以用来diff，或者从树上找某个文件之类的
     fun resolveTree(repo: Repository, revspec:String):Tree? {
         try {
-            val tree = Tree.lookup(repo, Revparse.lookup(repo, "$revspec^{tree}").getFrom().id(), GitObject.Type.TREE) as? Tree
+            val tree = if(revspec == Cons.git_IndexCommitHash) {
+                Tree.lookup(repo, repo.index().writeTree())
+            }else {
+                Tree.lookup(repo, Revparse.lookup(repo, "$revspec^{tree}").getFrom().id(), GitObject.Type.TREE) as? Tree
+            }
+
             return tree
         }catch (e:Exception) {
             MyLog.e(TAG, "#resolveTree() error, params are (revspec=$revspec),\nerr is: "+e.stackTraceToString())

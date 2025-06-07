@@ -2443,6 +2443,7 @@ fun DiffScreen(
                             }else { // tree to tree, no local(worktree)
                                 val tree1 = Libgit2Helper.resolveTree(repo, treeOid1Str)
                                 val tree2 = Libgit2Helper.resolveTree(repo, treeOid2Str)
+
                                 Libgit2Helper.getSingleDiffItem(
                                     repo,
                                     relativePath,
