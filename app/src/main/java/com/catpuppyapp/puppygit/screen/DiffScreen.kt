@@ -96,6 +96,7 @@ import com.catpuppyapp.puppygit.git.DiffItemSaver
 import com.catpuppyapp.puppygit.git.DiffableItem
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.git.PuppyLine
+import com.catpuppyapp.puppygit.git.PuppyLineOriginType
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.DiffPageActions
@@ -1766,7 +1767,7 @@ fun DiffScreen(
                                                 val stringPartListWillUse = if (compareResult == null) {
                                                     //没发现选择比较的结果，比较下实际相同行号不同类型（add、del）的行
                                                     val modifyResult = hunkAndLines.getModifyResult(
-                                                        lineNum = line.lineNum,
+                                                        line = line,
                                                         requireBetterMatchingForCompare = requireBetterMatchingForCompare.value,
                                                         matchByWords = matchByWords.value
                                                     )
@@ -1834,9 +1835,9 @@ fun DiffScreen(
                                             }
 
 
-                                            val add = lines.get(Diff.Line.OriginType.ADDITION.toString())
-                                            val del = lines.get(Diff.Line.OriginType.DELETION.toString())
-                                            val context = lines.get(Diff.Line.OriginType.CONTEXT.toString())
+                                            val add = lines.get(PuppyLineOriginType.ADDED)
+                                            val del = lines.get(PuppyLineOriginType.DELETED)
+                                            val context = lines.get(PuppyLineOriginType.CONTEXT)
                                             //(deprecated:) 若 context del add同时存在，打印顺序为 context/del/add，不过不太可能3个同时存在，顶多两个同时存在
                                             //20250224 change: 若 context del add同时存在，打印顺序为 del/add/context ，不过不太可能3个同时存在，顶多两个同时存在
                                             val mergeDelAndAddToFakeContext = add != null && del != null && add.getContentNoLineBreak().equals(del.getContentNoLineBreak());
@@ -1866,27 +1867,31 @@ fun DiffScreen(
                                                 }
 
 
-                                                if (del != null && add != null && (delUsedPair.not() || addUsedPair.not())) {
-                                                    val modifyResult2 = CmpUtil.compare(
-                                                        add = StringCompareParam(add.content, add.content.length),
-                                                        del = StringCompareParam(del.content, del.content.length),
-
-                                                        //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
-                                                        requireBetterMatching = requireBetterMatchingForCompare.value,
-                                                        matchByWords = matchByWords.value,
-
-                                                        //                                    swap = true
+                                                // add and del, which not use the compare pair result by select compare, get the defalut compare result with it's default related line
+                                                // 添加和删除，谁不使用选择比较的比较结果，就获取其和默认关联行的比较结果
+                                                if(del != null && !delUsedPair) {
+                                                    //没发现选择比较的结果，比较下实际相同行号不同类型（add、del）的行
+                                                    val modifyResult = hunkAndLines.getModifyResult(
+                                                        line = del,
+                                                        requireBetterMatchingForCompare = requireBetterMatchingForCompare.value,
+                                                        matchByWords = matchByWords.value
                                                     )
 
-                                                    if (modifyResult2.matched) {
-                                                        if (delUsedPair.not()) {
-                                                            delStringPartListWillUse = modifyResult2.del
-                                                        }
+                                                    if (modifyResult?.matched == true) {
+                                                        delStringPartListWillUse = modifyResult.del
+                                                    }
+                                                }
 
-                                                        if (addUsedPair.not()) {
-                                                            addStringPartListWillUse = modifyResult2.add
-                                                        }
+                                                if(add != null && !addUsedPair) {
+                                                    //没发现选择比较的结果，比较下实际相同行号不同类型（add、del）的行
+                                                    val modifyResult = hunkAndLines.getModifyResult(
+                                                        line = add,
+                                                        requireBetterMatchingForCompare = requireBetterMatchingForCompare.value,
+                                                        matchByWords = matchByWords.value
+                                                    )
 
+                                                    if (modifyResult?.matched == true) {
+                                                        addStringPartListWillUse = modifyResult.add
                                                     }
                                                 }
 

@@ -9,6 +9,15 @@ import com.github.git24j.core.Diff
 import java.util.EnumSet
 import java.util.TreeMap
 
+
+object PuppyLineOriginType{
+    const val ADDED = Diff.Line.OriginType.ADDITION.toString()
+    const val DELETED = Diff.Line.OriginType.DELETION.toString()
+    const val CONTEXT = Diff.Line.OriginType.CONTEXT.toString()
+
+}
+
+
 data class DiffItemSaver (
     var relativePathUnderRepo:String="",  //仓库下相对路径
     var keyForRefresh:String= getShortUUID(),
@@ -85,13 +94,15 @@ class PuppyHunkAndLines {
     var hunk:PuppyHunk=PuppyHunk();
     var lines:MutableList<PuppyLine> = mutableListOf()
 
+    // {lineKey: PuppyLine}
+    val keyAndLineMap: MutableMap<String, PuppyLine> = mutableMapOf()
 
     //根据行号分组
     //{lineNum: {originType:line}}, 其中 originType预期有3种类型：context/del/add
     var groupedLines:TreeMap<Int, Map<String, PuppyLine>> = TreeMap()
 
-    // {lineNum: IndexModifyResult}
-    private val modifyResultMap:MutableMap<Int, IndexModifyResult> = mutableMapOf()
+    // {lineKey: IndexModifyResult}
+    private val modifyResultMap:MutableMap<String, IndexModifyResult> = mutableMapOf()
 
     // {linNum: Unit}, if map.get(lineNum) != null, means already showed add or del line as context, need not show one more
     // add and del only difference at end has "/n" or not, in that case, show 1 of them as context
@@ -131,16 +142,57 @@ class PuppyHunkAndLines {
         }else {
             (line as MutableMap).put(puppyLine.originType, puppyLine)
         }
+
+        linkCompareTargetForLine(puppyLine)
+    }
+
+    /**
+     * must call `addLineToGroup()` before call this method, cause it depend that `groupedLine`
+     *
+     */
+    //20250607 add: for compare line number not equals, but content similar line
+    //20250607新增: 实现比较行号不同但内容实际相关的行
+    fun linkCompareTargetForLine(puppyLine: PuppyLine) {
+        // deleted line must at added lines up side; context needn't find a compare target;
+        //  so, only added line need handle, when find the compare target (related deleted line), update the deleted line as well
+        // 删除行和添加行都不需要找比较目标，仅添加行需要找，找到后把对应的删除行也关联上
+        if(puppyLine.originType == PuppyLineOriginType.ADDED) {
+            var foundDel = false
+            var size = lines.size
+            while (--size >= 0) {
+                val ppLine = lines[size]
+                if(ppLine.originType == PuppyLineOriginType.CONTEXT) {
+                    if(foundDel) {
+                        val guessedRelatedLineNum = ppLine.oldLineNum - ppLine.newLineNum + puppyLine.newLineNum
+                        val guessedLine = groupedLines.get(guessedRelatedLineNum)?.get(PuppyLineOriginType.DELETED)
+                        if(guessedLine != null && guessedLine.compareTargetLineKey.isBlank()) {
+                            guessedLine.compareTargetLineKey = puppyLine.key
+                            puppyLine.compareTargetLineKey = guessedLine.key
+                        }
+                    }
+
+                    // if found context, it's finished, this line if has a matched deleted line, already handle at upside, else, none matched with it
+                    break
+                }else if(ppLine.originType == PuppyLineOriginType.DELETED) {
+                    foundDel = true
+                }
+            }
+        }
+
+        keyAndLineMap.put(puppyLine.key, puppyLine)
     }
 
 
     /**
      * 仅对类型为add或del的行调用此函数，若返回true，代表两者除了末尾换行符没区别，这时将其转换为context显示，
+     *
+     * TODO: 目前仅发现过相同行号的两行末尾换行符不同，如果以后发现有不同行号的行，则需要改用 `keyAndLineMap` 取代 `groupedLine` 做判断，`mergedAddDelLine`也需要改成依赖line key而不是行号的，可以如果发现匹配，则把两个line key都添加上
+     * TODO: only found same line num with line break not match, if found difference line number with content all matched but line break, need use `keyAndLineMap` replaced `groupedLine` to check, also need change the `mergedAddDelLine`, if matched, add two key of liens into it
      */
     fun needShowAddOrDelLineAsContext(lineNum: Int):MergeAddDelLineResult {
         val groupedLine = groupedLines.get(lineNum)
-        val add = groupedLine?.get(Diff.Line.OriginType.ADDITION.toString())
-        val del = groupedLine?.get(Diff.Line.OriginType.DELETION.toString())
+        val add = groupedLine?.get(PuppyLineOriginType.ADDED)
+        val del = groupedLine?.get(PuppyLineOriginType.DELETED)
         if(add!=null && del!=null && add.getContentNoLineBreak().equals(del.getContentNoLineBreak())) {
             val alreadyShowed = mergedAddDelLine.add(lineNum).not()
 
@@ -154,46 +206,50 @@ class PuppyHunkAndLines {
     }
 
 
-    fun needShowAddOrDelLineAsContext_2(lineNum: Int):Boolean {
-        val groupedLine = groupedLines.get(lineNum)
-        val add = groupedLine?.get(Diff.Line.OriginType.ADDITION.toString())
-        val del = groupedLine?.get(Diff.Line.OriginType.DELETION.toString())
-        return add!=null && del!=null && add.getContentNoLineBreak().equals(del.getContentNoLineBreak())
-    }
+//    fun needShowAddOrDelLineAsContext_2(lineNum: Int):Boolean {
+//        val groupedLine = groupedLines.get(lineNum)
+//        val add = groupedLine?.get(Diff.Line.OriginType.ADDITION.toString())
+//        val del = groupedLine?.get(Diff.Line.OriginType.DELETION.toString())
+//        return add!=null && del!=null && add.getContentNoLineBreak().equals(del.getContentNoLineBreak())
+//    }
 
-    fun getModifyResult(lineNum: Int, requireBetterMatchingForCompare:Boolean, matchByWords:Boolean):IndexModifyResult? {
-        val r = modifyResultMap.get(lineNum)
+    fun getModifyResult(line: PuppyLine, requireBetterMatchingForCompare:Boolean, matchByWords:Boolean):IndexModifyResult? {
+        // Context need not compare yet
+        // Context默认并不比较，就算比较，Context也只有一种颜色，所以无需查询其比较结果
+        if(line.originType == PuppyLineOriginType.CONTEXT) {
+            return null
+        }
 
-        if(r!=null) {
+        val r = modifyResultMap.get(line.key)
+
+        if(r != null) {
             return r
         }
 
         // r is null, try generate
-        val groupedLine = groupedLines.get(lineNum)
+        val line = keyAndLineMap.get(line.key) ?: return null
+        val cmpTarget = keyAndLineMap.get(line.compareTargetLineKey) ?: return null
 
-        val add = groupedLine?.get(Diff.Line.OriginType.ADDITION.toString())
-        val del = groupedLine?.get(Diff.Line.OriginType.DELETION.toString())
+        val add = if(line.originType == PuppyLineOriginType.ADDED) line else cmpTarget
+        val del = if(line.originType == PuppyLineOriginType.ADDED) cmpTarget else line
 
-        if(add!=null && del!=null) {
-            val modifyResult2 = CmpUtil.compare(
-                add = StringCompareParam(add.content, add.content.length),
-                del = StringCompareParam(del.content, del.content.length),
+        val modifyResult2 = CmpUtil.compare(
+            add = StringCompareParam(add.content, add.content.length),
+            del = StringCompareParam(del.content, del.content.length),
 
-                //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
-                requireBetterMatching = requireBetterMatchingForCompare,
-                matchByWords = matchByWords,
+            //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
+            requireBetterMatching = requireBetterMatchingForCompare,
+            matchByWords = matchByWords,
 
-                //20250210之后：我发现调换后，又有很多add在前，del在后匹配率更高的情况，所以我觉得没必要调换了，可能匹配率差不太多，调换反而影响性能
-                //(20250210之前)我发现del在前面add在后面匹配率更高，所以swap传true
+            //20250210之后：我发现调换后，又有很多add在前，del在后匹配率更高的情况，所以我觉得没必要调换了，可能匹配率差不太多，调换反而影响性能
+            //(20250210之前)我发现del在前面add在后面匹配率更高，所以swap传true
 //                swap = true
-            )
+        )
 
-            modifyResultMap.put(lineNum, modifyResult2)
-            return modifyResult2
-        }else {
-            return null
-        }
+        modifyResultMap.put(line.key, modifyResult2)
+        modifyResultMap.put(line.compareTargetLineKey, modifyResult2)
 
+        return modifyResult2
     }
 }
 
@@ -212,6 +268,10 @@ class PuppyHunk {
 
 data class PuppyLine (
     var key:String = getShortUUID(),
+
+    // the default compare target, it was match the compare target with line num, but sometimes line number same content totally non-related, in that case need calculate the offset the pair them
+    //默认和哪行比较，过去是用相同行号作为一对比较的add/del，但有时行号相同，内容完全无关，这时需要计算偏移量，然后关联实际相关的行号，这里以行key为关联替代行号以简化处理流程
+    var compareTargetLineKey:String = "",
 
     // group line时，按行号把不同origin type的都放一组，实际上没索引，所以用这个生成一个索引替代
     var fakeIndexOfGroupedLine:Int = 0,
