@@ -132,6 +132,14 @@ class PuppyHunkAndLines {
         modifyResultMap.clear()
     }
 
+
+    fun addLine(puppyLine: PuppyLine) {
+        // order is important
+        lines.add(puppyLine)
+        addLineToGroup(puppyLine)
+                linkCompareTargetForLine(puppyLine)
+    }
+
     fun addLineToGroup(puppyLine: PuppyLine) {
         val lineNum = puppyLine.lineNum
         val line = groupedLines.get(lineNum)
@@ -143,7 +151,6 @@ class PuppyHunkAndLines {
             (line as MutableMap).put(puppyLine.originType, puppyLine)
         }
 
-        linkCompareTargetForLine(puppyLine)
     }
 
     /**

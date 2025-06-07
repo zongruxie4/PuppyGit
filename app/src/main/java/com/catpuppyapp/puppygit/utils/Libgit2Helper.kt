@@ -1690,7 +1690,7 @@ object Libgit2Helper {
             MyLog.d(TAG, "#$funName(): hunk header: "+hunkAndLines.hunk.header)
 
             diffItem.hunks.add(hunkAndLines)
-            val lines = hunkAndLines.lines
+
             for(j in 0 until lineCnt) {
                 if(loadChannel!=null) {
                     if(++checkChannelLinesCount > checkChannelLinesLimit || checkChannelContentSizeCount>checkChannelSizeLimit) {
@@ -1785,11 +1785,10 @@ object Libgit2Helper {
 //                        println("line.numLines:"+line.numLines)
 //                    }
 
-                lines.add(pLine)
 
 
                 //20240618新增：实现增量diff相关代码
-                hunkAndLines.addLineToGroup(pLine)
+                hunkAndLines.addLine(pLine)
             }
         }
 
