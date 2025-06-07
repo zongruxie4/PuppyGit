@@ -7346,10 +7346,11 @@ object Libgit2Helper {
 
                             //set remoteName and remoteUrl fields
 //                                    val defaultRemoteName = Remote.list(clonedRepo)[0]  // remote "origin"
-                            val defaultRemoteName = Cons.gitDefaultRemoteOrigin  //"origin"就是默认的名字，根本不用执行上面的查询
-                            repo2ndQuery.pullRemoteName = defaultRemoteName;
-                            repo2ndQuery.pushRemoteName = defaultRemoteName;
+//                            val defaultRemoteName = Cons.gitDefaultRemoteOrigin  //"origin"就是默认的名字，根本不用执行上面的查询
+                            val defaultRemoteName = Remote.list(clonedRepo).getOrNull(0) ?: Cons.gitDefaultRemoteOrigin  //一般"origin"就是默认的名字，但还是查一下保险，以免和实际的 remote name 不符
+                            repo2ndQuery.pullRemoteName = defaultRemoteName
                             repo2ndQuery.pullRemoteUrl = repo2ndQuery.cloneUrl
+                            repo2ndQuery.pushRemoteName = defaultRemoteName
                             repo2ndQuery.pushRemoteUrl = repo2ndQuery.cloneUrl
 
                             //更新isShallow的值，检查仓库有没有shallow文件就可以
