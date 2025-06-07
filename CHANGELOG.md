@@ -5,12 +5,14 @@
 - fix: sometimes commit item not update after reset
 - add Thanks list in About screen
 - support fetch remotes at Branches screen
+- update depend libs (libgit2 to 1.9.1, openssl to 3.5.0)
 
 
 
 - 修复提交条目在重置后不更新的bug
 - 关于页面添加感谢列表
 - 支持在分支页面下载远程仓库
+- 更新依赖库 (libgit2 to 1.9.1, openssl to 3.5.0)
 
 
 ---
