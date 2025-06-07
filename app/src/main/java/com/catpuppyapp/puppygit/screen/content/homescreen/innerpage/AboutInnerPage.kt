@@ -308,72 +308,72 @@ fun AboutInnerPage(
         HorizontalDivider(modifier = Modifier.padding(10.dp))
 
         //开源项目列表
-        Row (modifier = Modifier.padding(10.dp)){
-            Text(text = stringResource(id = R.string.powered_by_open_source)+":")
-        }
+        TitleRow(stringResource(id = R.string.powered_by_open_source))
+
+        val licenseStrRes = stringResource(R.string.license)
 
         openSourceList.forEach {
-            Column (
-                modifier = Modifier.padding(5.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ){
-                ClickableText(
-                    text = it.projectName,
-//                    fontSize = 14.sp,
-                    modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                        //                        copy(it.projectLink)
-                        ActivityUtil.openUrl(activityContext, it.projectLink)
-                    },
-                )
-                Spacer(Modifier.height(2.dp))
-                ClickableText(
-                    text = "("+stringResource(R.string.license)+")",
-                    fontSize = 12.sp,
-                    modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                        //                        copy(it.projectLink)
-                        ActivityUtil.openUrl(activityContext, it.licenseLink)
-                    },
-                )
-
-                Spacer(Modifier.height(10.dp))
-
-            }
+            DoubleClickableRow(
+                row1Text = it.projectName,
+                row2Text = licenseStrRes,
+                row1OnClick = { ActivityUtil.openUrl(activityContext, it.projectLink) },
+                row2OnClick = { ActivityUtil.openUrl(activityContext, it.licenseLink) },
+            )
         }
 
         HorizontalDivider(modifier = Modifier.padding(10.dp))
 
         //开源项目列表
-        Row (modifier = Modifier.padding(10.dp)){
-            Text(text = "Thanks:")
-        }
+        TitleRow("Thanks")
 
         contributorList.forEach {
-            Column (
-                modifier = Modifier.padding(5.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ){
-                ClickableText(
-                    text = it.name,
-//                    fontSize = 14.sp,
-                    modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                        ActivityUtil.openUrl(activityContext, it.link)
-                    },
-                )
-                Spacer(Modifier.height(2.dp))
-                ClickableText(
-                    text = "("+it.desc+")",
-                    fontSize = 12.sp,
-                    modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                        ActivityUtil.openUrl(activityContext, it.link)
-                    },
-                )
-
-                Spacer(Modifier.height(10.dp))
-
-            }
+            DoubleClickableRow(
+                row1Text = it.name,
+                row2Text = it.desc,
+                row1OnClick = { ActivityUtil.openUrl(activityContext, it.link) },
+                row2OnClick = { ActivityUtil.openUrl(activityContext, it.link) },
+            )
         }
 
         SpacerRow()
     }
 
+}
+
+@Composable
+private fun TitleRow(title:String) {
+    Row (modifier = Modifier.padding(10.dp)){
+        Text(text = title, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun DoubleClickableRow(
+    row1Text:String,
+    row2Text:String,
+    row1OnClick:()->Unit,
+    row2OnClick:()->Unit,
+) {
+    Column (
+        modifier = Modifier.padding(5.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ){
+        ClickableText(
+            text = row1Text,
+            modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                row1OnClick()
+            },
+        )
+        Spacer(Modifier.height(2.dp))
+        ClickableText(
+            text = "($row2Text)",
+            fontSize = 12.sp,
+            modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                row2OnClick()
+            },
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+    }
 }
