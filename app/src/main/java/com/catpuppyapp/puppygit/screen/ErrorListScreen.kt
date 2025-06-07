@@ -106,16 +106,7 @@ fun ErrorListScreen(
     val curObjInState = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curObjInState",initValue = ErrorEntity())
     val showClearAllConfirmDialog = rememberSaveable { mutableStateOf(false)}
 
-    val doClearAll={
-        doJobThenOffLoading {
-            val errDb = AppModel.dbContainer.errorRepository
-            errDb.deleteByRepoId(repoId)
 
-//            list.clear()
-            //x 找到原因了：因为之前用的是 mutableList() 而不是 mutableStateListOf()) 奇怪啊，这个不知道为什么这里的刷新不好使，就非得在上面把list clear一下才行不然列表就还是有东西，但点击刷新后东西就没了，不知道什么原因，以后再排查吧
-            changeStateTriggerRefreshPage(needRefresh)
-        }
-    }
 
     val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
 
@@ -202,13 +193,22 @@ fun ErrorListScreen(
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     if(showClearAllConfirmDialog.value) {
-        ConfirmDialog(title=stringResource(R.string.clear_all),
+        ConfirmDialog(
+            title=stringResource(R.string.clear_all),
             text=stringResource(R.string.clear_all_ask_text),
             okTextColor = MyStyleKt.TextColor.danger(),
-            onCancel = {showClearAllConfirmDialog.value=false},  //关闭弹窗
+            onCancel = { showClearAllConfirmDialog.value=false },
             onOk = {
-                showClearAllConfirmDialog.value=false  //关闭弹窗
-                doClearAll()  //执行操作
+                //关闭弹窗
+                showClearAllConfirmDialog.value = false
+
+                doJobThenOffLoading {
+                    AppModel.dbContainer.errorRepository.deleteByRepoId(repoId)
+
+                    Msg.requireShow(activityContext.getString(R.string.success))
+
+                    changeStateTriggerRefreshPage(needRefresh)
+                }
             }
         )
     }
@@ -371,6 +371,8 @@ fun ErrorListScreen(
                         removeItemByPredicate {
                             it.id == target.id
                         }
+
+                        Msg.requireShow(activityContext.getString(R.string.success))
                     }
                 }
             }
