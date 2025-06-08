@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -572,14 +574,16 @@ fun DiffRow (
 
 
     Row(
-        modifier = Modifier
-            .then(
+        modifier = (
                 if (lineClickable) {
                     Modifier.clickable { expandedMenu.value = true }
                 } else {
                     Modifier
                 }
             )
+             // make line num can fill max height of soft-wrapped text
+            .height(IntrinsicSize.Max)
+
             .fillMaxWidth()
             //如果是经过compare的添加或删除行，背景半透明，然后真修改的内容用不透明，这样就能突出真修改的内容
             //alpha值越大越不透明
@@ -603,6 +607,8 @@ fun DiffRow (
         Row(
             // if matched shallow color else deep color
             modifier = (if(useStringPartList) Modifier else Modifier.background(bgColor))
+                // require parent container set `Modifier.height(IntrinsicSize.Max)`, else fillMaxHeight may not work
+                .fillMaxHeight()
 
                 //首行加顶部padding，其余不加
                 // x 已经解决，给每个行计算了虚拟的索引，然后就解决了）按行分组时，首行若是一对 add/del，两个都会加顶部padding，但看起来感觉并不难受，所以不用改，就这样吧
