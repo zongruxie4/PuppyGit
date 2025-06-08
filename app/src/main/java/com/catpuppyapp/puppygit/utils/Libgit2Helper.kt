@@ -2420,31 +2420,19 @@ object Libgit2Helper {
         //实际的条目列表，本函数不会再从index查询，如果无条目，可传空列表
         actuallyItemList: List<StatusTypeEntrySaver>,
     ): Ret<String?> {
-        val limitCharsLen = 200;  //提交信息字符数长度限制
-        var count = 0;  //文件记数，用来计算超字符数长度限制后还有几个文件名没追加上
+        val allFilesCount = actuallyItemList.size
 
-
-        //生成提交信息
-        val filesNum = actuallyItemList.size
         // inclue "PuppyGit"
 //            val summary = (if(repoState==Repository.StateT.MERGE) "Conclude Merge" else if(repoState==Repository.StateT.REBASE_MERGE) "Rebase" else if(repoState==Repository.StateT.CHERRYPICK) "Cherrypick" else "Update $filesNum ${if(filesNum>1) "files" else "file"} by PuppyGit") + (":\n")
         // no "PuppyGit"
-        val summary = (if(repoState==Repository.StateT.MERGE) "Conclude Merge" else if(repoState==Repository.StateT.REBASE_MERGE) "Rebase" else if(repoState==Repository.StateT.CHERRYPICK) "Cherrypick" else "Update $filesNum ${if(filesNum>1) "files" else "file"}") + (":\n")
+        val summary = (if(repoState==Repository.StateT.MERGE) "Conclude Merge" else if(repoState==Repository.StateT.REBASE_MERGE) "Rebase" else if(repoState==Repository.StateT.CHERRYPICK) "Cherrypick" else "Update $allFilesCount ${if(allFilesCount>1) "files" else "file"}") + (":\n")
+
         val descriptions=StringBuilder(summary)
-        val split = ", "
-        for(item in actuallyItemList) {  //终止条件为：列表遍历完毕 或者 达到包含文件名的限制数目(上面的limit变量控制)
-            descriptions.append(item.fileName).append(split)
-            ++count;
-            if(descriptions.length > limitCharsLen) {
-                descriptions.append("...omitted ${filesNum - count} file(s)")
-                break
-            }
-//                if(++start > limit) {  //达到包含文件名的限制数目则break(上面的limit变量控制)
-//                    break
-//                }
-        }
-        val commitMsg = descriptions.removeSuffix(split).toString()  //移除最后的 “, ”，如果有的话
-        return Ret.createSuccess(commitMsg)
+
+        // generate file names
+        CommitMsgTemplateUtil.genFileNames(descriptions, actuallyItemList)
+
+        return Ret.createSuccess(descriptions.toString())
     }
 
 //        @Deprecated("限制文件名数量的版本，在20240425弃用了")
