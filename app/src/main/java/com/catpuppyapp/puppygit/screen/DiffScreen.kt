@@ -55,12 +55,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BarContainer
 import com.catpuppyapp.puppygit.compose.CardButton
@@ -88,7 +85,6 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
-import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.MenuIconBtnItem
 import com.catpuppyapp.puppygit.dto.MenuTextItem
 import com.catpuppyapp.puppygit.git.CompareLinePair
@@ -118,8 +114,6 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
-import com.catpuppyapp.puppygit.utils.compare.CmpUtil
-import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -1847,8 +1841,8 @@ fun DiffScreen(
                                             }
 
 
-                                            val add = lines.get(PuppyLineOriginType.ADDED)
-                                            val del = lines.get(PuppyLineOriginType.DELETED)
+                                            val add = lines.get(PuppyLineOriginType.ADDITION)
+                                            val del = lines.get(PuppyLineOriginType.DELETION)
                                             val context = lines.get(PuppyLineOriginType.CONTEXT)
                                             //(deprecated:) 若 context del add同时存在，打印顺序为 context/del/add，不过不太可能3个同时存在，顶多两个同时存在
                                             //20250224 change: 若 context del add同时存在，打印顺序为 del/add/context ，不过不太可能3个同时存在，顶多两个同时存在

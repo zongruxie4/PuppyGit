@@ -30,6 +30,7 @@ import com.catpuppyapp.puppygit.git.IgnoreItem
 import com.catpuppyapp.puppygit.git.PatchFile
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.git.PuppyLine
+import com.catpuppyapp.puppygit.git.PuppyLineOriginType
 import com.catpuppyapp.puppygit.git.PushFailedItem
 import com.catpuppyapp.puppygit.git.ReflogEntryDto
 import com.catpuppyapp.puppygit.git.RemoteAndCredentials
@@ -67,7 +68,6 @@ import com.github.git24j.core.Diff.Line
 import com.github.git24j.core.FetchOptions
 import com.github.git24j.core.GitObject
 import com.github.git24j.core.Graph
-import com.github.git24j.core.IBitEnum
 import com.github.git24j.core.Index
 import com.github.git24j.core.Merge
 import com.github.git24j.core.Oid
@@ -1911,20 +1911,20 @@ object Libgit2Helper {
 
 
     fun getMatchedTextBgColorForDiff(inDarkTheme:Boolean = Theme.inDarkTheme, line: PuppyLine):Color {
-        if(line.originType == Diff.Line.OriginType.ADDITION.toString()) {  //添加行
+        if(line.originType == PuppyLineOriginType.ADDITION) {  //添加行
             return if(inDarkTheme) MyStyleKt.TextColor.hasMatchedAddedLineBgColorForDiffInDarkTheme else MyStyleKt.TextColor.hasMatchedAddedLineBgColorForDiffInLightTheme
-        }else if(line.originType == Diff.Line.OriginType.DELETION.toString()) {  //删除行
+        }else if(line.originType == PuppyLineOriginType.DELETION) {  //删除行
             return if(inDarkTheme) MyStyleKt.TextColor.hasMatchedDeletedLineBgColorForDiffInDarkTheme else MyStyleKt.TextColor.hasMatchedDeletedLineBgColorForDiffInLightTheme
-        }else if(line.originType == Diff.Line.OriginType.HUNK_HDR.toString()) {  //hunk header
+        }else if(line.originType == PuppyLineOriginType.HUNK_HDR) {  //hunk header
             // 注：后来hunk header并没用这的颜色
             return Color.Gray
-        }else if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {  //上下文
+        }else if(line.originType == PuppyLineOriginType.CONTEXT) {  //上下文
             return Color.Unspecified
-        }else if(line.originType == Diff.Line.OriginType.CONTEXT_EOFNL.toString()) {  //新旧文件都没末尾行
+        }else if(line.originType == PuppyLineOriginType.CONTEXT_EOFNL) {  //新旧文件都没末尾行
             return Color.Unspecified
-        }else if(line.originType == Diff.Line.OriginType.ADD_EOFNL.toString()) {  //添加了末尾行
+        }else if(line.originType == PuppyLineOriginType.ADD_EOFNL) {  //添加了末尾行
             return Color.Unspecified
-        }else if(line.originType == Diff.Line.OriginType.DEL_EOFNL.toString()) {  //删除了末尾行
+        }else if(line.originType == PuppyLineOriginType.DEL_EOFNL) {  //删除了末尾行
             return Color.Unspecified
         }else {  // unknown
             return Color.Unspecified
@@ -1932,20 +1932,20 @@ object Libgit2Helper {
     }
 
     fun getDiffLineBgColor(line:PuppyLine, inDarkTheme: Boolean):Color{
-        if(line.originType == Diff.Line.OriginType.ADDITION.toString()) {  //添加行
+        if(line.originType == PuppyLineOriginType.ADDITION) {  //添加行
             return if(inDarkTheme) MyStyleKt.TextColor.addedLineBgColorForDiffInDarkTheme else MyStyleKt.TextColor.addedLineBgColorForDiffInLightTheme
-        }else if(line.originType == Diff.Line.OriginType.DELETION.toString()) {  //删除行
+        }else if(line.originType == PuppyLineOriginType.DELETION) {  //删除行
             return if(inDarkTheme) MyStyleKt.TextColor.deletedLineBgColorForDiffInDarkTheme else MyStyleKt.TextColor.deletedLineBgColorForDiffInLightTheme
-        }else if(line.originType == Diff.Line.OriginType.HUNK_HDR.toString()) {  //hunk header
+        }else if(line.originType == PuppyLineOriginType.HUNK_HDR) {  //hunk header
             // 注：后来hunk header并没用这的颜色
             return Color.Gray
-        }else if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {  //上下文
+        }else if(line.originType == PuppyLineOriginType.CONTEXT) {  //上下文
             return Color.Unspecified
-        }else if(line.originType == Diff.Line.OriginType.CONTEXT_EOFNL.toString()) {  //新旧文件都没末尾行
+        }else if(line.originType == PuppyLineOriginType.CONTEXT_EOFNL) {  //新旧文件都没末尾行
             return Color.Unspecified
-        }else if(line.originType == Diff.Line.OriginType.ADD_EOFNL.toString()) {  //添加了末尾行
+        }else if(line.originType == PuppyLineOriginType.ADD_EOFNL) {  //添加了末尾行
             return Color.Unspecified
-        }else if(line.originType == Diff.Line.OriginType.DEL_EOFNL.toString()) {  //删除了末尾行
+        }else if(line.originType == PuppyLineOriginType.DEL_EOFNL) {  //删除了末尾行
             return Color.Unspecified
         }else {  // unknown
             return Color.Unspecified
