@@ -695,12 +695,13 @@ fun FilesInnerPage(
     val details_itemList = mutableCustomStateListOf(stateKeyTag, "details_itemList", listOf<FileItemDto>())
 
     val initDetailsDialog = {list:List<FileItemDto> ->
-        val list = if(list.size == 1) {
+        val list = if(list.size == 1 && list.first().isDir) {
             // count folder and files if only show details for 1 item
             try {
                 var filesCount = 0
                 var folderCount = 0
                 val first = list.first()
+
                 first.toFile().listFiles()!!.forEach {
                     if(it.isDirectory) {
                         folderCount++
@@ -2362,14 +2363,11 @@ fun FilesInnerPage(
                                 Text(text = stringResource(R.string.name)+": "+item.name)
                             }
 
-                            Spacer(modifier = Modifier.height(15.dp))
-                            Row {
-                                Text(text = stringResource(R.string.folder)+": "+item.folderCount)
-                            }
-
-                            Spacer(modifier = Modifier.height(15.dp))
-                            Row {
-                                Text(text = stringResource(R.string.file)+": "+item.fileCount)
+                            if(item.isDir) {
+                                Spacer(modifier = Modifier.height(15.dp))
+                                Row {
+                                    Text(text = replaceStringResList(stringResource(R.string.item_count_n), listOf(replaceStringResList(stringResource(R.string.folder_n_file_m), listOf(""+item.folderCount, ""+item.fileCount)))))
+                                }
                             }
 
                             Spacer(modifier = Modifier.height(15.dp))
