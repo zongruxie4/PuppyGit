@@ -133,11 +133,14 @@ class PuppyHunkAndLines {
     }
 
 
-    fun addLine(puppyLine: PuppyLine) {
+    /**
+     * @param changeType files change type
+     */
+    fun addLine(puppyLine: PuppyLine, changeType:String) {
         // order is important
         lines.add(puppyLine)
         addLineToGroup(puppyLine)
-                linkCompareTargetForLine(puppyLine)
+        linkCompareTargetForLine(puppyLine, changeType)
     }
 
     fun addLineToGroup(puppyLine: PuppyLine) {
@@ -159,11 +162,11 @@ class PuppyHunkAndLines {
      */
     //20250607 add: for compare line number not equals, but content similar line
     //20250607新增: 实现比较行号不同但内容实际相关的行
-    fun linkCompareTargetForLine(puppyLine: PuppyLine) {
+    fun linkCompareTargetForLine(puppyLine: PuppyLine, changeType:String) {
         // deleted line must at added lines up side; context needn't find a compare target;
         //  so, only added line need handle, when find the compare target (related deleted line), update the deleted line as well
         // 删除行和添加行都不需要找比较目标，仅添加行需要找，找到后把对应的删除行也关联上
-        if(puppyLine.originType == PuppyLineOriginType.ADDED) {
+        if(changeType == Cons.gitStatusModified && puppyLine.originType == PuppyLineOriginType.ADDED) {
             var foundDel = false
             var size = lines.size
             while (--size >= 0) {
@@ -235,6 +238,12 @@ class PuppyHunkAndLines {
 
         // r is null, try generate
         val line = keyAndLineMap.get(line.key) ?: return null
+
+        // invalid key
+        if(line.compareTargetLineKey.isBlank()) {
+            return null
+        }
+
         val cmpTarget = keyAndLineMap.get(line.compareTargetLineKey) ?: return null
 
         val add = if(line.originType == PuppyLineOriginType.ADDED) line else cmpTarget

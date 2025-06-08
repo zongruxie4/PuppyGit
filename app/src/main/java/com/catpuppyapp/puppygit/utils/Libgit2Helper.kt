@@ -1788,7 +1788,8 @@ object Libgit2Helper {
 
 
                 //20240618新增：实现增量diff相关代码
-                hunkAndLines.addLine(pLine)
+                //20250608更新：优化添加和删除行的默认匹配策略，不再简单根据行号匹配
+                hunkAndLines.addLine(pLine, diffItem.changeType)
             }
         }
 
