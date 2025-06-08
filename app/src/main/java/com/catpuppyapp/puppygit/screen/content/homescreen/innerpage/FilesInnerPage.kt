@@ -2342,14 +2342,15 @@ fun FilesInnerPage(
                             }
 
                             if(showCurPathDirAndFolderCount.value) {
+                                val curPathFileItemDto = curPathFileItemDto.value
                                 Spacer(modifier = Modifier.height(15.dp))
                                 Row {
-                                    Text(text = stringResource(R.string.folder)+": "+item.folderCount)
+                                    Text(text = stringResource(R.string.folder)+": "+curPathFileItemDto.folderCount)
                                 }
 
                                 Spacer(modifier = Modifier.height(15.dp))
                                 Row {
-                                    Text(text = stringResource(R.string.file)+": "+item.fileCount)
+                                    Text(text = stringResource(R.string.file)+": "+curPathFileItemDto.fileCount)
                                 }
                             }
 
