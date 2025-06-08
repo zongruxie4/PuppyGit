@@ -1269,55 +1269,18 @@ fun SettingsInnerPage(
         if(devModeOn.value) {
             SettingsTitle("Dev Zone")
 
-            // single diff
-            DevBooleanSettingsItem(
-                item = DevFeature.singleDiff,
-                context = activityContext,
-                itemLeftWidthForSwitcher = itemLeftWidthForSwitcher,
-                itemFontSize = itemFontSize,
-                itemDescFontSize = itemDescFontSize,
-                switcherIconSize = switcherIconSize,
-            )
+            // dev settings items
+            DevFeature.settingsItemList.forEach {
+                DevBooleanSettingsItem(
+                    item = it,
+                    context = activityContext,
+                    itemLeftWidthForSwitcher = itemLeftWidthForSwitcher,
+                    itemFontSize = itemFontSize,
+                    itemDescFontSize = itemDescFontSize,
+                    switcherIconSize = switcherIconSize,
+                )
+            }
 
-            // single diff
-            DevBooleanSettingsItem(
-                item = DevFeature.degradeMatchByWordsToMatchByCharsIfNonMatched,
-                context = activityContext,
-                itemLeftWidthForSwitcher = itemLeftWidthForSwitcher,
-                itemFontSize = itemFontSize,
-                itemDescFontSize = itemDescFontSize,
-                switcherIconSize = switcherIconSize,
-            )
-
-            // line menu item, matched all and no-matched all
-            DevBooleanSettingsItem(
-                item = DevFeature.showMatchedAllAtDiff,
-                context = activityContext,
-                itemLeftWidthForSwitcher = itemLeftWidthForSwitcher,
-                itemFontSize = itemFontSize,
-                itemDescFontSize = itemDescFontSize,
-                switcherIconSize = switcherIconSize,
-            )
-
-            // show random launching text when app loading
-            DevBooleanSettingsItem(
-                item = DevFeature.showRandomLaunchingText,
-                context = activityContext,
-                itemLeftWidthForSwitcher = itemLeftWidthForSwitcher,
-                itemFontSize = itemFontSize,
-                itemDescFontSize = itemDescFontSize,
-                switcherIconSize = switcherIconSize,
-            )
-
-            // legacy change list load method
-            DevBooleanSettingsItem(
-                item = DevFeature.legacyChangeListLoadMethod,
-                context = activityContext,
-                itemLeftWidthForSwitcher = itemLeftWidthForSwitcher,
-                itemFontSize = itemFontSize,
-                itemDescFontSize = itemDescFontSize,
-                switcherIconSize = switcherIconSize,
-            )
 
 
             // crash the app

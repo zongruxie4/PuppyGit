@@ -93,6 +93,14 @@ object DevFeature {
 
     // 旧change list 加载方法: end
 
+    // dev menu items
+    val settingsItemList = listOf(
+        singleDiff,
+        degradeMatchByWordsToMatchByCharsIfNonMatched,
+        showMatchedAllAtDiff,
+        showRandomLaunchingText,
+        legacyChangeListLoadMethod,
+    )
 
 }
 
