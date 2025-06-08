@@ -6,6 +6,8 @@ import kotlinx.serialization.Serializable
 data class DevSettings (
     var singleDiffOn: Boolean = false,
 
+    var degradeMatchByWordsToMatchByCharsIfNonMatched: Boolean = false,
+
     /**
      * Diff页面，行选项（select compare那个菜单），显示`匹配所有/不匹配所有`选项
      */

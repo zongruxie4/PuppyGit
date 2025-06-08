@@ -1279,6 +1279,16 @@ fun SettingsInnerPage(
                 switcherIconSize = switcherIconSize,
             )
 
+            // single diff
+            DevBooleanSettingsItem(
+                item = DevFeature.degradeMatchByWordsToMatchByCharsIfNonMatched,
+                context = activityContext,
+                itemLeftWidthForSwitcher = itemLeftWidthForSwitcher,
+                itemFontSize = itemFontSize,
+                itemDescFontSize = itemDescFontSize,
+                switcherIconSize = switcherIconSize,
+            )
+
             // line menu item, matched all and no-matched all
             DevBooleanSettingsItem(
                 item = DevFeature.showMatchedAllAtDiff,

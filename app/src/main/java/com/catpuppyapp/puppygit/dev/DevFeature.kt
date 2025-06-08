@@ -34,6 +34,19 @@ object DevFeature {
         }
     }
 
+    // degrade match by words to match by chars when no matched
+    val degradeMatchByWordsToMatchByCharsIfNonMatched = object : DevItem<Boolean>(text = "Degrade Match by words", state = mutableStateOf(false), desc="Degrade to Match by chars if Match by words was non-matched") {
+        override fun update(newValue: Boolean, context: Context?) {
+            //更新状态变量，使用的时候就不用查配置文件了
+            state.value = newValue
+
+            //写入配置文件
+            SettingsUtil.update {
+                it.devSettings.degradeMatchByWordsToMatchByCharsIfNonMatched = newValue
+            }
+        }
+    }
+
 
     // matched all for selected compare at diff screen
     val setDiffRowToNoMatched = appendDevPrefix("No Matched")

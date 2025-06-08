@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.utils.compare
 
+import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.utils.compare.param.CompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
@@ -19,6 +20,7 @@ object CmpUtil {
         requireBetterMatching: Boolean,
         matchByWords: Boolean,
         swap: Boolean = false,
+        degradeMatchByWordsToMatchByCharsIfNonMatched: Boolean = DevFeature.degradeMatchByWordsToMatchByCharsIfNonMatched.state.value,
 
     ): IndexModifyResult {
         val (add, del) = if(swap) {
@@ -35,7 +37,10 @@ object CmpUtil {
             requireBetterMatching = requireBetterMatching,
 
             //根据单词匹配
-            matchByWords = matchByWords
+            matchByWords = matchByWords,
+
+            // 降级按单词匹配为按字符匹配，如果按单词匹配无匹配
+            degradeToCharMatchingIfMatchByWordFailed = degradeMatchByWordsToMatchByCharsIfNonMatched,
         )
 
         return if(swap) {

@@ -483,6 +483,7 @@ object AppModel {
 
         //开始：初始化开发者功能设置项
         DevFeature.singleDiff.state.value = settings.devSettings.singleDiffOn
+        DevFeature.degradeMatchByWordsToMatchByCharsIfNonMatched.state.value = settings.devSettings.degradeMatchByWordsToMatchByCharsIfNonMatched
         DevFeature.showMatchedAllAtDiff.state.value = settings.devSettings.showMatchedAllAtDiff
         DevFeature.legacyChangeListLoadMethod.state.value = settings.devSettings.legacyChangeListLoadMethod
         //结束：初始化开发者功能设置项
