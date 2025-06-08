@@ -583,12 +583,9 @@ fun DiffRow (
             .fillMaxWidth()
             //如果是经过compare的添加或删除行，背景半透明，然后真修改的内容用不透明，这样就能突出真修改的内容
             //alpha值越大越不透明
-            .background(if (useStringPartList) Libgit2Helper.getMatchedTextBgColorForDiff(inDarkTheme, line) else bgColor)
-            .padding(end = 5.dp)
+//            .background(if (useStringPartList) Libgit2Helper.getMatchedTextBgColorForDiff(inDarkTheme, line) else bgColor)
+            .background(Libgit2Helper.getMatchedTextBgColorForDiff(inDarkTheme, line))
 
-            //首行加顶部padding，其余不加
-            // x 已经解决，给每个行计算了虚拟的索引，然后就解决了）按行分组时，首行若是一对 add/del，两个都会加顶部padding，但看起来感觉并不难受，所以不用改，就这样吧
-            .addTopPaddingIfIsFirstLine(index)
 //            .background(color)
 //                            .clickable {
 //
@@ -601,74 +598,100 @@ fun DiffRow (
 ////                                    )
 //                            },
     ) {
-        //show add/del and line number, e.g. +123, or only show line num e.g. 123, it should make a settings item for it
-        Text(
-            text = prefix,
-            color = lineNumColor,
-            fontSize = lineNumSize.sp,
-            fontFamily = FontFamily.Monospace, // 使用系统自带的等宽字体，不然那个+和-不等宽，看着难受
-            modifier = Modifier
+        Row(
+            modifier = (if(useStringPartList) Modifier else Modifier.background(bgColor))
+
+                //首行加顶部padding，其余不加
+                // x 已经解决，给每个行计算了虚拟的索引，然后就解决了）按行分组时，首行若是一对 add/del，两个都会加顶部padding，但看起来感觉并不难受，所以不用改，就这样吧
+                .addTopPaddingIfIsFirstLine(index)
+        ) {
+            //show add/del and line number, e.g. +123, or only show line num e.g. 123, it should make a settings item for it
+            Text(
+                text = prefix,
+                color = lineNumColor,
+                fontSize = lineNumSize.sp,
+                fontFamily = FontFamily.Monospace, // 使用系统自带的等宽字体，不然那个+和-不等宽，看着难受
+                modifier = Modifier
 //                .background(MyStyleKt.TextColor.lineNumBgColor(inDarkTheme))
-                .clickable {
-                    openFileWithInnerSubPageEditor(
-                        context = activityContext,
-                        filePath = fileFullPath,
-                        mergeMode = false,
-                        readOnly = false,
-                        //if jump line is EOF, should go to last line of file, but didn't know the line num, so set line num to a enough big number
-                        goToLine = if(lineNum == LineNum.EOF.TEXT) LineNum.EOF.LINE_NUM else line.lineNum
-                    )
-                }
+                    .clickable {
+                        openFileWithInnerSubPageEditor(
+                            context = activityContext,
+                            filePath = fileFullPath,
+                            mergeMode = false,
+                            readOnly = false,
+                            //if jump line is EOF, should go to last line of file, but didn't know the line num, so set line num to a enough big number
+                            goToLine = if(lineNum == LineNum.EOF.TEXT) LineNum.EOF.LINE_NUM else line.lineNum
+                        )
+                    }
 
-                //这个和changeType加行号(prefix)左边的padding构成完整每行左右padding
-                //如果有前缀，padding小点，否则大点
-                //这个放到clickable后面，这样点击padding区域也可触发onClick
-                .padding(start = (if(prefix.isNotEmpty()) 2.dp else 5.dp))
+                    //这个和changeType加行号(prefix)左边的padding构成完整每行左右padding
+                    //如果有前缀，padding小点，否则大点
+                    //这个放到clickable后面，这样点击padding区域也可触发onClick
+                    .padding(start = (if(prefix.isNotEmpty()) 2.dp else 5.dp))
 
-        )
+            )
+        }
+
 
         if(useStringPartList) {
-            //StringPart是比较过后的解析出哪些部分是真修改，哪些不是的一个数组，每个元素都包含完整字符串一部分，按序拼接即可得到原字符串
-            val lastIndex = stringPartList!!.lastIndex  //用来判断，最后一个条目，需要移除末尾换行符
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(end = 5.dp)
 
-            //注意：这里不能改成用多个Text组件，不然若超过屏幕宽度软换行会失效
-            Text(
-                text = buildAnnotatedString {
-                    stringPartList.forEachIndexed {idx, it ->
-                        val text = content.substring(it.start, it.end)
-                        //末尾会有个换行符，移除下，不然显示会多个行
-                        val textNoLineSeparator = if(idx == lastIndex) text.removeSuffix(Cons.lineBreak) else text
+                    //首行加顶部padding，其余不加
+                    // x 已经解决，给每个行计算了虚拟的索引，然后就解决了）按行分组时，首行若是一对 add/del，两个都会加顶部padding，但看起来感觉并不难受，所以不用改，就这样吧
+                    .addTopPaddingIfIsFirstLine(index)
+            ) {
 
-                        if(it.modified) {  //为修改的内容设置高亮颜色
-                            withStyle(style = SpanStyle(background = bgColor)) {
+                //StringPart是比较过后的解析出哪些部分是真修改，哪些不是的一个数组，每个元素都包含完整字符串一部分，按序拼接即可得到原字符串
+                val lastIndex = stringPartList!!.lastIndex  //用来判断，最后一个条目，需要移除末尾换行符
+
+                //注意：这里不能改成用多个Text组件，不然若超过屏幕宽度软换行会失效
+                Text(
+                    text = buildAnnotatedString {
+                        stringPartList.forEachIndexed {idx, it ->
+                            val text = content.substring(it.start, it.end)
+                            //末尾会有个换行符，移除下，不然显示会多个行
+                            val textNoLineSeparator = if(idx == lastIndex) text.removeSuffix(Cons.lineBreak) else text
+
+                            if(it.modified) {  //为修改的内容设置高亮颜色
+                                withStyle(style = SpanStyle(background = bgColor)) {
+                                    append(textNoLineSeparator)
+                                }
+                            }else {  //没修改的内容不用设置颜色，直接用默认的背景色即可
                                 append(textNoLineSeparator)
                             }
-                        }else {  //没修改的内容不用设置颜色，直接用默认的背景色即可
-                            append(textNoLineSeparator)
                         }
-                    }
-                },
+                    },
 
-                color = textColor,
-                overflow = TextOverflow.Visible,
-                softWrap = true,
-                fontSize = fontSize.sp,
-
+                    color = textColor,
+                    overflow = TextOverflow.Visible,
+                    softWrap = true,
+                    fontSize = fontSize.sp,
 
 
-            )
+
+                    )
+            }
         }else {
-            //文本内容
-            Text(
-                text = line.getContentNoLineBreak(),
-                color = textColor,
-                overflow = TextOverflow.Visible,
-                softWrap = true,
-                fontSize = fontSize.sp,
+            Row(
+                modifier = Modifier.background(bgColor).fillMaxWidth()
+                    .padding(end = 5.dp)
 
+                    //首行加顶部padding，其余不加
+                    // x 已经解决，给每个行计算了虚拟的索引，然后就解决了）按行分组时，首行若是一对 add/del，两个都会加顶部padding，但看起来感觉并不难受，所以不用改，就这样吧
+                    .addTopPaddingIfIsFirstLine(index)
+            ) {
+                //文本内容
+                Text(
+                    text = line.getContentNoLineBreak(),
+                    color = textColor,
+                    overflow = TextOverflow.Visible,
+                    softWrap = true,
+                    fontSize = fontSize.sp,
+                )
 
-            )
-
+            }
         }
 
 
