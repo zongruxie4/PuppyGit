@@ -42,7 +42,8 @@ interface SimilarCompare {
         search: Search = Search.INSTANCE,
         betterSearch: Search = Search.INSTANCE_BETTER_MATCH_BUT_SLOW,
         matchByWords:Boolean,
-        ignoreEndOfNewLine:Boolean = true
+        ignoreEndOfNewLine:Boolean = true,
+        degradeToCharMatchingIfMatchByWordFailed:Boolean = false,
     ): IndexModifyResult
 
 }

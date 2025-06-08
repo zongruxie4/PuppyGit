@@ -21,7 +21,8 @@ class SimilarCompareImpl: SimilarCompare {
         search: Search,
         betterSearch: Search,
         matchByWords:Boolean,
-        ignoreEndOfNewLine:Boolean
+        ignoreEndOfNewLine:Boolean,
+        degradeToCharMatchingIfMatchByWordFailed:Boolean,
     ): IndexModifyResult {
         // empty check
         if(add.isEmpty() || del.isEmpty() || ((onlyLineSeparatorAsEmpty || ignoreEndOfNewLine) && (add.isOnlyLineSeparator() || del.isOnlyLineSeparator()))){ //其中一个为空或只有换行符，不比较，直接返回结果，当作无匹配
@@ -62,7 +63,7 @@ class SimilarCompareImpl: SimilarCompare {
         }
 
         // if match by words not enabled or not matched, try match by chars
-        if(result == null || result.matched.not()) {
+        if(result == null || (result.matched.not() && degradeToCharMatchingIfMatchByWordFailed)) {
             // match by chars
             val reverse = searchDirection == SearchDirection.REVERSE || searchDirection == SearchDirection.REVERSE_FIRST
 
