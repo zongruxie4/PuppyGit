@@ -58,6 +58,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BarContainer
 import com.catpuppyapp.puppygit.compose.CardButton
@@ -1056,6 +1057,10 @@ fun DiffScreen(
     }
 
 
+    val lineClickedMenuOffset = remember(configuration.screenWidthDp) {
+        DpOffset(x = (configuration.screenWidthDp/1.5f).coerceAtLeast(50f).dp, y=0.dp)
+    }
+
 
 
     // 向下滚动监听，开始
@@ -1714,6 +1719,7 @@ fun DiffScreen(
                                                         navController = navController,
                                                         activityContext = activityContext,
                                                         stateKeyTag = stateKeyTag,
+                                                        lineClickedMenuOffset = lineClickedMenuOffset
                                                     )
                                                 }
                                             } else {  // add or del
@@ -1758,8 +1764,8 @@ fun DiffScreen(
                                                                 navController = navController,
                                                                 activityContext = activityContext,
                                                                 stateKeyTag = stateKeyTag,
-
-                                                                )
+                                                                lineClickedMenuOffset = lineClickedMenuOffset
+                                                            )
                                                         }
                                                     }
 
@@ -1819,6 +1825,7 @@ fun DiffScreen(
                                                         navController = navController,
                                                         activityContext = activityContext,
                                                         stateKeyTag = stateKeyTag,
+                                                        lineClickedMenuOffset = lineClickedMenuOffset
                                                     )
                                                 }
                                             }
@@ -1934,6 +1941,7 @@ fun DiffScreen(
                                                             navController = navController,
                                                             activityContext = activityContext,
                                                             stateKeyTag = stateKeyTag,
+                                                            lineClickedMenuOffset = lineClickedMenuOffset
                                                         )
                                                     }
                                                 }
@@ -1970,6 +1978,7 @@ fun DiffScreen(
                                                             navController = navController,
                                                             activityContext = activityContext,
                                                             stateKeyTag = stateKeyTag,
+                                                            lineClickedMenuOffset = lineClickedMenuOffset
                                                         )
                                                     }
                                                 }
@@ -2031,6 +2040,7 @@ fun DiffScreen(
                                                         navController = navController,
                                                         activityContext = activityContext,
                                                         stateKeyTag = stateKeyTag,
+                                                        lineClickedMenuOffset = lineClickedMenuOffset
                                                     )
 
                                                 }
@@ -2079,6 +2089,7 @@ fun DiffScreen(
                                                         navController = navController,
                                                         activityContext = activityContext,
                                                         stateKeyTag = stateKeyTag,
+                                                        lineClickedMenuOffset = lineClickedMenuOffset
                                                     )
                                                 }
                                             }
@@ -2128,6 +2139,7 @@ fun DiffScreen(
                                                     navController = navController,
                                                     activityContext = activityContext,
                                                     stateKeyTag = stateKeyTag,
+                                                    lineClickedMenuOffset = lineClickedMenuOffset
                                                 )
                                             }
                                         }
@@ -2175,6 +2187,7 @@ fun DiffScreen(
                                                 navController = navController,
                                                 activityContext = activityContext,
                                                 stateKeyTag = stateKeyTag,
+                                                lineClickedMenuOffset = lineClickedMenuOffset
                                             )
                                         }
                                     }

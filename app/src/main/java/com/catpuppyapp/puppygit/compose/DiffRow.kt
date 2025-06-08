@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -102,7 +101,8 @@ fun DiffRow (
     matchByWords:Boolean,
     settings:AppSettings,
     navController:NavController,
-    activityContext:Context
+    activityContext:Context,
+    lineClickedMenuOffset: DpOffset,
 
 ) {
     val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
@@ -704,7 +704,7 @@ fun DiffRow (
                 DropdownMenu(
                     expanded = expandedMenu.value,
                     onDismissRequest = { expandedMenu.value = false },
-                    offset = DpOffset(x=150.dp, y=0.dp)
+                    offset = lineClickedMenuOffset
                 ) {
                     //显示行修改类型和行号，例如 "+123"
                     DropdownMenuItem(
