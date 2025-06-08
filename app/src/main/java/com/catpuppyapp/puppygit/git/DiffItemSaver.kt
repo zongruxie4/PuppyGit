@@ -162,7 +162,8 @@ class PuppyHunkAndLines {
      */
     //20250607 add: for compare line number not equals, but content similar line
     //20250607新增: 实现比较行号不同但内容实际相关的行
-    fun linkCompareTargetForLine(puppyLine: PuppyLine, changeType:String) {
+    @Deprecated("this method has better performance but bad matching, recommend use `linkCompareTargetForLine` to instead of")
+    fun linkCompareTargetForLineByContextOffset(puppyLine: PuppyLine, changeType:String) {
         // deleted line must at added lines up side; context needn't find a compare target;
         //  so, only added line need handle, when find the compare target (related deleted line), update the deleted line as well
         // 删除行和添加行都不需要找比较目标，仅添加行需要找，找到后把对应的删除行也关联上
@@ -185,6 +186,25 @@ class PuppyHunkAndLines {
                     break
                 }else if(ppLine.originType == PuppyLineOriginType.DELETED) {
                     foundDel = true
+                }
+            }
+        }
+
+        keyAndLineMap.put(puppyLine.key, puppyLine)
+    }
+
+    fun linkCompareTargetForLine(puppyLine: PuppyLine, changeType:String) {
+        // deleted line must at added lines up side; context needn't find a compare target;
+        //  so, only added line need handle, when find the compare target (related deleted line), update the deleted line as well
+        // 删除行和添加行都不需要找比较目标，仅添加行需要找，找到后把对应的删除行也关联上
+        if(changeType == Cons.gitStatusModified && puppyLine.originType == PuppyLineOriginType.ADDED) {
+            for(line in lines) {
+                if(line.originType == PuppyLineOriginType.DELETED && line.compareTargetLineKey.isBlank()) {
+                    if(CmpUtil.roughlyMatch(puppyLine.getContentNoLineBreak(), line.getContentNoLineBreak())) {
+                        line.compareTargetLineKey = puppyLine.key
+                        puppyLine.compareTargetLineKey = line.key
+                        break
+                    }
                 }
             }
         }
