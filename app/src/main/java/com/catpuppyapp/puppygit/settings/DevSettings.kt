@@ -4,8 +4,15 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class DevSettings (
+    /**
+     * diff页面每次只显示一个文件，性能更好
+     */
     var singleDiffOn: Boolean = false,
 
+    /**
+     * 在按单词匹配失败时降级为按字符匹配。
+     * 对非空格分隔的语言友好，反之不好
+     */
     var degradeMatchByWordsToMatchByCharsIfNonMatched: Boolean = false,
 
     /**
