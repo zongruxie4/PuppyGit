@@ -257,7 +257,7 @@ class PuppyHunkAndLines {
         }
 
         // r is null, try generate
-        val line = keyAndLineMap.get(line.key) ?: return null
+//        val line = keyAndLineMap.get(line.key) ?: return null
 
         // invalid key
         if(line.compareTargetLineKey.isBlank()) {
