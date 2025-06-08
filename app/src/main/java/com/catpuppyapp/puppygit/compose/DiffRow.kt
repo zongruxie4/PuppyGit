@@ -598,7 +598,10 @@ fun DiffRow (
 ////                                    )
 //                            },
     ) {
+        // line number ( if content no-matched, use a deep color, else use a shallow color)
+        // 行号，如果内容无匹配，使用深色，否则使用浅色，因此可通过行号深浅来快速判断某一行是否有匹配
         Row(
+            // if matched shallow color else deep color
             modifier = (if(useStringPartList) Modifier else Modifier.background(bgColor))
 
                 //首行加顶部padding，其余不加
@@ -633,14 +636,17 @@ fun DiffRow (
         }
 
 
+        val contentModifier = Modifier
+            .fillMaxWidth()
+            .padding(end = 5.dp)
+
+            //首行加顶部padding，其余不加
+            // x 已经解决，给每个行计算了虚拟的索引，然后就解决了）按行分组时，首行若是一对 add/del，两个都会加顶部padding，但看起来感觉并不难受，所以不用改，就这样吧
+            .addTopPaddingIfIsFirstLine(index)
+
         if(useStringPartList) {
             Row(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(end = 5.dp)
-
-                    //首行加顶部padding，其余不加
-                    // x 已经解决，给每个行计算了虚拟的索引，然后就解决了）按行分组时，首行若是一对 add/del，两个都会加顶部padding，但看起来感觉并不难受，所以不用改，就这样吧
-                    .addTopPaddingIfIsFirstLine(index)
+                modifier = contentModifier
             ) {
 
                 //StringPart是比较过后的解析出哪些部分是真修改，哪些不是的一个数组，每个元素都包含完整字符串一部分，按序拼接即可得到原字符串
@@ -675,12 +681,9 @@ fun DiffRow (
             }
         }else {
             Row(
-                modifier = Modifier.background(bgColor).fillMaxWidth()
-                    .padding(end = 5.dp)
-
-                    //首行加顶部padding，其余不加
-                    // x 已经解决，给每个行计算了虚拟的索引，然后就解决了）按行分组时，首行若是一对 add/del，两个都会加顶部padding，但看起来感觉并不难受，所以不用改，就这样吧
-                    .addTopPaddingIfIsFirstLine(index)
+                modifier = Modifier
+                    .background(bgColor)
+                    .then(contentModifier)
             ) {
                 //文本内容
                 Text(
