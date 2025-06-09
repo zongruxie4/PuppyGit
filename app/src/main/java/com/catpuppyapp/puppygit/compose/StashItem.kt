@@ -66,7 +66,7 @@ fun StashItem(
                     lastClickedItemKey.value = thisObj.getItemKey()
 
                     //震动反馈
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     //设置当前条目
                     curObjFromParent.value = StashDto()

@@ -46,7 +46,7 @@ fun LongPressAbleIconBtn(
     //空白提示文字，代表不想显示提示文案
     onLongClick:(()->Unit)? = if(tooltipText.isEmpty()) null else ({
         //震动反馈，显示tooltip提示
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         showToast(AppModel.realAppContext, tooltipText, Toast.LENGTH_SHORT)
 
     }),

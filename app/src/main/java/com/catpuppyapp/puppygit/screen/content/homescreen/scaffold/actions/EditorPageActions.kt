@@ -165,7 +165,7 @@ fun EditorPageActions(
 
             onLongClick = {
                 //震动反馈
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                 //显示功能提示和所有记数“FindNext(all:40)”，其中40是全文查找到的匹配关键字数量，文案尽量紧凑，避免toast显示不全
                 editorPageRequest.value = PageRequest.showFindNextAndAllCount
@@ -207,7 +207,7 @@ fun EditorPageActions(
                 iconContentDesc = undoStr,
                 onLongClick = {
                     //震动反馈
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     // 显示 "Undo(saved steps count)"
                     Msg.requireShow("$undoStr(${undoStack.undoStackSize()})")
@@ -225,7 +225,7 @@ fun EditorPageActions(
                 iconContentDesc = redoStr,
                 onLongClick = {
                     //震动反馈
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     // 显示 "Undo(saved steps count)"
                     Msg.requireShow("$redoStr(${undoStack.redoStackSize()})")
@@ -251,7 +251,7 @@ fun EditorPageActions(
 
                 onLongClick = {
                     //震动反馈
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     //显示功能提示和所有记数“NextConflict(all:40)”，其中40是全文查找到的所有冲突数量，文案尽量紧凑，避免toast显示不全
                     editorPageRequest.value = PageRequest.showNextConflictAndAllConflictsCount

@@ -61,7 +61,7 @@ fun RemoteItem(
                     lastClickedItemKey.value = curObj.remoteId
 
                     //震动反馈
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     curObjInState.value = RemoteDto()
 

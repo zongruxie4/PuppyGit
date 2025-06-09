@@ -462,7 +462,7 @@ fun FileEditor(
                                 .combinedClickable(
                                     onLongClick = {
                                         if (textEditorState.value.isMultipleSelectionMode) {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                                             doJobThenOffLoading {
                                                 textEditorState.value.selectFieldSpan(targetIndex = index)

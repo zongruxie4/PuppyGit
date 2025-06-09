@@ -91,7 +91,7 @@ fun FileHistoryItem(
                     lastClickedItemKey.value = dto.getItemKey()
 
                     //震动反馈
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     updateCurObjState()
 

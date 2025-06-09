@@ -92,7 +92,7 @@ fun EditorTitle(
                     },
                     onLongClick = {
                         if(isPreviewModeOn.not()) {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             editorPageRequestFromParent.value = PageRequest.goToLine
                         }
                     }

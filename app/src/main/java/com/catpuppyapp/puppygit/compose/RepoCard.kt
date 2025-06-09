@@ -207,7 +207,7 @@ fun RepoCard(
                     },
                     onLongClick = {
                         //震动反馈
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                         setCurRepo()
 
@@ -344,7 +344,7 @@ fun RepoCard(
                                 modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
                                     enabled = repoStatusGood,
                                     onLongClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         copyAndShowCopied(activityContext, clipboardManager, repoDto.lastCommitHash)
                                     }
                                 ) {
@@ -440,7 +440,7 @@ fun RepoCard(
                             overflow = TextOverflow.Ellipsis,
                             modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
                                 onLongClick = { // long press will copy path
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     clipboardManager.setText(AnnotatedString(repoDto.fullSavePath))
                                     Msg.requireShow(activityContext.getString(R.string.copied))
                                 }
@@ -562,7 +562,7 @@ fun RepoCard(
                     Row(
 //                modifier = Modifier.height(min=lineHeight.dp),
                         modifier = Modifier.fillMaxWidth(.9f).combinedClickable(onLongClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             copyErrMsg(repoDto.createErrMsg)
                         }) {  },
                         verticalAlignment = Alignment.CenterVertically,
@@ -635,7 +635,7 @@ private fun RepoTitle(
             .height(30.dp)
             .combinedClickable(onLongClick = {
                 //震动反馈
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                 //显示底部菜单
                 titleOnLongClick(repoDto)

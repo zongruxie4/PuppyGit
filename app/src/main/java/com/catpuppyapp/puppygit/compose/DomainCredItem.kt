@@ -55,7 +55,7 @@ fun DomainCredItem(
                     lastClickedItemKey.value = thisItem.domainCredId
 
                     //震动反馈
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     curCredentialState.value = DomainCredentialDto()
 

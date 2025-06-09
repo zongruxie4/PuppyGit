@@ -3136,7 +3136,7 @@ fun ChangeListInnerPage(
                                 }
 
                                 //震动反馈
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                                 //非选择模式 长按启用选择模式；选择模式下长按进行区域选择
                                 if (!isFileSelectionMode.value) {

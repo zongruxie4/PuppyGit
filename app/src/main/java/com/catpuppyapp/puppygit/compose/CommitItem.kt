@@ -119,7 +119,7 @@ fun CommitItem(
                     lastClickedItemKey.value = commitDto.oidStr
 
                     //震动反馈
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     updateCurObjState()
 

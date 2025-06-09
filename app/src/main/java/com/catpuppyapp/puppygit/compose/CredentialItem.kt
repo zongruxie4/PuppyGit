@@ -76,7 +76,7 @@ fun CredentialItem(
                         lastClickedItemKey.value = thisItem.id
 
                         //震动反馈
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                         curCredentialState.value = CredentialEntity()
 

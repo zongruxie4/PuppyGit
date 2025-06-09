@@ -66,7 +66,7 @@ fun SubmoduleItem(
                     lastClickedItemKey.value = thisObj.name
 
                     //震动反馈
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     onLongClick(thisObj)
                 },

@@ -88,7 +88,7 @@ fun BranchItem(
                     lastClickedItemKey.value = thisObj.fullName
 
                     //震动反馈
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     setCurObj()
 

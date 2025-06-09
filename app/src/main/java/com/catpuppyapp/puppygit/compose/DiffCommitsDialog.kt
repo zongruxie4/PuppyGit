@@ -107,7 +107,7 @@ fun DiffCommitsDialog(
 
                         .combinedClickable(
                         onLongClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             Msg.requireShow(activityContext.getString(R.string.swap))
                         }
                     ) { // onClick

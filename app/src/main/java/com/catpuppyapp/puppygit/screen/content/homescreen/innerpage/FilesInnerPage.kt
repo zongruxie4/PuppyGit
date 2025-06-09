@@ -1381,7 +1381,7 @@ fun FilesInnerPage(
                                     modifier = Modifier
                                         .combinedClickable(
                                             onLongClick = {  //long press will show menu for pressed path
-                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                                 breadCrumbDropDownMenuExpandState.value = true
                                             }
                                         ) { //onClick
@@ -1590,12 +1590,12 @@ fun FilesInnerPage(
                                 if(isFileChooser.not()){
                                     //如果不是选择模式或粘贴模式，切换为选择模式
                                     if (!isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         switchItemSelected(it)
 
                                         //如果处于选择模式，长按执行连续选择
                                     }else if(isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         UIHelper.doSelectSpan(index, it,
                                             //这里调用 toList() 是为了拷贝下源list，避免并发修改异常
                                             selectedItems.value.toList(), currentPathFileList.toList(),

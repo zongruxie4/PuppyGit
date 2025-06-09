@@ -1100,7 +1100,7 @@ fun TextEditor(
                                         if (!textEditorState.isMultipleSelectionMode) return@clickable
 
                                         //(20250325新版compose似乎不会同时触发选择文本和当前行了，所以不会震两下了) 震动反馈，和长按选择文本的震动反馈冲突了，若开会振两下
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                                         //执行区域选择
                                         doJobThenOffLoading {

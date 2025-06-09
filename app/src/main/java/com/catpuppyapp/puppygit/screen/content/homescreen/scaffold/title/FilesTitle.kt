@@ -61,7 +61,7 @@ fun FilesTitle(
                     defaultTitleDoubleClickRequest(requestFromParent)
                 },
                 onLongClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     //长按标题回到仓库根目录
                     goToPath(allRepoParentDir.canonicalPath)

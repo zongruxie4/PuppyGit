@@ -123,7 +123,7 @@ fun <T> TitleDropDownMenu(
             .combinedClickable(
                 enabled = titleClickEnabled,
                 onLongClick = {  //长按显示仓库名和分支名
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     titleOnLongClick(curSelectedItem)
                 }

@@ -639,7 +639,7 @@ fun FileHistoryScreen(
                                 },
                                 onLongClick = {
                                     //长按显示仓库和分支信息
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                                     val count = if(enableFilterState.value) filterIdxList.value.size else list.value.size
                                     // show loaded how many items

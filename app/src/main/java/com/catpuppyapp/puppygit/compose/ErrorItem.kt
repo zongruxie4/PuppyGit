@@ -57,7 +57,7 @@ fun ErrorItem(
                     lastClickedItemKey.value = curObj.id
 
                     //震动反馈
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     curObjInState.value = ErrorEntity()
 
