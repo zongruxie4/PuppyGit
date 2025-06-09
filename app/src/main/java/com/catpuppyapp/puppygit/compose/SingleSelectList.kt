@@ -78,12 +78,14 @@ fun<T> SingleSelectList(
                 containerSize.value = it
             }
         ,
+
         colors = CardDefaults.cardColors(
             containerColor = UIHelper.defaultCardColor(),
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 3.dp
-        )
+
+//        elevation = CardDefaults.cardElevation(
+//            defaultElevation = 3.dp
+//        )
 
     ) {
         //用box的好处是如果整体宽度过小，不会把右边的箭头顶没，但箭头会和文本内容重叠
