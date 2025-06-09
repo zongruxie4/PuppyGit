@@ -59,7 +59,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -77,7 +76,6 @@ import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CardButton
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
-import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog2
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
@@ -1974,23 +1972,28 @@ fun FilesInnerPage(
             title = importOrExportText,
             requireShowTextCompose = true,
             textCompose = {
-                CopyScrollableColumn {
-                    CardButton(
-                        enabled = true,
-                        content = {
-                            Text(
-                                text = if(choosenSafUri.value == null) stringResource(R.string.select_path) else choosenSafUri.value.toString(),
-                                color = UIHelper.getCardButtonTextColor(enabled = true, inDarkTheme = inDarkTheme)
-                            )
-                        },
-                    ) {
-                        chooseDirLauncher.launch(null)
+                ScrollableColumn {
+                    MySelectionContainer {
+                        CardButton(
+                            enabled = true,
+                            content = {
+                                Text(
+                                    text = if(choosenSafUri.value == null) stringResource(R.string.select_path) else choosenSafUri.value.toString(),
+                                    color = UIHelper.getCardButtonTextColor(enabled = true, inDarkTheme = inDarkTheme)
+                                )
+                            },
+                        ) {
+                            chooseDirLauncher.launch(null)
+                        }
                     }
 
                     Spacer(Modifier.height(20.dp))
 
                     MyCheckBox(stringResource(R.string.overwrite_if_exist), safImportExportOverwrite)
-                    DefaultPaddingText(stringResource(R.string.overwrite_files_note))
+
+                    MySelectionContainer {
+                        DefaultPaddingText(stringResource(R.string.overwrite_files_note))
+                    }
                 }
             },
             onCancel = closeDialog,
@@ -2076,17 +2079,19 @@ fun FilesInnerPage(
             title = DevFeature.safDiff_text,
             requireShowTextCompose = true,
             textCompose = {
-                CopyScrollableColumn {
-                    CardButton(
-                        enabled = true,
-                        content = {
-                            Text(
-                                text = if(choosenSafUri.value == null) stringResource(R.string.select_path) else choosenSafUri.value.toString(),
-                                color = UIHelper.getCardButtonTextColor(enabled = true, inDarkTheme = inDarkTheme)
-                            )
-                        },
-                    ) {
-                        chooseDirLauncher.launch(null)
+                ScrollableColumn {
+                    MySelectionContainer {
+                        CardButton(
+                            enabled = true,
+                            content = {
+                                Text(
+                                    text = if(choosenSafUri.value == null) stringResource(R.string.select_path) else choosenSafUri.value.toString(),
+                                    color = UIHelper.getCardButtonTextColor(enabled = true, inDarkTheme = inDarkTheme)
+                                )
+                            },
+                        ) {
+                            chooseDirLauncher.launch(null)
+                        }
                     }
 
                     Spacer(Modifier.height(20.dp))
@@ -2156,10 +2161,12 @@ fun FilesInnerPage(
                     if(safDiffResultStr.value.isNotBlank()) {
                         Spacer(Modifier.height(20.dp))
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(safDiffResultStr.value)
+                        MySelectionContainer {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(safDiffResultStr.value)
+                            }
                         }
                     }
 
