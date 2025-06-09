@@ -8,15 +8,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -76,7 +74,6 @@ import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StrListUtil
-import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -917,11 +914,10 @@ fun SettingsInnerPage(
                 Text(stringResource(R.string.dev_mode), fontSize = itemFontSize)
             }
 
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(devModeOn.value),
-                contentDescription = if(devModeOn.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(devModeOn.value),
+
+            Switch(
+                checked = devModeOn.value,
+                onCheckedChange = null
             )
         }
 
@@ -942,11 +938,10 @@ fun SettingsInnerPage(
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
             }
 
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(showNaviButtons.value),
-                contentDescription = if(showNaviButtons.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(showNaviButtons.value),
+
+            Switch(
+                checked = showNaviButtons.value,
+                onCheckedChange = null
             )
         }
 
@@ -1012,11 +1007,11 @@ fun SettingsInnerPage(
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
             }
 
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(enableEditCache.value),
-                contentDescription = if(enableEditCache.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(enableEditCache.value),
+
+
+            Switch(
+                checked = enableEditCache.value,
+                onCheckedChange = null
             )
         }
 
@@ -1046,12 +1041,10 @@ fun SettingsInnerPage(
 
             }
 
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(enableSnapshot_File.value),
-                contentDescription = if(enableSnapshot_File.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(enableSnapshot_File.value),
 
+            Switch(
+                checked = enableSnapshot_File.value,
+                onCheckedChange = null
             )
         }
         SettingsContent(
@@ -1080,12 +1073,10 @@ fun SettingsInnerPage(
 
             }
 
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(enableSnapshot_Content.value),
-                contentDescription = if(enableSnapshot_Content.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(enableSnapshot_Content.value),
 
+            Switch(
+                checked = enableSnapshot_Content.value,
+                onCheckedChange = null
             )
         }
 
@@ -1118,12 +1109,9 @@ fun SettingsInnerPage(
 
             }
 
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(diff_CreateSnapShotForOriginFileBeforeSave.value),
-                contentDescription = if(diff_CreateSnapShotForOriginFileBeforeSave.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(diff_CreateSnapShotForOriginFileBeforeSave.value),
-
+            Switch(
+                checked = diff_CreateSnapShotForOriginFileBeforeSave.value,
+                onCheckedChange = null
             )
         }
 
@@ -1174,13 +1162,11 @@ fun SettingsInnerPage(
 
             }
 
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(allowUnknownHosts.value),
-                contentDescription = if(allowUnknownHosts.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(allowUnknownHosts.value),
 
-                )
+            Switch(
+                checked = allowUnknownHosts.value,
+                onCheckedChange = null
+            )
         }
 //
 //        SettingsContent(onClick = {
@@ -1346,12 +1332,9 @@ private fun DevBooleanSettingsItem(
 
         }
 
-        Icon(
-            modifier = Modifier.size(switcherIconSize),
-            imageVector = UIHelper.getIconForSwitcher(itemEnabled),
-            contentDescription = if(itemEnabled) stringResource(R.string.enable) else stringResource(R.string.disable),
-            tint = UIHelper.getColorForSwitcher(itemEnabled),
-
+        Switch(
+            checked = itemEnabled,
+            onCheckedChange = null
         )
     }
 }

@@ -6,15 +6,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -438,11 +436,9 @@ fun ServiceInnerPage(
                     Text(UIHelper.getRunningStateText(activityContext, runningStatus), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = UIHelper.getRunningStateColor(runningStatus))
                 }
 
-                Icon(
-                    modifier = Modifier.size(switcherIconSize),
-                    imageVector = UIHelper.getIconForSwitcher(runningStatus),
-                    contentDescription = UIHelper.getTextForSwitcher(activityContext, runningStatus),
-                    tint = UIHelper.getColorForSwitcher(runningStatus),
+                Switch(
+                    checked = runningStatus,
+                    onCheckedChange = null
                 )
             }
 
@@ -552,11 +548,10 @@ fun ServiceInnerPage(
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
                 }
 
-                Icon(
-                    modifier = Modifier.size(switcherIconSize),
-                    imageVector = UIHelper.getIconForSwitcher(launchOnAppStartup.value),
-                    contentDescription = if(launchOnAppStartup.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                    tint = UIHelper.getColorForSwitcher(launchOnAppStartup.value),
+
+                Switch(
+                    checked = launchOnAppStartup.value,
+                    onCheckedChange = null
                 )
             }
 
@@ -574,11 +569,10 @@ fun ServiceInnerPage(
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
                 }
 
-                Icon(
-                    modifier = Modifier.size(switcherIconSize),
-                    imageVector = UIHelper.getIconForSwitcher(launchOnSystemStartUp.value),
-                    contentDescription = if(launchOnSystemStartUp.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                    tint = UIHelper.getColorForSwitcher(launchOnSystemStartUp.value),
+
+                Switch(
+                    checked = launchOnSystemStartUp.value,
+                    onCheckedChange = null
                 )
             }
 
@@ -598,11 +592,10 @@ fun ServiceInnerPage(
 //                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
                 }
 
-                Icon(
-                    modifier = Modifier.size(switcherIconSize),
-                    imageVector = UIHelper.getIconForSwitcher(progressNotify.value),
-                    contentDescription = if(progressNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                    tint = UIHelper.getColorForSwitcher(progressNotify.value),
+
+                Switch(
+                    checked = progressNotify.value,
+                    onCheckedChange = null
                 )
             }
 

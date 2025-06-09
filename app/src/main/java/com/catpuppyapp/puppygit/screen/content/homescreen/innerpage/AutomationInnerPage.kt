@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -24,6 +23,7 @@ import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -433,11 +433,9 @@ fun AutomationInnerPage(
                     //此值有可能为null，所以用等于true来判断是否真为true
                     val isRunning = runningStatus == true;
 
-                    Icon(
-                        modifier = Modifier.size(switcherIconSize),
-                        imageVector = UIHelper.getIconForSwitcher(isRunning),
-                        contentDescription = UIHelper.getTextForSwitcher(activityContext, runningStatus),
-                        tint = UIHelper.getColorForSwitcher(isRunning),
+                    Switch(
+                        checked = isRunning,
+                        onCheckedChange = null
                     )
                 }
             }
@@ -456,11 +454,9 @@ fun AutomationInnerPage(
                         Text(stringResource(R.string.progress_notification), fontSize = itemFontSize)
                     }
 
-                    Icon(
-                        modifier = Modifier.size(switcherIconSize),
-                        imageVector = UIHelper.getIconForSwitcher(progressNotify.value),
-                        contentDescription = if(progressNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                        tint = UIHelper.getColorForSwitcher(progressNotify.value),
+                    Switch(
+                        checked = progressNotify.value,
+                        onCheckedChange = null
                     )
                 }
 
