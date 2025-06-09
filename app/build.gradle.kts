@@ -131,7 +131,7 @@ dependencies {
     // start: temporary markdown dependencies, remove when 'compose-markdown' support custom coilStore(for load image from relative path)
     val markwonVersion = "4.6.2"
     val coilVersion = "2.6.0"
-    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("io.noties.markwon:core:$markwonVersion")
     implementation("io.noties.markwon:ext-strikethrough:$markwonVersion")
     implementation("io.noties.markwon:ext-tables:$markwonVersion")
@@ -174,8 +174,8 @@ dependencies {
 //    // implementation("androidx.ads:ads-identifier:1.0.0-alpha05")
 
 
-    implementation("androidx.documentfile:documentfile:1.0.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation("androidx.documentfile:documentfile:1.1.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.1")
     //implementation("androidx.appcompat:appcompat-resources:1.6.1")
     //    val work_version = "2.9.0"
 //    // Kotlin + coroutines
@@ -217,7 +217,7 @@ dependencies {
 // 不过不知道里面的类是否能直接用？比如我想用clone命令，可不可以直接调用这里的Clone类？
 //    implementation("org.eclipse.jgit:org.eclipse.jgit.pgm:6.8.0.202311291450-r")
 //    implementation(files("libs/git24j-1.0.4.20241114.jar"))
-    implementation("androidx.navigation:navigation-compose:2.8.9")
+    implementation("androidx.navigation:navigation-compose:2.9.0")
 
     //查询支付状态的api，如果前端取消订单后不久就过期，就不需要这个了，否则需要
 //    implementation("com.google.auth:google-auth-library-oauth2-http:1.23.0")
@@ -237,11 +237,11 @@ dependencies {
 
 
     //对应组件的实际版本号，参见：https://developer.android.com/develop/ui/compose/bom/bom-mapping
-    val composeBom = platform("androidx.compose:compose-bom:2025.04.00")
+    val composeBom = platform("androidx.compose:compose-bom:2025.06.00")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     implementation("androidx.core:core-ktx:1.16.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.1")
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
