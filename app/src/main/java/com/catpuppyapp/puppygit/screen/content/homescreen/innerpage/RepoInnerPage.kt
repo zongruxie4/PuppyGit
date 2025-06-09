@@ -363,9 +363,9 @@ fun RepoInnerPage(
 
 
 
-    val showSetCurRepoGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf( false)}
-    val curRepoUsername = rememberSaveable { mutableStateOf("")}
-    val curRepoEmail = rememberSaveable { mutableStateOf( "")}
+    val showSetCurRepoGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
+    val curRepoUsername = rememberSaveable { mutableStateOf("") }
+    val curRepoEmail = rememberSaveable { mutableStateOf("") }
 
     //这个不是显示global的，是针对单或多个仓库的
     val showSetUserInfoDialog = showSetUserInfoDialog@{repos:List<RepoEntity> ->
