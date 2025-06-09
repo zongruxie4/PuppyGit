@@ -30,6 +30,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ExpectConflictStrDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -44,25 +45,25 @@ object UIHelper {
 
     object Size {
         @Composable
-        fun height(configuration:Configuration = LocalConfiguration.current): Int {
+        fun height(configuration:Configuration = SharedState.getCurrentConfigure()): Int {
             return configuration.screenHeightDp
         }
         @Composable
-        fun width(configuration:Configuration = LocalConfiguration.current): Int {
+        fun width(configuration:Configuration = SharedState.getCurrentConfigure()): Int {
             return configuration.screenWidthDp
         }
         @Composable
-        fun heightDp(configuration:Configuration = LocalConfiguration.current): Dp {
+        fun heightDp(configuration:Configuration = SharedState.getCurrentConfigure()): Dp {
             return height(configuration).dp
         }
         @Composable
-        fun widthDp(configuration:Configuration = LocalConfiguration.current):Dp {
+        fun widthDp(configuration:Configuration = SharedState.getCurrentConfigure()):Dp {
             return width(configuration).dp
         }
 
         //编辑器的虚拟空间，用来把最后一行顶上去的，返回一个Pair，值1是宽，值2是高
         @Composable
-        fun editorVirtualSpace(configuration:Configuration = LocalConfiguration.current):Pair<Dp, Dp> {
+        fun editorVirtualSpace(configuration:Configuration = SharedState.getCurrentConfigure()):Pair<Dp, Dp> {
             //注：高度如果减的值太小，TopBar固定时，内容会被TopBar盖住，经我测试减100无论隐藏还是显示TopBar都能正常显示内容
             return Pair(widthDp(configuration), (height(configuration)-100).dp)
         }
@@ -381,7 +382,7 @@ object UIHelper {
 
 
     @Composable
-    fun getDeviceWidthHeightInDp(configuration: Configuration = LocalConfiguration.current): DeviceWidthHeight {
+    fun getDeviceWidthHeightInDp(configuration: Configuration = SharedState.getCurrentConfigure()): DeviceWidthHeight {
         return DeviceWidthHeight(configuration.screenWidthDp.toFloat(), configuration.screenHeightDp.toFloat())
     }
 
@@ -471,7 +472,7 @@ object UIHelper {
      * 检测是横屏还是竖屏：返回 true 则竖屏，false横屏，不一定准，有可能是 ORIENTATION_UNDEFINED，不过一般都准
      */
     @Composable
-    fun isPortrait(configuration: Configuration = LocalConfiguration.current):Boolean {
+    fun isPortrait(configuration: Configuration = SharedState.getCurrentConfigure()):Boolean {
         return configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     }
 

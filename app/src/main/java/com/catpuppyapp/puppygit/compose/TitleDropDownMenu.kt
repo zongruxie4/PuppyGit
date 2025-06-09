@@ -19,11 +19,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
 @Composable
@@ -112,7 +111,7 @@ fun <T> TitleDropDownMenu(
 ) {
     val haptic = LocalHapticFeedback.current
     //最多占屏幕宽度一半
-    val itemWidth = (LocalConfiguration.current.screenWidthDp / 2).dp
+    val itemWidth = (SharedState.getCurrentConfigure().screenWidthDp / 2).dp
 
     val iconWidth = 30.dp
     val textWidth = if(showExpandIcon) itemWidth - iconWidth else itemWidth

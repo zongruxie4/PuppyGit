@@ -64,7 +64,7 @@ object AppModel {
      */
     var masterPassword:MutableState<String> = mutableStateOf("")
 
-    //废弃，改在compose里用 `LocalConfiguration.current` 获取当前配置再获取屏幕宽高，那样获取的是响应式的 （参考案例：仓库页面，旋转屏幕后会根据屏幕宽度重新计算每行条目数）
+    //废弃，改在compose里用 `SharedState.getCurrentConfigure()` 获取当前配置再获取屏幕宽高，那样获取的是响应式的 （参考案例：仓库页面，旋转屏幕后会根据屏幕宽度重新计算每行条目数）
 //    lateinit var deviceWidthHeight: DeviceWidthHeight
 
     /**

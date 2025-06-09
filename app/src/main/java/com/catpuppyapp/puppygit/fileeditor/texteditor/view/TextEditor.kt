@@ -70,6 +70,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.FilePath
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -183,7 +184,7 @@ fun TextEditor(
     val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
     val density = LocalDensity.current
-    val deviceConfiguration = LocalConfiguration.current
+    val deviceConfiguration = SharedState.getCurrentConfigure()
 
     val conflictOursBlockBgColor = UIHelper.getConflictOursBlockBgColor()
     val conflictTheirsBlockBgColor = UIHelper.getConflictTheirsBlockBgColor()
