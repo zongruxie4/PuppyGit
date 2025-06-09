@@ -1,6 +1,9 @@
 package com.catpuppyapp.puppygit.screen.shared
 
+import android.content.res.Configuration
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalConfiguration
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
@@ -36,4 +39,12 @@ object SharedState {
 
 
     val editor_softKeyboardIsVisible = Box(false)
+
+    val currentConfigure = mutableStateOf<Configuration?>(null)
+
+    @Composable
+    fun getCurrentConfigure(): Configuration {
+        return currentConfigure.value ?: LocalConfiguration.current
+    }
+
 }

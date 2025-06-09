@@ -198,7 +198,7 @@ fun RepoInnerPage(
 
     // 这两个变量不用 rememberSaveable，如果设备配置改变，就希望这两个值重新计算
     val itemWidth = remember { UIHelper.getRepoItemWidth() }
-    val configuration = LocalConfiguration.current
+    val configuration = SharedState.getCurrentConfigure()
     val repoCountEachRow = remember(configuration.screenWidthDp) { UIHelper.getRepoItemsCountEachRow(configuration.screenWidthDp.toFloat()) }
 
 
