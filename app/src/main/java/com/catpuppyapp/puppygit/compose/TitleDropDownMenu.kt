@@ -17,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -113,10 +114,10 @@ fun <T> TitleDropDownMenu(
     val configuration = AppModel.getCurActivityConfig()
 
     //最多占屏幕宽度一半
-    val itemWidth = (configuration.screenWidthDp / 2).dp
+    val itemWidth = remember(configuration.screenWidthDp) { (configuration.screenWidthDp / 2).dp }
 
-    val iconWidth = 30.dp
-    val textWidth = if(showExpandIcon) itemWidth - iconWidth else itemWidth
+    val iconWidth = remember { 30.dp }
+    val textWidth = remember (showExpandIcon, itemWidth, iconWidth) { if(showExpandIcon) itemWidth - iconWidth else itemWidth }
 
     Box(
         modifier = Modifier
