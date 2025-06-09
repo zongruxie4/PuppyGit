@@ -7,6 +7,7 @@
 - support fetch remotes at Branches screen
 - update depend libs (libgit2 to 1.9.1, openssl to 3.5.0)
 - Diff: optimize default match strategy
+- limit file names length of commit msg template
 
 
 
@@ -15,6 +16,7 @@
 - 支持在分支页面下载远程仓库
 - 更新依赖库 (libgit2 to 1.9.1, openssl to 3.5.0)
 - Diff: 优化默认匹配策略
+- 限制模板提交信息的文件名字数
 
 
 ---
