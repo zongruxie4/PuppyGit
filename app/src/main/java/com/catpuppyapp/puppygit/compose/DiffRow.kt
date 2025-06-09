@@ -628,8 +628,16 @@ fun DiffRow (
                             filePath = fileFullPath,
                             mergeMode = false,
                             readOnly = false,
-                            //if jump line is EOF, should go to last line of file, but didn't know the line num, so set line num to a enough big number
-                            goToLine = if(lineNum == LineNum.EOF.TEXT) LineNum.EOF.LINE_NUM else line.lineNum
+
+                            //if jump line is EOF, should go to last line of file
+                            goToLine = if(lineNum == LineNum.EOF.TEXT) {
+                                LineNum.EOF.LINE_NUM
+                            } else {
+                                // is line number not line index, ensure at least is 1
+                                // -3 is a offset, propose to make the line not very top for view
+                                (line.lineNum - 5).coerceAtLeast(1)
+//                                line.lineNum
+                            }
                         )
                     }
 

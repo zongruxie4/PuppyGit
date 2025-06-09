@@ -869,7 +869,13 @@ fun TextEditor(
                 UIHelper.scrollToItem(
                     coroutineScope = scope,
                     listState = listState,
-                    index = if(useLastEditPos) lastEditedPos.firstVisibleLineIndex else if(goToLine==LineNum.EOF.LINE_NUM) textEditorState.fields.size-1 else goToLine-1
+                    index = if(useLastEditPos) {
+                        lastEditedPos.firstVisibleLineIndex
+                    } else if(goToLine == LineNum.EOF.LINE_NUM) {
+                        textEditorState.fields.size - 1
+                    } else {
+                        goToLine - 1
+                    }
                 )
 
                 //如果定位到上次退出位置，进一步检查是否需要定位到最后编辑列
