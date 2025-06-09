@@ -91,6 +91,7 @@ import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
+import com.catpuppyapp.puppygit.compose.SingleLineCardButton
 import com.catpuppyapp.puppygit.compose.SingleSelection
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -2097,7 +2098,7 @@ fun FilesInnerPage(
                     Spacer(Modifier.height(20.dp))
 
                     //正在运行，点击可取消；未运行，点击则执行比较
-                    CardButton(text = if(cancellableActRunning.value) "Cancel!" else "Diff!", enabled = true) {
+                    SingleLineCardButton(text = if(cancellableActRunning.value) "Cancel!" else "Diff!", enabled = true) {
                         if(cancellableActRunning.value) {  //正在运行，点击则取消
                             cancelAct()
                         }else {  //未运行则点击执行比较
@@ -2134,7 +2135,7 @@ fun FilesInnerPage(
                                     )
 
                                     val spentTime = (System.currentTimeMillis() - startAt) / 1000  // 转换 毫秒 为 秒
-                                    safDiffResultStr.value = "spent time: $spentTime second(s)\n\n------------\n\n $result"
+                                    safDiffResultStr.value = "spent time: $spentTime second(s)\n\n------------\n\n$result"
 
                                     Msg.requireShow(activityContext.getString(R.string.done))
                                 }catch (cancelled: CancellationException){
@@ -2162,11 +2163,12 @@ fun FilesInnerPage(
                         Spacer(Modifier.height(20.dp))
 
                         MySelectionContainer {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text(safDiffResultStr.value)
-                            }
+                            CardButton(
+                                maxHeight = 500,
+                                content = {
+                                    Text(safDiffResultStr.value)
+                                }
+                            ) {}
                         }
                     }
 

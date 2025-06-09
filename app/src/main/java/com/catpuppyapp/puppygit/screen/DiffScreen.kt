@@ -58,7 +58,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BarContainer
-import com.catpuppyapp.puppygit.compose.CardButton
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
@@ -76,6 +75,7 @@ import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ReadOnlyIcon
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
+import com.catpuppyapp.puppygit.compose.SingleLineCardButton
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -2668,7 +2668,7 @@ private fun NaviButton(
 
         // show restore for file history
         if(isFileHistoryTreeToLocalOrTree) {
-            CardButton(
+            SingleLineCardButton(
                 text = stringResource(R.string.restore),
                 enabled = true
             ) {
@@ -2711,7 +2711,7 @@ private fun NaviButton(
 
             // if is index to work tree, show stage button
             if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-                CardButton(
+                SingleLineCardButton(
                     text = stringResource(R.string.stage),
                     enabled = true
                 ) onClick@{
@@ -2732,7 +2732,7 @@ private fun NaviButton(
                 Spacer(Modifier.height(20.dp))
 
                 // show revert for worktreeToIndex
-                CardButton(
+                SingleLineCardButton(
                     text = stringResource(R.string.revert),
                     enabled = true
                 ) onClick@{
@@ -2754,7 +2754,7 @@ private fun NaviButton(
 
                 Spacer(Modifier.height(20.dp))
             }else if(fromTo == Cons.gitDiffFromHeadToIndex) {  // show unstage for indexToHead
-                CardButton(
+                SingleLineCardButton(
                     text = stringResource(R.string.unstage),
                     enabled = true
                 ) onClick@{
@@ -2786,7 +2786,7 @@ private fun NaviButton(
                 }
 
 
-                CardButton(
+                SingleLineCardButton(
                     text = stringResource(R.string.commit),
                     enabled = true
                 ) {
@@ -2820,7 +2820,7 @@ private fun NaviButton(
                 }
 
                 //切换上个下个条目按钮
-                CardButton(
+                SingleLineCardButton(
                     text = replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
                         getItemTextByIdx(previousIndex)
                     } else noneText)),
@@ -2844,7 +2844,7 @@ private fun NaviButton(
 
                 Spacer(Modifier.height(10.dp))
 
-                CardButton(
+                SingleLineCardButton(
                     text = replaceStringResList(stringResource(R.string.next_filename), listOf(if(hasNext) {
                         getItemTextByIdx(nextIndex)
                     } else noneText)),

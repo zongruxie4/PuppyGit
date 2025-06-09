@@ -28,9 +28,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AppIcon
-import com.catpuppyapp.puppygit.compose.CardButton
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.SingleLineCardButton
 import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.reportBugsLink
@@ -144,7 +144,7 @@ private fun MainCompose(activity: Activity, appContext: Context, errMsg: String,
             Spacer(Modifier.height(spacerHeight))
 
 
-            CardButton(
+            SingleLineCardButton(
                 text = stringResource(R.string.copy)
             ) {
                 clipboardManager.setText(AnnotatedString(errMsg))
@@ -153,7 +153,7 @@ private fun MainCompose(activity: Activity, appContext: Context, errMsg: String,
 
             Spacer(Modifier.height(spacerHeight))
 
-            CardButton(
+            SingleLineCardButton(
                 text = stringResource(R.string.report_bugs)
             ) {
                 ActivityUtil.openUrl(activityContext, reportBugsLink)
@@ -161,7 +161,7 @@ private fun MainCompose(activity: Activity, appContext: Context, errMsg: String,
 
             Spacer(Modifier.height(spacerHeight))
 
-            CardButton(
+            SingleLineCardButton(
                 text = stringResource(R.string.restart_app)
             ) {
                 //启动App主Activity
@@ -174,7 +174,7 @@ private fun MainCompose(activity: Activity, appContext: Context, errMsg: String,
 
             Spacer(Modifier.height(spacerHeight))
 
-            CardButton(
+            SingleLineCardButton(
                 text = stringResource(R.string.exit)
             ) {
                 exit()
