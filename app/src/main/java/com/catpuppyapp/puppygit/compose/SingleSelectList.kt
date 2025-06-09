@@ -179,9 +179,9 @@ fun<T> SingleSelectList(
 
                     }
 
-                    if(index != lastIndex) {
-                        HorizontalDivider()
-                    }
+//                    if(index != lastIndex) {
+//                        HorizontalDivider()
+//                    }
                 }
 
             }
