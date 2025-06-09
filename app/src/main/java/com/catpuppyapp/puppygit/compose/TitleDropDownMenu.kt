@@ -110,8 +110,10 @@ fun <T> TitleDropDownMenu(
     showExpandIcon: Boolean = true,
 ) {
     val haptic = LocalHapticFeedback.current
+    val configuration = AppModel.getCurActivityConfig()
+
     //最多占屏幕宽度一半
-    val itemWidth = (AppModel.getCurrentConfigure().screenWidthDp / 2).dp
+    val itemWidth = (configuration.screenWidthDp / 2).dp
 
     val iconWidth = 30.dp
     val textWidth = if(showExpandIcon) itemWidth - iconWidth else itemWidth

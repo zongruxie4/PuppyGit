@@ -182,7 +182,7 @@ fun TextEditor(
     val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
     val density = LocalDensity.current
-    val deviceConfiguration = AppModel.getCurrentConfigure()
+    val deviceConfiguration = AppModel.getCurActivityConfig()
 
     val conflictOursBlockBgColor = UIHelper.getConflictOursBlockBgColor()
     val conflictTheirsBlockBgColor = UIHelper.getConflictTheirsBlockBgColor()

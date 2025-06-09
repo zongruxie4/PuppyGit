@@ -152,7 +152,7 @@ fun FileEditor(
     val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
-    val deviceConfiguration = AppModel.getCurrentConfigure()
+    val deviceConfiguration = AppModel.getCurActivityConfig()
 
     val scope = rememberCoroutineScope()
 

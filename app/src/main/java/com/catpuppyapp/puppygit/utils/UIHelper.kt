@@ -43,25 +43,25 @@ object UIHelper {
 
     object Size {
         @Composable
-        fun height(configuration:Configuration = AppModel.getCurrentConfigure()): Int {
+        fun height(configuration:Configuration = AppModel.getCurActivityConfig()): Int {
             return configuration.screenHeightDp
         }
         @Composable
-        fun width(configuration:Configuration = AppModel.getCurrentConfigure()): Int {
+        fun width(configuration:Configuration = AppModel.getCurActivityConfig()): Int {
             return configuration.screenWidthDp
         }
         @Composable
-        fun heightDp(configuration:Configuration = AppModel.getCurrentConfigure()): Dp {
+        fun heightDp(configuration:Configuration = AppModel.getCurActivityConfig()): Dp {
             return height(configuration).dp
         }
         @Composable
-        fun widthDp(configuration:Configuration = AppModel.getCurrentConfigure()):Dp {
+        fun widthDp(configuration:Configuration = AppModel.getCurActivityConfig()):Dp {
             return width(configuration).dp
         }
 
         //编辑器的虚拟空间，用来把最后一行顶上去的，返回一个Pair，值1是宽，值2是高
         @Composable
-        fun editorVirtualSpace(configuration:Configuration = AppModel.getCurrentConfigure()):Pair<Dp, Dp> {
+        fun editorVirtualSpace(configuration:Configuration = AppModel.getCurActivityConfig()):Pair<Dp, Dp> {
             //注：高度如果减的值太小，TopBar固定时，内容会被TopBar盖住，经我测试减100无论隐藏还是显示TopBar都能正常显示内容
             return Pair(widthDp(configuration), (height(configuration)-100).dp)
         }
@@ -380,7 +380,7 @@ object UIHelper {
 
 
     @Composable
-    fun getDeviceWidthHeightInDp(configuration: Configuration = AppModel.getCurrentConfigure()): DeviceWidthHeight {
+    fun getDeviceWidthHeightInDp(configuration: Configuration = AppModel.getCurActivityConfig()): DeviceWidthHeight {
         return DeviceWidthHeight(configuration.screenWidthDp.toFloat(), configuration.screenHeightDp.toFloat())
     }
 
@@ -470,7 +470,7 @@ object UIHelper {
      * 检测是横屏还是竖屏：返回 true 则竖屏，false横屏，不一定准，有可能是 ORIENTATION_UNDEFINED，不过一般都准
      */
     @Composable
-    fun isPortrait(configuration: Configuration = AppModel.getCurrentConfigure()):Boolean {
+    fun isPortrait(configuration: Configuration = AppModel.getCurActivityConfig()):Boolean {
         return configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     }
 

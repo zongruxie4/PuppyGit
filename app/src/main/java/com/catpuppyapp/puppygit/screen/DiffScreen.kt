@@ -174,7 +174,7 @@ fun DiffScreen(
     val dbContainer = AppModel.dbContainer
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 
-    val configuration = AppModel.getCurrentConfigure()
+    val configuration = AppModel.getCurActivityConfig()
     val density = LocalDensity.current
     val activityContext = LocalContext.current
     val navController = AppModel.navController

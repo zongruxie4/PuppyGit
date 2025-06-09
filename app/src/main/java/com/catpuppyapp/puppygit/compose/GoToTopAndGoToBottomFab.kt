@@ -99,7 +99,7 @@ private fun GoToTopAndGoToBottomFab_Internal(
     scrollToBottomForFilterState:()->Unit,
     hideButton:()->Unit,
 ) {
-    val configuration = AppModel.getCurrentConfigure()
+    val configuration = AppModel.getCurActivityConfig()
 
     Column(modifier = MyStyleKt.Fab.getFabModifier(UIHelper.isPortrait(configuration), UIHelper.getDeviceWidthHeightInDp(configuration))) {
         //show go to top

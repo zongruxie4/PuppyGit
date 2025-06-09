@@ -995,15 +995,15 @@ object AppModel {
 
 
     // start: device configuration (include width/height, and rotate screen or do other actions will update it)
-    private val currentConfigure = mutableStateOf<Configuration?>(null)
+    private val currentConfiguration = mutableStateOf<Configuration?>(null)
 
     @Composable
-    fun getCurrentConfigure(): Configuration {
-        return currentConfigure.value ?: LocalConfiguration.current
+    fun getCurActivityConfig(): Configuration {
+        return currentConfiguration.value ?: LocalConfiguration.current
     }
 
     fun handleActivityConfigurationChanged(newConfig: Configuration) {
-        currentConfigure.value = newConfig
+        currentConfiguration.value = newConfig
     }
 
     // end device configuration
