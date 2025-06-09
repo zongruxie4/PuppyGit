@@ -6,8 +6,10 @@
 - add Thanks list in About screen
 - support fetch remotes at Branches screen
 - update depend libs (libgit2 to 1.9.1, openssl to 3.5.0)
+- update UI libs
 - Diff: optimize default match strategy
 - limit file names length of commit msg template
+- improve UI (issue #66)
 
 
 
@@ -15,8 +17,10 @@
 - 关于页面添加感谢列表
 - 支持在分支页面下载远程仓库
 - 更新依赖库 (libgit2 to 1.9.1, openssl to 3.5.0)
+- 更新UI库
 - Diff: 优化默认匹配策略
 - 限制模板提交信息的文件名字数
+- 提升 UI (issue #66)
 
 
 ---
