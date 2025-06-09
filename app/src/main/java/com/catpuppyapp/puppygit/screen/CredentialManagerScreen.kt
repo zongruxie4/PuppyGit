@@ -17,11 +17,9 @@ import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -294,10 +292,7 @@ fun CredentialManagerScreen(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,  //标题栏背景色
-                    titleContentColor = MaterialTheme.colorScheme.primary,  //标题栏文字颜色
-                ),
+                colors = MyStyleKt.TopBar.getColors(),
                 title = {
                     if(filterModeOn.value) {
                         FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
