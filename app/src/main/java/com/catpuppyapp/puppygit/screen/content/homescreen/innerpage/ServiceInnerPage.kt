@@ -405,7 +405,7 @@ fun ServiceInnerPage(
     val itemFontSize = MyStyleKt.SettingsItem.itemFontSize
     val itemDescFontSize = MyStyleKt.SettingsItem.itemDescFontSize
     val switcherIconSize = MyStyleKt.SettingsItem.switcherIconSize
-    val selectorWidth = MyStyleKt.SettingsItem.selectorWidth
+//    val selectorWidth = MyStyleKt.SettingsItem.selectorWidth
 
     val itemLeftWidthForSwitcher = MyStyleKt.SettingsItem.itemLeftWidthForSwitcher
     val itemLeftWidthForSelector = MyStyleKt.SettingsItem.itemLeftWidthForSelector

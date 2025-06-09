@@ -277,7 +277,7 @@ object MyStyleKt{
         val itemFontSize = 20.sp
         val itemDescFontSize = 15.sp
         val switcherIconSize = 60.dp
-        val selectorWidth = MyStyleKt.DropDownMenu.minWidth.dp
+        val selectorWidth = 160.dp
 
         val itemLeftWidthForSwitcher = .8f
         val itemLeftWidthForSelector = .6f
@@ -333,9 +333,7 @@ object MyStyleKt{
     }
 
      object DropDownMenu {
-         // unit is dp, but for more flexibility
-         // 单位是dp，但为了灵活性，这里就不写dp了，只写数字
-         const val minWidth = 160
+         val minWidth = 60.dp
 
          @Composable
          fun selectedItemColor() = MaterialTheme.colorScheme.primary;

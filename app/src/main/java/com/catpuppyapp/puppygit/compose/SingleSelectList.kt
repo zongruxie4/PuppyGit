@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -121,8 +122,10 @@ fun<T> SingleSelectList(
 
 
         DropdownMenu(
-            //限制最小宽度153dp，不然有时候真的太小连“Verbose”都显示不全，不知道为什么
-            modifier = dropDownMenuModifier.width((containerSize.value.width/2).coerceAtLeast(MyStyleKt.DropDownMenu.minWidth).dp),
+            //I forgot whey limit the width, actually is unnecessary
+//            modifier = dropDownMenuModifier.width((containerSize.value.width/2).coerceAtLeast(MyStyleKt.DropDownMenu.minWidth).dp),
+            modifier = dropDownMenuModifier.widthIn(min = MyStyleKt.DropDownMenu.minWidth),
+//            modifier = dropDownMenuModifier,
 
             expanded = expandDropdownMenu.value,
             onDismissRequest = { expandDropdownMenu.value=false }
