@@ -11,6 +11,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
@@ -22,7 +23,7 @@ fun ForcePushWithLeaseCheckBox(
 ) {
 
     // push with lease
-    MyCheckBox(stringResource(R.string.with_lease), forcePush_pushWithLease)
+    MyCheckBox(StrCons.withLease, forcePush_pushWithLease)
 
     if(forcePush_pushWithLease.value) {
         TextField(
