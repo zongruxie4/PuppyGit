@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Publish
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -69,6 +68,7 @@ import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.InternalFileChooser
 import com.catpuppyapp.puppygit.compose.MyCheckBox
+import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PageCenterIconButton
@@ -1460,7 +1460,7 @@ fun RepoInnerPage(
                             }
                         }
 
-                        HorizontalDivider(Modifier.padding(top = 10.dp, bottom = 10.dp))
+                        MyHorizontalDivider(Modifier.padding(top = 10.dp, bottom = 10.dp))
 
                         Box(
                             modifier = Modifier.fillMaxWidth(),
@@ -1491,7 +1491,7 @@ fun RepoInnerPage(
                             }
                         }
 
-                        HorizontalDivider(Modifier.padding(top = 10.dp, bottom = 10.dp))
+                        MyHorizontalDivider(Modifier.padding(top = 10.dp, bottom = 10.dp))
 
                         Box(
                             modifier = Modifier.fillMaxWidth(),
@@ -1586,7 +1586,7 @@ fun RepoInnerPage(
                                 }
                             }
 
-                            HorizontalDivider()
+                            MyHorizontalDivider()
 
                             Box(
                                 modifier = Modifier.fillMaxWidth(),
@@ -1617,7 +1617,7 @@ fun RepoInnerPage(
                                 }
                             }
 
-                            HorizontalDivider()
+                            MyHorizontalDivider()
 
                             Box(
                                 modifier = Modifier.fillMaxWidth(),
@@ -1649,7 +1649,7 @@ fun RepoInnerPage(
                                 }
                             }
 
-                            HorizontalDivider()
+                            MyHorizontalDivider()
 
                             Spacer(Modifier.height(30.dp))
 

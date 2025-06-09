@@ -29,7 +29,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -66,6 +65,7 @@ import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.InternalFileChooser
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.compose.SingleSelection
@@ -829,7 +829,7 @@ fun CloneScreen(
             //递归克隆checkbox结束
 
 
-            HorizontalDivider(modifier = Modifier.padding(spacerPadding))
+            MyHorizontalDivider(modifier = Modifier.padding(spacerPadding))
             Spacer(Modifier.height(10.dp))
             // if empty, no credentials, no need show select credential option
             val credentialListIsEmpty = allCredentialList.value.isEmpty()

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AppIcon
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
+import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.SingleLineCardButton
 import com.catpuppyapp.puppygit.compose.SpacerRow
@@ -140,7 +140,7 @@ private fun MainCompose(activity: Activity, appContext: Context, errMsg: String,
                 Text(errMsg, color = MyStyleKt.TextColor.error(), modifier = Modifier.padding(errMsgZonePadding))
             }
 
-            HorizontalDivider()
+            MyHorizontalDivider()
             Spacer(Modifier.height(spacerHeight))
 
 

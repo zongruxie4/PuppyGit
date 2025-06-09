@@ -9,12 +9,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -33,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AppIcon
 import com.catpuppyapp.puppygit.compose.AppIconMonoChrome
 import com.catpuppyapp.puppygit.compose.ClickableText
+import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -305,7 +303,7 @@ fun AboutInnerPage(
             )
         }
 
-        HorizontalDivider(modifier = Modifier.padding(10.dp))
+        MyHorizontalDivider(modifier = Modifier.padding(10.dp))
 
         //开源项目列表
         TitleRow(stringResource(id = R.string.powered_by_open_source))
@@ -321,7 +319,7 @@ fun AboutInnerPage(
             )
         }
 
-        HorizontalDivider(modifier = Modifier.padding(10.dp))
+        MyHorizontalDivider(modifier = Modifier.padding(10.dp))
 
         //开源项目列表
         TitleRow("Thanks")

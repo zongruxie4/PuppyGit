@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.Dp
 fun MyHorizontalDivider(
     modifier: Modifier = Modifier,
     thickness: Dp = DividerDefaults.Thickness,
-    color: Color = DividerDefaults.color.copy(alpha = 0.5f),
+    color: Color = DividerDefaults.color.copy(alpha = 0.4f),
 ) {
     HorizontalDivider(
         modifier = modifier,

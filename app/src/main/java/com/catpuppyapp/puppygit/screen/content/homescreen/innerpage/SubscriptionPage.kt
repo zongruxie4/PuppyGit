@@ -116,7 +116,7 @@ fun SubscriptionPage(contentPadding: PaddingValues, needRefresh: MutableState<St
 //
 //        if(!isReleaseMode()) {
 //            Spacer(modifier = Modifier.height(30.dp))
-//            HorizontalDivider()
+//            MyHorizontalDivider()
 //            Spacer(modifier = Modifier.height(5.dp))
 //
 //            Row {

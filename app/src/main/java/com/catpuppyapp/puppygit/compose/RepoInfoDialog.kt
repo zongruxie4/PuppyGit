@@ -3,7 +3,6 @@ package com.catpuppyapp.puppygit.compose
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -116,13 +115,13 @@ fun CompareInfo(leftName:String, leftCommitDto: CommitDto, rightName:String, rig
 
     RepoInfoDialogItemSpacer()
 
-    HorizontalDivider()
+    MyHorizontalDivider()
 
     RepoInfoDialogItemSpacer()
     ShortCommitInfo(stringResource(R.string.left), leftName, leftCommitDto)
     RepoInfoDialogItemSpacer()
 
-    HorizontalDivider()
+    MyHorizontalDivider()
 
     RepoInfoDialogItemSpacer()
     ShortCommitInfo(stringResource(R.string.right), rightName, rightCommitDto)

@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -37,6 +36,7 @@ import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.InDialogTitle
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.RepoInfoDialogItemSpacer
 import com.catpuppyapp.puppygit.compose.TitleDropDownMenu
@@ -232,7 +232,7 @@ fun TreeToTreeChangeListScreen(
 
             RepoInfoDialogItemSpacer()
 
-            HorizontalDivider()
+            MyHorizontalDivider()
             RepoInfoDialogItemSpacer()
 
             //下面会显示仓库信息，这里弄个标题，看着和上面的样式比较搭

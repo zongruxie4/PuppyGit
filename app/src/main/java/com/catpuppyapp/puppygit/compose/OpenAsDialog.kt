@@ -118,7 +118,7 @@ fun OpenAsDialog(
 
 //                    Spacer(modifier = Modifier.height(10.dp))
                     //加这个分割线看着想标题，让人感觉不可点击，不好，所以去掉了
-//                    HorizontalDivider(color = color)
+//                    MyHorizontalDivider(color = color)
 
                 }
 

@@ -38,7 +38,6 @@ import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -85,6 +84,7 @@ import com.catpuppyapp.puppygit.compose.GrantManageStoragePermissionClickableTex
 import com.catpuppyapp.puppygit.compose.LoadingTextCancellable
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyCheckBox2
+import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
@@ -1273,7 +1273,7 @@ fun FilesInnerPage(
                     }
                     Spacer(Modifier.height(height))
 
-                    HorizontalDivider()
+                    MyHorizontalDivider()
                     Spacer(Modifier.height(height))
 
                     MyCheckBox(stringResource(R.string.only_for_this_folder), onlyForThisFolderStateBuf)
@@ -1689,7 +1689,7 @@ fun FilesInnerPage(
                             }
                         }
 
-                        HorizontalDivider()
+                        MyHorizontalDivider()
                     }
                 }
 

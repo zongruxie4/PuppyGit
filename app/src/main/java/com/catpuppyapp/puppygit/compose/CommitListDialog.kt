@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.selection.DisableSelection
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -36,7 +35,7 @@ fun CommitListDialog(
                             Text(firstLineText+"\n")
                         }
 
-                        HorizontalDivider()
+                        MyHorizontalDivider()
                         Text("\n${commitListLabel}: \n", fontWeight = FontWeight.ExtraBold)
 
                         LazyColumn(

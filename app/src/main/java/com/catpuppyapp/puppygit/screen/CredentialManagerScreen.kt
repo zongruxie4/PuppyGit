@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.Domain
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -44,6 +43,7 @@ import com.catpuppyapp.puppygit.compose.InfoDialog
 import com.catpuppyapp.puppygit.compose.LinkOrUnLinkCredentialAndRemoteDialog
 import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
@@ -518,7 +518,7 @@ fun CredentialManagerScreen(
                         }
                     }
 
-                    HorizontalDivider()
+                    MyHorizontalDivider()
 
                 }
             }

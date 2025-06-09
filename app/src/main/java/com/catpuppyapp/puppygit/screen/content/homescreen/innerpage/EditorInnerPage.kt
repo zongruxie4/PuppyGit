@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -52,6 +51,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
@@ -1259,7 +1259,7 @@ fun EditorInnerPage(
 
                             }
 
-                            HorizontalDivider()
+                            MyHorizontalDivider()
 
                             DropdownMenuItem(
                                 text = { Text(text = stringResource(R.string.clear), color = MyStyleKt.TextColor.danger()) },

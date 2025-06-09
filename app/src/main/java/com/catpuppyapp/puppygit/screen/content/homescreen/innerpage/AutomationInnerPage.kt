@@ -21,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -51,6 +50,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.ItemListIsEmpty
 import com.catpuppyapp.puppygit.compose.LoadingTextUnScrollable
+import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RepoNameAndIdItem
@@ -229,7 +229,7 @@ fun AutomationInnerPage(
 
                 }
 
-                HorizontalDivider()
+                MyHorizontalDivider()
             },
             unselectedItemFormatter = { clickedRepo ->
                 RepoNameAndIdItem(clickedRepo) {
@@ -265,7 +265,7 @@ fun AutomationInnerPage(
 
                 }
 
-                HorizontalDivider()
+                MyHorizontalDivider()
             },
             filterSelectedItemList = {keyword -> filterRepos(keyword, selectedRepoList.value)},
             filterUnselectedItemList = {keyword -> filterRepos(keyword, unselectedRepoList.value)},
@@ -659,7 +659,7 @@ fun AutomationInnerPage(
                                 },
                             )
 
-                            HorizontalDivider()
+                            MyHorizontalDivider()
                         }
 
                     }
@@ -709,7 +709,7 @@ fun AutomationInnerPage(
                                 },
                             )
 
-                            HorizontalDivider()
+                            MyHorizontalDivider()
                         }
                     }
                 }

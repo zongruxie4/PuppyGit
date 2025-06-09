@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -23,7 +22,7 @@ fun PrintNodesInfo(
     //用 "\n" 是为了复制时保持格式，不然一复制就变成一行了
     Text("$title\n", fontWeight = FontWeight.ExtraBold)
     nodes.forEachIndexed { idx, it->
-        HorizontalDivider(thickness = thickness, color = DrawCommitNode.getNodeColorByIndex(idx))
+        MyHorizontalDivider(thickness = thickness, color = DrawCommitNode.getNodeColorByIndex(idx))
         Spacer(Modifier.height(spacerHeight))
         Text(it.toStringForView())
     }
