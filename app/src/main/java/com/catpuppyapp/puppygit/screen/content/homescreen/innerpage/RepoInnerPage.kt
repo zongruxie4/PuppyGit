@@ -1920,7 +1920,7 @@ fun RepoInnerPage(
                             || getFormatTimeFromSec(it.lastUpdateTime).lowercase().contains(keyword)
                             || it.latestUncheckedErrMsg.lowercase().contains(keyword)
                             || it.tmpStatus.lowercase().contains(keyword)
-                            || it.createErrMsg.lowercase().contains(keyword)
+                            || it.createErrMsgForView(activityContext).lowercase().contains(keyword)
                             || it.getOther().lowercase().contains(keyword)
                             || it.getRepoStateStr(activityContext).lowercase().contains(keyword)
                 }

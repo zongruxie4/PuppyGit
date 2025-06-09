@@ -561,18 +561,27 @@ fun RepoCard(
 
                     Row(
 //                modifier = Modifier.height(min=lineHeight.dp),
-                        modifier = Modifier.fillMaxWidth(.9f).combinedClickable(onLongClick = {
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp)
+//                            .combinedClickable(onLongClick = {
 //                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            copyErrMsg(repoDto.createErrMsg)
-                        }) {  },
+//                            copyErrMsg(repoDto.createErrMsg)
+//                        }) {  }
+                        ,
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(
-                            text = stringResource(R.string.error)+": "+repoDto.createErrMsg,
-                            color= MyStyleKt.TextColor.error(),
-                            textAlign = TextAlign.Left,
-                        )
+                        MySelectionContainer {
+                            Text(
+                                text = repoDto.createErrMsgForView(activityContext),
+                                color= MyStyleKt.TextColor.error(),
+//                                textAlign = TextAlign.Left,
+
+                                // this empty clickable intent to prevent long pressing enable selection mode
+                                modifier = Modifier.combinedClickable {}
+                            )
+                        }
                     }
 
 //                    Spacer(Modifier.height(10.dp))

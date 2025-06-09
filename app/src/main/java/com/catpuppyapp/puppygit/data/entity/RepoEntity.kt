@@ -9,6 +9,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.entity.common.BaseFields
 import com.catpuppyapp.puppygit.etc.RepoPendingTask
+import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -221,5 +222,13 @@ data class RepoEntity(
 
     fun cachedLastUpdateTime():String {
         return lastUpdateTimeFormattedCached ?: getShortTimeIfPossible(lastUpdateTime).let { lastUpdateTimeFormattedCached = it; it }
+    }
+
+    fun createErrMsgForView(context: Context):String {
+        return if(createErrMsg.isEmpty()) {
+            ""
+        }else {
+            context.getString(R.string.error) + ": " + createErrMsg
+        }
     }
 }
