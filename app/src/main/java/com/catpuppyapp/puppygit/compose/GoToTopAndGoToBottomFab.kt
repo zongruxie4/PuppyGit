@@ -11,8 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.res.stringResource
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.UIHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -99,7 +99,7 @@ private fun GoToTopAndGoToBottomFab_Internal(
     scrollToBottomForFilterState:()->Unit,
     hideButton:()->Unit,
 ) {
-    val configuration = SharedState.getCurrentConfigure()
+    val configuration = AppModel.getCurrentConfigure()
 
     Column(modifier = MyStyleKt.Fab.getFabModifier(UIHelper.isPortrait(configuration), UIHelper.getDeviceWidthHeightInDp(configuration))) {
         //show go to top

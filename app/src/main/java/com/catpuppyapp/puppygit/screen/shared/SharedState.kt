@@ -40,11 +40,4 @@ object SharedState {
 
     val editor_softKeyboardIsVisible = Box(false)
 
-    val currentConfigure = mutableStateOf<Configuration?>(null)
-
-    @Composable
-    fun getCurrentConfigure(): Configuration {
-        return currentConfigure.value ?: LocalConfiguration.current
-    }
-
 }

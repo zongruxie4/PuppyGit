@@ -50,7 +50,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -175,7 +174,7 @@ fun DiffScreen(
     val dbContainer = AppModel.dbContainer
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 
-    val configuration = SharedState.getCurrentConfigure()
+    val configuration = AppModel.getCurrentConfigure()
     val density = LocalDensity.current
     val activityContext = LocalContext.current
     val navController = AppModel.navController

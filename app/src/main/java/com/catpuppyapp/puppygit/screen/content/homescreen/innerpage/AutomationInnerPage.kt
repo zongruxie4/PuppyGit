@@ -37,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -100,7 +99,7 @@ fun AutomationInnerPage(
     val activityContext = LocalContext.current
 //    val clipboardManager = LocalClipboardManager.current
 //    val haptic = LocalHapticFeedback.current
-    val configuration = SharedState.getCurrentConfigure()
+    val configuration = AppModel.getCurrentConfigure()
     val screenHeightDp = configuration.screenHeightDp.dp
 
     //两个作用：1离开页面，返回后重新显示导航按钮；2在设置页面开启、关闭导航按钮后使其立即生效（因为remember离开页面就会销毁，所以每次重进页面都会读取最新的settings值）。

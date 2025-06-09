@@ -47,7 +47,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -62,11 +61,11 @@ import com.catpuppyapp.puppygit.compose.AddRepoDropDownMenu
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialog
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomBar
-import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog2
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.InternalFileChooser
 import com.catpuppyapp.puppygit.compose.MyCheckBox
@@ -198,7 +197,7 @@ fun RepoInnerPage(
 
     // 这两个变量不用 rememberSaveable，如果设备配置改变，就希望这两个值重新计算
     val itemWidth = remember { UIHelper.getRepoItemWidth() }
-    val configuration = SharedState.getCurrentConfigure()
+    val configuration = AppModel.getCurrentConfigure()
     val repoCountEachRow = remember(configuration.screenWidthDp) { UIHelper.getRepoItemsCountEachRow(configuration.screenWidthDp.toFloat()) }
 
 

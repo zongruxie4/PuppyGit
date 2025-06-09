@@ -42,7 +42,6 @@ import com.catpuppyapp.puppygit.screen.RequireMasterPasswordScreen
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
 import com.catpuppyapp.puppygit.screen.shared.IntentHandler
 import com.catpuppyapp.puppygit.screen.shared.MainActivityLifeCycle
-import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.screen.shared.setByPredicate
 import com.catpuppyapp.puppygit.screen.shared.setMainActivityLifeCycle
 import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
@@ -235,7 +234,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        SharedState.currentConfigure.value = newConfig
+        AppModel.handleActivityConfigurationChanged(newConfig)
     }
 
 }

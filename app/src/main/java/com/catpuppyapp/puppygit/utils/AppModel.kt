@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.utils
 
 import android.content.Context
+import android.content.res.Configuration
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -9,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.navigation.NavHostController
@@ -990,4 +992,19 @@ object AppModel {
         reloadTimeZone(AppSettings())
         AppModel.init_3()
     }
+
+
+    // start: device configuration (include width/height, and rotate screen or do other actions will update it)
+    private val currentConfigure = mutableStateOf<Configuration?>(null)
+
+    @Composable
+    fun getCurrentConfigure(): Configuration {
+        return currentConfigure.value ?: LocalConfiguration.current
+    }
+
+    fun handleActivityConfigurationChanged(newConfig: Configuration) {
+        currentConfigure.value = newConfig
+    }
+
+    // end device configuration
 }
