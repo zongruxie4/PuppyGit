@@ -69,6 +69,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.MySelectionContainerPlaceHolder
 import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
@@ -1304,7 +1305,7 @@ fun DiffScreen(
             contentPadding = contentPadding,
             onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
         ) {
-            MySelectionContainer {
+            MySelectionContainerPlaceHolder {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = contentPadding,

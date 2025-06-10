@@ -1,10 +1,13 @@
 package com.catpuppyapp.puppygit.compose
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -29,5 +32,34 @@ fun MySelectionContainer(
             }
         }
 
+    }
+}
+
+/**
+ * cause `SelectionContainer` may cause UI crashed in some version of jetpack compose,
+ * so, use this as a mark to tell me, in that place was has a selection container, and maybe will re-enable it in future
+ */
+@Composable
+fun MySelectionContainerPlaceHolder(
+    content: @Composable () -> Unit
+) {
+    content()
+}
+
+@Composable
+fun SelectionRow(
+    modifier: Modifier,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    verticalAlignment: Alignment.Vertical = Alignment.Top,
+    content: @Composable () -> Unit
+) {
+    MySelectionContainer {
+        Row(
+            modifier = modifier,
+            horizontalArrangement = horizontalArrangement,
+            verticalAlignment = verticalAlignment,
+        ) {
+            content()
+        }
     }
 }

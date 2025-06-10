@@ -580,7 +580,7 @@ fun DiffRow (
 
 
 
-    Row(
+    SelectionRow (
         modifier = (
                 if (lineClickable) {
                     Modifier.clickable { expandedMenu.value = true }
