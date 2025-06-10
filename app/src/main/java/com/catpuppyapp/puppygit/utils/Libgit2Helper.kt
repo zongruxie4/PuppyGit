@@ -1734,8 +1734,10 @@ object Libgit2Helper {
 
                     if(it == Line.OriginType.ADDITION) {
                         diffItem.addedLines++
+                        hunkAndLines.addedLinesCount++
                     }else if(it == Line.OriginType.DELETION) {
                         diffItem.deletedLines++
+                        hunkAndLines.deletedLinesCount++
                     }else if(it == Line.OriginType.ADD_EOFNL || it == Line.OriginType.DEL_EOFNL || it == Line.OriginType.CONTEXT_EOFNL) {
                         diffItem.hasEofLine = true
                     }

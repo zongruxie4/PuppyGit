@@ -213,7 +213,7 @@ class PuppyHunkAndLines {
         //  so, only added line need handle, when find the compare target (related deleted line), update the deleted line as well
         // 删除行和添加行都不需要找比较目标，仅添加行需要找，找到后把对应的删除行也关联上
         if(changeType == Cons.gitStatusModified && deletedLinesCount > 0 && puppyLine.originType == PuppyLineOriginType.ADDITION) {
-            var maxMatchedLineKey = ""
+            var maxMatchedLine: PuppyLine? = null
             var roughMatchCnt = 0
 
             for(line in lines) {
@@ -223,29 +223,27 @@ class PuppyHunkAndLines {
                     // these two strings matched more chars than the old two lines,
                     //  so, unlink old lines and link new lines
                     if(roughMatchCnt > line.roughlyMatchedCount) {
-                        maxMatchedLineKey = line.key
+                        maxMatchedLine = line
                     }
                 }
             }
 
-            if(maxMatchedLineKey.isNotBlank()) {
-                keyAndLineMap.get(maxMatchedLineKey)?.let { line ->
-                    // unlink old lines
-                    val oldCompareTargetLineKey = line.compareTargetLineKey
-                    if(oldCompareTargetLineKey.isNotBlank()) {
-                        keyAndLineMap.get(oldCompareTargetLineKey)?.let {
-                            it.compareTargetLineKey = ""
-                            it.roughlyMatchedCount = 0
-                        }
+            // unlink old and line new lines
+            maxMatchedLine?.let { line ->
+                // unlink old lines
+                val oldCompareTargetLineKey = line.compareTargetLineKey
+                if(oldCompareTargetLineKey.isNotBlank()) {
+                    keyAndLineMap.get(oldCompareTargetLineKey)?.let {
+                        it.compareTargetLineKey = ""
+                        it.roughlyMatchedCount = 0
                     }
-
-                    // link new lines
-                    line.compareTargetLineKey = puppyLine.key
-                    puppyLine.compareTargetLineKey = line.key
-                    line.roughlyMatchedCount = roughMatchCnt
-                    puppyLine.roughlyMatchedCount = roughMatchCnt
                 }
 
+                // link new lines
+                line.compareTargetLineKey = puppyLine.key
+                puppyLine.compareTargetLineKey = line.key
+                line.roughlyMatchedCount = roughMatchCnt
+                puppyLine.roughlyMatchedCount = roughMatchCnt
             }
         }
 
