@@ -1,9 +1,11 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Merge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
@@ -13,11 +15,16 @@ import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
+import com.catpuppyapp.puppygit.compose.SmallIcon
 import com.catpuppyapp.puppygit.compose.TitleDropDownMenu
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -94,7 +101,8 @@ fun ChangeListTitle(
 
     val getTitleColor={
             if(enableAction) {
-                UIHelper.getChangeListTitleColor(repoState.intValue)
+//                UIHelper.getChangeListTitleColor(repoState.intValue)
+                Color.Unspecified
             } else {
                 UIHelper.getDisableBtnColor(inDarkTheme)
             }
@@ -114,15 +122,40 @@ fun ChangeListTitle(
             titleClickEnabled = enableAction,
             switchDropDownMenuShowHide = switchDropDownMenu,
             titleFirstLine = {
-                Text(
-                    text = changeListCurRepo.value.repoName,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    repoState.intValue.let {
+                        if(it == Repository.StateT.MERGE.bit) {
+                            SmallIcon(
+                                imageVector = Icons.Filled.Merge,
+                                contentDescription = stringResource(R.string.merge)
+                            )
+                        }else if(it == Repository.StateT.REBASE_MERGE.bit) {
+                            SmallIcon(
+                                imageVector = ImageVector.vectorResource(R.drawable.git_rebase),
+                                contentDescription = stringResource(R.string.rebase)
+                            )
+                        }else if(it == Repository.StateT.CHERRYPICK.bit) {
+                            SmallIcon(
+                                imageVector = ImageVector.vectorResource(R.drawable.outline_nutrition_24),
+                                contentDescription = stringResource(R.string.cherrypick)
+                            )
+                        }
+                    }
+
+
+                    Text(
+                        text = changeListCurRepo.value.repoName,
 //                    style=MyStyleKt.clickableText.style,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontSize = MyStyleKt.Title.firstLineFontSize,
-                    //如果是在合并（或者有冲突），仓库名变成红色，否则变成默认颜色
-                    color = getTitleColor()
-                )
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = MyStyleKt.Title.firstLineFontSize,
+                        //如果是在合并（或者有冲突），仓库名变成红色，否则变成默认颜色
+                        color = getTitleColor()
+                    )
+                }
             },
             titleSecondLine = {
                 Text(
