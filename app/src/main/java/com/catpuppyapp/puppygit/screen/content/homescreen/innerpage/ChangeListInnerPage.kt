@@ -3439,6 +3439,7 @@ fun ChangeListInnerPage(
                         val moreItemTextList = (if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
                             stringResource(R.string.accept_ours),
                             stringResource(R.string.accept_theirs),
+                            UIHelper.bottomBarDividerPlaceHolder,
                             stringResource(R.string.stage),
                             stringResource(R.string.revert),
                             stringResource(R.string.create_patch),

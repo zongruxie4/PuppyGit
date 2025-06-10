@@ -41,6 +41,9 @@ private const val TAG = "UIHelper"
 
 object UIHelper {
 
+    // if this in the text list of bottom bar, will show a divider
+    const val bottomBarDividerPlaceHolder = "bottomBarDividerPlaceHolder_13195755"
+
     object Size {
         @Composable
         fun height(configuration:Configuration = AppModel.getCurActivityConfig()): Int {

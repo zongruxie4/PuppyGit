@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.utils.UIHelper
+
 
 @Composable
 fun BottomBar(
@@ -206,7 +208,17 @@ fun BottomBar(
                             expanded = dropDownMenuExpandState.value,
                             onDismissRequest = { closeDropDownMenu() }
                         ) {
+                            var idxOffset = 0;
+
                             for ((idx, text) in moreItemTextList.withIndex()) {
+                                if(text == UIHelper.bottomBarDividerPlaceHolder) {
+                                    MyHorizontalDivider()
+                                    idxOffset--
+                                    continue
+                                }
+
+                                val idx = idx + idxOffset
+
                                 if(moreItemVisibleList.isNotEmpty() && !moreItemVisibleList[idx]()) {
                                     continue
                                 }
