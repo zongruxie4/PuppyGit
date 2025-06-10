@@ -71,7 +71,7 @@ fun <T> SelectedUnSelectedList(
     filterSelectedItemList: (keyword:String)->List<T>,
     filterUnselectedItemList: (keyword:String)->List<T>,
 ) {
-    MySelectionContainer {
+    MySelectionContainerPlaceHolder {
         if(loading) {
             LoadingTextBase(modifier = Modifier.fillMaxWidth().padding(top=20.dp), text = { Text(stringResource(R.string.loading)) })
         }else {
@@ -111,12 +111,16 @@ fun <T> SelectedUnSelectedList(
 
                     if(filteredSelectedList.isEmpty()) {
                         item {
-                            ItemListIsEmpty()
+                            MySelectionContainer {
+                                ItemListIsEmpty()
+                            }
                         }
                     }else {
                         filteredSelectedList.forEach {
                             item {
-                                selectedItemFormatter(it)
+                                MySelectionContainer {
+                                    selectedItemFormatter(it)
+                                }
                             }
                         }
                     }
@@ -126,11 +130,17 @@ fun <T> SelectedUnSelectedList(
                     }
 
                     if(filteredUnselectedList.isEmpty()) {
-                        item { ItemListIsEmpty() }
+                        item {
+                            MySelectionContainer {
+                                ItemListIsEmpty()
+                            }
+                        }
                     }else {
                         filteredUnselectedList.forEach {
                             item {
-                                unselectedItemFormatter(it)
+                                MySelectionContainer {
+                                    unselectedItemFormatter(it)
+                                }
                             }
                         }
                     }

@@ -13,6 +13,9 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 
 
+/**
+ * compose version 2025.06.00 use `LazyColumn` in this may cause app crashed when drag select, I remember 2025.04.00 was ok, but I am not sure
+ */
 @Composable
 fun MySelectionContainer(
     modifier: Modifier=Modifier,
