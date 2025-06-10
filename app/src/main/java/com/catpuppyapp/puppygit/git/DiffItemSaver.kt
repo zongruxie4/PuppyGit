@@ -214,16 +214,17 @@ class PuppyHunkAndLines {
         // 删除行和添加行都不需要找比较目标，仅添加行需要找，找到后把对应的删除行也关联上
         if(changeType == Cons.gitStatusModified && deletedLinesCount > 0 && puppyLine.originType == PuppyLineOriginType.ADDITION) {
             var maxMatchedLine: PuppyLine? = null
-            var roughMatchCnt = 0
+            var maxRoughMatchCnt = 0
 
             for(line in lines) {
                 // if old line's roughly matched count less than target, try matching it with new line
                 if(line.originType == PuppyLineOriginType.DELETION && line.roughlyMatchedCount < targetRoughlyMatchedCount) {
-                    roughMatchCnt = CmpUtil.roughlyMatch(puppyLine.getContentNoLineBreak(), line.getContentNoLineBreak(), targetRoughlyMatchedCount)
+                    val roughMatchCnt = CmpUtil.roughlyMatch(puppyLine.getContentNoLineBreak(), line.getContentNoLineBreak(), targetRoughlyMatchedCount)
                     // these two strings matched more chars than the old two lines,
                     //  so, unlink old lines and link new lines
-                    if(roughMatchCnt > line.roughlyMatchedCount) {
+                    if(roughMatchCnt > line.roughlyMatchedCount && roughMatchCnt > maxRoughMatchCnt) {
                         maxMatchedLine = line
+                        maxRoughMatchCnt = roughMatchCnt
                     }
                 }
             }
@@ -242,8 +243,8 @@ class PuppyHunkAndLines {
                 // link new lines
                 line.compareTargetLineKey = puppyLine.key
                 puppyLine.compareTargetLineKey = line.key
-                line.roughlyMatchedCount = roughMatchCnt
-                puppyLine.roughlyMatchedCount = roughMatchCnt
+                line.roughlyMatchedCount = maxRoughMatchCnt
+                puppyLine.roughlyMatchedCount = maxRoughMatchCnt
             }
         }
 
@@ -407,10 +408,7 @@ data class PuppyLine (
 ){
     private var contentNoBreak:String? = null
     fun getContentNoLineBreak():String {  // not safe for concurrency
-        if(contentNoBreak == null) {
-            contentNoBreak = content.removeSuffix(Cons.lineBreak)
-        }
-        return contentNoBreak ?: content.removeSuffix(Cons.lineBreak)
+        return contentNoBreak ?: content.removeSuffix(Cons.lineBreak).let { contentNoBreak = it; it }
     }
 
 

@@ -218,4 +218,5 @@ object CmpUtil {
         // if end - start == 0, means subShorter has 1 char, and longer contains it, so should return 1 as matched count rather than 0
         return if(longer.contains(subShorter)) (end - start).coerceAtLeast(1) else 0
     }
+
 }
