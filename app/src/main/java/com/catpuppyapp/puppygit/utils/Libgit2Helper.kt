@@ -5308,8 +5308,9 @@ object Libgit2Helper {
 
     fun getRepoStateText(repoStateIntValue:Int, appContext: Context):String {
         //判断仓库状态
-        return if(repoStateIntValue == Cons.gitRepoStateInvalid) {  //没匹配到任何枚举状态，就会是null，应该不会发生这种状况
-            appContext.getString(R.string.unknown)
+        return if(repoStateIntValue == Cons.gitRepoStateInvalid) {
+            // Repository state is null, that means repo maybe broken or corrupt or donesn't exists anymore
+            appContext.getString(R.string.invalid)
         }else if(repoStateIntValue == Repository.StateT.MERGE.bit) {
             appContext.getString(R.string.merge_state)
         }else if(repoStateIntValue == Repository.StateT.REBASE_MERGE.bit) {
@@ -5327,11 +5328,7 @@ object Libgit2Helper {
     }
 
     fun createTagLight(repo: Repository, tagName:String, commit: Commit, force: Boolean):Oid {
-        return Tag.createLightWeight(
-            repo,
-            tagName,
-            commit,
-            force);
+        return Tag.createLightWeight(repo, tagName, commit, force)
     }
 
     fun createTagAnnotated(repo: Repository, tagName:String, commit: Commit, tagMsg: String, gitUserName:String, gitEmail:String, force: Boolean, settings: AppSettings):Oid {
