@@ -49,16 +49,17 @@ fun CommitListDialog(
                 MyHorizontalDivider()
 
                 MySelectionContainer {
-                    Text("\n${commitListLabel}: \n", fontWeight = FontWeight.ExtraBold)
+                    Text("\n${commitListLabel}:\n", fontWeight = FontWeight.ExtraBold)
                 }
 
-                MySelectionContainer {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth(),
-                        //                                horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        commits.forEach {
-                            item { Text(it+"\n") }
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    commits.forEach {
+                        item {
+                            MySelectionContainer {
+                                Text(it+"\n")
+                            }
                         }
                     }
                 }
