@@ -66,7 +66,14 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Diff
 
 
+//line offset when click line number to go to editor, for make text not very top when jump to editor,
+// if line at the top of screen, looks terrible
+//跳转到editor时的行偏移量，尽量让目标行在不要太顶端的位置，不然看着不舒服，如果可以的话，
+// 在editor显示时的位置最好尽量和用户点行号的位置匹配，不过我没想到怎么实现，可能得记录点击位置，算偏移量，有点麻烦
+private const val lineNumOffsetForGoToEditor = 2
+
 private const val TAG = "DiffRow"
+
 
 /**
  * 注意：这个组件会在LazyColumn的item里使用，所以不能用rememberSaveable，
@@ -635,7 +642,7 @@ fun DiffRow (
                             } else {
                                 // is line number not line index, ensure at least is 1
                                 // -3 is a offset, propose to make the line not very top for view
-                                (line.lineNum - 5).coerceAtLeast(1)
+                                (line.lineNum - lineNumOffsetForGoToEditor).coerceAtLeast(1)
 //                                line.lineNum
                             }
                         )
