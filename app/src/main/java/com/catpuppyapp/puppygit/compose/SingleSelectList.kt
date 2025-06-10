@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -67,6 +68,8 @@ fun<T> SingleSelectList(
 
     val containerSize = remember { mutableStateOf(IntSize.Zero) }
 
+    val density = LocalDensity.current
+
     Surface (
         //0.9f 占父元素宽度的百分之90
         modifier = Modifier
@@ -75,6 +78,7 @@ fun<T> SingleSelectList(
                 expandDropdownMenu.value = !expandDropdownMenu.value
             }
             .onSizeChanged {
+                // unit is pixel
                 containerSize.value = it
             }
             .then(outterModifier)
@@ -132,7 +136,8 @@ fun<T> SingleSelectList(
         DropdownMenu(
             //I forgot whey limit the width, actually is unnecessary
 //            modifier = dropDownMenuModifier.width((containerSize.value.width/2).coerceAtLeast(MyStyleKt.DropDownMenu.minWidth).dp),
-            modifier = dropDownMenuModifier.widthIn(min = MyStyleKt.DropDownMenu.minWidth),
+//            modifier = dropDownMenuModifier.widthIn(min = MyStyleKt.DropDownMenu.minWidth),
+            modifier = dropDownMenuModifier.width(UIHelper.pxToDp(containerSize.value.width.coerceAtLeast(0), density)),
 //            modifier = dropDownMenuModifier,
 
             expanded = expandDropdownMenu.value,
