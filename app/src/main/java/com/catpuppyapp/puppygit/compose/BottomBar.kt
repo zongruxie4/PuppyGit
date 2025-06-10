@@ -209,13 +209,17 @@ fun BottomBar(
                             onDismissRequest = { closeDropDownMenu() }
                         ) {
                             var idxOffset = 0;
+                            var showDivider = false
 
                             for ((idx, text) in moreItemTextList.withIndex()) {
                                 if(text == UIHelper.bottomBarDividerPlaceHolder) {
-                                    MyHorizontalDivider()
+                                    showDivider = true
                                     idxOffset--
                                     continue
                                 }
+
+                                val willShowDivider = showDivider
+                                showDivider = false
 
                                 val idx = idx + idxOffset
 
@@ -226,6 +230,10 @@ fun BottomBar(
                                 // ignore blank item
                                 if(text.isBlank()) {
                                     continue
+                                }
+
+                                if(willShowDivider) {
+                                    MyHorizontalDivider()
                                 }
 
                                 DropdownMenuItem(

@@ -41,7 +41,10 @@ private const val TAG = "UIHelper"
 
 object UIHelper {
 
-    // if this in the text list of bottom bar, will show a divider
+    // if this in the text list of bottom bar, will show a divider.
+    // note: multi neighbor place holder will merged to one
+    // 如果在bottom bar的more menu里有这个条目，会为其后的一个菜单项显示一个分割线。
+    // 注：多个连续divider会合并为一个
     const val bottomBarDividerPlaceHolder = "bottomBarDividerPlaceHolder_13195755"
 
     object Size {
