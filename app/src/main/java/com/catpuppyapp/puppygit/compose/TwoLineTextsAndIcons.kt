@@ -29,8 +29,13 @@ fun TwoLineTextsAndIcons(text1:String, text2:String, trailIcons: @Composable () 
                 .fillMaxWidth(.7f),
             verticalArrangement = Arrangement.Center,
         ) {
-            Text(text = text1)
-            Text(text = text2, style = MaterialTheme.typography.bodySmall)
+            MySelectionContainer {
+                Text(text = text1)
+            }
+
+            MySelectionContainer {
+                Text(text = text2, style = MaterialTheme.typography.bodySmall)
+            }
         }
 
         trailIcons()

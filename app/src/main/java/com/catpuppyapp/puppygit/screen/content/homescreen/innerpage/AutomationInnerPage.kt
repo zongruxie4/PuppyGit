@@ -55,6 +55,7 @@ import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RepoNameAndIdItem
 import com.catpuppyapp.puppygit.compose.SelectedUnSelectedDialog
+import com.catpuppyapp.puppygit.compose.SelectionColumn
 import com.catpuppyapp.puppygit.compose.SettingsContent
 import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -549,7 +550,7 @@ fun AutomationInnerPage(
 //        }
 
             item {
-                Column(
+                SelectionColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 20.dp, horizontal = 10.dp),

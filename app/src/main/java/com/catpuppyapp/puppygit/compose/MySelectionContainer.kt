@@ -1,7 +1,10 @@
 package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -51,16 +54,34 @@ fun MySelectionContainerPlaceHolder(
 
 @Composable
 fun SelectionRow(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     verticalAlignment: Alignment.Vertical = Alignment.Top,
-    content: @Composable () -> Unit
+    content: @Composable RowScope.() -> Unit
 ) {
     MySelectionContainer {
         Row(
             modifier = modifier,
             horizontalArrangement = horizontalArrangement,
             verticalAlignment = verticalAlignment,
+        ) {
+            content()
+        }
+    }
+}
+
+@Composable
+fun SelectionColumn(
+    modifier: Modifier = Modifier,
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    MySelectionContainer {
+        Column (
+            modifier = modifier,
+            horizontalAlignment = horizontalAlignment,
+            verticalArrangement = verticalArrangement,
         ) {
             content()
         }
