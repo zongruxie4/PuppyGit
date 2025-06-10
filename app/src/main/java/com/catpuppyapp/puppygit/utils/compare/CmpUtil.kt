@@ -51,76 +51,76 @@ object CmpUtil {
     }
 
     /**
-     * @param targetMatchCount if has these chars matched, treat startsWith or endsWith be true, else treat as false.
-     *   larger for more text matching(bad performance), smaller for more faster handling(good performance)
-     *   , when reach this count, this method will abort the compare and return the result.
-     *   e.g. set this param to 6, then "val" and "val" will treat as not matched, cause their length less than 6,
-     *   but, on the other hand, if two strings very short, you can see and found differences of them, so the matching is unnecessary.
+     * @param targetMatchCount if has these chars matched, will abort matching and return matched count.
+     *   larger for more text matching(bad performance), smaller for more faster handling(good performance).
      *
-     * @param targetMatchCount 匹配到此变量所代表的字数视为两个字符串粗略匹配成功。这个值越大，使此函数返回true所需的两个字符串重合的字符就越多。
-     * 例如：当此参数为6时：“字符串1”和“字符串2”将被认为不匹配，尽管它们的前3个字符相同，但因为它们成功匹配的字符数不足6，所以视为匹配失败，
-     * 之所以如此设定是因为较短的字符串就算视为不匹配，肉眼也可立刻看出两者是否相同，所以匹配就显得没有必要。
+     * @param targetMatchCount 匹配到此变量所代表的字数将终止匹配并返回匹配数（这个变量的值）。这个值越大，性能越差，但判断两个字符串重合度越越准；值越小，性能越好，但判断结果则更不准
      *
-     * @return true means two strings at least has `targetMatchCount` matched (not contains spaces); false otherwise
+     * @return at least matched chars count. greater than 0 means matched, non-matched otherwise
      */
-    fun roughlyMatch(str1NoLineBreak:String, str2NoLineBreak:String, targetMatchCount:Int = 6): Boolean {
+    fun roughlyMatch(str1NoLineBreak:String, str2NoLineBreak:String, targetMatchCount:Int): Int {
         if(targetMatchCount < 1) {
-            return true
+            throw RuntimeException("`targetMatchCount` should be greater than 0")
         }
 
-        if(str1NoLineBreak.length < targetMatchCount || str2NoLineBreak.length < targetMatchCount) {
-            return false
+        if(str1NoLineBreak.isEmpty() || str2NoLineBreak.isEmpty()) {
+            return 0
         }
 
         // use box as pointer to avoid value capture by closure
         var str1NonBlankStartIndex = getFirstNonBlankIndexOfStr(str1NoLineBreak, false)
         if(str1NonBlankStartIndex == -1){
-            return false
+            return 0
         }
 
         var str1NonBlankEndIndex = getFirstNonBlankIndexOfStr(str1NoLineBreak, true)
         if(str1NonBlankEndIndex == -1){
-            return false
+            return 0
         }
 
         var str2NonBlankStartIndex = getFirstNonBlankIndexOfStr(str2NoLineBreak, false)
         if(str2NonBlankStartIndex == -1){
-            return false
+            return 0
         }
 
         var str2NonBlankEndIndex = getFirstNonBlankIndexOfStr(str2NoLineBreak, true)
         if(str2NonBlankEndIndex == -1){
-            return false
+            return 0
         }
 
         // not enough to expected match count
-        if(((str1NonBlankEndIndex - str1NonBlankStartIndex) < targetMatchCount) || ((str2NonBlankEndIndex - str2NonBlankStartIndex) < targetMatchCount)) {
-            return false
-        }
+//        if(((str1NonBlankEndIndex - str1NonBlankStartIndex) < targetMatchCount) || ((str2NonBlankEndIndex - str2NonBlankStartIndex) < targetMatchCount)) {
+//            return false
+//        }
 
         // long str contains part of short str
-        if(longerContainsPartOfShorter(str1NoLineBreak, str2NoLineBreak, targetMatchCount, IntRange(str1NonBlankStartIndex, str1NonBlankEndIndex), IntRange(str2NonBlankStartIndex, str2NonBlankEndIndex))) {
-            return true
-        }
+        val containsCount = longerContainsPartOfShorter(str1NoLineBreak, str2NoLineBreak, targetMatchCount, IntRange(str1NonBlankStartIndex, str1NonBlankEndIndex), IntRange(str2NonBlankStartIndex, str2NonBlankEndIndex))
+//        if(containsCount > 0) {
+//            return containsCount
+//        }
 
         // match starts with
-        if(matchStartsOrEndsWith(str1NoLineBreak, str2NoLineBreak, false, targetMatchCount, str1NonBlankStartIndex, str2NonBlankStartIndex)) {
-            return true
-        }
+        val startsMatchedCount = matchStartsOrEndsWith(str1NoLineBreak, str2NoLineBreak, false, targetMatchCount, str1NonBlankStartIndex, str2NonBlankStartIndex)
+//        if(startsMatchedCount > 0) {
+//            return startsMatchedCount
+//        }
 
         // match ends with
-        if(matchStartsOrEndsWith(str1NoLineBreak, str2NoLineBreak, true, targetMatchCount, str1NonBlankEndIndex, str2NonBlankEndIndex)) {
-            return true
-        }
+        val endsMatchedCount = matchStartsOrEndsWith(str1NoLineBreak, str2NoLineBreak, true, targetMatchCount, str1NonBlankEndIndex, str2NonBlankEndIndex)
+//        if(endsMatchedCount > 0) {
+//            return endsMatchedCount
+//        }
 
-        return false
+        // return maximum roughly matched chars
+        return containsCount.coerceAtLeast(startsMatchedCount).coerceAtLeast(endsMatchedCount)
     }
 
     /**
      * @param reverse true ends with else starts with
      * @param targetMatchCount match how many chars as matched success, if this value greater than str1 or str2 's length after trimStarts/Ends, this method will return false as not matched
+     * @return matched chars count
      */
-    private fun matchStartsOrEndsWith(str1:String, str2:String, reverse: Boolean, targetMatchCount:Int, str1InitIndex:Int, str2InitIndex:Int): Boolean {
+    private fun matchStartsOrEndsWith(str1:String, str2:String, reverse: Boolean, targetMatchCount:Int, str1InitIndex:Int, str2InitIndex:Int): Int {
         val str1Index = Box(str1InitIndex)
         val str2Index = Box(str2InitIndex)
 
@@ -149,14 +149,14 @@ object CmpUtil {
                 matchCount++
 
                 if(matchCount >= targetMatchCount) {
-                    return true
+                    return matchCount
                 }
             }else {
                 break
             }
         }
 
-        return false
+        return 0
     }
 
     private fun getFirstNonBlankIndexOfStr(str:String, reverse: Boolean):Int {
@@ -176,7 +176,10 @@ object CmpUtil {
         return -1
     }
 
-    private fun longerContainsPartOfShorter(str1: String, str2:String, targetMatchCount:Int, str1NonBlankRange: IntRange, str2NonBlankRange: IntRange): Boolean {
+    /**
+     * @return matched chars count
+     */
+    private fun longerContainsPartOfShorter(str1: String, str2:String, targetMatchCount:Int, str1NonBlankRange: IntRange, str2NonBlankRange: IntRange): Int {
         var longerRange = str1NonBlankRange
         var shorterRange = str2NonBlankRange
 
@@ -196,12 +199,18 @@ object CmpUtil {
         //不足期望的匹配字符数，当作无匹配
         // targetMatchCount通常大于0，所以如果end - start小于等于0，会在这返回，而等于0即涵盖了subString为空字符串的情况，所以后面不需要专门在sub string为empty时专门返回false了，
         // 另一个这里不判断empty的原因是为了完全遵从targetMatchCount，不然当期望匹配0则当作两个字符串匹配时（只要调用此函数就当作匹配而不管是否真的匹配），代码逻辑会不对
-        if((end - start) < targetMatchCount) {
-            return false
+//        if((end - start) < targetMatchCount) {
+//            return false
+//        }
+
+        // if end-start equals to 0, has 1 chars; if greater than 0, more than 1 char; else, bad range, return 0
+        if((end - start) < 0) {
+            return 0
         }
 
         val subShorter = shorter.substring(IntRange(start, end))
 
-        return longer.contains(subShorter)
+        // if longer contains sub of shorter, return contained chars count else return 0 (non-matched)
+        return if(longer.contains(subShorter)) end - start else 0
     }
 }
