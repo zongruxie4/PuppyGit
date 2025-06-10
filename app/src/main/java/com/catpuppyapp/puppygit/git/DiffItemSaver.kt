@@ -10,6 +10,12 @@ import java.util.EnumSet
 import java.util.TreeMap
 
 
+// used to decide which addition line comparet to which deletion line in the hunk.
+// larger value bad performance but accurate result, smaller value has good performance but in-accurate result
+// 用来在比较前决定hunk里哪个addition line和哪个deletion line关联比较。值越大性能越差，结果更准，反之，性能好，结果更不准
+private const val targetRoughlyMatchedCount = 6
+
+
 object PuppyLineOriginType{
     const val ADDITION = Diff.Line.OriginType.ADDITION.toString()
     const val DELETION = Diff.Line.OriginType.DELETION.toString()
@@ -204,10 +210,27 @@ class PuppyHunkAndLines {
         // 删除行和添加行都不需要找比较目标，仅添加行需要找，找到后把对应的删除行也关联上
         if(changeType == Cons.gitStatusModified && puppyLine.originType == PuppyLineOriginType.ADDITION) {
             for(line in lines) {
-                if(line.originType == PuppyLineOriginType.DELETION && line.compareTargetLineKey.isBlank()) {
-                    if(CmpUtil.roughlyMatch(puppyLine.getContentNoLineBreak(), line.getContentNoLineBreak())) {
+                // if old line's roughly matched count less than target, try matching it with new line
+                if(line.originType == PuppyLineOriginType.DELETION && line.roughlyMatchedCount < targetRoughlyMatchedCount) {
+                    val roughMatchCnt = CmpUtil.roughlyMatch(puppyLine.getContentNoLineBreak(), line.getContentNoLineBreak(), targetRoughlyMatchedCount)
+                    // these two strings matched more chars than the old two lines,
+                    //  so, unlink old lines and link new lines
+                    if(roughMatchCnt > line.roughlyMatchedCount) {
+                        // unlink old lines
+                        val oldCompareTargetLineKey = line.compareTargetLineKey
+                        if(oldCompareTargetLineKey.isNotBlank()) {
+                            keyAndLineMap.get(oldCompareTargetLineKey)?.let {
+                                it.compareTargetLineKey = ""
+                                it.roughlyMatchedCount = 0
+                            }
+                        }
+
+                        // link new lines
                         line.compareTargetLineKey = puppyLine.key
                         puppyLine.compareTargetLineKey = line.key
+                        line.roughlyMatchedCount = roughMatchCnt
+                        puppyLine.roughlyMatchedCount = roughMatchCnt
+
                         break
                     }
                 }
@@ -313,6 +336,9 @@ data class PuppyLine (
     // the default compare target, it was match the compare target with line num, but sometimes line number same content totally non-related, in that case need calculate the offset the pair them
     //默认和哪行比较，过去是用相同行号作为一对比较的add/del，但有时行号相同，内容完全无关，这时需要计算偏移量，然后关联实际相关的行号，这里以行key为关联替代行号以简化处理流程
     var compareTargetLineKey:String = "",
+
+    // means at least has how many chars same with `compareTargetLineKey`'s related line
+    var roughlyMatchedCount:Int=0,
 
     // group line时，按行号把不同origin type的都放一组，实际上没索引，所以用这个生成一个索引替代
     var fakeIndexOfGroupedLine:Int = 0,

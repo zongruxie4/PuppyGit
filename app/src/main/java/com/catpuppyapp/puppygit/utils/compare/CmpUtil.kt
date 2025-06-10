@@ -51,6 +51,8 @@ object CmpUtil {
     }
 
     /**
+     * note: order of str1 and str2 doesn't matter, should return same value
+     *
      * @param targetMatchCount if has these chars matched, will abort matching and return matched count.
      *   larger for more text matching(bad performance), smaller for more faster handling(good performance).
      *
