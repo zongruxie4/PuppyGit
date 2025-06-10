@@ -1914,9 +1914,9 @@ object Libgit2Helper {
 
     fun getMatchedTextBgColorForDiff(inDarkTheme:Boolean = Theme.inDarkTheme, line: PuppyLine):Color {
         if(line.originType == PuppyLineOriginType.ADDITION) {  //添加行
-            return if(inDarkTheme) MyStyleKt.TextColor.hasMatchedAddedLineBgColorForDiffInDarkTheme else MyStyleKt.TextColor.hasMatchedAddedLineBgColorForDiffInLightTheme
+            return if(inDarkTheme) MyStyleKt.Diff.hasMatchedAddedLineBgColorForDiffInDarkTheme else MyStyleKt.Diff.hasMatchedAddedLineBgColorForDiffInLightTheme
         }else if(line.originType == PuppyLineOriginType.DELETION) {  //删除行
-            return if(inDarkTheme) MyStyleKt.TextColor.hasMatchedDeletedLineBgColorForDiffInDarkTheme else MyStyleKt.TextColor.hasMatchedDeletedLineBgColorForDiffInLightTheme
+            return if(inDarkTheme) MyStyleKt.Diff.hasMatchedDeletedLineBgColorForDiffInDarkTheme else MyStyleKt.Diff.hasMatchedDeletedLineBgColorForDiffInLightTheme
         }else if(line.originType == PuppyLineOriginType.HUNK_HDR) {  //hunk header
             // 注：后来hunk header并没用这的颜色
             return Color.Gray
@@ -1935,9 +1935,9 @@ object Libgit2Helper {
 
     fun getDiffLineBgColor(line:PuppyLine, inDarkTheme: Boolean):Color{
         if(line.originType == PuppyLineOriginType.ADDITION) {  //添加行
-            return if(inDarkTheme) MyStyleKt.TextColor.addedLineBgColorForDiffInDarkTheme else MyStyleKt.TextColor.addedLineBgColorForDiffInLightTheme
+            return if(inDarkTheme) MyStyleKt.Diff.addedLineBgColorForDiffInDarkTheme else MyStyleKt.Diff.addedLineBgColorForDiffInLightTheme
         }else if(line.originType == PuppyLineOriginType.DELETION) {  //删除行
-            return if(inDarkTheme) MyStyleKt.TextColor.deletedLineBgColorForDiffInDarkTheme else MyStyleKt.TextColor.deletedLineBgColorForDiffInLightTheme
+            return if(inDarkTheme) MyStyleKt.Diff.deletedLineBgColorForDiffInDarkTheme else MyStyleKt.Diff.deletedLineBgColorForDiffInLightTheme
         }else if(line.originType == PuppyLineOriginType.HUNK_HDR) {  //hunk header
             // 注：后来hunk header并没用这的颜色
             return Color.Gray

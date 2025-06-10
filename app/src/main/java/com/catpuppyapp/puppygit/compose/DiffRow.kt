@@ -172,7 +172,7 @@ fun DiffRow (
     val bgColor = Libgit2Helper.getDiffLineBgColor(line, inDarkTheme)
     val textColor = Libgit2Helper.getDiffLineTextColor(line, inDarkTheme)
 //                        val lineTypeStr = getDiffLineTypeStr(line)
-    val lineNumColor = MyStyleKt.TextColor.lineNumColorForDiff(inDarkTheme)
+    val lineNumColor = MyStyleKt.Diff.lineNumColorForDiff(inDarkTheme)
 
     val lineNum = paddingLineNumber(if(line.lineNum == LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else line.lineNum.toString(), lineNumExpectLength)
 
