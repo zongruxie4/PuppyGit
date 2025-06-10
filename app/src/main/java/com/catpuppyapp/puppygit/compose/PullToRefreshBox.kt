@@ -96,17 +96,21 @@ private fun MyCustomIndicator(
         Crossfade(
             targetState = isRefreshing,
             animationSpec = tween(),
-            modifier = Modifier.align(Alignment.Center).padding(10.dp)
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(8.dp)
         ) { refreshing ->
             if (refreshing) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(
+                    // line width
+                    strokeWidth = 3.dp,
+                )
             } else {
                 val distanceFraction = { state.distanceFraction.coerceIn(0f, 1f) }
                 Icon(
                     imageVector = Icons.Filled.Refresh,
                     contentDescription = stringResource(R.string.refresh),
                     modifier = Modifier
-                        .size(18.dp)
                         .graphicsLayer {
                             val progress = distanceFraction()
                             this.alpha = progress
