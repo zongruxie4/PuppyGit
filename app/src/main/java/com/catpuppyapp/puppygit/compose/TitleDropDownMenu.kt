@@ -28,7 +28,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.dropDownItemContainerColor
 
 @Composable
-fun <T> TitleDropDownMenu(
+fun <T> SimpleTitleDropDownMenu(
     dropDownMenuExpandState: MutableState<Boolean>,
     curSelectedItem:T,
     itemList: List<T>,

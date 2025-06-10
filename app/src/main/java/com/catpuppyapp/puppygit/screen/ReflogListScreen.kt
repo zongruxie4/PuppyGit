@@ -43,7 +43,7 @@ import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ReflogItem
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
-import com.catpuppyapp.puppygit.compose.TitleDropDownMenu
+import com.catpuppyapp.puppygit.compose.SimpleTitleDropDownMenu
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
@@ -334,7 +334,7 @@ fun ReflogListScreen(
                     if(filterModeOn.value) {
                         FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
                     }else {
-                        TitleDropDownMenu(
+                        SimpleTitleDropDownMenu(
                             dropDownMenuExpandState = dropDownMenuExpandState,
                             curSelectedItem = refName.value,
                             itemList = allRefList.value,
