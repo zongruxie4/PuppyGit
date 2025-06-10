@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.dropDownItemContainerColor
 
 @Composable
 fun <T> TitleDropDownMenu(
@@ -69,10 +70,11 @@ fun <T> TitleDropDownMenu(
                 contentDescription = showHideMenuIconContentDescription,
             )
         },
-        menuItem = {
+        isItemSelected = isItemSelected,
+        menuItem = {it, selected ->
             DropDownMenuItemText(
                 text = menuItemFormatter(it),
-                selected = isItemSelected(it)
+                selected = selected,
             )
         },
         titleOnLongClick = titleOnLongClick,
@@ -101,12 +103,12 @@ fun <T> TitleDropDownMenu(
     titleFirstLine:@Composable (T)->Unit,
     titleSecondLine:@Composable (T)->Unit,
     titleRightIcon:@Composable (T)->Unit,  // icon at the title text right
-    menuItem:@Composable (T)->Unit,
+    menuItem:@Composable (T, selected:Boolean)->Unit,
     titleOnLongClick:(T)->Unit,
+    isItemSelected:(T)->Boolean,
 
     //展开的菜单的条目的onClick
     itemOnClick: (T)->Unit,
-
     titleOnClick: ()->Unit = { switchDropDownMenuShowHide() },  //切换下拉菜单显示隐藏
     showExpandIcon: Boolean = true,
 ) {
@@ -171,10 +173,15 @@ fun <T> TitleDropDownMenu(
         onDismissRequest = { closeDropDownMenu() }
     ) {
         for (i in itemList.toList()) {
+            val selected = isItemSelected(i)
+
             //列出条目
             DropdownMenuItem(
-                modifier = Modifier.width(itemWidth),
-                text = { menuItem(i) },
+                modifier = Modifier
+                    .dropDownItemContainerColor(selected)
+                    .width(itemWidth)
+                ,
+                text = { menuItem(i, selected) },
                 onClick = {
                     itemOnClick(i)
                     closeDropDownMenu()

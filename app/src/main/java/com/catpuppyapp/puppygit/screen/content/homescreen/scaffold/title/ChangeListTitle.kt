@@ -142,10 +142,11 @@ fun ChangeListTitle(
                     tint = if (enableAction) LocalContentColor.current else UIHelper.getDisableBtnColor(inDarkTheme)
                 )
             },
-            menuItem = { r ->
+            isItemSelected = { it.id == changeListCurRepo.value.id },
+            menuItem = { r, selected ->
                 DropDownMenuItemText(
                     text = r.repoName,
-                    selected = r.id == changeListCurRepo.value.id,
+                    selected = selected,
 
                     //仓库状态若不是NONE，则显示 (其实等于 仓库状态等于null的仓库并不会显示在这里，查询的时候就过滤掉了，不过为了逻辑完整，还是保留null判断
                     secondLineText = r.gitRepoState.let { if(it == null) stringResource(R.string.invalid) else if(it != Repository.StateT.NONE) it.toString() else "" },

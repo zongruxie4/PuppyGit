@@ -354,6 +354,9 @@ object MyStyleKt{
 
          @Composable
          fun selectedItemColor() = MaterialTheme.colorScheme.primary;
+
+         @Composable
+         fun selectedItemContainerColor() = MaterialTheme.colorScheme.primaryContainer;
 //         val selectedItemColor = TextColor.highlighting_green
     }
 

@@ -311,10 +311,11 @@ fun TreeToTreeChangeListScreen(
 //                                    tint = LocalContentColor.current
                                 )
                             },
-                            menuItem = { it ->
+                            isItemSelected = { it == commit1OidStrState.value },
+                            menuItem = { it, selected ->
                                 DropDownMenuItemText(
                                     text = Libgit2Helper.getShortOidStrByFull(it),
-                                    selected = it == commit1OidStrState.value
+                                    selected = selected
                                 )
                             },
                             titleOnLongClick = { initInfoDialog() },

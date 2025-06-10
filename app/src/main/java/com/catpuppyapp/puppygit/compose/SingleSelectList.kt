@@ -1,11 +1,13 @@
 package com.catpuppyapp.puppygit.compose
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -13,12 +15,11 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.dropDownItemContainerColor
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 
 //下拉单选框，不过好像在弹窗使用会崩溃，可能是谷歌bug(20241003 fixed)
@@ -65,10 +67,9 @@ fun<T> SingleSelectList(
 
     val containerSize = remember { mutableStateOf(IntSize.Zero) }
 
-    Card(
+    Surface (
         //0.9f 占父元素宽度的百分之90
-        modifier = outterModifier
-            .padding(bottom = 10.dp)
+        modifier = Modifier
             .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
             .clickable {
                 expandDropdownMenu.value = !expandDropdownMenu.value
@@ -76,11 +77,12 @@ fun<T> SingleSelectList(
             .onSizeChanged {
                 containerSize.value = it
             }
+            .then(outterModifier)
         ,
 
-        colors = CardDefaults.cardColors(
-            containerColor = UIHelper.defaultCardColor(),
-        ),
+//        colors = CardDefaults.cardColors(
+//            containerColor = UIHelper.defaultCardColor(),
+//        ),
 
 //        elevation = CardDefaults.cardElevation(
 //            defaultElevation = 3.dp
@@ -90,6 +92,11 @@ fun<T> SingleSelectList(
         //用box的好处是如果整体宽度过小，不会把右边的箭头顶没，但箭头会和文本内容重叠
         Box(
             modifier = Modifier
+
+                // selected item container (not dropdown menu)
+                // 已选择容器的颜色 (不是下拉菜单的已选择，而是展示已选择条目的那个容器，点击可展开菜单的那个）
+                .background(UIHelper.defaultCardColor())
+
                 .padding(horizontal = 10.dp)
                 .defaultMinSize(minHeight = 50.dp)
                 .fillMaxWidth()
@@ -139,7 +146,13 @@ fun<T> SingleSelectList(
 //                continue
 //            }
 
-                Column {
+                val selected = menuItemSelected(index, value)
+
+                Column(
+                    modifier = Modifier
+                        .dropDownItemContainerColor(selected)
+                        .fillMaxSize()
+                ) {
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -148,7 +161,7 @@ fun<T> SingleSelectList(
                             text = {
                                 DropDownMenuItemText(
                                     text = menuItemFormatter(index, value),
-                                    selected = menuItemSelected(index, value)
+                                    selected = selected
                                 )
                             },
                             onClick ={

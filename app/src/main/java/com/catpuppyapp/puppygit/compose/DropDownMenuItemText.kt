@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -38,7 +37,7 @@ private fun DropDownMenuItemTextColumn(
     maxLines: Int = Int.MAX_VALUE,
 
 ) {
-    val fontColor = if(selected) MyStyleKt.DropDownMenu.selectedItemColor() else Color.Unspecified
+//    val fontColor = if(selected) MyStyleKt.DropDownMenu.selectedItemColor() else Color.Unspecified
     val fontWeight = if(selected) FontWeight.ExtraBold else null  //注意默认是 null，不是 Normal，实测默认的字体比Normal粗
 
     Column(
@@ -46,7 +45,7 @@ private fun DropDownMenuItemTextColumn(
     ) {
         Text(
             text = text,
-            color = fontColor,
+//            color = fontColor,
             fontWeight = fontWeight,
             overflow = TextOverflow.Ellipsis,
             maxLines = maxLines,
@@ -55,7 +54,7 @@ private fun DropDownMenuItemTextColumn(
         if(secondLineText.isNotBlank()) {
             Text(
                 text = secondLineText,
-                color = fontColor,
+//                color = fontColor,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = maxLines,
 

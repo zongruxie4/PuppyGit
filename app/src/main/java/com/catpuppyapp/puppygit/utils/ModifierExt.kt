@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.utils
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -48,4 +49,13 @@ private fun Modifier.basePageModifier(contentPadding: PaddingValues):Modifier {
 
 fun Modifier.baseVerticalScrollablePageModifier(contentPadding: PaddingValues, scrollState: ScrollState):Modifier {
     return basePageModifier(contentPadding).verticalScroll(scrollState)
+}
+
+@Composable
+fun Modifier.dropDownItemContainerColor(selected:Boolean):Modifier {
+    return if(selected) {
+        background(MyStyleKt.DropDownMenu.selectedItemContainerColor())
+    } else {
+        this
+    }
 }
