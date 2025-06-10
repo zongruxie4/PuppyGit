@@ -38,7 +38,7 @@ private fun DropDownMenuItemTextColumn(
 
 ) {
 //    val fontColor = if(selected) MyStyleKt.DropDownMenu.selectedItemColor() else Color.Unspecified
-    val fontWeight = if(selected) FontWeight.ExtraBold else null  //注意默认是 null，不是 Normal，实测默认的字体比Normal粗
+//    val fontWeight = if(selected) FontWeight.ExtraBold else null  //注意默认是 null，不是 Normal，实测默认的字体比Normal粗
 
     Column(
         verticalArrangement = Arrangement.Center
@@ -46,7 +46,7 @@ private fun DropDownMenuItemTextColumn(
         Text(
             text = text,
 //            color = fontColor,
-            fontWeight = fontWeight,
+//            fontWeight = fontWeight,
             overflow = TextOverflow.Ellipsis,
             maxLines = maxLines,
         )
