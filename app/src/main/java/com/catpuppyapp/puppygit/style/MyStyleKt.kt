@@ -335,11 +335,22 @@ object MyStyleKt{
 //            titleContentColor = MaterialTheme.colorScheme.primary,
 //        )
 
+        /**
+         * when use this, be careful to make text in top bar colorful,
+         *  if the color closer with this, will difficult to distinguish
+         */
         @OptIn(ExperimentalMaterial3Api::class)
         @Composable
         fun getColors() = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
         )
+
+        /**
+         * simple color , good for show colorful text in the top bar
+         */
+        @OptIn(ExperimentalMaterial3Api::class)
+        @Composable
+        fun getColorsSimple() = TopAppBarDefaults.topAppBarColors()
 
 
     }

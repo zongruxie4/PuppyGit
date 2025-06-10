@@ -1186,7 +1186,7 @@ fun DiffScreen(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                colors = MyStyleKt.TopBar.getColors(),
+                colors = MyStyleKt.TopBar.getColorsSimple(),
                 title = {
                     val curItem = getCurItem()
 
