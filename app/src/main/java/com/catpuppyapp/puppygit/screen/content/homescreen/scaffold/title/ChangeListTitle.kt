@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Merge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
@@ -17,14 +16,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
+import com.catpuppyapp.puppygit.compose.IconOfRepoState
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
-import com.catpuppyapp.puppygit.compose.SmallIcon
 import com.catpuppyapp.puppygit.compose.TitleDropDownMenu
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -83,11 +80,10 @@ fun ChangeListTitle(
     }
 
 
-    val needShowRepoState = rememberSaveable { mutableStateOf(false)}
-    val repoStateText = rememberSaveable { mutableStateOf("")}
-
     //设置仓库状态，主要是为了显示merge
-    Libgit2Helper.setRepoStateText(repoState.intValue, needShowRepoState, repoStateText, activityContext)
+    val repoStateText = rememberSaveable(repoState.intValue) { mutableStateOf(Libgit2Helper.getRepoStateText(repoState.intValue, activityContext)) }
+
+
 
 
     val switchDropDownMenu = {
@@ -126,24 +122,7 @@ fun ChangeListTitle(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    repoState.intValue.let {
-                        if(it == Repository.StateT.MERGE.bit) {
-                            SmallIcon(
-                                imageVector = Icons.Filled.Merge,
-                                contentDescription = stringResource(R.string.merge)
-                            )
-                        }else if(it == Repository.StateT.REBASE_MERGE.bit) {
-                            SmallIcon(
-                                imageVector = ImageVector.vectorResource(R.drawable.git_rebase),
-                                contentDescription = stringResource(R.string.rebase)
-                            )
-                        }else if(it == Repository.StateT.CHERRYPICK.bit) {
-                            SmallIcon(
-                                imageVector = ImageVector.vectorResource(R.drawable.outline_nutrition_24),
-                                contentDescription = stringResource(R.string.cherrypick)
-                            )
-                        }
-                    }
+                    IconOfRepoState(repoState.intValue)
 
 
                     Text(
@@ -161,7 +140,7 @@ fun ChangeListTitle(
                 Text(
                     //  判断仓库是否处于detached，然后显示在这里(例如： "abc1234(detached)" )
                     // "main|StateT" or "main", eg, when merging show: "main|Merging", when 仓库状态正常时 show: "main"；如果是detached HEAD状态，则显示“提交号(Detached)|状态“，例如：abc2344(Detached) 或 abc2344(Detached)|Merging
-                    text = (if(dbIntToBool(changeListCurRepo.value.isDetached)) Libgit2Helper.genDetachedText(changeListCurRepo.value.lastCommitHashShort) else Libgit2Helper.genLocalBranchAndUpstreamText(changeListCurRepo.value.branch, changeListCurRepo.value.upstreamBranch)) + (if(needShowRepoState.value) "|${repoStateText.value}" else ""),
+                    text = (if(dbIntToBool(changeListCurRepo.value.isDetached)) Libgit2Helper.genDetachedText(changeListCurRepo.value.lastCommitHashShort) else Libgit2Helper.genLocalBranchAndUpstreamText(changeListCurRepo.value.branch, changeListCurRepo.value.upstreamBranch)) + (if(repoStateText.value.isNotBlank()) " | ${repoStateText.value}" else ""),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = MyStyleKt.Title.secondLineFontSize,

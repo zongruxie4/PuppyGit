@@ -5306,27 +5306,22 @@ object Libgit2Helper {
         }
     }
 
-    fun setRepoStateText(repoStateIntValue:Int, needShowRepoState:MutableState<Boolean>, repoStateText:MutableState<String>, appContext: Context) {
+    fun getRepoStateText(repoStateIntValue:Int, appContext: Context):String {
         //判断仓库状态
-        if(repoStateIntValue == Cons.gitRepoStateInvalid) {  //没匹配到任何枚举状态，就会是null，应该不会发生这种状况
-            repoStateText.value = appContext.getString(R.string.unknown)
-            needShowRepoState.value = true
+        return if(repoStateIntValue == Cons.gitRepoStateInvalid) {  //没匹配到任何枚举状态，就会是null，应该不会发生这种状况
+            appContext.getString(R.string.unknown)
         }else if(repoStateIntValue == Repository.StateT.MERGE.bit) {
-            repoStateText.value = appContext.getString(R.string.merge_state)
-            needShowRepoState.value = true
+            appContext.getString(R.string.merge_state)
         }else if(repoStateIntValue == Repository.StateT.REBASE_MERGE.bit) {
-            repoStateText.value = appContext.getString(R.string.rebase_state)
-            needShowRepoState.value = true
+            appContext.getString(R.string.rebase_state)
 
             //如果以后添加其他状态，在这加else if 即可
         }else if(repoStateIntValue == Repository.StateT.CHERRYPICK.bit) {
-            repoStateText.value = appContext.getString(R.string.cherrypick_state)
-            needShowRepoState.value = true
+            appContext.getString(R.string.cherrypick_state)
 
             //如果以后添加其他状态，在这加else if 即可
         }else { // NONE
-            repoStateText.value = ""
-            needShowRepoState.value = false
+            ""
         }
 
     }

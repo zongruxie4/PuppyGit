@@ -12,9 +12,11 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import com.catpuppyapp.puppygit.compose.IconOfRepoState
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.Cons
@@ -23,7 +25,6 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
-import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import kotlinx.coroutines.CoroutineScope
 
@@ -50,14 +51,14 @@ fun IndexScreenTitle(
         )
     }
 
-    val needShowRepoState = rememberSaveable { mutableStateOf(false)}
-    val repoStateText = rememberSaveable { mutableStateOf("")}
-
     //设置仓库状态，主要是为了显示merge
-    Libgit2Helper.setRepoStateText(repoState.intValue, needShowRepoState, repoStateText, activityContext)
+    val repoStateText = rememberSaveable(repoState.intValue) { mutableStateOf(Libgit2Helper.getRepoStateText(repoState.intValue, activityContext)) }
+
+
 
     val getTitleColor = {
-        UIHelper.getChangeListTitleColor(repoState.intValue)
+//        UIHelper.getChangeListTitleColor(repoState.intValue)
+        Color.Unspecified
     }
 
     Column(modifier = Modifier
@@ -75,6 +76,7 @@ fun IndexScreenTitle(
         .widthIn(min = MyStyleKt.Title.clickableTitleMinWidth)
     ) {
         ScrollableRow {
+            IconOfRepoState(repoState.intValue)
 
             Text(
                 text = curRepo.value.repoName,
@@ -86,7 +88,7 @@ fun IndexScreenTitle(
         }
         ScrollableRow  {
             //"[Index]|Merging" or "[Index]"
-            Text(text = "["+stringResource(id = R.string.index)+"]" + (if(needShowRepoState.value) "|"+repoStateText.value else ""),
+            Text(text = "["+stringResource(id = R.string.index)+"]" + (if(repoStateText.value.isNotBlank()) " | ${repoStateText.value}" else ""),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = MyStyleKt.Title.secondLineFontSize,
