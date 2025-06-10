@@ -209,31 +209,39 @@ class PuppyHunkAndLines {
         //  so, only added line need handle, when find the compare target (related deleted line), update the deleted line as well
         // 删除行和添加行都不需要找比较目标，仅添加行需要找，找到后把对应的删除行也关联上
         if(changeType == Cons.gitStatusModified && puppyLine.originType == PuppyLineOriginType.ADDITION) {
+            var maxMatchedLineKey = ""
+            var roughMatchCnt = 0
+
             for(line in lines) {
                 // if old line's roughly matched count less than target, try matching it with new line
                 if(line.originType == PuppyLineOriginType.DELETION && line.roughlyMatchedCount < targetRoughlyMatchedCount) {
-                    val roughMatchCnt = CmpUtil.roughlyMatch(puppyLine.getContentNoLineBreak(), line.getContentNoLineBreak(), targetRoughlyMatchedCount)
+                    roughMatchCnt = CmpUtil.roughlyMatch(puppyLine.getContentNoLineBreak(), line.getContentNoLineBreak(), targetRoughlyMatchedCount)
                     // these two strings matched more chars than the old two lines,
                     //  so, unlink old lines and link new lines
                     if(roughMatchCnt > line.roughlyMatchedCount) {
-                        // unlink old lines
-                        val oldCompareTargetLineKey = line.compareTargetLineKey
-                        if(oldCompareTargetLineKey.isNotBlank()) {
-                            keyAndLineMap.get(oldCompareTargetLineKey)?.let {
-                                it.compareTargetLineKey = ""
-                                it.roughlyMatchedCount = 0
-                            }
-                        }
-
-                        // link new lines
-                        line.compareTargetLineKey = puppyLine.key
-                        puppyLine.compareTargetLineKey = line.key
-                        line.roughlyMatchedCount = roughMatchCnt
-                        puppyLine.roughlyMatchedCount = roughMatchCnt
-
-                        break
+                        maxMatchedLineKey = line.compareTargetLineKey
                     }
                 }
+            }
+
+            if(maxMatchedLineKey.isNotBlank()) {
+                keyAndLineMap.get(maxMatchedLineKey)?.let { line ->
+                    // unlink old lines
+                    val oldCompareTargetLineKey = line.compareTargetLineKey
+                    if(oldCompareTargetLineKey.isNotBlank()) {
+                        keyAndLineMap.get(oldCompareTargetLineKey)?.let {
+                            it.compareTargetLineKey = ""
+                            it.roughlyMatchedCount = 0
+                        }
+                    }
+
+                    // link new lines
+                    line.compareTargetLineKey = puppyLine.key
+                    puppyLine.compareTargetLineKey = line.key
+                    line.roughlyMatchedCount = roughMatchCnt
+                    puppyLine.roughlyMatchedCount = roughMatchCnt
+                }
+
             }
         }
 
