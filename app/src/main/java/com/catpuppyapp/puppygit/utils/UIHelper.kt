@@ -480,7 +480,8 @@ object UIHelper {
         return configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     }
 
-    fun getHunkColor(inDarkTheme: Boolean = Theme.inDarkTheme) = if(inDarkTheme) Color(0x368BB3DC) else Color(0x8098ABD5);
+
+    fun getHunkColor(inDarkTheme: Boolean = Theme.inDarkTheme) = if(inDarkTheme) MyStyleKt.Diff.hunkHeaderColorBgInDarkTheme else MyStyleKt.Diff.hunkHeaderColorBgInLightTheme;
 
 
     // 需要加点偏移量不然会太高

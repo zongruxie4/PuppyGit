@@ -76,6 +76,7 @@ import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ReadOnlyIcon
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
+import com.catpuppyapp.puppygit.compose.SelectionRow
 import com.catpuppyapp.puppygit.compose.SingleLineCardButton
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
@@ -1651,7 +1652,7 @@ fun DiffScreen(
 
                                 // hunk header
                                 item {
-                                    Row(
+                                    SelectionRow(
                                         modifier = Modifier
                                             .background(UIHelper.getHunkColor())
                                             .fillMaxWidth()

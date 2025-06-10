@@ -105,6 +105,11 @@ object MyStyleKt{
         }
     }
 
+    object Diff {
+        val hunkHeaderColorBgInDarkTheme = Color(0x368BB3DC)
+        val hunkHeaderColorBgInLightTheme = Color(0x8098ABD5)
+    }
+
     object IconColor {
         val enable = Color(0xFF0F479B)
         val disable = Color.LightGray
