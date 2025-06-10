@@ -98,10 +98,14 @@ private fun MyCustomIndicator(
             animationSpec = tween(),
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(8.dp)
+                .size(24.dp)
         ) { refreshing ->
             if (refreshing) {
                 CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(2.dp)
+                    ,
+
                     // line width
                     strokeWidth = 3.dp,
                 )
