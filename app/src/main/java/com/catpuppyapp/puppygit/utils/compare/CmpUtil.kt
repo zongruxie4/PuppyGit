@@ -53,10 +53,22 @@ object CmpUtil {
     /**
      * @param targetMatchCount if has these chars matched, treat startsWith or endsWith be true, else treat as false.
      *   larger for more text matching(bad performance), smaller for more faster handling(good performance)
-     *   , when reach this count, this method will abort the compare and return the result
+     *   , when reach this count, this method will abort the compare and return the result.
+     *   e.g. set this param to 6, then "val" and "val" will treat as not matched, cause their length less than 6,
+     *   but, on the other hand, if two strings very short, you can see and found differences of them, so the matching is unnecessary.
+     *
+     * @param targetMatchCount 匹配到此变量所代表的字数视为两个字符串粗略匹配成功。这个值越大，使此函数返回true所需的两个字符串重合的字符就越多。
+     * 例如：当此参数为6时：“字符串1”和“字符串2”将被认为不匹配，尽管它们的前3个字符相同，但因为它们成功匹配的字符数不足6，所以视为匹配失败，
+     * 之所以如此设定是因为较短的字符串就算视为不匹配，肉眼也可立刻看出两者是否相同，所以匹配就显得没有必要。
+     *
+     * @return true means two strings at least has `targetMatchCount` matched (not contains spaces); false otherwise
      */
-    fun roughlyMatch(str1NoLineBreak:String, str2NoLineBreak:String, targetMatchCount:Int = 5): Boolean {
-        if(str1NoLineBreak.isEmpty() || str2NoLineBreak.isEmpty()) {
+    fun roughlyMatch(str1NoLineBreak:String, str2NoLineBreak:String, targetMatchCount:Int = 6): Boolean {
+        if(targetMatchCount < 1) {
+            return true
+        }
+
+        if(str1NoLineBreak.length < targetMatchCount || str2NoLineBreak.length < targetMatchCount) {
             return false
         }
 
