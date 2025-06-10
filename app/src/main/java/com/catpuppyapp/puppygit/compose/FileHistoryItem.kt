@@ -253,23 +253,23 @@ fun FileHistoryItem(
             )
         }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-
-        ) {
-            //包含当前entry id的所有提交
-
-            InLineIcon(
-                icon = Icons.Filled.ViewCompact,
-                tooltipText = stringResource(R.string.commits)
-            )
-
-//            Text(text = stringResource(R.string.commits) + ": ")
-
-            SingleLineClickableText(dto.cachedShortCommitListStr()) {
-                showCommits(dto)
-            }
-        }
+//        Row(
+//            verticalAlignment = Alignment.CenterVertically,
+//
+//        ) {
+//            //包含当前entry id的所有提交
+//
+//            InLineIcon(
+//                icon = Icons.Filled.ViewCompact,
+//                tooltipText = stringResource(R.string.commits)
+//            )
+//
+////            Text(text = stringResource(R.string.commits) + ": ")
+//
+//            SingleLineClickableText(dto.cachedShortCommitListStr()) {
+//                showCommits(dto)
+//            }
+//        }
 
         Row(
             verticalAlignment = Alignment.CenterVertically,

@@ -879,7 +879,11 @@ fun FileHistoryScreen(
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
                             showItemDetails(curObj.value)
                         }
-//
+
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.commits)) {
+                            showCommits(curObj.value)
+                        }
+
 //                if(UserUtil.isPro() && (dev_EnableUnTestedFeature || commitsDiffToLocalTestPassed)) {
 //                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
 //    //                    diff to local，点击跳转到tree to tree页面，然后diff
