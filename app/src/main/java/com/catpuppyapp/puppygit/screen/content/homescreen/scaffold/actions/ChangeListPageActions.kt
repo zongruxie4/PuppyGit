@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -367,6 +368,8 @@ fun ChangeListPageActions(
 
             //merge相关
             if(repoUnderMerge) {
+                MyHorizontalDivider()
+
                 DropdownMenuItem(
                     //如果正在执行其他操作，还是应该禁用下abortMerge，所以这也需要判断enableAction是否为true
 //                    enabled = enableMenuItem && hasNoConflictItems && repoUnderMerge,  //废弃有冲突则禁用的方案，容易让用户困惑“怎么才能continue merge？”，改成点击后再检测是否有冲突了，若有，提示用户先解决冲突，这样用户就能通过和app互动来得知怎么 continue merge了
@@ -400,6 +403,8 @@ fun ChangeListPageActions(
 
             //repo under rebase
             if(repoState.intValue == Repository.StateT.REBASE_MERGE.bit) {
+                MyHorizontalDivider()
+
                 DropdownMenuItem(
                     //如果正在执行其他操作，还是应该禁用下abortMerge，所以这也需要判断enableAction是否为true
 //                    enabled = enableMenuItem && repoUnderMerge,
@@ -449,6 +454,8 @@ fun ChangeListPageActions(
             }
 
             if(repoState.intValue == Repository.StateT.CHERRYPICK.bit) {
+                MyHorizontalDivider()
+
                 DropdownMenuItem(
                     //如果正在执行其他操作，还是应该禁用下abortMerge，所以这也需要判断enableAction是否为true
 //                    enabled = enableMenuItem && hasNoConflictItems && repoUnderMerge,  //废弃有冲突则禁用的方案，容易让用户困惑“怎么才能continue merge？”，改成点击后再检测是否有冲突了，若有，提示用户先解决冲突，这样用户就能通过和app互动来得知怎么 continue merge了
