@@ -9,8 +9,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 
 
 @Composable
@@ -26,25 +30,35 @@ fun CommitListDialog(
         title = title,
         requireShowTextCompose = true,
         textCompose = {
-            DisableSelection {
+            Column {
+                //用 \n 是为了在复制文本的时候包含换行符
                 MySelectionContainer {
-                    Column {
-                        //用 \n 是为了在复制文本的时候包含换行符
-                        Row {
-                            Text(firstLineLabel+": ", fontWeight = FontWeight.ExtraBold)
-                            Text(firstLineText+"\n")
-                        }
+                    Row {
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(SpanStyle(fontWeight = FontWeight.ExtraBold)) {
+                                    append("$firstLineLabel: ")
+                                }
 
-                        MyHorizontalDivider()
-                        Text("\n${commitListLabel}: \n", fontWeight = FontWeight.ExtraBold)
-
-                        LazyColumn(
-                            modifier = Modifier.fillMaxWidth(),
-//                                horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            commits.forEach {
-                                item { Text(it+"\n") }
+                                append("$firstLineText\n")
                             }
+                        )
+                    }
+                }
+
+                MyHorizontalDivider()
+
+                MySelectionContainer {
+                    Text("\n${commitListLabel}: \n", fontWeight = FontWeight.ExtraBold)
+                }
+
+                MySelectionContainer {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        //                                horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        commits.forEach {
+                            item { Text(it+"\n") }
                         }
                     }
                 }
