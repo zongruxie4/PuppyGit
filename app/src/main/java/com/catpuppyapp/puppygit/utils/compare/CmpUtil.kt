@@ -151,14 +151,14 @@ object CmpUtil {
                 matchCount++
 
                 if(matchCount >= targetMatchCount) {
-                    return matchCount
+                    break
                 }
             }else {
                 break
             }
         }
 
-        return 0
+        return matchCount
     }
 
     private fun getFirstNonBlankIndexOfStr(str:String, reverse: Boolean):Int {
@@ -210,9 +210,12 @@ object CmpUtil {
             return 0
         }
 
+        // reached here, at least sub string of `shorter` has 1 char
+
         val subShorter = shorter.substring(IntRange(start, end))
 
         // if longer contains sub of shorter, return contained chars count else return 0 (non-matched)
-        return if(longer.contains(subShorter)) end - start else 0
+        // if end - start == 0, means subShorter has 1 char, and longer contains it, so should return 1 as matched count rather than 0
+        return if(longer.contains(subShorter)) (end - start).coerceAtLeast(1) else 0
     }
 }

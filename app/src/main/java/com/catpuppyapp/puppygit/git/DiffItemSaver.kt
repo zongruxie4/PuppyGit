@@ -105,6 +105,10 @@ class PuppyHunkAndLines {
     var hunk:PuppyHunk=PuppyHunk();
     var lines:MutableList<PuppyLine> = mutableListOf()
 
+    // add/deleted lines of hunk
+    var addedLinesCount:Int = 0
+    var deletedLinesCount:Int = 0
+
     // {lineKey: PuppyLine}
     val keyAndLineMap: MutableMap<String, PuppyLine> = mutableMapOf()
 
@@ -208,7 +212,7 @@ class PuppyHunkAndLines {
         // deleted line must at added lines up side; context needn't find a compare target;
         //  so, only added line need handle, when find the compare target (related deleted line), update the deleted line as well
         // 删除行和添加行都不需要找比较目标，仅添加行需要找，找到后把对应的删除行也关联上
-        if(changeType == Cons.gitStatusModified && puppyLine.originType == PuppyLineOriginType.ADDITION) {
+        if(changeType == Cons.gitStatusModified && deletedLinesCount > 0 && puppyLine.originType == PuppyLineOriginType.ADDITION) {
             var maxMatchedLineKey = ""
             var roughMatchCnt = 0
 
@@ -219,7 +223,7 @@ class PuppyHunkAndLines {
                     // these two strings matched more chars than the old two lines,
                     //  so, unlink old lines and link new lines
                     if(roughMatchCnt > line.roughlyMatchedCount) {
-                        maxMatchedLineKey = line.compareTargetLineKey
+                        maxMatchedLineKey = line.key
                     }
                 }
             }
