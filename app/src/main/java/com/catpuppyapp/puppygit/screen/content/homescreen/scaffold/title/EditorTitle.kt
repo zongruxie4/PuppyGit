@@ -41,6 +41,8 @@ import java.io.File
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditorTitle(
+    recentFileListIsEmpty:Boolean,
+
     patchModeOn:Boolean,
     previewNavStack: EditorPreviewNavStack,
     previewingPath:String,
@@ -65,6 +67,7 @@ fun EditorTitle(
 
     val inDarkTheme = remember { Theme.inDarkTheme }
 
+    // file opened
     if(editorPageShowingFilePath.value.isNotBlank()) {
         val fileName = if(isPreviewModeOn && editorPageShowingFilePath.value.ioPath != previewingPath) FuckSafFile(activityContext, FilePath(previewingPath)).name else if(editorPageShowingFileName.isNullOrEmpty()) FuckSafFile(activityContext, editorPageShowingFilePath.value).name else editorPageShowingFileName
 //        val filePath = getFilePathStrBasedRepoDir(editorPageShowingFilePath.value, returnResultStartsWithSeparator = true)
@@ -160,10 +163,13 @@ fun EditorTitle(
         }
 
     }else {
-        Text(
-            text = stringResource(R.string.editor),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+        // file not opened
+        ScrollableRow {
+            Text(
+                text = stringResource(if(recentFileListIsEmpty) R.string.editor else R.string.recent_files),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
