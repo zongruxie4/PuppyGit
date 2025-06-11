@@ -6,16 +6,14 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.waterfall
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -60,14 +58,17 @@ fun FileDetailItem(
             .width(width)
 
     ) {
+//        val fontColor = UIHelper.getFontColor()
+        val fontColor = Color.Unspecified
+
         Column(
             modifier = Modifier.padding(5.dp)
         ) {
             ScrollableRow {
-                Text(item.file.name, fontSize = MyStyleKt.Title.firstLineFontSize)
+                Text(item.file.name, fontSize = MyStyleKt.Title.firstLineFontSize, color = fontColor)
             }
             ScrollableRow {
-                Text(item.file.path.ioPath, fontSize = MyStyleKt.Title.secondLineFontSize)
+                Text(item.file.path.ioPath, fontSize = MyStyleKt.Title.secondLineFontSize, color = fontColor)
             }
         }
 
@@ -76,7 +77,7 @@ fun FileDetailItem(
         Row(
             modifier = Modifier.padding(10.dp)
         ) {
-            Text(item.shortContent)
+            Text(item.shortContent, color = fontColor)
         }
     }
 }
