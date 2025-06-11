@@ -1208,9 +1208,8 @@ fun EditorInnerPage(
                 ) {
                     FileDetailList(
                         contentPadding = contentPadding,
-                        isSubEditor = isSubPageMode,
+                        isItemSelected = isItemInSelected,
                         list = recentFileList.value,
-                        reloadList = reloadRecentFileList,
                         onClick = {
                             if(selectionMode.value) {
                                 switchItemSelected(it)
@@ -1233,7 +1232,6 @@ fun EditorInnerPage(
                                 switchItemSelected(it)
                             }
                         },
-                        isItemSelected = isItemInSelected,
                     )
                 }
             }else {

@@ -6,9 +6,11 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.FileDetailItem
 import com.catpuppyapp.puppygit.dto.FileDetail
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 
 
@@ -25,9 +27,7 @@ private const val oneItemRequiredWidth = (itemWidth + oneItemRequiredMargin)
 @Composable
 fun FileDetailList(
     contentPadding: PaddingValues,
-    isSubEditor:Boolean,
     list:List<FileDetail>,
-    reloadList:()->Unit,
     onClick:(FileDetail)->Unit,
     itemOnLongClick:(idx:Int, FileDetail)->Unit,
     isItemSelected: (FileDetail) -> Boolean,
@@ -51,9 +51,15 @@ fun FileDetailList(
         Pair(width.dp, maxItemsInEachRow)
     }
 
+    val layoutDirection = LocalLayoutDirection.current
 
     LazyVerticalStaggeredGrid (
-        contentPadding = contentPadding,
+        contentPadding = PaddingValues(
+            start = contentPadding.calculateLeftPadding(layoutDirection),
+            end = contentPadding.calculateRightPadding(layoutDirection),
+            top = contentPadding.calculateTopPadding(),
+            bottom = contentPadding.calculateBottomPadding() + MyStyleKt.BottomBar.outsideContentPadding
+        ),
         columns = StaggeredGridCells.Adaptive(minSize = width)
     ) {
         list.forEachIndexed { idx, it ->
@@ -69,6 +75,7 @@ fun FileDetailList(
                 )
             }
         }
+
     }
 
 }
