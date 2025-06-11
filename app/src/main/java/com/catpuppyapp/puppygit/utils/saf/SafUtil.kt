@@ -118,7 +118,7 @@ object SafUtil {
             )
             true
         }catch (e:Exception) {
-            MyLog.e(TAG, "#takePersistableRWPermission() try take RW permissions err: ${e.stackTraceToString()}")
+            MyLog.d(TAG, "#takePersistableRWPermission() try take RW permissions err: ${e.stackTraceToString()}")
             false
         }
     }
@@ -131,7 +131,7 @@ object SafUtil {
             )
             true
         }catch (e:Exception) {
-            MyLog.e(TAG, "#takePersistableReadOnlyPermission() try take ReadOnly permissions err: ${e.stackTraceToString()}")
+            MyLog.d(TAG, "#takePersistableReadOnlyPermission() try take ReadOnly permissions err: ${e.stackTraceToString()}")
             false
         }
     }
@@ -142,7 +142,7 @@ object SafUtil {
             contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
             true
         } catch (e: SecurityException) {
-            MyLog.e(TAG, "#releasePersistableRWPermission() try release RW permissions err: ${e.stackTraceToString()}")
+            MyLog.d(TAG, "#releasePersistableRWPermission() try release RW permissions err: ${e.stackTraceToString()}")
             false
         }
     }
@@ -152,7 +152,7 @@ object SafUtil {
             contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
             true
         } catch (e: SecurityException) {
-            MyLog.e(TAG, "#releasePersistableReadOnlyPermission() try release ReadOnly permissions err: ${e.stackTraceToString()}")
+            MyLog.d(TAG, "#releasePersistableReadOnlyPermission() try release ReadOnly permissions err: ${e.stackTraceToString()}")
             false
         }
     }
