@@ -58,6 +58,7 @@ import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.PathType
@@ -535,8 +536,8 @@ fun EditorInnerPage(
 
 
     val showRecentFilesList = rememberSaveable { mutableStateOf(false) }
-    // Pair(fileName, fileFullPath)
-    val recentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<Pair<String, FilePath>>() }
+
+    val recentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<FileDetail>() }
 
 
 
@@ -1113,6 +1114,13 @@ fun EditorInnerPage(
 
             //not open file (and no err)
             if (notOpenFile) {  //文件未就绪且无正在显示的文件且没错误
+//                val recentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<RecentFile>() }
+//                if() {
+//
+//                }else {
+//
+//                }
+
                 Row {
 //                    val spacerHeight=15.dp
 
@@ -1191,7 +1199,7 @@ fun EditorInnerPage(
                                     // lastUsedTime descend sort
                                     if (v1.lastUsedTime > v2.lastUsedTime) -1 else 1
                                 }).let { sortedMap ->
-                                    val list = mutableListOf<Pair<String, FilePath>>()
+                                    val list = mutableListOf<FileDetail>()
                                     for((k, _lastEditPos) in sortedMap) {
                                         if(list.size >= recentFilesLimit) {
                                             break
@@ -1203,7 +1211,7 @@ fun EditorInnerPage(
                                         if(fileName.isNotEmpty()) {
                                             //如果从外部app请求本app打开文件，然后对方app没允许获取永久uri权限，那么下次重启本app后，这个文件名有可能会变成空白，除非请求打开的路径可以解析出相应的绝对路径，那样本app就会使用绝对路径访问文件，就是 "/storage/emulate/0" 那种路径，这时文件名就不会有错了，除非用户没授权访问外部存储
                                             // Pair(fileName, FilePath对象)
-                                            list.add(Pair(fileName, filePath))
+                                            list.add(FileDetail(fileName, filePath))
                                         }
                                     }
 
