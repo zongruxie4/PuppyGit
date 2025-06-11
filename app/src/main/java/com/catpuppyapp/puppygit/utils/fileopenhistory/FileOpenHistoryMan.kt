@@ -93,6 +93,13 @@ object FileOpenHistoryMan {
         update(h)
     }
 
+    fun remove(path:String) {
+        val h = getHistory()
+        h.storage.remove(path)
+
+        update(h)
+    }
+
     /**
      * update the file last used time
      */

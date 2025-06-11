@@ -11,9 +11,11 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -38,17 +41,21 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
-import com.catpuppyapp.puppygit.compose.CenterIconButton
+import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.PageCenterIconButton
+import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -93,11 +100,11 @@ import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.io.File
 
 private const val TAG = "EditorInnerPage"
 
@@ -108,6 +115,9 @@ fun EditorInnerPage(
     stateKeyTag:String,
 
     recentFileList: CustomStateListSaveable<FileDetail>,
+    selectedRecentFileList: CustomStateListSaveable<FileDetail>,
+    recentFileListSelectionMode: MutableState<Boolean>,
+
     loadLock:Mutex,  // 避免重复加载的锁
     ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
@@ -1068,6 +1078,34 @@ fun EditorInnerPage(
     //not open file (and no err)
     if (notOpenFile) {  //文件未就绪且无正在显示的文件且没错误
 
+
+        val selectionMode = recentFileListSelectionMode
+
+        val quitSelectionMode = {
+            selectionMode.value = false
+            selectedRecentFileList.value.clear()
+        }
+
+
+        //多选模式相关函数，开始
+        val switchItemSelected = { item: FileDetail ->
+            //如果元素不在已选择条目列表则添加
+            UIHelper.selectIfNotInSelectedListElseRemove(item, selectedRecentFileList.value)
+            //开启选择模式
+            selectionMode.value = true
+        }
+
+        val selectItem = { item:FileDetail ->
+            selectionMode.value = true
+            UIHelper.selectIfNotInSelectedListElseNoop(item, selectedRecentFileList.value)
+        }
+
+        val isItemInSelected= { item:FileDetail ->
+            selectedRecentFileList.value.contains(item)
+        }
+        // 多选模式相关函数，结束
+
+
         LaunchedEffect(needRefreshRecentFileList.value) {
             doJobThenOffLoading(loadingOnForRecentFileList, loadingOffForRecentFileList, activityContext.getString(R.string.loading)) {
 
@@ -1112,6 +1150,20 @@ fun EditorInnerPage(
                     recentFileList.value.let {
                         it.clear()
                         it.addAll(recentFiles)
+                    }
+
+                    // update selected list
+                    if(recentFileListSelectionMode.value) {
+                        val selectedList = selectedRecentFileList.value
+                        val newSelectedList = mutableListOf<FileDetail>()
+                        selectedList.forEach {
+                            if(recentFiles.contains(it)) {
+                                newSelectedList.add(it)
+                            }
+                        }
+
+                        selectedList.clear()
+                        selectedList.addAll(newSelectedList)
                     }
 
                 }catch (e:Exception) {
@@ -1160,6 +1212,131 @@ fun EditorInnerPage(
                         }
                     )
                 }
+            }
+
+            val showDeleteRecentFilesDialog = rememberSaveable { mutableStateOf(false) }
+            val deleteFileOnDisk = rememberSaveable { mutableStateOf(false) }
+            val initDeleteRecentFilesDialog = {
+                deleteFileOnDisk.value = false
+                showDeleteRecentFilesDialog.value = true
+            }
+
+            if(showDeleteRecentFilesDialog.value) {
+                ConfirmDialog(
+                    title = stringResource(R.string.delete),
+                    requireShowTextCompose = true,
+                    textCompose = {
+                        ScrollableColumn {
+                            DefaultPaddingText(stringResource(R.string.will_delete_selected_items_are_u_sure))
+                            Spacer(Modifier.height(10.dp))
+                            MyCheckBox(stringResource(R.string.del_files_on_disk), deleteFileOnDisk)
+                        }
+                    },
+                    onCancel = { showDeleteRecentFilesDialog.value = false },
+                    okBtnText = stringResource(R.string.delete),
+                    okTextColor = if(deleteFileOnDisk.value) MyStyleKt.TextColor.danger() else Color.Unspecified,
+                ) {
+                    showDeleteRecentFilesDialog.value = false
+
+                    Msg.requireShow(activityContext.getString(R.string.deleting))
+                    quitSelectionMode()
+
+                    val deleteFileOnDisk = deleteFileOnDisk.value
+                    val targetList = selectedRecentFileList.value.toList()
+
+                    doJobThenOffLoading {
+                        targetList.forEach {
+                            recentFileList.value.remove(it)
+                            FileOpenHistoryMan.remove(it.file.path.ioPath)
+
+                            if(deleteFileOnDisk) {
+                                try {
+                                    File(it.file.path.ioPath).delete()
+                                }catch (e: Exception) {
+                                    MyLog.w(TAG, "remove file failed: ioPath=${it.file.path.ioPath}, err=${e.localizedMessage}")
+                                }
+                            }
+                        }
+
+                        Msg.requireShow(activityContext.getString(R.string.done))
+                    }
+                }
+
+            }
+
+            val iconList = listOf(
+                // show in files
+                Icons.Filled.DocumentScanner,
+                // delete
+                Icons.Filled.Delete,
+                Icons.Filled.SelectAll,
+            )
+            val iconTextList = listOf(
+                stringResource(R.string.show_in_files),
+                stringResource(R.string.delete),
+                stringResource(R.string.select_all),
+            )
+            val iconOnClickList = listOf(
+                showInFiles@{
+                    selectedRecentFileList.value.firstOrNull()?.let { showInFiles(it.file.path) }
+                    Unit
+                },
+
+                delete@{
+                    initDeleteRecentFilesDialog()
+                },
+
+                selectAll@{
+                    selectedRecentFileList.value.let {
+                        it.clear()
+                        it.addAll(recentFileList.value)
+                    }
+
+                    Unit
+                }
+            )
+
+            val getSelectedFilesCount = {
+                selectedRecentFileList.value.size
+            }
+            val iconEnableList = listOf(
+                showInFiles@{ selectedRecentFileList.value.size == 1 },
+                delete@{ true },
+                selectAll@{ true },
+            )
+
+
+
+            val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false) }
+            if(showSelectedItemsShortDetailsDialog.value) {
+                SelectedItemDialog(
+                    selectedItems = selectedRecentFileList.value,
+                    formatter = {it.file.name},
+                    switchItemSelected = switchItemSelected,
+                    clearAll = {selectedRecentFileList.value.clear()},
+                    closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
+                )
+            }
+
+            val countNumOnClickForBottomBar = {
+                showSelectedItemsShortDetailsDialog.value = true
+            }
+            if(selectionMode.value) {
+                BottomBar(
+                    quitSelectionMode=quitSelectionMode,
+                    iconList=iconList,
+                    iconTextList=iconTextList,
+                    iconDescTextList=iconTextList,
+                    iconOnClickList=iconOnClickList,
+                    iconEnableList=iconEnableList,
+                    moreItemTextList=listOf(),
+                    moreItemOnClickList=listOf(),
+                    moreItemEnableList = listOf(),
+                    getSelectedFilesCount = getSelectedFilesCount,
+                    countNumOnClickEnabled = true,
+                    countNumOnClick = countNumOnClickForBottomBar,
+                    reverseMoreItemList = true
+                )
             }
 
         }

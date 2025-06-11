@@ -180,6 +180,8 @@ fun SubPageEditor(
     val editorPreviewFileDto = mutableCustomStateOf(stateKeyTag, "editorPreviewFileDto") { FileSimpleDto() }
 
     val editorRecentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<FileDetail>() }
+    val editorSelectedRecentFileList = mutableCustomStateListOf(stateKeyTag, "editorSelectedRecentFileList") { listOf<FileDetail>() }
+    val editorRecentFileListSelectionMode = rememberSaveable { mutableStateOf(false) }
 
 
     //初始值不用忽略，因为打开文件后默认focusing line idx为null，所以这个值是否忽略并没意义
@@ -403,6 +405,10 @@ fun SubPageEditor(
             stateKeyTag = stateKeyTag,
 
             recentFileList = editorRecentFileList,
+            selectedRecentFileList = editorSelectedRecentFileList,
+            recentFileListSelectionMode = editorRecentFileListSelectionMode,
+
+
             ignoreFocusOnce = ignoreFocusOnce,
             softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
 

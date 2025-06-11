@@ -382,6 +382,8 @@ fun HomeScreen(
     val repoFilterListState = rememberLazyListState()
 
     val editorRecentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<FileDetail>() }
+    val editorSelectedRecentFileList = mutableCustomStateListOf(stateKeyTag, "editorSelectedRecentFileList") { listOf<FileDetail>() }
+    val editorRecentFileListSelectionMode = rememberSaveable { mutableStateOf(false) }
 
     val editorPreviewFileDto = mutableCustomStateOf(stateKeyTag, "editorPreviewFileDto") { FileSimpleDto() }
 
@@ -389,10 +391,10 @@ fun HomeScreen(
     val editorPageShowingFilePath = rememberSaveable { mutableStateOf(FilePath("")) }
 
     //当前展示的文件是否已经加载完毕
-    val editorPageShowingFileIsReady = rememberSaveable { mutableStateOf(false)}
+    val editorPageShowingFileIsReady = rememberSaveable { mutableStateOf(false) }
 
     val editorPageIsEdited = rememberSaveable { mutableStateOf(false)}
-    val editorPageIsContentSnapshoted = rememberSaveable{mutableStateOf(false)}  //是否已对当前内容创建了快照
+    val editorPageIsContentSnapshoted = rememberSaveable{ mutableStateOf(false) }  //是否已对当前内容创建了快照
 
     //TextEditor用的变量
     val editorPageTextEditorState = mutableCustomStateOf(
@@ -1377,6 +1379,9 @@ fun HomeScreen(
                     stateKeyTag = stateKeyTag,
 
                     recentFileList = editorRecentFileList,
+                    selectedRecentFileList = editorSelectedRecentFileList,
+                    recentFileListSelectionMode = editorRecentFileListSelectionMode,
+
                     ignoreFocusOnce = ignoreFocusOnce,
                     softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
                     previewLoading = editorPagePreviewLoading,

@@ -57,10 +57,15 @@ fun FileDetailItem(
             .width(width)
 
     ) {
-        Row(
+        Column(
             modifier = Modifier.padding(5.dp)
         ) {
-            Text(item.file.name, fontSize = 18.sp)
+            ScrollableRow {
+                Text(item.file.name, fontSize = MyStyleKt.Title.firstLineFontSize)
+            }
+            ScrollableRow {
+                Text(item.file.path.ioPath, fontSize = MyStyleKt.Title.secondLineFontSize)
+            }
         }
 
         MyHorizontalDivider()
