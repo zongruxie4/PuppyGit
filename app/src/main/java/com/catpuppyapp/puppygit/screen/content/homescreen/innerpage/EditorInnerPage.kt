@@ -1347,7 +1347,7 @@ fun EditorInnerPage(
             }
             val iconEnableList = listOf(
                 delete@{ true },
-                showInFiles@{ selectedRecentFileList.value.size == 1 },
+                showInFiles@{ isSubPageMode.not() && selectedRecentFileList.value.size == 1 },
                 selectAll@{ true },
             )
 
