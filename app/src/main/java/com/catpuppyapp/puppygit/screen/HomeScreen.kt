@@ -1096,7 +1096,11 @@ fun HomeScreen(
                             )
 
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && !editorOpenFileErr.value) {
-                            if(editorRecentFileList.value.isEmpty()){
+                            val notOpenFile = !editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isBlank()
+
+                            if(notOpenFile && editorRecentFileList.value.isNotEmpty()) {
+                                FileDetailListActions()
+                            }else {
                                 EditorPageActions(
                                     initPreviewMode = editorInitPreviewMode,
                                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
@@ -1135,8 +1139,6 @@ fun HomeScreen(
                                     undoStack = editorUndoStack.value,
                                     showUndoRedo = editorShowUndoRedo
                                 )
-                            }else {
-                                FileDetailListActions()
                             }
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
                             if(!changeListPageFilterModeOn.value){

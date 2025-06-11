@@ -322,7 +322,11 @@ fun SubPageEditor(
                 },
                 actions = {
                     if(!editorOpenFileErr.value) {
-                        if(editorRecentFileList.value.isEmpty()) {
+                        val notOpenFile = !editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isBlank()
+
+                        if(notOpenFile && editorRecentFileList.value.isNotEmpty()) {
+                            FileDetailListActions()
+                        }else  {
                             EditorPageActions(
                                 requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
                                 initPreviewMode = editorInitPreviewMode,
@@ -361,8 +365,6 @@ fun SubPageEditor(
                                 undoStack = editorUndoStack.value,
                                 showUndoRedo = editorShowUndoRedo
                             )
-                        }else {
-                            FileDetailListActions()
                         }
                     }
                 },
