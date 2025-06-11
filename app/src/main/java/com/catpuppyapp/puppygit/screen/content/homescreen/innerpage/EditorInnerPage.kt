@@ -1133,6 +1133,9 @@ fun EditorInnerPage(
                     reloadList = reloadRecentFileList,
                     openFile = {
                         forceReloadFilePath(it.file.path)
+                    },
+                    itemOnLongClick = {
+
                     }
                 )
             }else {

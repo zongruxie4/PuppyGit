@@ -21,6 +21,7 @@ fun FileDetailList(
     list:List<FileDetail>,
     reloadList:()->Unit,
     openFile:(FileDetail)->Unit,
+    itemOnLongClick:(FileDetail)->Unit,
 ) {
     FullScreenScrollableColumn(
         contentPadding = contentPadding,
@@ -34,7 +35,7 @@ fun FileDetailList(
                 FileDetailItem(
                     item = it,
                     onLongClick = {
-
+                        itemOnLongClick(it)
                     },
                     onClick = {
                         openFile(it)
