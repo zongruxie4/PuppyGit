@@ -53,7 +53,7 @@ data class Editor (
     /**
      * recent file list max limit, should less than FileHistoryLimit, but if over it, will not cause an err，超了历史记录数也不会报错，只是顶多显示历史记录那么多个文件
      */
-    var recentFilesLimit:Int = 20,
+    var recentFilesLimit:Int = 10,
 
     /**
      * 是否开启补丁模式，若开启，编辑器会高亮显示+和-开头的行
