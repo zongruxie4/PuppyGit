@@ -1101,7 +1101,9 @@ fun HomeScreen(
                             val notOpenFile = !editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isBlank()
 
                             if(notOpenFile && editorRecentFileList.value.isNotEmpty()) {
-                                FileDetailListActions()
+                                FileDetailListActions(
+                                    request = editorPageRequestFromParent
+                                )
                             }else {
                                 EditorPageActions(
                                     initPreviewMode = editorInitPreviewMode,
