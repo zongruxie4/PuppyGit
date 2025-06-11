@@ -3,26 +3,18 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.DrawerState
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -35,7 +27,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -44,17 +35,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import com.catpuppyapp.puppygit.compose.CenterIconButton
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
-import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
-import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
@@ -84,7 +73,6 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doActWithLockIfFree
@@ -481,6 +469,14 @@ fun EditorInnerPage(
         }else {  // saf uri，"content://"开头的玩意之类的
             // 文件管理器无法定位到非 / 开头的绝对路径，提示下路径无效即可
             Msg.requireShowLongDuration(activityContext.getString(R.string.file_path_invalid)+": "+path.ioPath)
+        }
+    }
+
+
+    val getTheLastOpenedFilePath = {
+        //如果内存中有上次关闭文件的路径，直接使用，否则从配置文件加载
+        lastFilePath.value.ifBlank {
+            SettingsUtil.getSettingsSnapshot().editor.lastEditedFilePath
         }
     }
 
@@ -1137,7 +1133,7 @@ fun EditorInnerPage(
                 val needRefreshRecentFileList = rememberSaveable { mutableStateOf("") }
 
                 LaunchedEffect(needRefreshRecentFileList.value) {
-                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
+                    doJobThenOffLoading(loadingOnForRecentFileList, loadingOffForRecentFileList, activityContext.getString(R.string.loading)) {
 
                         try {
                             val historyMap = FileOpenHistoryMan.getHistory().storage
@@ -1189,22 +1185,25 @@ fun EditorInnerPage(
                 }else {
                     if(recentFileList.value.isNotEmpty()) {
 
-                    } else {
-                        Row {
-//                    val spacerHeight=15.dp
-
-                            if(!isSubPageMode) {  //仅在主页导航来的情况下才显示选择文件，否则显示了也不好使，因为显示子页面的时候，主页可能被销毁了，或者被覆盖了，改状态跳转页面不行，除非导航，但没必要导航，直接隐藏即可
-                                LongPressAbleIconBtn(
-                                    enabled = true,
-                                    iconModifier = iconModifier.size(50.dp),
-                                    tooltipText = stringResource(R.string.select_file),
-                                    icon =  Icons.Filled.Folder,
-                                    iconContentDesc = stringResource(id = R.string.select_file),
-                                ) {
+                    }else {
+                        // if is sub editor, after close a file, the closed file must available in the `recentFileList`, so, no chance to reach `else` block
+                        //仅在主页导航来的情况下才显示选择文件，否则显示了也不好使，因为显示子页面的时候，主页可能被销毁了，或者被覆盖了，改状态跳转页面不行，除非导航，但没必要导航，直接隐藏即可
+                        if(!isSubPageMode) {
+                            CenterIconButton(
+                                icon = Icons.Filled.Folder,
+                                text = stringResource(R.string.select_file),
+                                onClick = {
                                     currentHomeScreen.intValue = Cons.selectedItem_Files
                                 }
-
-                            }
+                            )
+                        } else {  // should never reach here, but may be...will reach here in some weird cases, so, better keep this code block
+                            CenterIconButton(
+                                icon = ImageVector.vectorResource(R.drawable.outline_reopen_window_24),
+                                text = stringResource(R.string.reopen),
+                                onClick = {
+                                    forceReloadFilePath(FilePath(getTheLastOpenedFilePath()))
+                                }
+                            )
                         }
                     }
 

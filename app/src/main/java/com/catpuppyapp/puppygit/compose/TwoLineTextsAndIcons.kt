@@ -14,7 +14,11 @@ import androidx.compose.ui.unit.dp
 
 
 @Composable
-fun TwoLineTextsAndIcons(text1:String, text2:String, trailIcons: @Composable () -> Unit) {
+fun TwoLineTextsAndIcons(
+    text1:String,
+    text2:String,
+    trailIcons: @Composable () -> Unit
+) {
     Row(
         modifier = Modifier
             .padding(5.dp)

@@ -90,7 +90,7 @@ object FileOpenHistoryMan {
             removeOldHistory(h)
         }
 
-        saveHistory(h)
+        update(h)
     }
 
     /**
