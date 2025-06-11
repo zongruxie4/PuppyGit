@@ -1166,9 +1166,10 @@ fun EditorInnerPage(
     // open file err or no file opened or loading file
     if(
         ((editorOpenFileErr.value) // open file err
-                || (notOpenFile)  // no opened any file
+//                || (notOpenFile)  // no file opened
                 || (loadingFile))  // loading file
         && somethingWrong  // load file err or file not ready or file path is blank
+        && !notOpenFile
     ){
         FullScreenScrollableColumn(contentPadding) {
             val fontSize = MyStyleKt.TextSize.default
