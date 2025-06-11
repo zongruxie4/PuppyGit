@@ -1,13 +1,13 @@
 package com.catpuppyapp.puppygit.screen.content.editor
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.FlowRowOverflow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.catpuppyapp.puppygit.compose.FileDetailItem
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
@@ -22,23 +22,25 @@ fun FileDetailList(
     reloadList:()->Unit,
     openFile:(FileDetail)->Unit,
 ) {
-    FlowRow (
-        modifier = Modifier
-            .padding(contentPadding)
-        ,
-
-        overflow = FlowRowOverflow.Visible
+    FullScreenScrollableColumn(
+        contentPadding = contentPadding,
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start,
     ) {
-        list.forEach {
-            FileDetailItem(
-                item = it,
-                onLongClick = {
+        FlowRow (
+            overflow = FlowRowOverflow.Visible
+        ) {
+            list.forEach {
+                FileDetailItem(
+                    item = it,
+                    onLongClick = {
 
-                },
-                onClick = {
-                    openFile(it)
-                }
-            )
+                    },
+                    onClick = {
+                        openFile(it)
+                    }
+                )
+            }
         }
     }
 }
