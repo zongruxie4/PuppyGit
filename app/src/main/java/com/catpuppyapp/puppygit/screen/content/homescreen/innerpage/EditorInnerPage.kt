@@ -738,6 +738,30 @@ fun EditorInnerPage(
 //        }
 //    }
 
+
+    val loadingRecentFiles = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
+    val loadingTextForRecentFiles = rememberSaveable { mutableStateOf("") }
+    val loadingOnForRecentFileList = { msg:String ->
+        loadingTextForRecentFiles.value = msg
+        loadingRecentFiles.value = true
+    }
+    val loadingOffForRecentFileList = {
+        loadingRecentFiles.value = false
+    }
+
+    val needRefreshRecentFileList = rememberSaveable { mutableStateOf("") }
+    val reloadRecentFileList = {
+        changeStateTriggerRefreshPage(needRefreshRecentFileList)
+    }
+
+
+
+    if(requestFromParent.value == PageRequest.reloadRecentFileList) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            reloadRecentFileList()
+        }
+    }
+
     if(requestFromParent.value == PageRequest.reloadIfChanged) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             //这个一般是app自动检测的，非用户手动触发，所以若判断很可能文件没改变，就不必重载
@@ -1043,20 +1067,6 @@ fun EditorInnerPage(
 
     //not open file (and no err)
     if (notOpenFile) {  //文件未就绪且无正在显示的文件且没错误
-        val loadingRecentFiles = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
-        val loadingTextForRecentFiles = rememberSaveable { mutableStateOf("") }
-        val loadingOnForRecentFileList = { msg:String ->
-            loadingTextForRecentFiles.value = msg
-            loadingRecentFiles.value = true
-        }
-        val loadingOffForRecentFileList = {
-            loadingRecentFiles.value = false
-        }
-
-        val needRefreshRecentFileList = rememberSaveable { mutableStateOf("") }
-        val reloadRecentFileList = {
-            changeStateTriggerRefreshPage(needRefreshRecentFileList)
-        }
 
         LaunchedEffect(needRefreshRecentFileList.value) {
             doJobThenOffLoading(loadingOnForRecentFileList, loadingOffForRecentFileList, activityContext.getString(R.string.loading)) {
@@ -1079,13 +1089,19 @@ fun EditorInnerPage(
                                     break
                                 }
 
-                                val filePath = FilePath(k)
-                                val fileName = filePath.toFuckSafFile(activityContext).name
+                                val file = FuckSafFile(activityContext, FilePath(k))
                                 //若文件名为空，说明失去读写权限了，不添加到列表
-                                if(fileName.isNotEmpty()) {
+                                if(file.name.isNotEmpty()) {
+                                    val fileShortContent = FsUtils.readShortContent(file)
+
                                     //如果从外部app请求本app打开文件，然后对方app没允许获取永久uri权限，那么下次重启本app后，这个文件名有可能会变成空白，除非请求打开的路径可以解析出相应的绝对路径，那样本app就会使用绝对路径访问文件，就是 "/storage/emulate/0" 那种路径，这时文件名就不会有错了，除非用户没授权访问外部存储
                                     // Pair(fileName, FilePath对象)
-                                    list.add(FileDetail(fileName, filePath))
+                                    list.add(
+                                        FileDetail(
+                                            file = file,
+                                            shortContent = fileShortContent,
+                                        )
+                                    )
                                 }
                             }
 

@@ -1,9 +1,8 @@
 package com.catpuppyapp.puppygit.dto
 
-import com.catpuppyapp.puppygit.screen.shared.FilePath
+import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 
 data class FileDetail(
-    val fileName:String,
-    val filePath: FilePath,
+    val file: FuckSafFile,
     val shortContent:String = "",
 )

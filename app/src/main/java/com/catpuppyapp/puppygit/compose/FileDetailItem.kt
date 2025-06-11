@@ -30,9 +30,9 @@ fun FileDetailItem(
 
     ) {
         Row(
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier.padding(5.dp)
         ) {
-            Text(item.fileName, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(item.file.name, fontSize = 18.sp)
         }
 
         MyHorizontalDivider()

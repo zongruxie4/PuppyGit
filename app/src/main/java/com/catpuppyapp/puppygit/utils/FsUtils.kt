@@ -1541,4 +1541,18 @@ object FsUtils {
             writer.write(text)
         }
     }
+
+    fun readShortContent(file: FuckSafFile, contentCharsLimit:Int = 100):String {
+        return try {
+            val buf = CharArray(contentCharsLimit)
+            file.bufferedReader().use { br ->
+                br.read(buf)
+            }
+
+            String(buf)
+        }catch (e: Exception) {
+            MyLog.w(TAG, "readShortContent of file err: fileIoPath=${file.path.ioPath}, err=${e.stackTraceToString()}")
+            ""
+        }
+    }
 }
