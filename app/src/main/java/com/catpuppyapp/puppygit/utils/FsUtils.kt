@@ -1569,7 +1569,7 @@ object FsUtils {
                 sb.substring(0, contentCharsLimit)
             }
         }catch (e: Exception) {
-            MyLog.w(TAG, "readShortContent of file err: fileIoPath=${file.path.ioPath}, err=${e.stackTraceToString()}")
+            MyLog.d(TAG, "readShortContent of file err: fileIoPath=${file.path.ioPath}, err=${e.stackTraceToString()}")
             ""
         }
     }
