@@ -10,45 +10,29 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.UIHelper
-
-private const val itemWidth = 200
-private const val itemMargin = 10
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileDetailItem(
+    width:Dp,
+    margin:Dp,
     idx:Int,
     item: FileDetail,
     selected:Boolean,
     onLongClick:(idx:Int, FileDetail)->Unit,
     onClick:(FileDetail)->Unit,
 ){
-    val configuration = AppModel.getCurActivityConfig()
-    val width = remember(configuration.screenWidthDp) {
-        configuration.screenWidthDp.let { screenWidth ->
-            // if not enough even show 2 items in a row,
-            //  set width to screen width,
-            //  else set width to 200dp
-            if(screenWidth < (itemWidth*2 + itemMargin*2)) {
-                screenWidth
-            }else {  // at least can include 2 items width with margin
-                itemWidth
-            }
-        }.dp
-    }
-
     Column(
         modifier = Modifier
-            .padding(itemMargin.dp)
+            .padding(margin)
             .background(if(selected) MaterialTheme.colorScheme.primaryContainer else UIHelper.defaultCardColor())
             .combinedClickable(
                 onLongClick = { onLongClick(idx, item) },
