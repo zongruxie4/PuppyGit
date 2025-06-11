@@ -55,6 +55,7 @@ import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.PageCenterIconButton
+import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.constants.Cons
@@ -1199,35 +1200,40 @@ fun EditorInnerPage(
             LoadingTextSimple(loadingTextForRecentFiles.value, contentPadding)
         }else {
             if(recentFileList.value.isNotEmpty()) {
-                FileDetailList(
+                PullToRefreshBox(
                     contentPadding = contentPadding,
-                    isSubEditor = isSubPageMode,
-                    list = recentFileList.value,
-                    reloadList = reloadRecentFileList,
-                    onClick = {
-                        if(selectionMode.value) {
-                            switchItemSelected(it)
-                        }else {
-                            forceReloadFilePath(it.file.path)
-                        }
-                    },
-                    itemOnLongClick = {idx, it->
-                        if(selectionMode.value) {
-                            // span select
-                            UIHelper.doSelectSpan(
-                                itemIdxOfItemList = idx,
-                                item = it,
-                                selectedItems = selectedRecentFileList.value,
-                                itemList = recentFileList.value,
-                                switchItemSelected = switchItemSelected,
-                                selectIfNotInSelectedListElseNoop = selectItem
-                            )
-                        }else {
-                            switchItemSelected(it)
-                        }
-                    },
-                    isItemSelected = isItemInSelected,
-                )
+                    onRefresh = { reloadRecentFileList() }
+                ) {
+                    FileDetailList(
+                        contentPadding = contentPadding,
+                        isSubEditor = isSubPageMode,
+                        list = recentFileList.value,
+                        reloadList = reloadRecentFileList,
+                        onClick = {
+                            if(selectionMode.value) {
+                                switchItemSelected(it)
+                            }else {
+                                forceReloadFilePath(it.file.path)
+                            }
+                        },
+                        itemOnLongClick = {idx, it->
+                            if(selectionMode.value) {
+                                // span select
+                                UIHelper.doSelectSpan(
+                                    itemIdxOfItemList = idx,
+                                    item = it,
+                                    selectedItems = selectedRecentFileList.value,
+                                    itemList = recentFileList.value,
+                                    switchItemSelected = switchItemSelected,
+                                    selectIfNotInSelectedListElseNoop = selectItem
+                                )
+                            }else {
+                                switchItemSelected(it)
+                            }
+                        },
+                        isItemSelected = isItemInSelected,
+                    )
+                }
             }else {
                 // if is sub editor, after close a file, the closed file must available in the `recentFileList`, so, no chance to reach `else` block
                 //仅在主页导航来的情况下才显示选择文件，否则显示了也不好使，因为显示子页面的时候，主页可能被销毁了，或者被覆盖了，改状态跳转页面不行，除非导航，但没必要导航，直接隐藏即可
