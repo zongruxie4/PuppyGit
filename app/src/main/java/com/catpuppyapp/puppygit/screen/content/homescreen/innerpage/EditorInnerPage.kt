@@ -1111,6 +1111,7 @@ fun EditorInnerPage(
         }else {
             if(recentFileList.value.isNotEmpty()) {
                 FileDetailList(
+                    contentPadding = contentPadding,
                     isSubEditor = isSubPageMode,
                     list = recentFileList.value,
                     reloadList = reloadRecentFileList,
