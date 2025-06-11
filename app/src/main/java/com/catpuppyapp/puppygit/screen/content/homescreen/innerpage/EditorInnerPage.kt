@@ -1175,8 +1175,10 @@ fun EditorInnerPage(
                         val selectedList = selectedRecentFileList.value
                         val newSelectedList = mutableListOf<FileDetail>()
                         selectedList.forEach {
-                            if(recentFiles.contains(it)) {
-                                newSelectedList.add(it)
+                            for(f in recentFiles) {
+                                if(f.file.path.ioPath == it.file.path.ioPath) {
+                                    newSelectedList.add(f)
+                                }
                             }
                         }
 
