@@ -1287,7 +1287,6 @@ fun EditorInnerPage(
                     showDeleteRecentFilesDialog.value = false
 
                     Msg.requireShow(activityContext.getString(R.string.deleting))
-                    quitSelectionMode()
 
                     val deleteFileOnDisk = deleteFileOnDisk.value
                     val targetList = selectedRecentFileList.value.toList()
@@ -1295,6 +1294,7 @@ fun EditorInnerPage(
                     doJobThenOffLoading {
                         targetList.forEach {
                             recentFileList.value.remove(it)
+                            selectedRecentFileList.value.remove(it)
                             FileOpenHistoryMan.remove(it.file.path.ioPath)
 
                             if(deleteFileOnDisk) {
