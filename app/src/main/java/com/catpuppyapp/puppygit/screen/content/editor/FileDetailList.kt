@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.screen.content.editor
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.runtime.Composable
@@ -27,6 +28,8 @@ private const val oneItemRequiredWidth = (itemWidth + oneItemRequiredMargin)
 @Composable
 fun FileDetailList(
     contentPadding: PaddingValues,
+    state: LazyStaggeredGridState,
+
     list:List<FileDetail>,
     onClick:(FileDetail)->Unit,
     itemOnLongClick:(idx:Int, FileDetail)->Unit,
@@ -60,7 +63,8 @@ fun FileDetailList(
             top = contentPadding.calculateTopPadding(),
             bottom = contentPadding.calculateBottomPadding() + MyStyleKt.BottomBar.outsideContentPadding
         ),
-        columns = StaggeredGridCells.Adaptive(minSize = width)
+        columns = StaggeredGridCells.Adaptive(minSize = width),
+        state = state,
     ) {
         list.forEachIndexed { idx, it ->
             item {

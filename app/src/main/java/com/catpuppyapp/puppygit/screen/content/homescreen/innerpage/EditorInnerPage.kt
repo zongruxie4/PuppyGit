@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Close
@@ -119,6 +120,7 @@ fun EditorInnerPage(
     recentFileList: CustomStateListSaveable<FileDetail>,
     selectedRecentFileList: CustomStateListSaveable<FileDetail>,
     recentFileListSelectionMode: MutableState<Boolean>,
+    recentListState: LazyStaggeredGridState,
 
     loadLock:Mutex,  // 避免重复加载的锁
     ignoreFocusOnce: CustomBoxSaveable<Boolean>,
@@ -1208,6 +1210,7 @@ fun EditorInnerPage(
                 ) {
                     FileDetailList(
                         contentPadding = contentPadding,
+                        state = recentListState,
                         isItemSelected = isItemInSelected,
                         list = recentFileList.value,
                         onClick = {

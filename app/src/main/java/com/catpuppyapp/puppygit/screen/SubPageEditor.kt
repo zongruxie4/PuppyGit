@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.screen
 
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -182,6 +183,7 @@ fun SubPageEditor(
     val editorRecentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<FileDetail>() }
     val editorSelectedRecentFileList = mutableCustomStateListOf(stateKeyTag, "editorSelectedRecentFileList") { listOf<FileDetail>() }
     val editorRecentFileListSelectionMode = rememberSaveable { mutableStateOf(false) }
+    val editorRecentListState = rememberLazyStaggeredGridState()
 
 
     //初始值不用忽略，因为打开文件后默认focusing line idx为null，所以这个值是否忽略并没意义
@@ -409,7 +411,7 @@ fun SubPageEditor(
             recentFileList = editorRecentFileList,
             selectedRecentFileList = editorSelectedRecentFileList,
             recentFileListSelectionMode = editorRecentFileListSelectionMode,
-
+            recentListState = editorRecentListState,
 
             ignoreFocusOnce = ignoreFocusOnce,
             softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,

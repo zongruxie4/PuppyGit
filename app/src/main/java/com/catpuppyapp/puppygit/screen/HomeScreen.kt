@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -384,6 +385,7 @@ fun HomeScreen(
     val editorRecentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<FileDetail>() }
     val editorSelectedRecentFileList = mutableCustomStateListOf(stateKeyTag, "editorSelectedRecentFileList") { listOf<FileDetail>() }
     val editorRecentFileListSelectionMode = rememberSaveable { mutableStateOf(false) }
+    val editorRecentListState = rememberLazyStaggeredGridState()
 
     val editorPreviewFileDto = mutableCustomStateOf(stateKeyTag, "editorPreviewFileDto") { FileSimpleDto() }
 
@@ -1383,6 +1385,7 @@ fun HomeScreen(
                     recentFileList = editorRecentFileList,
                     selectedRecentFileList = editorSelectedRecentFileList,
                     recentFileListSelectionMode = editorRecentFileListSelectionMode,
+                    recentListState = editorRecentListState,
 
                     ignoreFocusOnce = ignoreFocusOnce,
                     softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
