@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.dto.FileDetail
@@ -49,7 +50,7 @@ fun FileDetailItem(
             modifier = Modifier.padding(5.dp)
         ) {
             ScrollableRow {
-                Text(item.file.name, fontSize = MyStyleKt.Title.firstLineFontSize, color = fontColor)
+                Text(item.file.name, fontSize = MyStyleKt.Title.firstLineFontSize, color = fontColor, fontWeight = FontWeight.Bold)
             }
             ScrollableRow {
                 Text(item.file.path.ioPath, fontSize = MyStyleKt.Title.secondLineFontSize, color = fontColor)
