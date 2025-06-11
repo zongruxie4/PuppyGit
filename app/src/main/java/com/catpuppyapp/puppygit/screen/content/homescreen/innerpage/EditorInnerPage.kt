@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -50,6 +51,8 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
+import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
+import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
@@ -72,6 +75,7 @@ import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.screen.shared.MainActivityLifeCycle
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.screen.shared.doActIfIsExpectLifeCycle
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -464,6 +468,20 @@ fun EditorInnerPage(
     val forceReloadFile={
         val force = true
         reloadFile(force)
+    }
+
+    val forceReloadFilePath = { path: FilePath ->
+        editorPageShowingFilePath.value = path
+        forceReloadFile()
+    }
+
+    val showInFiles = { path:FilePath ->
+        if(path.ioPathType == PathType.ABSOLUTE) {  // '/'开头的绝对路径
+            goToFilesPage(path.ioPath)
+        }else {  // saf uri，"content://"开头的玩意之类的
+            // 文件管理器无法定位到非 / 开头的绝对路径，提示下路径无效即可
+            Msg.requireShowLongDuration(activityContext.getString(R.string.file_path_invalid)+": "+path.ioPath)
+        }
     }
 
     //重新加载文件确认弹窗
@@ -997,25 +1015,25 @@ fun EditorInnerPage(
 
 
     //如果可能ok，返回的是FuckSafFile，否则返回路径
-    val ifLastPathOkThenDoOkActElseDoNoOkAct:(okAct:(last: FuckSafFile)->Unit, noOkAct:(last:String)->Unit)->Unit = { okAct, noOkAct ->
-        var last = lastFilePath.value
-        if(last.isBlank()) {  //如果内存中有上次关闭文件的路径，直接使用，否则从配置文件加载
-            last = SettingsUtil.getSettingsSnapshot().editor.lastEditedFilePath
-        }
-
-        //如果查无上次打开文件，吐司提示 "last file not found!"；否则打开文件
-        //x 废弃，应在设置页面添加一个手动清除编辑器记录的位置信息的功能而不是一出异常就清除) 注：这里不要判断文件是否存在，留到reload时判断，在那里如果发现文件不存在将清除文件的上次编辑位置等信息
-//        var fuckSafFile: FuckSafFile? = null
-//        if(last.isNotBlank() && FuckSafFile(activityContext, FilePath(last)).let { fuckSafFile = it; it.exists() }) {
-
-        //这个根据我的体验，少检测少废话，直接打开，有错直接展示在editor页面体验最好，
-        // 不然吐丝提示文件未找到，我根本不知道是哪个鸟文件找不到
-        if(last.isNotBlank()) {
-            okAct(FuckSafFile(activityContext, FilePath(last)))
-        }else {
-           noOkAct(last)
-        }
-    }
+//    val ifLastPathOkThenDoOkActElseDoNoOkAct:(okAct:(last: FuckSafFile)->Unit, noOkAct:(last:String)->Unit)->Unit = { okAct, noOkAct ->
+//        var last = lastFilePath.value
+//        if(last.isBlank()) {  //如果内存中有上次关闭文件的路径，直接使用，否则从配置文件加载
+//            last = SettingsUtil.getSettingsSnapshot().editor.lastEditedFilePath
+//        }
+//
+//        //如果查无上次打开文件，吐司提示 "last file not found!"；否则打开文件
+//        //x 废弃，应在设置页面添加一个手动清除编辑器记录的位置信息的功能而不是一出异常就清除) 注：这里不要判断文件是否存在，留到reload时判断，在那里如果发现文件不存在将清除文件的上次编辑位置等信息
+////        var fuckSafFile: FuckSafFile? = null
+////        if(last.isNotBlank() && FuckSafFile(activityContext, FilePath(last)).let { fuckSafFile = it; it.exists() }) {
+//
+//        //这个根据我的体验，少检测少废话，直接打开，有错直接展示在editor页面体验最好，
+//        // 不然吐丝提示文件未找到，我根本不知道是哪个鸟文件找不到
+//        if(last.isNotBlank()) {
+//            okAct(FuckSafFile(activityContext, FilePath(last)))
+//        }else {
+//           noOkAct(last)
+//        }
+//    }
 
 
 
@@ -1030,15 +1048,7 @@ fun EditorInnerPage(
                 || (loadingFile))  // loading file
         && somethingWrong  // load file err or file not ready or file path is blank
     ){
-        Column(
-            modifier = Modifier
-                .baseVerticalScrollablePageModifier(contentPadding, rememberScrollState())
-
-                .padding(10.dp)
-            ,
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        FullScreenScrollableColumn(contentPadding) {
             val fontSize = MyStyleKt.TextSize.default
             val iconModifier = MyStyleKt.Icon.modifier
 
@@ -1114,79 +1124,21 @@ fun EditorInnerPage(
 
             //not open file (and no err)
             if (notOpenFile) {  //文件未就绪且无正在显示的文件且没错误
-//                val recentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<RecentFile>() }
-//                if() {
-//
-//                }else {
-//
-//                }
+                val loadingRecentFiles = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
+                val loadingTextForRecentFiles = rememberSaveable { mutableStateOf("") }
+                val loadingOnForRecentFileList = { msg:String ->
+                    loadingTextForRecentFiles.value = msg
+                    loadingRecentFiles.value = true
+                }
+                val loadingOffForRecentFileList = {
+                    loadingRecentFiles.value = false
+                }
 
-                Row {
-//                    val spacerHeight=15.dp
+                val needRefreshRecentFileList = rememberSaveable { mutableStateOf("") }
 
-                    if(!isSubPageMode) {  //仅在主页导航来的情况下才显示选择文件，否则显示了也不好使，因为显示子页面的时候，主页可能被销毁了，或者被覆盖了，改状态跳转页面不行，除非导航，但没必要导航，直接隐藏即可
-                        LongPressAbleIconBtn(
-                            enabled = true,
-                            iconModifier = iconModifier,
-                            tooltipText = stringResource(R.string.select_file),
-                            icon =  Icons.Filled.Folder,
-                            iconContentDesc = stringResource(id = R.string.select_file),
-                        ) {
-                            currentHomeScreen.intValue = Cons.selectedItem_Files
-                        }
+                LaunchedEffect(needRefreshRecentFileList.value) {
+                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
 
-                        LongPressAbleIconBtn(
-                            enabled = true,
-                            iconModifier = iconModifier,
-                            tooltipText = stringResource(R.string.show_last_in_files),
-                            icon =  Icons.Filled.DocumentScanner,
-                            iconContentDesc = stringResource(R.string.show_last_in_files),
-                        ) {
-                            ifLastPathOkThenDoOkActElseDoNoOkAct(okAct@{ last ->
-                                if(last.path.ioPathType == PathType.ABSOLUTE) {  // '/'开头的绝对路径
-                                    goToFilesPage(last.path.ioPath)
-                                }else {  // saf uri，"content://"开头的玩意之类的
-                                    // 文件管理器无法定位到非 / 开头的绝对路径，提示下路径无效即可
-                                    Msg.requireShowLongDuration(activityContext.getString(R.string.file_path_invalid)+": "+last.path.ioPath)
-                                }
-                            }) noOkAct@{
-                                Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
-                            }
-                        }
-
-                    }
-
-                    //打开上个文件，常驻条目，但显示文案根据是否子页面有所不同
-                    val reopenOrOpenLastText = if(isSubPageMode) stringResource(R.string.reopen) else stringResource(R.string.open_last)
-                    LongPressAbleIconBtn(
-                        enabled = true,
-                        iconModifier = iconModifier,
-                        tooltipText = reopenOrOpenLastText,
-                        icon = ImageVector.vectorResource(R.drawable.outline_reopen_window_24),
-                        iconContentDesc = reopenOrOpenLastText,
-                    ) {
-                        ifLastPathOkThenDoOkActElseDoNoOkAct(okAct@{ last ->
-                            //x 废弃，如果用户在主编辑器打开一个只读文件，后在子编辑器打开一个非只读文件，再切换回主编辑器，用open last，那么就会以只读打开一个不需要只读的文件，既然无法正确维护，不如每次都重置) 只读关闭时，检查是否需要开启。（因为仅存在需要自动打开只读的情况（打开不允许编辑的目录下文件时），不存在需要自动关闭只读的情况，所以，仅在只读关闭时检查是否需要开启只读，若只读开启，用户想关可打开文件后关（当然，不允许编辑的文件除外，这种文件只读选项将保持开启并禁止关闭））
-//                            if (!readOnlyMode.value) {
-//                                readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
-//                            }
-//                                editorMergeMode.value = false  //此值在这无需重置
-//                            readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
-
-                            editorPageShowingFilePath.value = last.path
-                            forceReloadFile()
-                        }) noOkAct@{
-                            Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
-                        }
-                    }
-
-                    LongPressAbleIconBtn(
-                        enabled = true,
-                        iconModifier = iconModifier,
-                        tooltipText = stringResource(R.string.recent_files),
-                        icon = Icons.AutoMirrored.Filled.List,
-                        iconContentDesc = stringResource(id = R.string.recent_files),
-                    ) {
                         try {
                             val historyMap = FileOpenHistoryMan.getHistory().storage
 
@@ -1222,13 +1174,6 @@ fun EditorInnerPage(
                             recentFileList.value.let {
                                 it.clear()
                                 it.addAll(recentFiles)
-
-                                if (it.isEmpty()) {
-                                    Msg.requireShowLongDuration(activityContext.getString(R.string.recent_files_is_empty))
-                                }else {
-                                    // show list
-                                    showRecentFilesList.value = true
-                                }
                             }
 
                         }catch (e:Exception) {
@@ -1236,54 +1181,35 @@ fun EditorInnerPage(
                             MyLog.e(TAG, "Recent Files onClick err: ${e.stackTraceToString()}")
                         }
                     }
+                }
 
-                    //得离按钮近点，不然菜单出现位置很偏
-                    if(showRecentFilesList.value) {
-                        DropdownMenu(
-                            expanded = showRecentFilesList.value,
-                            offset = DpOffset(x=50.dp, y=0.dp),
-                            onDismissRequest = { showRecentFilesList.value = false }
-                        ) {
-                            for((fileName, filePath) in recentFileList.value) {
-                                DropdownMenuItem(
-                                    text = { Text(fileName) },
-                                    onClick = {
-                                        // close dropdown menu
-                                        showRecentFilesList.value=false
 
-                                        //open file
-                                        //只读关闭时，检查是否需要开启。（因为仅存在需要自动打开只读的情况（打开不允许编辑的目录下文件时），不存在需要自动关闭只读的情况，所以，仅在只读关闭时检查是否需要开启只读，若只读开启，用户想关可打开文件后关（当然，不允许编辑的文件除外，这种文件只读选项将保持开启并禁止关闭））
-//                        if (!readOnlyMode.value) {
-//                            readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
-//                        }
-//                                editorMergeMode.value = false  //此值在这无需重置
-//                        readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
+                if(loadingRecentFiles.value) {
+                    Text(loadingTextForRecentFiles.value)
+                }else {
+                    if(recentFileList.value.isNotEmpty()) {
 
-                                        editorPageShowingFilePath.value = filePath
-                                        forceReloadFile()
+                    } else {
+                        Row {
+//                    val spacerHeight=15.dp
 
-                                    }
-                                )
+                            if(!isSubPageMode) {  //仅在主页导航来的情况下才显示选择文件，否则显示了也不好使，因为显示子页面的时候，主页可能被销毁了，或者被覆盖了，改状态跳转页面不行，除非导航，但没必要导航，直接隐藏即可
+                                LongPressAbleIconBtn(
+                                    enabled = true,
+                                    iconModifier = iconModifier.size(50.dp),
+                                    tooltipText = stringResource(R.string.select_file),
+                                    icon =  Icons.Filled.Folder,
+                                    iconContentDesc = stringResource(id = R.string.select_file),
+                                ) {
+                                    currentHomeScreen.intValue = Cons.selectedItem_Files
+                                }
 
                             }
-
-                            MyHorizontalDivider()
-
-                            DropdownMenuItem(
-                                text = { Text(text = stringResource(R.string.clear), color = MyStyleKt.TextColor.danger()) },
-                                onClick = {
-                                    // close dropdown menu
-                                    showRecentFilesList.value=false
-
-                                    showClearRecentFilesDialog.value = true
-                                }
-                            )
-
                         }
-
                     }
 
                 }
+
             }
 
             // loading file
