@@ -61,12 +61,14 @@ import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.constants.SingleSendHandleMethod
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.content.editor.FileDetailListActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.AboutInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.AutomationInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ChangeListInnerPage
@@ -379,6 +381,7 @@ fun HomeScreen(
     val filesFilterListState = rememberLazyListState()
     val repoFilterListState = rememberLazyListState()
 
+    val editorRecentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<FileDetail>() }
 
     val editorPreviewFileDto = mutableCustomStateOf(stateKeyTag, "editorPreviewFileDto") { FileSimpleDto() }
 
@@ -1092,44 +1095,48 @@ fun HomeScreen(
                             )
 
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && !editorOpenFileErr.value) {
-                            EditorPageActions(
-                                initPreviewMode = editorInitPreviewMode,
-                                requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
-                                previewNavStack = editorPreviewNavStack.value,
-                                previewPath = editorPreviewPath,
-                                previewPathChanged = editorPreviewPathChanged.value,
-                                isPreviewModeOn = editorIsPreviewModeOn.value,
-                                editorPageShowingFilePath = editorPageShowingFilePath,
+                            if(editorRecentFileList.value.isEmpty()){
+                                EditorPageActions(
+                                    initPreviewMode = editorInitPreviewMode,
+                                    requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
+                                    previewNavStack = editorPreviewNavStack.value,
+                                    previewPath = editorPreviewPath,
+                                    previewPathChanged = editorPreviewPathChanged.value,
+                                    isPreviewModeOn = editorIsPreviewModeOn.value,
+                                    editorPageShowingFilePath = editorPageShowingFilePath,
 //                                editorPageRequireOpenFilePath,
-                                editorPageShowingFileIsReady = editorPageShowingFileIsReady,
-                                needRefreshEditorPage = needRefreshEditorPage,
-                                editorPageTextEditorState = editorPageTextEditorState,
+                                    editorPageShowingFileIsReady = editorPageShowingFileIsReady,
+                                    needRefreshEditorPage = needRefreshEditorPage,
+                                    editorPageTextEditorState = editorPageTextEditorState,
 //                                editorPageShowSaveDoneToast,
-                                isSaving = editorPageIsSaving,
-                                isEdited = editorPageIsEdited,
-                                showReloadDialog = showReloadDialog,
-                                showCloseDialog=editorPageShowCloseDialog,
-                                closeDialogCallback = editorPageCloseDialogCallback,
+                                    isSaving = editorPageIsSaving,
+                                    isEdited = editorPageIsEdited,
+                                    showReloadDialog = showReloadDialog,
+                                    showCloseDialog=editorPageShowCloseDialog,
+                                    closeDialogCallback = editorPageCloseDialogCallback,
 //                                isLoading = editorPageIsLoading,
-                                doSave = doSave,
-                                loadingOn = editorPageLoadingOn,
-                                loadingOff = editorPageLoadingOff,
-                                editorPageRequest = editorPageRequestFromParent,
-                                editorPageSearchMode=editorPageSearchMode,
-                                editorPageMergeMode=editorPageMergeMode,
-                                editorPagePatchMode=editorPagePatchMode,
-                                readOnlyMode = editorReadOnlyMode,
-                                editorSearchKeyword = editorPageSearchKeyword.value.text,
-                                isSubPageMode = false,
+                                    doSave = doSave,
+                                    loadingOn = editorPageLoadingOn,
+                                    loadingOff = editorPageLoadingOff,
+                                    editorPageRequest = editorPageRequestFromParent,
+                                    editorPageSearchMode=editorPageSearchMode,
+                                    editorPageMergeMode=editorPageMergeMode,
+                                    editorPagePatchMode=editorPagePatchMode,
+                                    readOnlyMode = editorReadOnlyMode,
+                                    editorSearchKeyword = editorPageSearchKeyword.value.text,
+                                    isSubPageMode = false,
 
-                                fontSize=editorFontSize,
-                                lineNumFontSize=editorLineNumFontSize,
-                                adjustFontSizeMode=editorAdjustFontSizeMode,
-                                adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
-                                showLineNum = editorShowLineNum,
-                                undoStack = editorUndoStack.value,
-                                showUndoRedo = editorShowUndoRedo
-                            )
+                                    fontSize=editorFontSize,
+                                    lineNumFontSize=editorLineNumFontSize,
+                                    adjustFontSizeMode=editorAdjustFontSizeMode,
+                                    adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
+                                    showLineNum = editorShowLineNum,
+                                    undoStack = editorUndoStack.value,
+                                    showUndoRedo = editorShowUndoRedo
+                                )
+                            }else {
+                                FileDetailListActions()
+                            }
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
                             if(!changeListPageFilterModeOn.value){
                                 ChangeListPageActions(
@@ -1365,6 +1372,8 @@ fun HomeScreen(
                 EditorInnerPage(
 //                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
                     stateKeyTag = stateKeyTag,
+
+                    recentFileList = editorRecentFileList,
                     ignoreFocusOnce = ignoreFocusOnce,
                     softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
                     previewLoading = editorPagePreviewLoading,

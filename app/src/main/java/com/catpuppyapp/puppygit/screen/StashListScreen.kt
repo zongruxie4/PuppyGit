@@ -660,7 +660,6 @@ fun StashListScreen(
                             }
                         },
                         icon = Icons.Filled.Add,
-                        iconDesc = stringResource(R.string.create),
                         text = stringResource(R.string.create),
                     )
                 }

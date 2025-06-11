@@ -10,8 +10,8 @@ fun PageCenterIconButton(
     contentPadding: PaddingValues,
     onClick: ()->Unit,
     icon:ImageVector,
-    iconDesc:String?,
     text:String,
+    iconDesc:String? = text.ifBlank { null },
     elseContent: @Composable () -> Unit = {},  //这参数别放最后，避免和另一个重载版本的content搞混
     condition: Boolean = true,
     attachContent: @Composable () -> Unit = {},

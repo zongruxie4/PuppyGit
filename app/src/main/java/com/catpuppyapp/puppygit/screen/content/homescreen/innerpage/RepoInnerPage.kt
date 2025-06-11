@@ -1878,7 +1878,6 @@ fun RepoInnerPage(
 //                        dropDownMenuExpandState.value = true
                     },
                     icon = Icons.Filled.Add,
-                    iconDesc = stringResource(R.string.add_a_repo),
                     text = stringResource(R.string.add_a_repo),
                     attachContent = {
                         AddRepoDropDownMenu(

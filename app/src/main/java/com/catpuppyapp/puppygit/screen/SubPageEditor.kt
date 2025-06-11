@@ -26,10 +26,12 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.SmallFab
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.content.editor.FileDetailListActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.EditorInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.EditorPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.EditorTitle
@@ -46,6 +48,7 @@ import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.state.mutableCustomBoxOf
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -175,6 +178,9 @@ fun SubPageEditor(
     }
 
     val editorPreviewFileDto = mutableCustomStateOf(stateKeyTag, "editorPreviewFileDto") { FileSimpleDto() }
+
+    val editorRecentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<FileDetail>() }
+
 
     //初始值不用忽略，因为打开文件后默认focusing line idx为null，所以这个值是否忽略并没意义
     //这个值不能用state，不然修改state后会重组，然后又触发聚焦，就没意义了
@@ -315,44 +321,48 @@ fun SubPageEditor(
                 },
                 actions = {
                     if(!editorOpenFileErr.value) {
-                        EditorPageActions(
-                            requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
-                            initPreviewMode = editorInitPreviewMode,
-                            previewNavStack = editorPreviewNavStack.value,
-                            previewPath = editorPreviewPath,
-                            previewPathChanged = editorPreviewPathChanged.value,
-                            isPreviewModeOn = editorIsPreviewModeOn.value,
-                            editorPageShowingFilePath = editorPageShowingFilePath,
-    //                        editorPageRequireOpenFilePath,
-                            editorPageShowingFileIsReady = editorPageShowingFileIsReady,
-                            needRefreshEditorPage = needRefreshEditorPage,
-                            editorPageTextEditorState = editorPageTextEditorState,
-    //                        editorPageShowSaveDoneToast,
-                            isSaving = editorPageIsSaving,
-                            isEdited = editorPageIsEdited,
-                            showReloadDialog = showReloadDialog,
-                            showCloseDialog = showCloseDialog,
-                            closeDialogCallback=closeDialogCallback,
-    //                        isLoading = isLoading,
-                            doSave = doSave,
-                            loadingOn = loadingOn,
-                            loadingOff = loadingOff,
-                            editorPageRequest = editorPageRequestFromParent,
-                            editorPageSearchMode = editorPageSearchMode,
-                            editorPageMergeMode=editorPageMergeMode,
-                            editorPagePatchMode=editorPagePatchMode,
-                            readOnlyMode = editorReadOnlyMode,
-                            editorSearchKeyword = editorPageSearchKeyword.value.text,
-                            isSubPageMode=true,
+                        if(editorRecentFileList.value.isEmpty()) {
+                            EditorPageActions(
+                                requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
+                                initPreviewMode = editorInitPreviewMode,
+                                previewNavStack = editorPreviewNavStack.value,
+                                previewPath = editorPreviewPath,
+                                previewPathChanged = editorPreviewPathChanged.value,
+                                isPreviewModeOn = editorIsPreviewModeOn.value,
+                                editorPageShowingFilePath = editorPageShowingFilePath,
+                                //                        editorPageRequireOpenFilePath,
+                                editorPageShowingFileIsReady = editorPageShowingFileIsReady,
+                                needRefreshEditorPage = needRefreshEditorPage,
+                                editorPageTextEditorState = editorPageTextEditorState,
+                                //                        editorPageShowSaveDoneToast,
+                                isSaving = editorPageIsSaving,
+                                isEdited = editorPageIsEdited,
+                                showReloadDialog = showReloadDialog,
+                                showCloseDialog = showCloseDialog,
+                                closeDialogCallback=closeDialogCallback,
+                                //                        isLoading = isLoading,
+                                doSave = doSave,
+                                loadingOn = loadingOn,
+                                loadingOff = loadingOff,
+                                editorPageRequest = editorPageRequestFromParent,
+                                editorPageSearchMode = editorPageSearchMode,
+                                editorPageMergeMode=editorPageMergeMode,
+                                editorPagePatchMode=editorPagePatchMode,
+                                readOnlyMode = editorReadOnlyMode,
+                                editorSearchKeyword = editorPageSearchKeyword.value.text,
+                                isSubPageMode=true,
 
-                            fontSize=editorFontSize,
-                            lineNumFontSize=editorLineNumFontSize,
-                            adjustFontSizeMode=editorAdjustFontSizeMode,
-                            adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
-                            showLineNum = editorShowLineNum,
-                            undoStack = editorUndoStack.value,
-                            showUndoRedo = editorShowUndoRedo
-                        )
+                                fontSize=editorFontSize,
+                                lineNumFontSize=editorLineNumFontSize,
+                                adjustFontSizeMode=editorAdjustFontSizeMode,
+                                adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
+                                showLineNum = editorShowLineNum,
+                                undoStack = editorUndoStack.value,
+                                showUndoRedo = editorShowUndoRedo
+                            )
+                        }else {
+                            FileDetailListActions()
+                        }
                     }
                 },
                 scrollBehavior = homeTopBarScrollBehavior,
@@ -388,6 +398,8 @@ fun SubPageEditor(
         EditorInnerPage(
 //            stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
             stateKeyTag = stateKeyTag,
+
+            recentFileList = editorRecentFileList,
             ignoreFocusOnce = ignoreFocusOnce,
             softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
 

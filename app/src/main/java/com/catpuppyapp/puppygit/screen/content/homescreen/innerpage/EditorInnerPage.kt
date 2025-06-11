@@ -43,10 +43,12 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
+import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
+import com.catpuppyapp.puppygit.compose.PageCenterIconButton
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -58,6 +60,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.ui.composable.FileEditor
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.content.editor.FileDetailList
 import com.catpuppyapp.puppygit.screen.functions.getEditorStateOnChange
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
@@ -88,6 +91,7 @@ import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
+import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.withMainContext
@@ -103,6 +107,7 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 fun EditorInnerPage(
     stateKeyTag:String,
 
+    recentFileList: CustomStateListSaveable<FileDetail>,
     loadLock:Mutex,  // 避免重复加载的锁
     ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
@@ -549,9 +554,7 @@ fun EditorInnerPage(
     }
 
 
-    val showRecentFilesList = rememberSaveable { mutableStateOf(false) }
 
-    val recentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<FileDetail>() }
 
 
 
@@ -1037,6 +1040,109 @@ fun EditorInnerPage(
     val loadingFile = !editorPageShowingFileHasErr.value && !editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank()
     val somethingWrong = editorPageShowingFileHasErr.value || !editorPageShowingFileIsReady.value || editorPageShowingFilePath.value.isBlank()
 
+
+    //not open file (and no err)
+    if (notOpenFile) {  //文件未就绪且无正在显示的文件且没错误
+        val loadingRecentFiles = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
+        val loadingTextForRecentFiles = rememberSaveable { mutableStateOf("") }
+        val loadingOnForRecentFileList = { msg:String ->
+            loadingTextForRecentFiles.value = msg
+            loadingRecentFiles.value = true
+        }
+        val loadingOffForRecentFileList = {
+            loadingRecentFiles.value = false
+        }
+
+        val needRefreshRecentFileList = rememberSaveable { mutableStateOf("") }
+        val reloadRecentFileList = {
+            changeStateTriggerRefreshPage(needRefreshRecentFileList)
+        }
+
+        LaunchedEffect(needRefreshRecentFileList.value) {
+            doJobThenOffLoading(loadingOnForRecentFileList, loadingOffForRecentFileList, activityContext.getString(R.string.loading)) {
+
+                try {
+                    val historyMap = FileOpenHistoryMan.getHistory().storage
+
+                    val recentFiles = historyMap
+                        // sort
+                        .toSortedMap({ k1, k2 ->
+                            //从自己的对象查自己的key，肯定有对象，所以后面直接双叹号断言非空
+                            val v1 = historyMap.get(k1)!!
+                            val v2 = historyMap.get(k2)!!
+                            // lastUsedTime descend sort
+                            if (v1.lastUsedTime > v2.lastUsedTime) -1 else 1
+                        }).let { sortedMap ->
+                            val list = mutableListOf<FileDetail>()
+                            for((k, _lastEditPos) in sortedMap) {
+                                if(list.size >= recentFilesLimit) {
+                                    break
+                                }
+
+                                val filePath = FilePath(k)
+                                val fileName = filePath.toFuckSafFile(activityContext).name
+                                //若文件名为空，说明失去读写权限了，不添加到列表
+                                if(fileName.isNotEmpty()) {
+                                    //如果从外部app请求本app打开文件，然后对方app没允许获取永久uri权限，那么下次重启本app后，这个文件名有可能会变成空白，除非请求打开的路径可以解析出相应的绝对路径，那样本app就会使用绝对路径访问文件，就是 "/storage/emulate/0" 那种路径，这时文件名就不会有错了，除非用户没授权访问外部存储
+                                    // Pair(fileName, FilePath对象)
+                                    list.add(FileDetail(fileName, filePath))
+                                }
+                            }
+
+                            list
+                        };
+
+                    // add sorted list to state list
+                    recentFileList.value.let {
+                        it.clear()
+                        it.addAll(recentFiles)
+                    }
+
+                }catch (e:Exception) {
+                    Msg.requireShowLongDuration(e.localizedMessage ?: "get recent files err")
+                    MyLog.e(TAG, "Recent Files onClick err: ${e.stackTraceToString()}")
+                }
+            }
+        }
+
+
+        if(loadingRecentFiles.value) {
+            LoadingTextSimple(loadingTextForRecentFiles.value, contentPadding)
+        }else {
+            if(recentFileList.value.isNotEmpty()) {
+                FileDetailList(
+                    isSubEditor = isSubPageMode,
+                    list = recentFileList.value,
+                    reloadList = reloadRecentFileList,
+                )
+            }else {
+                // if is sub editor, after close a file, the closed file must available in the `recentFileList`, so, no chance to reach `else` block
+                //仅在主页导航来的情况下才显示选择文件，否则显示了也不好使，因为显示子页面的时候，主页可能被销毁了，或者被覆盖了，改状态跳转页面不行，除非导航，但没必要导航，直接隐藏即可
+                if(!isSubPageMode) {
+                    PageCenterIconButton(
+                        contentPadding = contentPadding,
+                        icon = Icons.Filled.Folder,
+                        text = stringResource(R.string.select_file),
+                        onClick = {
+                            currentHomeScreen.intValue = Cons.selectedItem_Files
+                        }
+                    )
+                } else {  // should never reach here, but may be...will reach here in some weird cases, so, better keep this code block
+                    PageCenterIconButton(
+                        contentPadding = contentPadding,
+                        icon = ImageVector.vectorResource(R.drawable.outline_reopen_window_24),
+                        text = stringResource(R.string.reopen),
+                        onClick = {
+                            forceReloadFilePath(FilePath(getTheLastOpenedFilePath()))
+                        }
+                    )
+                }
+            }
+
+        }
+
+    }
+
     // open file err or no file opened or loading file
     if(
         ((editorOpenFileErr.value) // open file err
@@ -1118,98 +1224,6 @@ fun EditorInnerPage(
 
             }
 
-            //not open file (and no err)
-            if (notOpenFile) {  //文件未就绪且无正在显示的文件且没错误
-                val loadingRecentFiles = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
-                val loadingTextForRecentFiles = rememberSaveable { mutableStateOf("") }
-                val loadingOnForRecentFileList = { msg:String ->
-                    loadingTextForRecentFiles.value = msg
-                    loadingRecentFiles.value = true
-                }
-                val loadingOffForRecentFileList = {
-                    loadingRecentFiles.value = false
-                }
-
-                val needRefreshRecentFileList = rememberSaveable { mutableStateOf("") }
-
-                LaunchedEffect(needRefreshRecentFileList.value) {
-                    doJobThenOffLoading(loadingOnForRecentFileList, loadingOffForRecentFileList, activityContext.getString(R.string.loading)) {
-
-                        try {
-                            val historyMap = FileOpenHistoryMan.getHistory().storage
-
-                            val recentFiles = historyMap
-                                // sort
-                                .toSortedMap({ k1, k2 ->
-                                    //从自己的对象查自己的key，肯定有对象，所以后面直接双叹号断言非空
-                                    val v1 = historyMap.get(k1)!!
-                                    val v2 = historyMap.get(k2)!!
-                                    // lastUsedTime descend sort
-                                    if (v1.lastUsedTime > v2.lastUsedTime) -1 else 1
-                                }).let { sortedMap ->
-                                    val list = mutableListOf<FileDetail>()
-                                    for((k, _lastEditPos) in sortedMap) {
-                                        if(list.size >= recentFilesLimit) {
-                                            break
-                                        }
-
-                                        val filePath = FilePath(k)
-                                        val fileName = filePath.toFuckSafFile(activityContext).name
-                                        //若文件名为空，说明失去读写权限了，不添加到列表
-                                        if(fileName.isNotEmpty()) {
-                                            //如果从外部app请求本app打开文件，然后对方app没允许获取永久uri权限，那么下次重启本app后，这个文件名有可能会变成空白，除非请求打开的路径可以解析出相应的绝对路径，那样本app就会使用绝对路径访问文件，就是 "/storage/emulate/0" 那种路径，这时文件名就不会有错了，除非用户没授权访问外部存储
-                                            // Pair(fileName, FilePath对象)
-                                            list.add(FileDetail(fileName, filePath))
-                                        }
-                                    }
-
-                                    list
-                                };
-
-                            // add sorted list to state list
-                            recentFileList.value.let {
-                                it.clear()
-                                it.addAll(recentFiles)
-                            }
-
-                        }catch (e:Exception) {
-                            Msg.requireShowLongDuration(e.localizedMessage ?: "get recent files err")
-                            MyLog.e(TAG, "Recent Files onClick err: ${e.stackTraceToString()}")
-                        }
-                    }
-                }
-
-
-                if(loadingRecentFiles.value) {
-                    Text(loadingTextForRecentFiles.value)
-                }else {
-                    if(recentFileList.value.isNotEmpty()) {
-
-                    }else {
-                        // if is sub editor, after close a file, the closed file must available in the `recentFileList`, so, no chance to reach `else` block
-                        //仅在主页导航来的情况下才显示选择文件，否则显示了也不好使，因为显示子页面的时候，主页可能被销毁了，或者被覆盖了，改状态跳转页面不行，除非导航，但没必要导航，直接隐藏即可
-                        if(!isSubPageMode) {
-                            CenterIconButton(
-                                icon = Icons.Filled.Folder,
-                                text = stringResource(R.string.select_file),
-                                onClick = {
-                                    currentHomeScreen.intValue = Cons.selectedItem_Files
-                                }
-                            )
-                        } else {  // should never reach here, but may be...will reach here in some weird cases, so, better keep this code block
-                            CenterIconButton(
-                                icon = ImageVector.vectorResource(R.drawable.outline_reopen_window_24),
-                                text = stringResource(R.string.reopen),
-                                onClick = {
-                                    forceReloadFilePath(FilePath(getTheLastOpenedFilePath()))
-                                }
-                            )
-                        }
-                    }
-
-                }
-
-            }
 
             // loading file
             //没错误且文件未就绪且正在显示的文件路径不为空，那就是正在加载，显示loading

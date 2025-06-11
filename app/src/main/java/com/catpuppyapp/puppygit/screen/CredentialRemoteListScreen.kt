@@ -477,7 +477,6 @@ fun CredentialRemoteListScreen(
                         contentPadding = contentPadding,
                         onClick = goToCreateLinkPage,
                         icon = Icons.Filled.Add,
-                        iconDesc = stringResource(R.string.create_link),
                         text = stringResource(R.string.create_link),
                         condition = isShowLink,
                         elseContent = {
