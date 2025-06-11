@@ -1542,7 +1542,7 @@ object FsUtils {
         }
     }
 
-    fun readShortContent(file: FuckSafFile, contentCharsLimit:Int = 50):String {
+    fun readShortContent(file: FuckSafFile, contentCharsLimit:Int = 80):String {
         return try {
             val sb = StringBuilder()
 

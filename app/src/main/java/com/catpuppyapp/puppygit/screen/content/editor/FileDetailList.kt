@@ -1,16 +1,13 @@
 package com.catpuppyapp.puppygit.screen.content.editor
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.FlowRowOverflow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.FileDetailItem
-import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.utils.AppModel
 
@@ -21,6 +18,8 @@ private val itemMarginDp = itemMargin.dp
 // 只考虑左右需要的水平外边距
 private const val oneItemRequiredMargin = itemMargin*2
 private const val oneItemRequiredWidth = (itemWidth + oneItemRequiredMargin)
+
+
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -53,18 +52,12 @@ fun FileDetailList(
     }
 
 
-    FullScreenScrollableColumn(
+    LazyVerticalStaggeredGrid (
         contentPadding = contentPadding,
-        verticalArrangement = Arrangement.Top,
-
-        // if list size < items in each row and center, will make left/right sides have many blank spaces, so take it by a condition
-        horizontalAlignment = if(list.size < maxItemsInEachRow) Alignment.Start else Alignment.CenterHorizontally,
+        columns = StaggeredGridCells.Adaptive(minSize = width)
     ) {
-        FlowRow (
-            maxItemsInEachRow = maxItemsInEachRow,
-            overflow = FlowRowOverflow.Visible
-        ) {
-            list.forEachIndexed {idx, it ->
+        list.forEachIndexed {idx, it ->
+            item {
                 FileDetailItem(
                     width = width,
                     margin = itemMarginDp,
@@ -77,4 +70,5 @@ fun FileDetailList(
             }
         }
     }
+
 }
