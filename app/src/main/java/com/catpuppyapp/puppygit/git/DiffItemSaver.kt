@@ -10,9 +10,9 @@ import java.util.EnumSet
 import java.util.TreeMap
 
 
-// used to decide which addition line comparet to which deletion line in the hunk.
-// larger value bad performance but accurate result, smaller value has good performance but in-accurate result
-// 用来在比较前决定hunk里哪个addition line和哪个deletion line关联比较。值越大性能越差，结果更准，反之，性能好，结果更不准
+// used to decide which addition line compare to which deletion line in the hunk.
+// 【larger value bad performance but accurate result, smaller value has good performance but in-accurate result】
+// 用来在比较前决定hunk里哪个addition line和哪个deletion line关联比较。【值越大性能越差，结果更准，反之，性能好，结果更不准】
 private const val targetRoughlyMatchedCount = 6
 
 
@@ -218,6 +218,8 @@ class PuppyHunkAndLines {
 
             for(line in lines) {
                 // if old line's roughly matched count less than target, try matching it with new line
+                // if remove `line.roughlyMatchedCount < targetRoughlyMatchedCount` can be better for matching(both strings have more matched chars), but bad for performance, better don't remove this condition, if want to better matching, you can increase `targetRoughlyMatchedCount`
+                // 如果移除 `line.roughlyMatchedCount < targetRoughlyMatchedCount` ，可能会提高匹配率，让相同字符更多的两个字符串互相关联，但会降低性能，最好不要移除此判断条件，而是通过提高 `targetRoughlyMatchedCount` 来增加匹配率
                 if(line.originType == PuppyLineOriginType.DELETION && line.roughlyMatchedCount < targetRoughlyMatchedCount) {
                     val roughMatchCnt = CmpUtil.roughlyMatch(puppyLine.getContentNoLineBreak(), line.getContentNoLineBreak(), targetRoughlyMatchedCount)
                     // these two strings matched more chars than the old two lines,
@@ -225,6 +227,12 @@ class PuppyHunkAndLines {
                     if(roughMatchCnt > line.roughlyMatchedCount && roughMatchCnt > maxRoughMatchCnt) {
                         maxMatchedLine = line
                         maxRoughMatchCnt = roughMatchCnt
+
+                        // if enable this break, can be improve performance, better keep this and adjust `targetRoughlyMatchedCount` to control better matching or better performance
+                        // 如果在这break，可提高性能，最好启用此代码，然后通过调整 `targetRoughlyMatchedCount` 来提高匹配率
+                        if(maxRoughMatchCnt >= targetRoughlyMatchedCount) {
+                            break
+                        }
                     }
                 }
             }

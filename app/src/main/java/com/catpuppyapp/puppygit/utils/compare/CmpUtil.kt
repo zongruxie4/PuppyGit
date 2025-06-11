@@ -58,7 +58,7 @@ object CmpUtil {
      *
      * @param targetMatchCount 匹配到此变量所代表的字数将终止匹配并返回匹配数（这个变量的值）。这个值越大，性能越差，但判断两个字符串重合度越越准；值越小，性能越好，但判断结果则更不准
      *
-     * @return at least matched chars count. greater than 0 means matched, non-matched otherwise
+     * @return at least matched chars count. greater than 0 means matched, non-matched otherwise, the returned value may grater than `targetMatchCount`
      */
     fun roughlyMatch(str1NoLineBreak:String, str2NoLineBreak:String, targetMatchCount:Int): Int {
         if(targetMatchCount < 1) {
@@ -120,7 +120,7 @@ object CmpUtil {
     /**
      * @param reverse true ends with else starts with
      * @param targetMatchCount match how many chars as matched success, if this value greater than str1 or str2 's length after trimStarts/Ends, this method will return false as not matched
-     * @return matched chars count
+     * @return matched chars count, range is [0, targetMatchCount], both are inclusive
      */
     private fun matchStartsOrEndsWith(str1:String, str2:String, reverse: Boolean, targetMatchCount:Int, str1InitIndex:Int, str2InitIndex:Int): Int {
         val str1Index = Box(str1InitIndex)
@@ -179,7 +179,7 @@ object CmpUtil {
     }
 
     /**
-     * @return matched chars count
+     * @return matched chars count, 0 means non-matched or grater than 0 means matched. and, the returned value may grater than `targetMatchCount`
      */
     private fun longerContainsPartOfShorter(str1: String, str2:String, targetMatchCount:Int, str1NonBlankRange: IntRange, str2NonBlankRange: IntRange): Int {
         var longerRange = str1NonBlankRange
@@ -216,6 +216,7 @@ object CmpUtil {
 
         // if longer contains sub of shorter, return contained chars count else return 0 (non-matched)
         // if end - start == 0, means subShorter has 1 char, and longer contains it, so should return 1 as matched count rather than 0
+        // note: `end - start` may grater than `targetMatchCount`
         return if(longer.contains(subShorter)) (end - start).coerceAtLeast(1) else 0
     }
 
