@@ -1298,10 +1298,12 @@ fun EditorInnerPage(
                             FileOpenHistoryMan.remove(it.file.path.ioPath)
 
                             if(deleteFileOnDisk) {
-                                try {
-                                    File(it.file.path.ioPath).delete()
-                                }catch (e: Exception) {
-                                    MyLog.w(TAG, "remove file failed: ioPath=${it.file.path.ioPath}, err=${e.localizedMessage}")
+                                if(it.file.path.ioPathType == PathType.ABSOLUTE) {
+                                    try {
+                                        File(it.file.path.ioPath).delete()
+                                    }catch (e: Exception) {
+                                        MyLog.w(TAG, "remove file failed: ioPath=${it.file.path.ioPath}, err=${e.localizedMessage}")
+                                    }
                                 }
                             }
                         }
