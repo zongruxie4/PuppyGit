@@ -1542,14 +1542,32 @@ object FsUtils {
         }
     }
 
-    fun readShortContent(file: FuckSafFile, contentCharsLimit:Int = 100):String {
+    fun readShortContent(file: FuckSafFile, contentCharsLimit:Int = 50):String {
         return try {
-            val buf = CharArray(contentCharsLimit)
+            val sb = StringBuilder()
+
             file.bufferedReader().use { br ->
-                br.read(buf)
+                while (true) {
+                    if(sb.length >= contentCharsLimit) {
+                        break
+                    }
+
+                    val line = br.readLine() ?: break
+
+                    line.trim().let {
+                        if(it.isNotBlank()) {
+                            sb.appendLine(it)
+                        }
+                    }
+                }
+
             }
 
-            String(buf)
+            if(sb.length <= contentCharsLimit) {
+                sb.toString()
+            }else {
+                sb.substring(0, contentCharsLimit)
+            }
         }catch (e: Exception) {
             MyLog.w(TAG, "readShortContent of file err: fileIoPath=${file.path.ioPath}, err=${e.stackTraceToString()}")
             ""

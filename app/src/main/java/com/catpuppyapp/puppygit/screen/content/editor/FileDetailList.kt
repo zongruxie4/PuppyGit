@@ -15,7 +15,7 @@ import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.utils.AppModel
 
 
-private const val itemWidth = 200
+private const val itemWidth = 150
 private const val itemMargin = 10
 private val itemMarginDp = itemMargin.dp
 // 只考虑左右需要的水平外边距
