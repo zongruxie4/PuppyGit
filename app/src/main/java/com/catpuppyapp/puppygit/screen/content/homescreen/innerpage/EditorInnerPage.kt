@@ -1131,6 +1131,9 @@ fun EditorInnerPage(
                     isSubEditor = isSubPageMode,
                     list = recentFileList.value,
                     reloadList = reloadRecentFileList,
+                    openFile = {
+                        forceReloadFilePath(it.file.path)
+                    }
                 )
             }else {
                 // if is sub editor, after close a file, the closed file must available in the `recentFileList`, so, no chance to reach `else` block

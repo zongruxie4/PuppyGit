@@ -14,6 +14,8 @@ import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 @Composable
 fun FullScreenScrollableColumn(
     contentPadding: PaddingValues,
+    verticalArrangement: Arrangement.Vertical = Arrangement.Center,
+    horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     content:@Composable ()->Unit,
 ) {
     Column(
@@ -23,8 +25,8 @@ fun FullScreenScrollableColumn(
             // avoid text reached screen border
             .padding(10.dp)
         ,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = verticalArrangement,
+        horizontalAlignment = horizontalAlignment,
     ) {
         content()
     }
