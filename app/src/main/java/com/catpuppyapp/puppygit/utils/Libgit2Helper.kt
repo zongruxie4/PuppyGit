@@ -4155,13 +4155,13 @@ object Libgit2Helper {
 
     fun resolveRefByName(repo:Repository, refNameShortOrFull:String, trueUseDwimFalseUseLookup:Boolean=true):Reference? {
         try {
-            MyLog.v(TAG, "#resolveRefName(refNameShortOrFull=$refNameShortOrFull, trueUseDwimFalseUseLookup=$trueUseDwimFalseUseLookup)")
+            MyLog.v(TAG, "#resolveRefByName(refNameShortOrFull=$refNameShortOrFull, trueUseDwimFalseUseLookup=$trueUseDwimFalseUseLookup)")
 
             //注：如果使用lookup必须全名查找，例如refs/heads/main 或 refs/remotes/origin/main，而且lookup不会解引用对象，如果ref是个符号引用(symbolic reference)，就会返回一个符号引用
             val ref = if(trueUseDwimFalseUseLookup) Reference.dwim(repo, refNameShortOrFull) else Reference.lookup(repo, refNameShortOrFull)
             return ref?.resolve()  //resolve reference to direct ref, direct ref is point to commit, not symbolicTarget
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveRefName(): resolve refname err! refname="+refNameShortOrFull+", trueUseDwimFalseUseLookup=$trueUseDwimFalseUseLookup, err is: "+e.stackTraceToString())
+            MyLog.d(TAG, "#resolveRefByName(): resolve refname err! refname="+refNameShortOrFull+", trueUseDwimFalseUseLookup=$trueUseDwimFalseUseLookup, err is: "+e.stackTraceToString())
             return null
         }
     }
@@ -5281,7 +5281,7 @@ object Libgit2Helper {
             val count = Graph.aheadBehind(repo, localOid, upstreamOid)
             return Pair(count.ahead, count.behind)
         }catch (e:Exception) {
-            MyLog.e(TAG, "#getAheadBehind() failed!, localOid=${localOid}, upstreamOid=${upstreamOid}\n Exception is:${e.stackTraceToString()}")
+            MyLog.d(TAG, "#getAheadBehind() failed!, localOid=${localOid}, upstreamOid=${upstreamOid}\n Exception is:${e.stackTraceToString()}")
             //查不出来就当up-to-date吧
             return Pair(0,0)
         }
@@ -5301,7 +5301,7 @@ object Libgit2Helper {
             return Repository.openExt(underGitRepoPath, null, cellingDir)
 
         }catch (e:Exception) {
-            MyLog.e(TAG, "#findRepoByPath(): err: ${e.stackTraceToString()}")
+            MyLog.d(TAG, "#findRepoByPath(): err: ${e.stackTraceToString()}")
             return null
         }
     }
@@ -5981,7 +5981,7 @@ object Libgit2Helper {
 
             return cid
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveCommitOidByRef() error, params are (shortOrFullRefSpec=$shortOrFullRefSpec}),\nerr is: "+e.stackTraceToString())
+            MyLog.d(TAG, "#resolveCommitOidByRef() error, params are (shortOrFullRefSpec=$shortOrFullRefSpec}),\nerr is: "+e.stackTraceToString())
 
             return null
         }
@@ -6017,7 +6017,7 @@ object Libgit2Helper {
 
             return resolveCommitByHash(repo, cid.toString())
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveCommitByRef() error, params are (shortOrFullRefSpec=$shortOrFullRefSpec}),\nerr is: "+e.stackTraceToString())
+            MyLog.d(TAG, "#resolveCommitByRef() error, params are (shortOrFullRefSpec=$shortOrFullRefSpec}),\nerr is: "+e.stackTraceToString())
 
             return null
         }
@@ -6051,7 +6051,7 @@ object Libgit2Helper {
             return Ret.createSuccess(c)
 
         }catch (e:Exception) {
-            MyLog.e(TAG, "#$funName() error, params are (hashOrBranchOrTag=$hashOrBranchOrTag}),\nerr is: "+e.stackTraceToString())
+            MyLog.d(TAG, "#$funName() error, params are (hashOrBranchOrTag=$hashOrBranchOrTag}),\nerr is: "+e.stackTraceToString())
             return Ret.createError(null, e.localizedMessage ?:"resolve commit err: param=$hashOrBranchOrTag", exception = e)
         }
     }
