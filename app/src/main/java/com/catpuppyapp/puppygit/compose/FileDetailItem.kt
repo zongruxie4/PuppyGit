@@ -28,9 +28,10 @@ private const val itemMargin = 10
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileDetailItem(
+    idx:Int,
     item: FileDetail,
     selected:Boolean,
-    onLongClick:(FileDetail)->Unit,
+    onLongClick:(idx:Int, FileDetail)->Unit,
     onClick:(FileDetail)->Unit,
 ){
     val configuration = AppModel.getCurActivityConfig()
@@ -52,7 +53,7 @@ fun FileDetailItem(
             .padding(itemMargin.dp)
             .background(if(selected) MaterialTheme.colorScheme.primaryContainer else UIHelper.defaultCardColor())
             .combinedClickable(
-                onLongClick = { onLongClick(item) },
+                onLongClick = { onLongClick(idx, item) },
             ) {
                 onClick(item)
             }

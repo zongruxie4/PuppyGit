@@ -1211,9 +1211,17 @@ fun EditorInnerPage(
                             forceReloadFilePath(it.file.path)
                         }
                     },
-                    itemOnLongClick = {
+                    itemOnLongClick = {idx, it->
                         if(selectionMode.value) {
                             // span select
+                            UIHelper.doSelectSpan(
+                                itemIdxOfItemList = idx,
+                                item = it,
+                                selectedItems = selectedRecentFileList.value,
+                                itemList = recentFileList.value,
+                                switchItemSelected = switchItemSelected,
+                                selectIfNotInSelectedListElseNoop = selectItem
+                            )
                         }else {
                             switchItemSelected(it)
                         }

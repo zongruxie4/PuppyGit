@@ -21,7 +21,7 @@ fun FileDetailList(
     list:List<FileDetail>,
     reloadList:()->Unit,
     onClick:(FileDetail)->Unit,
-    itemOnLongClick:(FileDetail)->Unit,
+    itemOnLongClick:(idx:Int, FileDetail)->Unit,
     isItemSelected: (FileDetail) -> Boolean,
 ) {
     FullScreenScrollableColumn(
@@ -32,15 +32,12 @@ fun FileDetailList(
         FlowRow (
             overflow = FlowRowOverflow.Visible
         ) {
-            list.forEach {
+            list.forEachIndexed {idx, it ->
                 FileDetailItem(
+                    idx = idx,
                     item = it,
-                    onLongClick = {
-                        itemOnLongClick(it)
-                    },
-                    onClick = {
-                        onClick(it)
-                    },
+                    onLongClick = itemOnLongClick,
+                    onClick = onClick,
                     selected = isItemSelected(it)
                 )
             }
