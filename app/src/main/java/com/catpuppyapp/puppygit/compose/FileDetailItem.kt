@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.waterfall
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -28,6 +29,7 @@ private const val itemMargin = 10
 @Composable
 fun FileDetailItem(
     item: FileDetail,
+    selected:Boolean,
     onLongClick:(FileDetail)->Unit,
     onClick:(FileDetail)->Unit,
 ){
@@ -48,7 +50,7 @@ fun FileDetailItem(
     Column(
         modifier = Modifier
             .padding(itemMargin.dp)
-            .background(UIHelper.defaultCardColor())
+            .background(if(selected) MaterialTheme.colorScheme.primaryContainer else UIHelper.defaultCardColor())
             .combinedClickable(
                 onLongClick = { onLongClick(item) },
             ) {

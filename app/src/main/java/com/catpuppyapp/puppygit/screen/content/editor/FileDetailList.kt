@@ -20,8 +20,9 @@ fun FileDetailList(
     isSubEditor:Boolean,
     list:List<FileDetail>,
     reloadList:()->Unit,
-    openFile:(FileDetail)->Unit,
+    onClick:(FileDetail)->Unit,
     itemOnLongClick:(FileDetail)->Unit,
+    isItemSelected: (FileDetail) -> Boolean,
 ) {
     FullScreenScrollableColumn(
         contentPadding = contentPadding,
@@ -38,8 +39,9 @@ fun FileDetailList(
                         itemOnLongClick(it)
                     },
                     onClick = {
-                        openFile(it)
-                    }
+                        onClick(it)
+                    },
+                    selected = isItemSelected(it)
                 )
             }
         }

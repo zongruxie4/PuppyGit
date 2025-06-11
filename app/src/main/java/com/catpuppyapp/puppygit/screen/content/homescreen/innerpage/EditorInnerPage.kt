@@ -45,6 +45,7 @@ import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
+import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.LoadingTextSimple
@@ -963,10 +964,21 @@ fun EditorInnerPage(
     }
 
 
+    val quitRecentListSelectionMode = {
+        recentFileListSelectionMode.value = false
+        selectedRecentFileList.value.clear()
+    }
+
+    val inRecentFilesPage = rememberSaveable { mutableStateOf(false) }
+
     //back handler block start
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true) }
 
     val backHandlerOnBack = getBackHandler(
+        inRecentFilesPage = inRecentFilesPage,
+        recentFileListSelectionMode = recentFileListSelectionMode,
+        quitRecentListSelectionMode = quitRecentListSelectionMode,
+
         previewNavBack = previewNavBack,
         isPreviewModeOn = isPreviewModeOn,
         quitPreviewMode = quitPreviewMode,
@@ -1080,11 +1092,9 @@ fun EditorInnerPage(
 
 
         val selectionMode = recentFileListSelectionMode
+        val quitSelectionMode = quitRecentListSelectionMode
 
-        val quitSelectionMode = {
-            selectionMode.value = false
-            selectedRecentFileList.value.clear()
-        }
+
 
 
         //多选模式相关函数，开始
@@ -1106,7 +1116,14 @@ fun EditorInnerPage(
         // 多选模式相关函数，结束
 
 
+        DisposableEffect(Unit) {
+            onDispose {
+                inRecentFilesPage.value = false
+            }
+        }
+
         LaunchedEffect(needRefreshRecentFileList.value) {
+            inRecentFilesPage.value = true
             doJobThenOffLoading(loadingOnForRecentFileList, loadingOffForRecentFileList, activityContext.getString(R.string.loading)) {
 
                 try {
@@ -1164,6 +1181,10 @@ fun EditorInnerPage(
 
                         selectedList.clear()
                         selectedList.addAll(newSelectedList)
+
+                        if(selectedList.isEmpty()) {
+                            quitSelectionMode()
+                        }
                     }
 
                 }catch (e:Exception) {
@@ -1183,12 +1204,21 @@ fun EditorInnerPage(
                     isSubEditor = isSubPageMode,
                     list = recentFileList.value,
                     reloadList = reloadRecentFileList,
-                    openFile = {
-                        forceReloadFilePath(it.file.path)
+                    onClick = {
+                        if(selectionMode.value) {
+                            switchItemSelected(it)
+                        }else {
+                            forceReloadFilePath(it.file.path)
+                        }
                     },
                     itemOnLongClick = {
-
-                    }
+                        if(selectionMode.value) {
+                            // span select
+                        }else {
+                            switchItemSelected(it)
+                        }
+                    },
+                    isItemSelected = isItemInSelected,
                 )
             }else {
                 // if is sub editor, after close a file, the closed file must available in the `recentFileList`, so, no chance to reach `else` block
@@ -1227,7 +1257,9 @@ fun EditorInnerPage(
                     requireShowTextCompose = true,
                     textCompose = {
                         ScrollableColumn {
-                            DefaultPaddingText(stringResource(R.string.will_delete_selected_items_are_u_sure))
+                            DefaultPaddingRow {
+                                Text(stringResource(R.string.will_delete_selected_items_are_u_sure))
+                            }
                             Spacer(Modifier.height(10.dp))
                             MyCheckBox(stringResource(R.string.del_files_on_disk), deleteFileOnDisk)
                         }
@@ -1265,25 +1297,23 @@ fun EditorInnerPage(
             }
 
             val iconList = listOf(
-                // show in files
-                Icons.Filled.DocumentScanner,
-                // delete
                 Icons.Filled.Delete,
+                Icons.Filled.DocumentScanner,  // show in files
                 Icons.Filled.SelectAll,
             )
             val iconTextList = listOf(
-                stringResource(R.string.show_in_files),
                 stringResource(R.string.delete),
+                stringResource(R.string.show_in_files),
                 stringResource(R.string.select_all),
             )
             val iconOnClickList = listOf(
+                delete@{
+                    initDeleteRecentFilesDialog()
+                },
+
                 showInFiles@{
                     selectedRecentFileList.value.firstOrNull()?.let { showInFiles(it.file.path) }
                     Unit
-                },
-
-                delete@{
-                    initDeleteRecentFilesDialog()
                 },
 
                 selectAll@{
@@ -1300,8 +1330,8 @@ fun EditorInnerPage(
                 selectedRecentFileList.value.size
             }
             val iconEnableList = listOf(
-                showInFiles@{ selectedRecentFileList.value.size == 1 },
                 delete@{ true },
+                showInFiles@{ selectedRecentFileList.value.size == 1 },
                 selectAll@{ true },
             )
 
@@ -1903,6 +1933,10 @@ private suspend fun doInit(
 private fun getBackHandler(
     previewNavBack: ()->Unit,
 
+    inRecentFilesPage: MutableState<Boolean>,
+    recentFileListSelectionMode: MutableState<Boolean>,
+    quitRecentListSelectionMode: ()->Unit,
+
     isPreviewModeOn:MutableState<Boolean>,
     quitPreviewMode:()->Unit,
 
@@ -1935,7 +1969,9 @@ private fun getBackHandler(
 
     val backHandlerOnBack = {
         //是多选模式则退出多选，否则检查是否编辑过文件，若编辑过则保存，然后判断是否子页面，是子页面则返回上级页面，否则显示再按返回退出的提示
-        if(isPreviewModeOn.value) {
+        if(inRecentFilesPage.value && recentFileListSelectionMode.value) {
+            quitRecentListSelectionMode()
+        }else if(isPreviewModeOn.value) {
             previewNavBack()
         }else if(textEditorState.value.isMultipleSelectionMode) {  //退出编辑器多选模式
             requestFromParent.value = PageRequest.editorQuitSelectionMode
