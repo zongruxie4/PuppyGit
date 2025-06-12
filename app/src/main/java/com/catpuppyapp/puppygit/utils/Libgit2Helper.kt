@@ -6965,10 +6965,6 @@ object Libgit2Helper {
      */
     fun squashCommitsCheckBeforeShowDialog(repo: Repository, targetFullOidStr: String, isShowingCommitListForHEAD:Boolean):Ret<SquashData?>  {
         try {
-            if(hasConflictItemInRepo(repo)) {
-                return Ret.createError(null, "plz resolve conflicts then try again")
-            }
-
             // check the history is showing for HEAD or not
             if(!isShowingCommitListForHEAD) {
                 return Ret.createError(null, "squash only available for Current Branch or Detached HEAD")
@@ -6981,8 +6977,14 @@ object Libgit2Helper {
 
             val (username, email) = getGitUsernameAndEmail(repo)
             if(username.isBlank() || email.isBlank()) {
-                return Ret.createErrorDefaultDataNull("plz set git username and email first")
+                return Ret.createErrorDefaultDataNull("plz set git username and email then try again")
             }
+
+            // check has conflicts
+            if(hasConflictItemInRepo(repo)) {
+                return Ret.createError(null, "plz resolve conflicts then try again")
+            }
+
 
             //check commit
             val headRefRet = resolveRefByName2(repo, "HEAD")
@@ -6992,7 +6994,7 @@ object Libgit2Helper {
 
             val headRef = headRefRet.data!!
             val headFullOid = headRef.peel(GitObject.Type.COMMIT)?.id()?.toString()
-            if(headFullOid==null) {
+            if(headFullOid == null) {
                 return Ret.createError(null, "resolve head oid failed")
             }
 
