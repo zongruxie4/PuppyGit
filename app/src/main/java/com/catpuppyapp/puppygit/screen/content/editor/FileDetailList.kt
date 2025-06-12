@@ -66,7 +66,7 @@ fun FileDetailList(
         columns = StaggeredGridCells.Adaptive(minSize = width),
         state = state,
     ) {
-        list.forEachIndexed { idx, it ->
+        list.toList().forEachIndexed { idx, it ->
             item {
                 FileDetailItem(
                     width = width,
