@@ -1119,14 +1119,7 @@ fun EditorInnerPage(
         // 多选模式相关函数，结束
 
 
-        DisposableEffect(Unit) {
-            onDispose {
-                inRecentFilesPage.value = false
-            }
-        }
-
         LaunchedEffect(needRefreshRecentFileList.value) {
-            inRecentFilesPage.value = true
             doJobThenOffLoading(loadingOnForRecentFileList, loadingOffForRecentFileList, activityContext.getString(R.string.loading)) {
 
                 try {
@@ -1204,6 +1197,18 @@ fun EditorInnerPage(
             LoadingTextSimple(loadingTextForRecentFiles.value, contentPadding)
         }else {
             if(recentFileList.value.isNotEmpty()) {
+
+                LaunchedEffect(Unit) {
+                    inRecentFilesPage.value = true
+                }
+
+                DisposableEffect(Unit) {
+                    onDispose {
+                        inRecentFilesPage.value = false
+                        quitSelectionMode()
+                    }
+                }
+
                 PullToRefreshBox(
                     contentPadding = contentPadding,
                     onRefresh = { reloadRecentFileList() }
