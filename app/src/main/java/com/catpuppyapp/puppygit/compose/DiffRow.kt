@@ -580,7 +580,7 @@ fun DiffRow (
 
 
 
-    SelectionRow (
+    Row(
         modifier = (
                 if (lineClickable) {
                     Modifier.clickable { expandedMenu.value = true }
@@ -666,7 +666,7 @@ fun DiffRow (
             .addTopPaddingIfIsFirstLine(index)
 
         if(useStringPartList) {
-            Row(
+            SelectionRow(
                 modifier = contentModifier
             ) {
 
@@ -698,10 +698,10 @@ fun DiffRow (
 
 
 
-                    )
+                )
             }
         }else {
-            Row(
+            SelectionRow(
                 modifier = Modifier
                     .background(bgColor)
                     .then(contentModifier)
