@@ -7050,7 +7050,11 @@ object Libgit2Helper {
             }
 
             // reset HEAD to target
-            val resetRet = resetToRevspec(repo, targetFullOidStr, Reset.ResetT.SOFT)
+            val checkoutOpt = Checkout.Options.defaultOptions()
+            // `Checkout.StrategyT.FORCE` to reset to merged commits
+            // `Checkout.StrategyT.SAFE` to save uncommitted changes
+            checkoutOpt.strategy = EnumSet.of(Checkout.StrategyT.FORCE, Checkout.StrategyT.SAFE)
+            val resetRet = resetToRevspec(repo, targetFullOidStr, Reset.ResetT.SOFT, checkoutOpt)
             if(resetRet.hasError()) {
                 return resetRet.copyWithNewData()
             }
