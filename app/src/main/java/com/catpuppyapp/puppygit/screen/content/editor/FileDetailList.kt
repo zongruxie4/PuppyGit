@@ -3,15 +3,12 @@ package com.catpuppyapp.puppygit.screen.content.editor
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.FileDetailItem
+import com.catpuppyapp.puppygit.compose.MyLazyVerticalStaggeredGrid
 import com.catpuppyapp.puppygit.dto.FileDetail
-import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 
 
@@ -54,18 +51,13 @@ fun FileDetailList(
         Pair(width.dp, maxItemsInEachRow)
     }
 
-    val layoutDirection = LocalLayoutDirection.current
 
-    LazyVerticalStaggeredGrid (
-        contentPadding = PaddingValues(
-            start = contentPadding.calculateLeftPadding(layoutDirection),
-            end = contentPadding.calculateRightPadding(layoutDirection),
-            top = contentPadding.calculateTopPadding(),
-            bottom = contentPadding.calculateBottomPadding() + MyStyleKt.BottomBar.outsideContentPadding
-        ),
-        columns = StaggeredGridCells.Adaptive(minSize = width),
+    MyLazyVerticalStaggeredGrid(
+        contentPadding = contentPadding,
+        itemMinWidth = width,
         state = state,
     ) {
+        // toList() is necessary , else, may cause concurrent exception
         list.toList().forEachIndexed { idx, it ->
             item {
                 FileDetailItem(
