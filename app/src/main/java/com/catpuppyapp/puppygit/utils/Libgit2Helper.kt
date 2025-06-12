@@ -3522,15 +3522,15 @@ object Libgit2Helper {
     ):Ret<Oid?> {
         //分析仓库状态
         val state = repo.state()
-        if(state == null ||(state != Repository.StateT.NONE)) {
+        if(state != Repository.StateT.NONE) {
             //如果 "state是merge 且 一个mergeHead都没有 且 不存在冲突 且 index为空" 且没有merge head，则清下状态，app有时候崩溃就会残留在这个状态
             if(state == Repository.StateT.MERGE && getMergeHeads(repo).isEmpty() && !hasConflictItemInRepo(repo) && getIndexStatusList(repo).entryCount()==0) {
-                MyLog.w(TAG, "#mergeManyHeads(): repo state is \"MERGE\" , but no conflict items and Index is empty! maybe is wrong state, will clean repo state, old state is: \""+state.name+"\", new state expect to be \"NONE\"")
+                MyLog.w(TAG, "#mergeManyHeads(): repo state is 'MERGE' , but no conflict items and Index is empty! maybe is wrong state, will clean repo state, old state is: '$state', new state will be 'NONE'")
                 cleanRepoState(repo)
 
             }else {
-                MyLog.w(TAG, "#mergeManyHeads(): merge failed, repo state is: \""+state?.name+"\", expect \"NONE\"")
-                return Ret.createError(null, "merge failed! repo state is: \""+state?.name+"\", expect \"NONE\"", Ret.ErrCode.mergeFailedByRepoStateIsNotNone)
+                MyLog.w(TAG, "#mergeManyHeads(): merge failed, repo state is: '$state', expect 'NONE'")
+                return Ret.createError(null, "merge failed! repo state is: '$state', expect 'NONE'", Ret.ErrCode.mergeFailedByRepoStateIsNotNone)
             }
         }
 //            val ourHeadRef = repo.head()
@@ -3587,7 +3587,7 @@ object Libgit2Helper {
 
         /* If we get here, we actually performed the merge above */
         //如果有冲突，提示解决冲突，否则创建提交
-        if(repo.index().hasConflicts()) {
+        if(hasConflictItemInRepo(repo)) {
             //调用者可在返回error后检查repo.index.hasConflicts()来确认是否因为有冲突所以合并失败，不过一般不用检查，返回error直接显示提示并终止后续操作就行了
             return Ret.createError(null, "merge failed: has conflicts", Ret.ErrCode.mergeFailedByAfterMergeHasConfilts)  //merge完了，存在冲突
         }else {  //合并完无冲突，创建提交
