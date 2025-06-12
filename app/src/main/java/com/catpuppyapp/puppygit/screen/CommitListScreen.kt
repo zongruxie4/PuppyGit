@@ -884,8 +884,8 @@ fun CommitListScreen(
 
                     fullyRefresh()
                 }catch (e:Exception) {
-                    Msg.requireShowLongDuration(e.localizedMessage ?:"err")
-                    createAndInsertError(curRepo.value.id, "do squash err: ${e.localizedMessage}")
+                    Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                    createAndInsertError(curRepo.value.id, "squash err: ${e.localizedMessage}")
                     MyLog.e(TAG, "#SquashDialog err: " + e.stackTraceToString())
                 }
             }

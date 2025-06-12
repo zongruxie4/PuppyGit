@@ -2516,6 +2516,7 @@ object Libgit2Helper {
         //执行到这创建commit就成功了
 
         //检查是否请求在创建提交成功后清除仓库状态
+        //注：rebase时此值最好是false并由调用者在操作结束后再清除状态，不然还没执行完操作，状态就被清了
         if(cleanRepoStateIfSuccess) {
             cleanRepoState(repo)
         }
@@ -2561,16 +2562,16 @@ object Libgit2Helper {
     }
 
     //通过检查才创建提交
-    fun createCommitIfPassedCheck(repo: Repository, activityContext:Context, msg: String, username: String, email: String, settings: AppSettings):Ret<Oid?> {
-        val isReady = isReadyCreateCommit(repo, activityContext)
-        if(isReady.hasError()) {  //如果有错，说明没准备就绪，直接返回
-            return isReady
-        }
-
-        //没错则说明准备就绪，创建提交
-        //create commit
-        return createCommit(repo, msg, username, email, settings=settings)
-    }
+//    fun createCommitIfPassedCheck(repo: Repository, activityContext:Context, msg: String, username: String, email: String, settings: AppSettings):Ret<Oid?> {
+//        val isReady = isReadyCreateCommit(repo, activityContext)
+//        if(isReady.hasError()) {  //如果有错，说明没准备就绪，直接返回
+//            return isReady
+//        }
+//
+//        //没错则说明准备就绪，创建提交
+//        //create commit
+//        return createCommit(repo, msg, username, email, settings=settings)
+//    }
 
     /**
      * 直接创建提交，需用调用者自行检查index是否为空，是否存在冲突条目等
@@ -2587,7 +2588,7 @@ object Libgit2Helper {
         parents:List<Commit>? = null,
         amend:Boolean = false,
         overwriteAuthorWhenAmend:Boolean = false,
-        cleanRepoStateIfSuccess:Boolean=false,
+        cleanRepoStateIfSuccess:Boolean,
         settings: AppSettings
     ):Ret<Oid?> {
         val funName = "createCommit"
@@ -3636,7 +3637,8 @@ object Libgit2Helper {
                 branchFullRefName = branchFullRefName,
                 indexItemList = null,
                 parents = parents,
-                settings = settings
+                settings = settings,
+                cleanRepoStateIfSuccess = true
             )
 
             if(commitResult.hasError()) {
@@ -5567,7 +5569,7 @@ object Libgit2Helper {
      */
     fun cherrypick(repo:Repository, targetCommitFullHash:String, parentCommitFullHash:String="", pathSpecList: List<String>?=null, cherrypickOpts:Cherrypick.Options? = null, autoCommit:Boolean = true, settings: AppSettings):Ret<Oid?> {
         val state = repo.state()
-        if(state == null || (state != Repository.StateT.NONE)) {
+        if(state != Repository.StateT.NONE) {
             return Ret.createError(null, "repo state is not 'NONE'")
         }
 
@@ -5576,7 +5578,7 @@ object Libgit2Helper {
 //                return Ret.createError(null, "plz commit your changes before cherrypick")
 //            }
 
-        val cherrypickOpts = if(cherrypickOpts==null) {
+        val cherrypickOpts = if(cherrypickOpts == null) {
             val tmp = Cherrypick.Options.createDefault()
             initCherrypickOptions(tmp)
             tmp
@@ -5619,7 +5621,7 @@ object Libgit2Helper {
         Cherrypick.cherrypick(repo, target, cherrypickOpts)
 
         //有冲突直接返回，不创建提交，后续执行cherrypick continue即可
-        if(repo.index().hasConflicts()) {
+        if(hasConflictItemInRepo(repo)) {
             return Ret.createError(null, "cherrypick: has conflicts!", Ret.ErrCode.mergeFailedByAfterMergeHasConfilts)
         }
 
@@ -5668,7 +5670,7 @@ object Libgit2Helper {
             if(repo.state() != Repository.StateT.CHERRYPICK) {
                 return Ret.createError(null, activityContext.getString(R.string.repo_not_in_cherrypick))
             }
-            if(repo.index().hasConflicts()) {
+            if(hasConflictItemInRepo(repo)) {
                 return Ret.createError(null, activityContext.getString(R.string.plz_resolve_conflicts_first))
             }
             if(getCherryPickHeadHash(repo).isBlank()) {
@@ -6952,6 +6954,10 @@ object Libgit2Helper {
      */
     fun squashCommitsCheckBeforeShowDialog(repo: Repository, targetFullOidStr: String, isShowingCommitListForHEAD:Boolean):Ret<SquashData?>  {
         try {
+            if(hasConflictItemInRepo(repo)) {
+                return Ret.createError(null, "plz resolve conflicts then try again")
+            }
+
             // check the history is showing for HEAD or not
             if(!isShowingCommitListForHEAD) {
                 return Ret.createError(null, "squash only available for Current Branch or Detached HEAD")
@@ -6959,7 +6965,7 @@ object Libgit2Helper {
 
             // check repo state
             if(repo.state() != Repository.StateT.NONE) {
-                return Ret.createError(null, "repo state is not NONE")
+                return Ret.createError(null, "repo state is not 'NONE'")
             }
 
             val (username, email) = getGitUsernameAndEmail(repo)
@@ -7030,6 +7036,7 @@ object Libgit2Helper {
                 return Ret.createErrorDefaultDataNull("target oid is empty")
             }
 
+            改成checkout
             // reset HEAD to target
             val resetRet = resetToRevspec(repo, targetFullOidStr, Reset.ResetT.SOFT)
             if(resetRet.hasError()) {
@@ -7043,7 +7050,8 @@ object Libgit2Helper {
                 username=username,
                 email=email,
                 branchFullRefName=currentBranchFullNameOrHEAD,
-                settings = settings
+                settings = settings,
+                cleanRepoStateIfSuccess = false,
             )
 
         }catch (e:Exception) {

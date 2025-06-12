@@ -446,7 +446,8 @@ object RepoActUtil {
                                     indexItemList = null,
                                     amend = false,
                                     overwriteAuthorWhenAmend = false,
-                                    settings = settings
+                                    settings = settings,
+                                    cleanRepoStateIfSuccess = true,
                                 )
 
                                 if (ret.hasError()) {

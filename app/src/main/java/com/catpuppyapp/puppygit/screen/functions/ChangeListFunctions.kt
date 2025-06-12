@@ -255,7 +255,8 @@ object ChangeListFunctions {
 
                     amend = amendCommit,
                     overwriteAuthorWhenAmend = overwriteAuthor,
-                    settings = settings
+                    settings = settings,
+                    cleanRepoStateIfSuccess = false,
                 )
 
             }
