@@ -7047,7 +7047,6 @@ object Libgit2Helper {
                 return Ret.createErrorDefaultDataNull("target oid is empty")
             }
 
-            改成checkout
             // reset HEAD to target
             val resetRet = resetToRevspec(repo, targetFullOidStr, Reset.ResetT.SOFT)
             if(resetRet.hasError()) {
