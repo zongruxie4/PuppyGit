@@ -1205,7 +1205,12 @@ fun EditorInnerPage(
                 DisposableEffect(Unit) {
                     onDispose {
                         inRecentFilesPage.value = false
-                        quitSelectionMode()
+
+                        // this is possible, because when leave this code block, the recentFileList maybe empty(e.g. removed all recent files)
+                        // but if switch page, this maybe false, so need check before quit
+                        if(recentFileList.value.isEmpty()) {
+                            quitSelectionMode()
+                        }
                     }
                 }
 
