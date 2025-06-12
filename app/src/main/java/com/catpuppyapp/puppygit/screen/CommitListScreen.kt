@@ -796,13 +796,15 @@ fun CommitListScreen(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Text(
-                        text = replaceStringResList(
-                            stringResource(R.string.squash_commits_not_include_the_left_commit),
-                            listOf(targetCommitShortOidForSquashDialog.value, headCommitShortOidForSquashDialog.value)
-                        ),
-                        fontWeight = FontWeight.Light
-                    )
+                    MySelectionContainer {
+                        Text(
+                            text = replaceStringResList(
+                                stringResource(R.string.squash_commits_not_include_the_left_commit),
+                                listOf(targetCommitShortOidForSquashDialog.value, headCommitShortOidForSquashDialog.value)
+                            ),
+                            fontWeight = FontWeight.Light
+                        )
+                    }
 
                     Spacer(Modifier.height(15.dp))
 
@@ -820,21 +822,26 @@ fun CommitListScreen(
                             Text(stringResource(R.string.input_your_commit_message))
                         }
                     )
+
                     Spacer(Modifier.height(10.dp))
+
                     MultiLineClickableText(stringResource(R.string.you_can_leave_msg_empty_will_auto_gen_one)) {
                         Repository.open(curRepo.value.fullSavePath).use { repo ->
                             commitMsgForSquashDialog.value = TextFieldValue(genSquashCommitMsg())
                         }
                     }
+
                     Spacer(Modifier.height(10.dp))
 
                     MyCheckBox(stringResource(R.string.force), forceSquash)
 
                     if(forceSquash.value) {
-                        DefaultPaddingText(
-                            text = stringResource(R.string.if_index_contains_uncommitted_changes_will_commit_as_well),
-                            color = MyStyleKt.TextColor.danger(),
-                        )
+                        MySelectionContainer {
+                            DefaultPaddingText(
+                                text = stringResource(R.string.if_index_contains_uncommitted_changes_will_commit_as_well),
+                                color = MyStyleKt.TextColor.danger(),
+                            )
+                        }
                     }
 
                 }
