@@ -2468,7 +2468,18 @@ object Libgit2Helper {
 //        }
 
     // `msg` can be null to use origin commit msg when amend
-    private fun doCreateCommit(repo: Repository, msg: String?, username: String, email: String, curBranchFullRefSpec:String, parentList:List<Commit>, amend: Boolean, overwriteAuthorWhenAmend:Boolean, cleanRepoStateIfSuccess:Boolean, settings: AppSettings):Ret<Oid?> {
+    private fun doCreateCommit(
+        repo: Repository,
+        msg: String?,
+        username: String,
+        email: String,
+        curBranchFullRefSpec:String,
+        parentList:List<Commit>,
+        amend: Boolean,
+        overwriteAuthorWhenAmend:Boolean,
+        cleanRepoStateIfSuccess:Boolean,
+        settings: AppSettings
+    ):Ret<Oid?> {
         if(username.isBlank()) {
             return Ret.createError(null, "username is blank", Ret.ErrCode.usernameIsBlank)
         }
@@ -2517,7 +2528,7 @@ object Libgit2Helper {
 
         //检查是否请求在创建提交成功后清除仓库状态
         //注：rebase时此值最好是false并由调用者在操作结束后再清除状态，不然还没执行完操作，状态就被清了
-        if(cleanRepoStateIfSuccess) {
+        if(cleanRepoStateIfSuccess && !hasConflictItemInRepo(repo)) {
             cleanRepoState(repo)
         }
 
