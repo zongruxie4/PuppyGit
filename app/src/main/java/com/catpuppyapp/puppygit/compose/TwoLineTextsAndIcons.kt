@@ -39,7 +39,7 @@ fun TwoLineTextsAndIcons(
             SelectionRow(
                 Modifier.horizontalScroll(rememberScrollState())
             ) {
-                Text(text = text1, fontSize = MyStyleKt.Title.firstLineFontSize, fontWeight = FontWeight.Bold)
+                Text(text = text1, fontSize = MyStyleKt.Title.firstLineFontSizeSmall, fontWeight = FontWeight.Bold)
             }
 
             SelectionRow(
