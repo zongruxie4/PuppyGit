@@ -422,13 +422,14 @@ object RepoActUtil {
                     }
 
                     if (username == null || username.isBlank() || email == null || email.isBlank()) {
-                        MyLog.e(TAG, "#$funName: api $routeName: commit abort by username or email invalid")
+                        MyLog.e(TAG, "#$funName: api $routeName: auto commit aborted by username or email invalid")
                     } else {
                         //检查是否存在冲突，如果存在，将不会创建提交
                         if (Libgit2Helper.hasConflictItemInRepo(gitRepo)) {
-                            MyLog.e(TAG, "#$funName: api=$routeName, repoName=${repoFromDb.repoName}, err=conflict abort the commit")
+                            val errMsg = "auto commit aborted by conflicts"
+                            MyLog.e(TAG, "#$funName: api=$routeName, repoName=${repoFromDb.repoName}, err=$errMsg")
                             // 显示个手机通知，点击进入ChangeList并定位到对应仓库
-                            sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: auto commit aborted by conflicts", Cons.selectedItem_ChangeList, repoFromDb.id)
+                            sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: $errMsg", Cons.selectedItem_ChangeList, repoFromDb.id)
                         } else {
                             // 有username 和 email，且无冲突
 
