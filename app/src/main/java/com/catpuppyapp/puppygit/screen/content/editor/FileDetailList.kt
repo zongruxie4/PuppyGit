@@ -18,6 +18,7 @@ import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.RegexUtil
+import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 
 private const val itemWidth = 150
@@ -40,7 +41,7 @@ fun FileDetailList(
     filterList: MutableList<FileDetail>,
     filterOn: MutableState<Boolean>,  // filter on but may haven't a valid keyword, so actually not enabled filter
     enableFilterState: MutableState<Boolean>,  // indicate filter mode actually enabled or not
-    filterKeyword: MutableState<TextFieldValue>,
+    filterKeyword: CustomStateSaveable<TextFieldValue>,
     lastSearchKeyword: MutableState<String>,
     filterResultNeedRefresh: MutableState<String>,
     searching: MutableState<Boolean>,

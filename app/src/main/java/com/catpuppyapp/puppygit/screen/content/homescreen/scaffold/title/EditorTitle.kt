@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Merge
 import androidx.compose.material.icons.filled.RemoveRedEye
@@ -13,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
@@ -36,12 +36,15 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
-import java.io.File
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditorTitle(
     recentFileListIsEmpty:Boolean,
+    recentFileListFilterModeOn:Boolean,
+    recentListFilterKeyword: CustomStateSaveable<TextFieldValue>,
+    getActuallyRecentFilesListState:()-> LazyStaggeredGridState,
+    getActuallyRecentFilesListLastPosition: ()->MutableState<Int>,
 
     patchModeOn:Boolean,
     previewNavStack: EditorPreviewNavStack,
@@ -164,12 +167,26 @@ fun EditorTitle(
 
     }else {
         // file not opened
-        ScrollableRow {
-            Text(
-                text = stringResource(if(recentFileListIsEmpty) R.string.editor else R.string.recent_files),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+        if(recentFileListFilterModeOn) {
+            FilterTextField(filterKeyWord = recentListFilterKeyword)
+        }else {
+            ScrollableRow(
+                modifier = Modifier
+                    .combinedClickable(
+                        //打开文件没出错 或 预览模式则启用，预览模式不管打开出没出错，都尝试显示弹窗，不过如果文件无法打开，
+    //                    enabled = !editorOpenFileErr || isPreviewModeOn,
+
+                        onDoubleClick = {
+                            defaultTitleDoubleClick(scope, getActuallyRecentFilesListState(), getActuallyRecentFilesListLastPosition())
+                        },
+                ) { }.widthIn(min=MyStyleKt.Title.clickableTitleMinWidth)
+            ) {
+                Text(
+                    text = stringResource(if(recentFileListIsEmpty) R.string.editor else R.string.recent_files),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }

@@ -184,6 +184,7 @@ fun SubPageEditor(
     val editorSelectedRecentFileList = mutableCustomStateListOf(stateKeyTag, "editorSelectedRecentFileList") { listOf<FileDetail>() }
     val editorRecentFileListSelectionMode = rememberSaveable { mutableStateOf(false) }
     val editorRecentListState = rememberLazyStaggeredGridState()
+    val editorInRecentFilesPage = rememberSaveable { mutableStateOf(false) }
 
 
     //初始值不用忽略，因为打开文件后默认focusing line idx为null，所以这个值是否忽略并没意义
@@ -252,6 +253,49 @@ fun SubPageEditor(
         snapshotedFileInfo = editorPageSnapshotedFileInfo
     )
 
+
+
+    val editorFilterRecentListState = rememberLazyStaggeredGridState()
+    val editorFilterRecentList = mutableCustomStateListOf(stateKeyTag, "editorFilterRecentList") { listOf<FileDetail>() }
+    val editorFilterRecentListOn = rememberSaveable { mutableStateOf(false) }
+    val editorEnableRecentListFilter = rememberSaveable { mutableStateOf(false) }
+    val editorFilterRecentListKeyword = mutableCustomStateOf(stateKeyTag, "editorFilterRecentListKeyword") { TextFieldValue("") }
+    val editorFilterRecentListLastSearchKeyword = rememberSaveable { mutableStateOf("") }
+    val editorFilterRecentListResultNeedRefresh = rememberSaveable { mutableStateOf("") }
+    val editorFilterRecentListSearching = rememberSaveable { mutableStateOf(false) }
+    val editorFilterRecentListSearchToken = rememberSaveable { mutableStateOf("") }
+    val editorFilterResetSearchValues = {
+        editorFilterRecentListSearching.value = false
+        editorFilterRecentListSearchToken.value = ""
+        editorFilterRecentListLastSearchKeyword.value = ""
+    }
+
+    val editorInitRecentFilesFilterMode = {
+        editorFilterRecentListKeyword.value = TextFieldValue("")
+        editorFilterRecentListOn.value = true
+    }
+    val editorRecentFilesQuitFilterMode = {
+        editorFilterResetSearchValues()
+        editorFilterRecentListOn.value = false
+    }
+
+
+    val editorRecentListLastScrollPosition = rememberSaveable { mutableStateOf(0) }
+    val editorRecentListFilterLastScrollPosition = rememberSaveable { mutableStateOf(0) }
+
+    val getActuallyRecentFilesList = {
+        if(editorEnableRecentListFilter.value) editorFilterRecentList.value else editorRecentFileList.value
+    }
+    val getActuallyRecentFilesListState = {
+        if(editorEnableRecentListFilter.value) editorFilterRecentListState else editorRecentListState
+    }
+    val getActuallyRecentFilesListLastPosition = {
+        if(editorEnableRecentListFilter.value) editorRecentListFilterLastScrollPosition else editorRecentListLastScrollPosition
+    }
+
+    val editorRecentListScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -262,6 +306,11 @@ fun SubPageEditor(
 
                     EditorTitle(
                         recentFileListIsEmpty = editorRecentFileList.value.isEmpty(),
+                        recentFileListFilterModeOn = editorFilterRecentListOn.value,
+                        recentListFilterKeyword = editorFilterRecentListKeyword,
+                        getActuallyRecentFilesListState = getActuallyRecentFilesListState,
+                        getActuallyRecentFilesListLastPosition = getActuallyRecentFilesListLastPosition,
+
                         patchModeOn = editorPagePatchMode.value,
                         previewNavStack = editorPreviewNavStack.value,
                         previewingPath = editorPreviewPath,
@@ -330,7 +379,10 @@ fun SubPageEditor(
 
                         if(notOpenFile && editorRecentFileList.value.isNotEmpty()) {
                             FileDetailListActions(
-                                request = editorPageRequestFromParent
+                                request = editorPageRequestFromParent,
+                                filterModeOn = editorFilterRecentListOn.value,
+
+                                initFilterMode = editorInitRecentFilesFilterMode,
                             )
                         }else  {
                             EditorPageActions(
@@ -392,6 +444,17 @@ fun SubPageEditor(
                 ) {
                     editorPageRequestFromParent.value = PageRequest.requireSave
                 }
+            }else if(editorInRecentFilesPage.value) {
+                GoToTopAndGoToBottomFab(
+                    filterModeOn = editorFilterRecentListOn.value,
+                    scope = scope,
+                    filterListState = editorFilterRecentListState,
+                    listState = editorRecentListState,
+                    filterListLastPosition = editorRecentListFilterLastScrollPosition,
+                    listLastPosition = editorRecentListLastScrollPosition,
+                    showFab = editorRecentListScrolled,
+                    listSize = getActuallyRecentFilesList().size,
+                )
             }
         }
     ) { contentPadding ->
@@ -412,6 +475,19 @@ fun SubPageEditor(
             selectedRecentFileList = editorSelectedRecentFileList,
             recentFileListSelectionMode = editorRecentFileListSelectionMode,
             recentListState = editorRecentListState,
+            inRecentFilesPage = editorInRecentFilesPage,
+
+            editorFilterRecentListState = editorFilterRecentListState,
+            editorFilterRecentList = editorFilterRecentList.value,
+            editorFilterRecentListOn = editorFilterRecentListOn,
+            editorEnableRecentListFilter = editorEnableRecentListFilter,
+            editorFilterRecentListKeyword = editorFilterRecentListKeyword,
+            editorFilterRecentListLastSearchKeyword = editorFilterRecentListLastSearchKeyword,
+            editorFilterRecentListResultNeedRefresh = editorFilterRecentListResultNeedRefresh,
+            editorFilterRecentListSearching = editorFilterRecentListSearching,
+            editorFilterRecentListSearchToken = editorFilterRecentListSearchToken,
+            editorFilterResetSearchValues = editorFilterResetSearchValues,
+            editorRecentFilesQuitFilterMode = editorRecentFilesQuitFilterMode,
 
             ignoreFocusOnce = ignoreFocusOnce,
             softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,

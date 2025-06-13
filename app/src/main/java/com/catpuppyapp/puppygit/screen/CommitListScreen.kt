@@ -314,6 +314,9 @@ fun CommitListScreen(
     }
 
 
+    val getActuallyLastPosition = {
+        if(enableFilterState.value) filterLastPosition else lastPosition
+    }
 
 
     // username and email start
@@ -1704,7 +1707,8 @@ fun CommitListScreen(
                         Column(
                             modifier = Modifier.combinedClickable(
                                 onDoubleClick = {
-                                    defaultTitleDoubleClick(scope, listState, lastPosition)
+                                    // due to fiter mode on, cant double click title, so actually here only use normal list and its state is ok
+                                    defaultTitleDoubleClick(scope, getActuallyListState(), getActuallyLastPosition())
                                 },
                                 onLongClick = {
                                     //长按显示仓库和分支信息

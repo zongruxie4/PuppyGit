@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.screen.functions
 import android.content.Context
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
@@ -173,6 +174,10 @@ fun defaultTitleDoubleClick(coroutineScope: CoroutineScope, listState: LazyListS
 }
 
 fun defaultTitleDoubleClick(coroutineScope: CoroutineScope, listState: ScrollState, lastPosition: MutableState<Int>)  {
+    UIHelper.switchBetweenTopAndLastVisiblePosition(coroutineScope, listState, lastPosition)
+}
+
+fun defaultTitleDoubleClick(coroutineScope: CoroutineScope, listState: LazyStaggeredGridState, lastPosition: MutableState<Int>)  {
     UIHelper.switchBetweenTopAndLastVisiblePosition(coroutineScope, listState, lastPosition)
 }
 

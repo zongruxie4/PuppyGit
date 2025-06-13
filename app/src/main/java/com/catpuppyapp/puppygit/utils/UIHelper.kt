@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
@@ -193,6 +194,10 @@ object UIHelper {
         coroutineScope.launch { listState.scrollToItem(Math.max(0, index)) }
     }
 
+    fun scrollToItem(coroutineScope: CoroutineScope, listState: LazyStaggeredGridState, index:Int)  {
+        coroutineScope.launch { listState.scrollToItem(Math.max(0, index)) }
+    }
+
     fun scrollTo(coroutineScope: CoroutineScope, listState: ScrollState, index:Int)  {
         coroutineScope.launch { listState.scrollTo(Math.max(0, index)) }
     }
@@ -211,6 +216,20 @@ object UIHelper {
     }
 
     fun switchBetweenTopAndLastVisiblePosition(coroutineScope: CoroutineScope, listState: LazyListState, lastPosition:MutableState<Int>)  {
+        val lastVisibleLine = listState.firstVisibleItemIndex
+        val notAtTop = lastVisibleLine != 0
+        // if 不在顶部，go to 顶部 else go to 上次编辑位置
+        val position = if(notAtTop) {
+            lastPosition.value = lastVisibleLine
+            0
+        } else {
+            lastPosition.value
+        }
+
+        scrollToItem(coroutineScope, listState, position)
+    }
+
+    fun switchBetweenTopAndLastVisiblePosition(coroutineScope: CoroutineScope, listState: LazyStaggeredGridState, lastPosition:MutableState<Int>)  {
         val lastVisibleLine = listState.firstVisibleItemIndex
         val notAtTop = lastVisibleLine != 0
         // if 不在顶部，go to 顶部 else go to 上次编辑位置

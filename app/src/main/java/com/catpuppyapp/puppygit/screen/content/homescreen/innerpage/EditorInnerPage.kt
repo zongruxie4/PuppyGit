@@ -47,7 +47,6 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
-import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -121,6 +120,22 @@ fun EditorInnerPage(
     selectedRecentFileList: CustomStateListSaveable<FileDetail>,
     recentFileListSelectionMode: MutableState<Boolean>,
     recentListState: LazyStaggeredGridState,
+    inRecentFilesPage: MutableState<Boolean>,
+
+    editorFilterRecentListState: LazyStaggeredGridState,
+    editorFilterRecentList: MutableList<FileDetail>,
+    editorFilterRecentListOn: MutableState<Boolean>,  // filter on but may haven't a valid keyword, so actually not enabled filter
+    editorEnableRecentListFilter: MutableState<Boolean>,  // indicate filter mode actually enabled or not
+    editorFilterRecentListKeyword: CustomStateSaveable<TextFieldValue>,
+    editorFilterRecentListLastSearchKeyword: MutableState<String>,
+    editorFilterRecentListResultNeedRefresh: MutableState<String>,
+    editorFilterRecentListSearching: MutableState<Boolean>,
+    editorFilterRecentListSearchToken: MutableState<String>,
+    editorFilterResetSearchValues: ()->Unit,
+    editorRecentFilesQuitFilterMode: ()->Unit,
+
+
+
 
     loadLock:Mutex,  // 避免重复加载的锁
     ignoreFocusOnce: CustomBoxSaveable<Boolean>,
@@ -972,7 +987,6 @@ fun EditorInnerPage(
         selectedRecentFileList.value.clear()
     }
 
-    val inRecentFilesPage = rememberSaveable { mutableStateOf(false) }
 
     //back handler block start
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true) }
@@ -981,6 +995,8 @@ fun EditorInnerPage(
         inRecentFilesPage = inRecentFilesPage,
         recentFileListSelectionMode = recentFileListSelectionMode,
         quitRecentListSelectionMode = quitRecentListSelectionMode,
+        editorFilterRecentListOn = editorFilterRecentListOn,
+        editorRecentFilesQuitFilterMode = editorRecentFilesQuitFilterMode,
 
         previewNavBack = previewNavBack,
         isPreviewModeOn = isPreviewModeOn,
@@ -1219,6 +1235,17 @@ fun EditorInnerPage(
                     onRefresh = { reloadRecentFileList() }
                 ) {
                     FileDetailList(
+                        filterListState = editorFilterRecentListState,
+                        filterList = editorFilterRecentList,
+                        filterOn = editorFilterRecentListOn,
+                        enableFilterState = editorEnableRecentListFilter,
+                        filterKeyword = editorFilterRecentListKeyword,
+                        lastSearchKeyword = editorFilterRecentListLastSearchKeyword,
+                        filterResultNeedRefresh = editorFilterRecentListResultNeedRefresh,
+                        searching = editorFilterRecentListSearching,
+                        searchToken = editorFilterRecentListSearchToken,
+                        resetSearchVars = editorFilterResetSearchValues,
+
                         contentPadding = contentPadding,
                         state = recentListState,
                         isItemSelected = isItemInSelected,
@@ -1965,6 +1992,8 @@ private fun getBackHandler(
     inRecentFilesPage: MutableState<Boolean>,
     recentFileListSelectionMode: MutableState<Boolean>,
     quitRecentListSelectionMode: ()->Unit,
+    editorFilterRecentListOn: MutableState<Boolean>,
+    editorRecentFilesQuitFilterMode:()->Unit,
 
     isPreviewModeOn:MutableState<Boolean>,
     quitPreviewMode:()->Unit,
@@ -2000,6 +2029,8 @@ private fun getBackHandler(
         //是多选模式则退出多选，否则检查是否编辑过文件，若编辑过则保存，然后判断是否子页面，是子页面则返回上级页面，否则显示再按返回退出的提示
         if(inRecentFilesPage.value && recentFileListSelectionMode.value) {
             quitRecentListSelectionMode()
+        }else if(inRecentFilesPage.value && editorFilterRecentListOn.value) {
+            editorRecentFilesQuitFilterMode()
         }else if(isPreviewModeOn.value) {
             previewNavBack()
         }else if(textEditorState.value.isMultipleSelectionMode) {  //退出编辑器多选模式
