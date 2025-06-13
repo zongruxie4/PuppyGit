@@ -48,6 +48,8 @@ object FsUtils {
      */
     const val internalPathPrefix = "Internal://"
     const val externalPathPrefix = "External://"
+    // /data/data/packagename/
+    const val innerPathPrefix = "Inner://"
 
     //路径前缀
     //这个后面跟的不是路径，得用什么玩意解析一下才能拿到真名
@@ -1171,7 +1173,15 @@ object FsUtils {
      */
     fun getExternalStorageRootPathNoEndsWithSeparator():String{
         return try {
-            Environment.getExternalStorageDirectory().path.trimEnd(Cons.slashChar)
+            Environment.getExternalStorageDirectory().canonicalPath
+        }catch (_:Exception) {
+            ""
+        }
+    }
+
+    fun getInnerStorageRootPathNoEndsWithSeparator():String{
+        return try {
+            AppModel.innerDataDir.canonicalPath
         }catch (_:Exception) {
             ""
         }
@@ -1206,7 +1216,9 @@ object FsUtils {
             (getInternalStorageRootPathNoEndsWithSeparator() + Cons.slash + removeInternalStoragePrefix(path)).trimEnd(Cons.slashChar)
         }else if(path.startsWith(externalPathPrefix)) {
             (getExternalStorageRootPathNoEndsWithSeparator() + Cons.slash + removeExternalStoragePrefix(path)).trimEnd(Cons.slashChar)
-        }else {  // absolute path like "/storage/emulate/0/abc"
+        }else if(path.startsWith(innerPathPrefix)) {
+            (getInnerStorageRootPathNoEndsWithSeparator() + Cons.slash + removeInnerStoragePrefix(path)).trimEnd(Cons.slashChar)
+        }else {
             path
         }
     }
@@ -1276,11 +1288,14 @@ object FsUtils {
     fun getPathWithInternalOrExternalPrefix(fullPath:String) :String {
         val internalStorageRoot = getInternalStorageRootPathNoEndsWithSeparator()
         val externalStorageRoot = getExternalStorageRootPathNoEndsWithSeparator()
+        val innerStorageRoot = getInnerStorageRootPathNoEndsWithSeparator()
 
         return if(fullPath.startsWith(internalStorageRoot)) {  // internal storage must before external storage, because internal storage actually under external storage (eg: internal is "/storage/emulated/0/Android/data/packagename/xxx/xxxx/x", external is "/storage/emulated/0")
             internalPathPrefix+((getPathAfterParent(parent= internalStorageRoot, fullPath=fullPath)).removePrefix("/"))
         }else if(fullPath.startsWith(externalStorageRoot)) {
             externalPathPrefix+((getPathAfterParent(parent= externalStorageRoot, fullPath=fullPath)).removePrefix("/"))
+        }else if(fullPath.startsWith(innerStorageRoot)) {
+            innerPathPrefix+((getPathAfterParent(parent= innerStorageRoot, fullPath=fullPath)).removePrefix("/"))
         }else { //原样返回, no matched, return origin path
             fullPath
         }
@@ -1292,6 +1307,10 @@ object FsUtils {
 
     fun removeExternalStoragePrefix(path: String): String {
         return path.removePrefix(externalPathPrefix)
+    }
+
+    fun removeInnerStoragePrefix(path: String): String {
+        return path.removePrefix(innerPathPrefix)
     }
 
     fun stringToLines(string: String):List<String> {
