@@ -12,3 +12,12 @@ inline fun <T> List<T>.forEachIndexedBetter(
         foreach(idx, value)
     }
 }
+
+inline fun <T> List<T>.forEachBetter(
+    foreach: (T)->Unit
+) {
+    for(idx in indices) {
+        val value = getOrNull(idx) ?: continue
+        foreach(value)
+    }
+}
