@@ -18,6 +18,7 @@ import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.RegexUtil
+import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 
@@ -120,8 +121,7 @@ fun FileDetailList(
         state = listState,
     ) {
         // toList() is necessary , else, may cause concurrent exception
-        for(idx in filteredList.indices) {
-            val it = filteredList.getOrNull(idx) ?: continue
+        filteredList.forEachIndexedBetter { idx, it ->
             item {
                 FileDetailItem(
                     width = width,
