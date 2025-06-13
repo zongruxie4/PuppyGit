@@ -3171,7 +3171,7 @@ fun FilesInnerPage(
     }
     if(filesPageRequestFromParent.value==PageRequest.goToInnerDataStorage) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
-            goToPath(AppModel.innerDataDir.canonicalPath)
+            goToPath(FsUtils.getInnerStorageRootPathNoEndsWithSeparator())
         }
     }
     if(filesPageRequestFromParent.value==PageRequest.goToExternalDataStorage) {
