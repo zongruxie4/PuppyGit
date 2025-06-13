@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.FsUtils
 
 
 private val bgColorInDarkTheme = Color(0xFF545454)
@@ -61,7 +62,7 @@ fun FileDetailItem(
                 Text(item.file.name, fontSize = MyStyleKt.Title.firstLineFontSize, color = fontColor, fontWeight = FontWeight.Bold)
             }
             ScrollableRow {
-                Text(item.file.path.ioPath, fontSize = MyStyleKt.Title.secondLineFontSize, color = fontColor, fontWeight = FontWeight.Light)
+                Text(FsUtils.getPathWithInternalOrExternalPrefixAndRemoveFileNameAndEndSlash(item.file.path.ioPath, item.file.name), fontSize = MyStyleKt.Title.secondLineFontSize, color = fontColor, fontWeight = FontWeight.Light)
             }
         }
 

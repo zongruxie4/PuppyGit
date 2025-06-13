@@ -71,11 +71,11 @@ fun EditorTitle(
     if(editorPageShowingFilePath.value.isNotBlank()) {
         val fileName = if(isPreviewModeOn && editorPageShowingFilePath.value.ioPath != previewingPath) FuckSafFile(activityContext, FilePath(previewingPath)).name else if(editorPageShowingFileName.isNullOrEmpty()) FuckSafFile(activityContext, editorPageShowingFilePath.value).name else editorPageShowingFileName
 //        val filePath = getFilePathStrBasedRepoDir(editorPageShowingFilePath.value, returnResultStartsWithSeparator = true)
-        val filePath = FsUtils.getPathWithInternalOrExternalPrefix(if(isPreviewModeOn) previewingPath else editorPageShowingFilePath.value.ioPath)
 
-        val filePathNoFileName = filePath.removeSuffix(fileName)  // "/"结尾的路径或者只有"/"
-        //如果只剩/，就返回 /，否则把末尾的/移除
-        val filePathNoFileNameNoEndSlash = if(filePathNoFileName==File.separator) filePathNoFileName else filePathNoFileName.removeSuffix(File.separator)
+        val filePathNoFileNameNoEndSlash = FsUtils.getPathWithInternalOrExternalPrefixAndRemoveFileNameAndEndSlash(
+            path = if(isPreviewModeOn) previewingPath else editorPageShowingFilePath.value.ioPath,
+            fileName
+        )
 
         Column(
             //双击标题回到文件顶部；长按可跳转到指定行；点击显示路径

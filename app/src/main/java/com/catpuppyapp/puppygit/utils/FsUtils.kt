@@ -1592,4 +1592,16 @@ object FsUtils {
             ""
         }
     }
+
+
+    fun getPathWithInternalOrExternalPrefixAndRemoveFileNameAndEndSlash(path:String, fileName:String):String {
+        // don't handle the content uri, the file name may be encoded or even haven't a file name,
+        //  try add storage prefix to it may return a wrong path
+        return if(path.startsWith(contentUriPathPrefix)) {
+            path
+        }else {
+            getPathWithInternalOrExternalPrefix(path.removeSuffix(fileName).trimEnd(Cons.slashChar)).ifBlank { Cons.slash }
+        }
+    }
+
 }
