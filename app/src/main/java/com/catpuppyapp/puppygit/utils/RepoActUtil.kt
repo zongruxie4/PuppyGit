@@ -424,14 +424,19 @@ object RepoActUtil {
                     if (username == null || username.isBlank() || email == null || email.isBlank()) {
                         val errMsg = "auto commit aborted by username or email invalid"
                         MyLog.d(TAG, "#$funName: api $routeName: $errMsg")
-                        sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: $errMsg", Cons.selectedItem_ChangeList, repoFromDb.id)
+
+                        val errMsgAndPrefix = "$prefix: $errMsg"
+                        sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
+                        createAndInsertError(repoFromDb.id, errMsgAndPrefix)
                     } else {
                         //检查是否存在冲突，如果存在，将不会创建提交
                         if (Libgit2Helper.hasConflictItemInRepo(gitRepo)) {
                             val errMsg = "auto commit aborted by conflicts"
                             MyLog.d(TAG, "#$funName: api=$routeName, repoName=${repoFromDb.repoName}, err=$errMsg")
                             // 显示个手机通知，点击进入ChangeList并定位到对应仓库
-                            sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: $errMsg", Cons.selectedItem_ChangeList, repoFromDb.id)
+                            val errMsgAndPrefix = "$prefix: $errMsg"
+                            sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
+                            createAndInsertError(repoFromDb.id, errMsgAndPrefix)
                         } else {
                             // 有username 和 email，且无冲突
 
@@ -455,8 +460,10 @@ object RepoActUtil {
 
                                 if (ret.hasError()) {
                                     MyLog.d(TAG, "#$funName: api=$routeName, repoName=${repoFromDb.repoName}, create commit err: ${ret.msg}, exception=${ret.exception?.stackTraceToString()}")
-                                    // 显示个手机通知，点击进入ChangeList并定位到对应仓库
-                                    sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: auto commit err: ${ret.msg}", Cons.selectedItem_ChangeList, repoFromDb.id)
+
+                                    val errMsgAndPrefix = "$prefix: auto commit err: ${ret.msg}"
+                                    sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
+                                    createAndInsertError(repoFromDb.id, errMsgAndPrefix)
                                 } else if(ret.data != null){
                                     //更新本地oid，不然后面会误认为up to date，然后不推送
                                     upstream.localOid = ret.data!!.toString()
