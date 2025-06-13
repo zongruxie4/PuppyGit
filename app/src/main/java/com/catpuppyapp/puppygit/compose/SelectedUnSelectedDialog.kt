@@ -89,10 +89,6 @@ fun <T> SelectedUnSelectedList(
                 Spacer(Modifier.height(10.dp))
 
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    item {
-                        SettingsTitle(selectedTitleText+"(${selectedItemList.size})")
-                    }
-
 
                     //根据关键字过滤条目
                     val k = filterKeyWord.value.text.lowercase()  //关键字
@@ -109,6 +105,9 @@ fun <T> SelectedUnSelectedList(
                         unselectedItemList
                     }
 
+                    item {
+                        SettingsTitle(selectedTitleText+"(${filteredSelectedList.size})")
+                    }
 
                     if(filteredSelectedList.isEmpty()) {
                         item {
@@ -127,7 +126,7 @@ fun <T> SelectedUnSelectedList(
                     }
 
                     item {
-                        SettingsTitle(unselectedTitleText+"(${unselectedItemList.size})")
+                        SettingsTitle(unselectedTitleText+"(${filteredUnselectedList.size})")
                     }
 
                     if(filteredUnselectedList.isEmpty()) {
