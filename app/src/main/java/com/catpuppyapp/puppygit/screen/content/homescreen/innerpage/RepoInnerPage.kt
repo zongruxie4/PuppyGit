@@ -1827,6 +1827,7 @@ fun RepoInnerPage(
             quitSelectionMode()
         } else if(repoPageFilterModeOn.value) {
             repoPageFilterModeOn.value = false
+            resetSearchVars()
         }else {
             backHandlerOnBack()
         }

@@ -318,6 +318,7 @@ fun CredentialRemoteListScreen(
     BackHandler {
         if(filterModeOn.value) {
             filterModeOn.value = false
+            resetSearchVars()
         } else {
             naviUp()
         }

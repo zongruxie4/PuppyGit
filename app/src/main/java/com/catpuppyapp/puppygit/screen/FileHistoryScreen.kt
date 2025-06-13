@@ -608,6 +608,7 @@ fun FileHistoryScreen(
     BackHandler {
         if(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
             filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
+            resetSearchVars()
         } else {
             naviUp()
         }

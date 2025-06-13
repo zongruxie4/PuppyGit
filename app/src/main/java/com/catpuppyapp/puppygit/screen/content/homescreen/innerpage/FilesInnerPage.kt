@@ -909,6 +909,7 @@ fun FilesInnerPage(
         filesPageSimpleFilterOn = filesPageSimpleFilterOn,
         openDrawer = openDrawer,
         goToPath = goToPath,
+        resetSearchVars = resetFilesSearchVars,
 
     )
 
@@ -3565,6 +3566,7 @@ private fun getBackHandler(
     filesPageSimpleFilterOn: MutableState<Boolean>,
     openDrawer:()->Unit,
     goToPath:(String)->Unit,
+    resetSearchVars:()->Unit,
 ): () -> Unit {
     val backStartSec =  rememberSaveable { mutableLongStateOf(0) }
     val ceilingPaths = rememberSaveable { FsUtils.getAppCeilingPaths() }
@@ -3581,9 +3583,11 @@ private fun getBackHandler(
             filesPageQuitSelectionMode()
         } else if(filesPageSimpleFilterOn.value) {
             filesPageSimpleFilterOn.value = false
+            resetSearchVars()
         }else if(getFilterMode() != 0) {
             // 20250107: 这个过滤模式好像已经废弃了？？？
             filesPageFilterModeOff()
+            resetSearchVars()
 //        }else if (currentPath.value.startsWith(FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/")) { //如果在文件管理器页面且不在仓库根目录
         }else if (ceilingPaths.contains(currentPath()).not()) { //如果在文件管理器页面且未抵达任一天花板目录，则打开上级目录，否则显示“再按返回则退出”的提示
             //返回上级目录

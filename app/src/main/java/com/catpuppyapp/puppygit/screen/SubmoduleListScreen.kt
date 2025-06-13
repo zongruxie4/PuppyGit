@@ -1003,6 +1003,7 @@ fun SubmoduleListScreen(
             quitSelectionMode()
         } else if(filterModeOn.value) {
             filterModeOn.value = false
+            resetSearchVars()
         } else {
             naviUp()
         }

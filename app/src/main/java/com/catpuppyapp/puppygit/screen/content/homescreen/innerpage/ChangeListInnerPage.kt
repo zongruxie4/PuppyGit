@@ -2489,14 +2489,15 @@ fun ChangeListInnerPage(
     //换句话说：ChangeList页面需要注册双击返回；Index页面不需要
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
     val backHandlerOnBack = getBackHandler(
-        activityContext,
-        exitApp,
-        isFileSelectionMode,
-        quitSelectionMode,
-        fromTo,
-        naviUp,
-        changeListPageFilterModeOn,
-        openDrawer
+        appContext = activityContext,
+        exitApp = exitApp,
+        isFileSelectionMode = isFileSelectionMode,
+        quitSelectionMode = quitSelectionMode,
+        fromTo = fromTo,
+        naviUp = naviUp,
+        changeListPageFilterModeOn = changeListPageFilterModeOn,
+        resetSearchVars = resetSearchVars,
+        openDrawer = openDrawer
 
     )
     //注册BackHandler，拦截返回键，实现双击返回和返回上级目录
@@ -4197,6 +4198,7 @@ private fun getBackHandler(
     fromTo: String,
     naviUp:()->Unit,
     changeListPageFilterModeOn:MutableState<Boolean>,
+    resetSearchVars: () -> Unit,
     openDrawer:()->Unit
 
 ): () -> Unit {
@@ -4213,6 +4215,7 @@ private fun getBackHandler(
             quitSelectionMode()
         }else if(changeListPageFilterModeOn.value){
             changeListPageFilterModeOn.value = false
+            resetSearchVars()
         } else {
             if(fromTo != Cons.gitDiffFromIndexToWorktree) { // TreeToTree or Index，非WorkTree页面，非顶级页面，点击返回上级页面
                 doJobWithMainContext{
