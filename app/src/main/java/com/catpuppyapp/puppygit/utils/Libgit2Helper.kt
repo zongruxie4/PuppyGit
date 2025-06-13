@@ -2529,14 +2529,18 @@ object Libgit2Helper {
 
         //检查是否请求在创建提交成功后清除仓库状态
         //注：rebase时此值最好是false并由调用者在操作结束后再清除状态，不然还没执行完操作，状态就被清了
-        if(cleanRepoStateIfSuccess && !hasConflictItemInRepo(repo)) {
+        if(cleanRepoStateIfSuccess) {
             cleanRepoState(repo)
         }
 
         return Ret.createSuccess(resultCommitOid)
     }
 
-    fun cleanRepoState(repo: Repository) {
+    fun cleanRepoState(repo: Repository, cancelIfHasConflicts:Boolean = true) {
+        if(cancelIfHasConflicts && hasConflictItemInRepo(repo)) {
+            return
+        }
+
         repo.stateCleanup()
     }
 

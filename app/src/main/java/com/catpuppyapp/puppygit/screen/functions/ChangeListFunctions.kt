@@ -280,8 +280,10 @@ object ChangeListFunctions {
                 return@doCommit false
             }else {  //创建成功
                 MyLog.d(TAG, "#doCommit, createCommit success")
+
                 //如果没stage所有冲突条目，不能执行commit，函数入口有判断，所以如果能执行到这里，肯定是stage了所有冲突条目
                 Libgit2Helper.cleanRepoState(repo)  //清理仓库状态，例如存在冲突的时候如果创建完不清理状态，会一直处于merge state，就是pc git 显示 merging的情况
+
 
                 //更新仓库状态变量，要不然标题可能还是merge时的红色
                 repoState.intValue = repo.state()?.bit?: Cons.gitRepoStateInvalid  //如果state是null，返回一个无效值
