@@ -470,8 +470,7 @@ fun DiffScreen(
 
                 //拷贝每个条目，触发页面显示最新列表，不然有可能显示错
                 if(listIsEmpty.not()) {
-                    val copyList = diffableItemList.value.toList()
-                    for((idx,item) in copyList.withIndex()) {
+                    diffableItemList.value.toList().forEachIndexedBetter { idx, item ->
                         diffableItemList.value[idx] = item.copy()
                     }
                 }
@@ -1008,7 +1007,7 @@ fun DiffScreen(
         if(show) {  //展开当前未展开的条目并重载未初始化的条目的内容
             //仅加载未展开条目，所以需要过滤下，用户如果想确保重载所有条目，先展开所有条目再点顶部刷新按钮即可
             val hideAndNeverLoadedList = mutableListOf<Int>()
-            for((idx, it) in diffableItemList.value.toList().withIndex()) {
+            diffableItemList.value.toList().forEachIndexedBetter { idx, it ->
                 if(it.visible.not()) {
                     if(it.neverLoadedDifferences()) {
                         hideAndNeverLoadedList.add(idx)
@@ -1319,8 +1318,8 @@ fun DiffScreen(
 //                itemIdxAtLazyColumn_Map.clear()  //没必要清，存在的路径每次循环都会覆盖，不存在的路径也不可能跳转，所以，没必要清
 //                val itemsCount = IntBox(0)  //别用state系列变量，会死循环
 //                println("itemsCount.intValue: ${itemsCount.intValue}")
-                    for((diffableItemIdx, diffableItem) in diffableItemList.toList().withIndex()) {
-                        if(isSingleMode && diffableItemIdx != curItemIndex.intValue) continue;
+                    diffableItemList.toList().forEachIndexedBetter diffableItemListLoop@{ diffableItemIdx, diffableItem ->
+                        if(isSingleMode && diffableItemIdx != curItemIndex.intValue) return@diffableItemListLoop;
 
                         val diffItem = diffableItem.diffItemSaver
                         val changeType = diffableItem.diffItemSaver.changeType
@@ -1527,7 +1526,7 @@ fun DiffScreen(
 
                         //不显示的话，后面就不用管了，让用户看个标题栏就行
                         if(!visible) {
-                            continue
+                            return@diffableItemListLoop
                         }
 
 
@@ -2361,15 +2360,15 @@ fun DiffScreen(
             }
         }
 
-        for((idx, item) in diffableItemList.value.toList().withIndex()) {
+        diffableItemList.value.toList().forEachIndexedBetter label@{ idx, item ->
             //single mode仅加载当前查看的条目
-            if(isSingleMode && idx != curItemIndex.intValue) continue;
+            if(isSingleMode && idx != curItemIndex.intValue) return@label;
 
             //如果设置了子列表则只加载子列表条目
             //初次加载会把初始索引设置到subList里，这时条目未展开也一样加载并且只会加载一个条目，但是后续加载时则仅加载展开（visible)的条目，不可见的条目不会加载
             //若想立刻加载所有，可通过顶栏的展开全部按钮再点刷新
             //仅加载指定列表条目(即使不可见，也加载，加载前会设为可见)，若指定列表为空，则只加载展开的条目
-            if(!isSingleMode && ((subList.isNotEmpty() && subList.contains(idx).not()) || (subList.isEmpty() && !item.visible))) continue;
+            if(!isSingleMode && ((subList.isNotEmpty() && subList.contains(idx).not()) || (subList.isEmpty() && !item.visible))) return@label;
 
             //创建新条目前，把旧条目的loadChannel关了，否则如果之前的任务(加载diffItemSaver)未完成，不会取消，会继续执行
             item.closeLoadChannel()
