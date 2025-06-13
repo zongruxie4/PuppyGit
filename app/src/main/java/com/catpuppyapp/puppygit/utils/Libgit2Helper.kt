@@ -1302,10 +1302,11 @@ object Libgit2Helper {
         while(nextIdx < allOpCount) {  //如果还有其余的commit，则继续rebase
             //继续后面的pick
             rebase.next()
-            if(!repo.index().hasConflicts()) {  //无冲突，提交
+
+            if(hasConflictItemInRepo(repo)) {  //有冲突，返回，之后可 continue或abort，不过不支持 skip
+                return Ret.createError(null, "rebase: conflicts abort continue, plz resolve then try again")
+            }else {  //无冲突，提交
                 rebase.commit(null, rebaseCommitter, null, null)
-            }else {  //有冲突，返回，之后可 continue或abort，不过不支持 skip
-                return Ret.createError(null, "rebase:has conflicts when continue")
             }
 
             nextIdx++
@@ -1317,7 +1318,7 @@ object Libgit2Helper {
         //全部执行完了
         rebase.finish(rebaseCommitter)
 
-        val headId = repo.head()?.id() ?: return Ret.createError(null, "rebase:get new oid err after finish rebase")
+        val headId = repo.head()?.id() ?: return Ret.createError(null, "rebase: get new oid failed after finished rebase")
 
         //我发现只要正确处理Ac.fromRef和lookup，就不需要手动恢复分支
         //如果执行rebase之前非detached Head，恢复一下之前的分支
