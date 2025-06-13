@@ -17,9 +17,12 @@ import kotlin.concurrent.withLock
 
 
 object FileOpenHistoryMan {
+    // max histories count
+    const val defaultHistoryMaxCount = 50
+
     private const val TAG = "FileOpenHistoryMan"
 
-    private var _limit = 50  // will update by settings value
+    private var _limit = defaultHistoryMaxCount  // will update by settings value
     private const val fileName = "file_open_history.json"
 
     private lateinit var _file: File
@@ -36,7 +39,7 @@ object FileOpenHistoryMan {
     /**
      *
      * should run this method after AppModel and Settings and MyLog init done
-     * @param limit how many history will remembered
+     * @param limit how many histories will remembered
      * @param requireClearOldSettingsEditedHistory if true, will clear settings remembered file edited position, caller should check before pass this value to avoid unnecessary clear
      */
     fun init(saveDir:File, limit:Int, requireClearOldSettingsEditedHistory:Boolean) {
