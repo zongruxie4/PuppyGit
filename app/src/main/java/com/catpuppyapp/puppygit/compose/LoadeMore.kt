@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -52,7 +50,6 @@ fun LoadMore(
 
 //    val appContext = AppModel.appContext
 
-    val cardColor = UIHelper.defaultCardColor()
 
     val buttonHeight = 50
 
@@ -79,19 +76,13 @@ fun LoadMore(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ){
-            Card(
+            MyCard(
                 //0.9f 占父元素宽度的百分之90
                 modifier = Modifier
                     .clickable(enabled = enableLoadMore) {  //如果有更多，则启用点击加载更多，否则禁用
                         onClick()
                     }
                 ,
-                colors = CardDefaults.cardColors(
-                    containerColor = cardColor,
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 6.dp
-                )
 
             ) {
                 Box(
@@ -136,20 +127,13 @@ fun LoadMore(
             Spacer(modifier = Modifier.height(20.dp))
 
 
-            Card(
+            MyCard(
                 //0.9f 占父元素宽度的百分之90
                 modifier = Modifier
                     .clickable{  //如果有更多，则启用点击加载更多，否则禁用
                         loadToEndOnClick()
                     }
                 ,
-                colors = CardDefaults.cardColors(
-                    containerColor = cardColor,
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 6.dp
-                )
-
             ) {
                 Row(
                     modifier = textLineModifier

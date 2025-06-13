@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -59,8 +57,6 @@ fun CardButton(
 
     val maxHeight = maxHeight.coerceAtLeast(minHeight)
 
-    val cardColor = UIHelper.defaultCardColor()
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -71,18 +67,13 @@ fun CardButton(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Card(
+        MyCard(
             //0.9f 占父元素宽度的百分之90
             modifier = Modifier
                 .clickable(enabled = enabled) {
                     onClick()
-                },
-            colors = CardDefaults.cardColors(
-                containerColor = cardColor,
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 6.dp
-            )
+                }
+            ,
 
         ) {
             Row(

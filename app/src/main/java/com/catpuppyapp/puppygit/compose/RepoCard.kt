@@ -25,8 +25,6 @@ import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -188,7 +186,7 @@ fun RepoCard(
         modifier = if(requireFillMaxWidth) Modifier.fillMaxWidth() else Modifier.width(itemWidth.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ){
-        Card(
+        MyCard(
             //0.9f 占父元素宽度的百分之90
             modifier = Modifier
                 .padding(10.dp)
@@ -216,24 +214,20 @@ fun RepoCard(
 //            .defaultMinSize(minHeight = 100.dp)
 
             ,
-            colors = CardDefaults.cardColors(
-                //如果是请求闪烁的索引，闪烁一下
-                containerColor = if (requireBlinkIdx.intValue != -1 && requireBlinkIdx.intValue == repoDtoIndex) {
-                    //高亮2s后解除
-                    doJobThenOffLoading {
-                        delay(UIHelper.getHighlightingTimeInMills())  //解除高亮倒计时
-                        requireBlinkIdx.intValue = -1  //解除高亮
-                    }
-                    highlightColor
-                } else {
-                    cardColor
-                }
 
-            ),
+            //如果是请求闪烁的索引，闪烁一下
+            containerColor = if (requireBlinkIdx.intValue != -1 && requireBlinkIdx.intValue == repoDtoIndex) {
+                //高亮2s后解除
+                doJobThenOffLoading {
+                    delay(UIHelper.getHighlightingTimeInMills())  //解除高亮倒计时
+                    requireBlinkIdx.intValue = -1  //解除高亮
+                }
+                highlightColor
+            } else {
+                cardColor
+            },
 //        border = BorderStroke(1.dp, Color.Black),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 6.dp
-            ),
+
         ) {
             RepoTitle(
                 haptic = haptic,
