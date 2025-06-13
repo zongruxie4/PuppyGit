@@ -31,6 +31,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachBetter
 
 
 private val trailingIconSize = 40.dp
@@ -86,7 +87,7 @@ private fun <T> SelectedItemDialog2(
         requireShowTextCompose = true,
         textCompose = {
             ScrollableColumn {
-                selectedItems.forEach {
+                selectedItems.forEachBetter {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
@@ -205,7 +206,7 @@ fun <T> SelectedItemDialog3(
             doJobThenOffLoading {
                 val lb = Cons.lineBreak
                 val sb = StringBuilder()
-                selectedItems.forEach {
+                selectedItems.forEachBetter {
                     sb.append(textFormatterForCopy(it)).append(lb)
                 }
 

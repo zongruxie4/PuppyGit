@@ -5,6 +5,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.JsonUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -205,7 +206,7 @@ object FileOpenHistoryMan {
         val newStorage = mutableMapOf<String, FileEditedPos>()
 
         // update old history
-        getHistory().storage.forEach { (k, v) ->
+        getHistory().storage.forEachBetter { k, v ->
             newStorage[k] = v.copy(lastUsedTime = v.lastUsedTime - (offsetInSec))
         }
 

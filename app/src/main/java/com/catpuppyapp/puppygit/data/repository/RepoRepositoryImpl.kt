@@ -28,6 +28,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.dbIntToBool
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.getNowInSecFormatted
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
@@ -232,7 +233,7 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
         if(updateRepoInfo) {
             val settings = SettingsUtil.getSettingsSnapshot()
 
-            list.forEach {
+            list.forEachBetter {
                 Libgit2Helper.updateRepoInfo(it, settings = settings)
             }
         }
@@ -415,7 +416,7 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
             val subdirs = File(dir).listFiles { it -> it.isDirectory }
             //has sub directories, try scan folder
             if(subdirs!=null && subdirs.isNotEmpty()) {
-                subdirs.forEach { sub ->
+                subdirs.forEachBetter { sub ->
                     try {
                         Repository.open(sub.canonicalPath).use { repo->
                             all++
@@ -530,7 +531,7 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
             }
 
             val remotes = Libgit2Helper.getRemoteList(repo)
-            remotes.forEach { remoteName ->
+            remotes.forEachBetter { remoteName ->
                 val remoteEntity = RemoteEntity()
                 remoteEntity.remoteName = remoteName
                 remoteEntity.repoId = repoEntity.id
@@ -551,7 +552,7 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
                 insert(repoEntity)
 
                 // insert remotes
-                remoteEntityList.forEach {remote ->
+                remoteEntityList.forEachBetter {remote ->
                     remoteDb.insert(remote)
                 }
             }

@@ -26,6 +26,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.createAndInsertError
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.github.git24j.core.Remote
 import com.github.git24j.core.Repository
 
@@ -147,10 +148,10 @@ class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
             }
 
             if(willDelFromDb.isNotEmpty()) {
-                willDelFromDb.forEach { delete(RemoteEntity(id=it.remoteId)) }
+                willDelFromDb.forEachBetter { delete(RemoteEntity(id=it.remoteId)) }
             }
             if(willInsertToDb.isNotEmpty()) {
-                willInsertToDb.forEach mark@{
+                willInsertToDb.forEachBetter mark@{
                     try{
                         //查remote，若无，不插入db
                         val remote = Remote.lookup(repo, it)?:return@mark

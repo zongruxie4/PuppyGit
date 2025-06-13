@@ -118,6 +118,7 @@ import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.doJobWithMainContext
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
@@ -527,7 +528,7 @@ fun DiffScreen(
                 val untrakcedFileList = mutableListOf<String>()  // untracked list，在我的app里这种修改类型显示为 "New"
                 val pathspecList = mutableListOf<String>()  // modified、deleted 列表
 
-                targetItems.forEach { targetItem->
+                targetItems.forEachBetter { targetItem->
                     //新文件(Untracked)在index里不存在，若revert，只能删除文件，所以单独加到另一个列表
                     if(targetItem.changeType == Cons.gitStatusNew) {
                         untrakcedFileList.add(targetItem.canonicalPath)  //删除文件，添加全路径（但其实用仓库内相对路径也行，只是需要把仓库路径和仓库下相对路径拼接一下，而这个全路径是我在查询status list的时候拼好的，所以直接用就行）
@@ -1831,7 +1832,7 @@ fun DiffScreen(
                                         //由于这个是一对一对的，所以如果第一行是一对，实际上两行都会有顶部padding，不过问题不大，看着不太难受
 //                                        val lineIndex = mutableIntStateOf(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
 //                                        val lineIndex = Box(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
-                                        hunkAndLines.groupedLines.forEach printLine@{ (_lineNum: Int, lines: Map<String, PuppyLine>) ->
+                                        hunkAndLines.groupedLines.forEachBetter printLine@{ _lineNum: Int, lines: Map<String, PuppyLine> ->
 //                                            lineIndex.value += 1;
 //                                            val lineIndex = lineIndex.value
 
@@ -2600,7 +2601,7 @@ fun DiffScreen(
         onDispose {
             doJobThenOffLoading {
                 //关闭所有的load channel
-                diffableItemList.value.forEach { it.closeLoadChannel() }
+                diffableItemList.value.forEachBetter { it.closeLoadChannel() }
             }
         }
     }

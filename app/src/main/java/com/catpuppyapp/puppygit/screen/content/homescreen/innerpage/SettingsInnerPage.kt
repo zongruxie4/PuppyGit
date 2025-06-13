@@ -79,6 +79,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.getInvalidTimeZoneOffsetErrMsg
 import com.catpuppyapp.puppygit.utils.getValidTimeZoneOffsetRangeInMinutes
@@ -1256,7 +1257,7 @@ fun SettingsInnerPage(
             SettingsTitle("Dev Zone")
 
             // dev settings items
-            DevFeature.settingsItemList.forEach {
+            DevFeature.settingsItemList.forEachBetter {
                 DevBooleanSettingsItem(
                     item = it,
                     context = activityContext,

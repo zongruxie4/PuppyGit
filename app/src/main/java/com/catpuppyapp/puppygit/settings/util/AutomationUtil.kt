@@ -11,6 +11,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.getInstalledAppList
 
 
@@ -39,7 +40,7 @@ object AutomationUtil {
             val settings = SettingsUtil.getSettingsSnapshot()
 
             //仅更新有可能用到的仓库的信息
-            repoList.forEach {
+            repoList.forEachBetter {
                 Libgit2Helper.updateRepoInfo(it, settings = settings)
             }
 
@@ -81,7 +82,7 @@ object AutomationUtil {
         //记录存在的app包名，用来移除已卸载但仍在配置文件中的app
         val existedApps = mutableListOf<String>()
 
-        installedAppList.forEach { installed ->
+        installedAppList.forEachBetter { installed ->
             if(userAddedAppList.contains(installed.packageName)) {
                 installed.isSelected = true
                 selectedList.add(installed)
@@ -97,7 +98,7 @@ object AutomationUtil {
         SettingsUtil.update { s ->
             val newMap = mutableMapOf<String, List<String>>()
             val oldMap = s.automation.packageNameAndRepoIdsMap
-            existedApps.forEach { packageName ->
+            existedApps.forEachBetter { packageName ->
                 //这里oldMap.get()百分百有值（除非并发修改，但在这个函数运行期间并发修改这个map的概率很小，几乎不会发生），
                 // 因为existedApps添加的包名必然是oldMap的key，不过为了逻辑完整以及避免出错，还是 ?: 一个空list保险
                 newMap.put(packageName, oldMap.get(packageName) ?: listOf())

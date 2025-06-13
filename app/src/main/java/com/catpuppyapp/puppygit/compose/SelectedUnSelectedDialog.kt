@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 @Composable
@@ -116,7 +117,7 @@ fun <T> SelectedUnSelectedList(
                             }
                         }
                     }else {
-                        filteredSelectedList.forEach {
+                        filteredSelectedList.forEachBetter {
                             item {
                                 MySelectionContainer {
                                     selectedItemFormatter(it)
@@ -136,7 +137,7 @@ fun <T> SelectedUnSelectedList(
                             }
                         }
                     }else {
-                        filteredUnselectedList.forEach {
+                        filteredUnselectedList.forEachBetter {
                             item {
                                 MySelectionContainer {
                                     unselectedItemFormatter(it)

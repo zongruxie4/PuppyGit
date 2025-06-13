@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -14,7 +13,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.utils.forEachBetter
 
 
 @Composable
@@ -55,7 +54,7 @@ fun CommitListDialog(
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    commits.forEach {
+                    commits.forEachBetter {
                         item {
                             MySelectionContainer {
                                 Text(it+"\n")

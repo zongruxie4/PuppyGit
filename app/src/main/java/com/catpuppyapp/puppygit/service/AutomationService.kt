@@ -23,6 +23,7 @@ import com.catpuppyapp.puppygit.utils.RepoActUtil
 import com.catpuppyapp.puppygit.utils.cache.AutoSrvCache
 import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.delay
@@ -88,7 +89,7 @@ class AutomationService: AccessibilityService() {
                 MyLog.d(TAG, "#pullRepoList: generate notifyers for ${repoList.size} repos")
             }
 
-            repoList.forEach {
+            repoList.forEachBetter {
                 //notify
                 val serviceNotify = createNotify(NotifyUtil.genId())
                 NotifySenderMap.set(
@@ -121,7 +122,7 @@ class AutomationService: AccessibilityService() {
                 MyLog.d(TAG, "#pushRepoList: generate notifyers for ${repoList.size} repos")
             }
 
-            repoList.forEach {
+            repoList.forEachBetter {
                 //notify
                 val serviceNotify = createNotify(NotifyUtil.genId())
                 NotifySenderMap.set(
@@ -379,7 +380,7 @@ class AutomationService: AccessibilityService() {
                                                         val newList = mutableListOf<RepoEntity>()
 
                                                         //移除当前显示的app关联的仓库，同步剩余仓库
-                                                        repoList.forEach { r1 ->
+                                                        repoList.forEachBetter { r1 ->
                                                             var contains = false
 
                                                             for(r2 in repoListOfCurShowingPackage) {

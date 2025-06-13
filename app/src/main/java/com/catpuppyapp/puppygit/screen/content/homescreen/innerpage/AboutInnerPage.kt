@@ -39,6 +39,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
+import com.catpuppyapp.puppygit.utils.forEachBetter
 
 
 const val authorMail = "luckyclover33xx@gmail.com"
@@ -310,7 +311,7 @@ fun AboutInnerPage(
 
         val licenseStrRes = stringResource(R.string.license)
 
-        openSourceList.forEach {
+        openSourceList.forEachBetter {
             DoubleClickableRow(
                 row1Text = it.projectName,
                 row2Text = licenseStrRes,
@@ -324,7 +325,7 @@ fun AboutInnerPage(
         //开源项目列表
         TitleRow("Thanks")
 
-        contributorList.forEach {
+        contributorList.forEachBetter {
             DoubleClickableRow(
                 row1Text = it.name,
                 row2Text = it.desc,

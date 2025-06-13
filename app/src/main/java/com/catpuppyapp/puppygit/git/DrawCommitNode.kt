@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import io.ktor.util.collections.ConcurrentMap
 
 
@@ -100,7 +101,7 @@ data class DrawCommitNode (
                     // 合流
                     sb.append("\nConfluences:\n")
 
-                    mergedList.forEach {
+                    mergedList.forEachBetter {
                         sb.append(it.toStringForView())
                     }
 

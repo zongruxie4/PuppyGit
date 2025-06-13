@@ -84,6 +84,7 @@ import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -472,7 +473,7 @@ fun TagListScreen(
                 val suffix = ", "
                 val spliter = "\n----------\n"
 
-                pushFailedList.forEach {
+                pushFailedList.forEachBetter {
                     toastMsg.append(it.remoteName).append(suffix)
                     repoLogMsg.append("remoteName='${it.remoteName}', err=${it.exception?.localizedMessage}").append(spliter)
                     logMsg.append("remoteName='${it.remoteName}', err=${it.exception?.stackTraceToString()}").append(spliter)
@@ -608,7 +609,7 @@ fun TagListScreen(
         val itemSuffix = "\n\n"
         val spliter = "--------------\n\n"
 
-        selectedItemList.forEach {
+        selectedItemList.forEachBetter {
             sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).append(itemSuffix)
             sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.name).append(itemSuffix)
             sb.append(activityContext.getString(R.string.target)).append(": ").append(it.targetFullOidStr).append(itemSuffix)
@@ -938,7 +939,7 @@ fun TagListScreen(
                         selectAll@{
 //                        val list = if(enableFilterState.value) filterList.value else list.value
 
-                            list.forEach {
+                            list.forEachBetter {
                                 selectItem(it)
                             }
 
@@ -1037,7 +1038,7 @@ fun TagListScreen(
 //                            }
                             //test, end
 
-                            remotes.forEach { remoteCheckedList.value.add(false) }  //有几个remote就创建几个Boolean
+                            remotes.forEachBetter { remoteCheckedList.value.add(false) }  //有几个remote就创建几个Boolean
                             remoteList.value.addAll(remotes)
                         }
                     }

@@ -27,6 +27,7 @@ import androidx.compose.ui.window.Dialog
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import com.catpuppyapp.puppygit.utils.mime.intentType
@@ -124,7 +125,7 @@ fun OpenAsDialog(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                mimeTypeList.forEach { (mimeType, text) ->
+                mimeTypeList.forEachBetter { (mimeType, text) ->
                     Row(
                         modifier = Modifier
                             .height(itemHeight)

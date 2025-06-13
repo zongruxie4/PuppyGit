@@ -136,6 +136,7 @@ import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJob
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.getFileExtOrEmpty
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
@@ -702,7 +703,7 @@ fun FilesInnerPage(
                 var folderCount = 0
                 val first = list.first()
 
-                first.toFile().listFiles()!!.forEach {
+                first.toFile().listFiles()!!.forEachBetter {
                     if(it.isDirectory) {
                         folderCount++
                     }else {
@@ -730,7 +731,7 @@ fun FilesInnerPage(
             details_ItemsSize.longValue = 0
 
             //count
-            list.forEach {
+            list.forEachBetter {
                 //ps: 因为已经在函数中追加了size，所以if(it.isDir)的代码块返回0即可
                 if(it.isDir) {
                     FsUtils.calculateFolderSize(it.toFile(), details_ItemsSize)
@@ -1746,7 +1747,7 @@ fun FilesInnerPage(
                     val repoIndex = repo.index()
 
                     //开始循环，删除所有选中文件
-                    selectedItems.forEach {
+                    selectedItems.forEachBetter {
                         val relativePathUnderRepo = getFilePathUnderParent(repoWorkDirFullPath, it.fullPath)
                         //存在有效仓库，且文件的仓库内相对路径不为空，且不是.git目录本身，且不是.git目录下的文件
                         Libgit2Helper.removeFromGit(repoIndex, relativePathUnderRepo, it.isFile)
@@ -1802,7 +1803,7 @@ fun FilesInnerPage(
                     return@doJobThenOffLoading  // 结束操作
                 }
 
-                selectedItems.forEach {
+                selectedItems.forEachBetter {
                     val file = File(it.fullPath)
                     // 如果要删除的路径包含.git，记个警告log，但不阻止，用户非要删，我不管 （没必要警告，用户爱删就删，随便）
 //                    if(file.canonicalPath.contains(".git")) {
@@ -1827,7 +1828,7 @@ fun FilesInnerPage(
                     changeStateTriggerRefreshPage(needRefreshFilesPage)
                 }else {  //filter模式刷新会重新递归查找，太重量级，直接更新下过滤结果即可
                     val filterList = filterList.value
-                    selectedItems.forEach { filterList.remove(it) }
+                    selectedItems.forEachBetter { filterList.remove(it) }
                 }
             }
         }
@@ -1840,7 +1841,7 @@ fun FilesInnerPage(
         val sb = StringBuilder()
         val suffix = "\n\n--------------------\n\n"
         sb.append("got ${errList.size} error(s):").append(suffix)
-        errList.forEach {
+        errList.forEachBetter {
             sb.append("srcPath: ${it.srcPath}").append("\n\n")
             sb.append("targetPath: ${it.targetPath}").append("\n\n")
             sb.append("errMsg: ${it.exception?.localizedMessage ?: "unknow err"}").append(suffix)
@@ -2248,7 +2249,7 @@ fun FilesInnerPage(
                 doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                     try {
                         var successCnt = 0
-                        selctedDirs.forEach { dirPath ->
+                        selctedDirs.forEachBetter { dirPath ->
                             try {
                                 Libgit2Helper.initGitRepo(dirPath)
                                 successCnt++
@@ -2315,7 +2316,7 @@ fun FilesInnerPage(
                 doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.importing)) {
                     val importRepoResult = ImportRepoResult()
                     try {
-                        selctedDirs.forEach { dirPath ->
+                        selctedDirs.forEachBetter { dirPath ->
                             val result = AppModel.dbContainer.repoRepository.importRepos(dir=dirPath, isReposParent=isReposParentFolderForImport.value)
                             importRepoResult.all += result.all
                             importRepoResult.success += result.success
@@ -2522,7 +2523,7 @@ fun FilesInnerPage(
         val selectAll = {
             val list = if(enableFilterState.value) filterList.value else currentPathFileList.value
 
-            list.toList().forEach {
+            list.toList().forEachBetter {
                 selectItem(it)
             }
 
@@ -2733,7 +2734,7 @@ fun FilesInnerPage(
                     var previousFilePath=""
                     var curTarget:File?=null
 
-                    requireImportUriList.value.toList().forEach { it:Uri? ->
+                    requireImportUriList.value.toList().forEachBetter forEach@{ it:Uri? ->
                         try {
                             if(it!=null && it.path!=null && it.path!!.length>0) {
                                 //从这到更新curTarget，curTarget和perviousFilePath都应该相同

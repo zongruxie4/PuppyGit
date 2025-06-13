@@ -90,6 +90,7 @@ import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doActWithLockIfFree
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
@@ -1185,7 +1186,7 @@ fun EditorInnerPage(
                     if(recentFileListSelectionMode.value) {
                         val selectedList = selectedRecentFileList.value
                         val newSelectedList = mutableListOf<FileDetail>()
-                        selectedList.forEach {
+                        selectedList.forEachBetter {
                             for(f in recentFiles) {
                                 if(f.file.path.ioPath == it.file.path.ioPath) {
                                     newSelectedList.add(f)
@@ -1330,7 +1331,7 @@ fun EditorInnerPage(
                     val targetList = selectedRecentFileList.value.toList()
 
                     doJobThenOffLoading {
-                        targetList.forEach {
+                        targetList.forEachBetter {
                             recentFileList.value.remove(it)
                             selectedRecentFileList.value.remove(it)
                             FileOpenHistoryMan.remove(it.file.path.ioPath)

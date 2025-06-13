@@ -88,6 +88,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.parseIntOrDefault
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -359,7 +360,7 @@ fun SubmoduleListScreen(
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.updating)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo->
-                        selectedItemList.value.toList().forEach {
+                        selectedItemList.value.toList().forEachBetter {
                             val sm = Libgit2Helper.openSubmodule(repo, it.name)
                             if(sm!=null) {
                                 if(syncParentConfig.value) {
@@ -411,7 +412,7 @@ fun SubmoduleListScreen(
                     Repository.open(curRepo.value.fullSavePath).use { repo ->
                         val repoWorkDirFullPath = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)
 
-                        selectedItemList.value.toList().forEach {
+                        selectedItemList.value.toList().forEachBetter {
                             val sm = Libgit2Helper.openSubmodule(repo, it.name)
                             if(sm!=null) {
                                 try {
@@ -454,7 +455,7 @@ fun SubmoduleListScreen(
                     Repository.open(curRepo.value.fullSavePath).use { repo ->
                         val repoWorkDirFullPath = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)
 
-                        selectedItemList.value.toList().forEach {
+                        selectedItemList.value.toList().forEachBetter {
                             try {
                                 Libgit2Helper.SubmoduleDotGitFileMan.restoreDotGitFileForSubmodule(repoWorkDirFullPath, it.relativePathUnderParent)
                             }catch (_:Exception){
@@ -497,7 +498,7 @@ fun SubmoduleListScreen(
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.reloading)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { parentRepo ->
-                        selectedItemList.value.toList().forEach {
+                        selectedItemList.value.toList().forEachBetter {
                             try {
                                 val sm = Libgit2Helper.resolveSubmodule(parentRepo, it.name)
                                 if(sm!=null) {
@@ -535,7 +536,7 @@ fun SubmoduleListScreen(
 
                 doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.resetting)) {
                     try {
-                        selectedItemList.value.toList().forEach {
+                        selectedItemList.value.toList().forEachBetter {
                             if (it.targetHash.isNotBlank()) {
                                 try {
                                     Repository.open(it.fullPath).use { subRepo ->
@@ -593,7 +594,7 @@ fun SubmoduleListScreen(
                 val importRepoResult = ImportRepoResult()
 
                 try {
-                    importList.forEach {
+                    importList.forEachBetter {
                         val result = repoDb.importRepos(dir=it.fullPath, isReposParent=false, repoNameSuffix = repoNameSuffix, parentRepoId = parentRepoId, credentialId = selectedCredentialId)
                         importRepoResult.all += result.all
                         importRepoResult.success += result.success
@@ -710,7 +711,7 @@ fun SubmoduleListScreen(
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         val repoWorkDirPath = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)
-                        selectedItemList.value.toList().forEach { smdto ->
+                        selectedItemList.value.toList().forEachBetter { smdto ->
                             try {
 
                                 Libgit2Helper.removeSubmodule(
@@ -823,7 +824,7 @@ fun SubmoduleListScreen(
 //                    }
 //                }
                     Repository.open(curRepo.value.fullSavePath).use { repo->
-                        willCloneList.forEach { selectedItem ->
+                        willCloneList.forEachBetter { selectedItem ->
                             try {
 
                                 // clone submodule
@@ -899,7 +900,7 @@ fun SubmoduleListScreen(
                     val credential = if(SpecialCredential.MatchByDomain.credentialId == selectedCredential.id) selectedCredential.copy() else credentialDb.getByIdWithDecrypt(selectedCredential.id)
 
                     Repository.open(curRepo.value.fullSavePath).use { repo->
-                        selectedItemList.value.toList().forEach {
+                        selectedItemList.value.toList().forEachBetter {
                             try {
                                 Libgit2Helper.updateSubmodule(repo, credential, listOf(it.name), recursiveUpdate.value, credentialDb)
 
@@ -1265,7 +1266,7 @@ fun SubmoduleListScreen(
                         selectAll@{
 //                        val list = if(enableFilterState.value) filterList.value else list.value
 
-                            list.forEach {
+                            list.forEachBetter {
                                 selectItem(it)
                             }
 
@@ -1353,7 +1354,7 @@ fun SubmoduleListScreen(
                             val sb = StringBuilder()
                             val spliter = Cons.itemDetailSpliter
 
-                            selectedItemList.value.forEach {
+                            selectedItemList.value.forEachBetter {
                                 sb.append(getDetail(it))
                                 sb.append(spliter)
                             }

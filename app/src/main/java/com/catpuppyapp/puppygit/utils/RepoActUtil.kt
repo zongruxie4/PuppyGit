@@ -55,7 +55,7 @@ object RepoActUtil {
         val settings = SettingsUtil.getSettingsSnapshot()
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
 
-        repoList.forEach { repoFromDb ->
+        repoList.forEachBetter { repoFromDb ->
             doJobThenOffLoading {
                 val notiSender = getNotifySender(repoFromDb.id, sessionId)
 
@@ -169,7 +169,7 @@ object RepoActUtil {
         val settings = SettingsUtil.getSettingsSnapshot()
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
 
-        repoList.forEach { repoFromDb ->
+        repoList.forEachBetter { repoFromDb ->
             doJobThenOffLoading {
                 val notiSender = getNotifySender(repoFromDb.id, sessionId)
 
@@ -330,7 +330,7 @@ object RepoActUtil {
         val settings = SettingsUtil.getSettingsSnapshot()
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
 
-        repoList.forEach { repoFromDb ->
+        repoList.forEachBetter { repoFromDb ->
             //每仓库一协程并发执行
             doJobThenOffLoading {
                 val notiSender = getNotifySender(repoFromDb.id, sessionId)

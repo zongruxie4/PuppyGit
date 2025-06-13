@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 
 //lazyColumn老出问题，不是并发修改异常就是索引越界，统一弄到这里方便修改和debug
@@ -65,7 +66,7 @@ fun <T> MyLazyColumn(
                 }
 
             }else {
-                listCopy.forEach {
+                listCopy.forEachBetter {
                     if(requireUseCustomLazyListScope) {
                         customLazyListScope(it)
                     }else {

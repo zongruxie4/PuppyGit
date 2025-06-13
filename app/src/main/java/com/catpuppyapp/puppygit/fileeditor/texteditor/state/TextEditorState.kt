@@ -19,6 +19,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
@@ -565,7 +566,7 @@ class TextEditorState private constructor(
 
             // 创建对象并更新 change type
             //changeType: 先全初始化为new，如果是replace，首行状态后面会和旧行比较来判断是修改还是新增还是没变
-            text.lines().forEach { textFiledStates.add(TextFieldState(value = TextFieldValue(text = it), changeType = LineChangeType.NEW)) }
+            text.lines().forEachBetter { textFiledStates.add(TextFieldState(value = TextFieldValue(text = it), changeType = LineChangeType.NEW)) }
 
 
 
@@ -1097,7 +1098,7 @@ class TextEditorState private constructor(
         val f = fields
         var count = 0
 
-        f.forEach {
+        f.forEachBetter {
             val text = it.value.text
             var startIndex=0
 
@@ -1132,7 +1133,7 @@ class TextEditorState private constructor(
         val lines = f.size
 
         var chars = 0
-        f.forEach { chars+=it.value.text.length }
+        f.forEachBetter { chars+=it.value.text.length }
 
         return Pair(chars, lines)
     }
@@ -1516,7 +1517,7 @@ class TextEditorState private constructor(
      */
     fun getAllText(): String {
         val sb = StringBuilder()
-        fields.forEach { sb.append(it.value.text).append(lb) }
+        fields.forEachBetter { sb.append(it.value.text).append(lb) }
 
         //移除遍历时多添加的末尾换行符，然后返回
         return sb.removeSuffix(lb).toString()

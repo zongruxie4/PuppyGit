@@ -138,6 +138,7 @@ import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -548,7 +549,7 @@ fun CommitListScreen(
                 filterByEntryName.value = filterByEntryNameBuffer.value
                 pathsForFilter.value = pathsForFilterBuffer.value
                 pathsListForFilter.value.clear()
-                pathsForFilter.value.lines().forEach {
+                pathsForFilter.value.lines().forEachBetter {
                     if(it.isNotEmpty()) {
                         pathsListForFilter.value.add(it)
                     }

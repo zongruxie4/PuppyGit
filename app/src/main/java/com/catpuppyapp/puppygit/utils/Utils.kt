@@ -1076,7 +1076,7 @@ fun <T> updateSelectedList(
         val stillSelectedList = mutableListOf<T>()
 
 //                一般选中条目的列表元素会比所有条目列表少，所以选中条目在外部，这样有可能减少循环次数
-        selectedItemList.forEach { oldSelected ->
+        selectedItemList.forEachBetter { oldSelected ->
             val found = itemList.find { match(oldSelected, it) }
             //如果选中条目仍在条目列表存在，则视为有效选中项
             if (found != null) {

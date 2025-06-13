@@ -47,6 +47,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
@@ -428,7 +429,7 @@ private fun Modifier.drawNode(
 
 
                 //画合流节点
-                node.mergedList.forEach { node ->
+                node.mergedList.forEachBetter { node ->
                     drawInputLinesAndCircle(
                         node,
                         nodeCircleRadiusInPx,
@@ -474,7 +475,7 @@ private fun Modifier.drawNode(
                 )
 
                 //画合流节点
-                node.mergedList.forEach { node ->
+                node.mergedList.forEachBetter { node ->
                     drawOutputLinesAndCircle(
                         node,
                         nodeCircleRadiusInPx,

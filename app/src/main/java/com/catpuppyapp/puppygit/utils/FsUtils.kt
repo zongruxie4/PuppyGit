@@ -452,7 +452,7 @@ object FsUtils {
         val errList = mutableListOf<PasteResult>()
 
         //开始执行 拷贝 or 移动 or 导出
-        srcList.forEach {
+        srcList.forEachBetter forEach@{
             val src = it
             var target:File? = null
 
@@ -1134,7 +1134,7 @@ object FsUtils {
             val list = fileOrFolder.listFiles()
 
             if(!list.isNullOrEmpty()) {
-                list.forEach {
+                list.forEachBetter {
                     calculateFolderSize(it, itemsSize)
                 }
             }

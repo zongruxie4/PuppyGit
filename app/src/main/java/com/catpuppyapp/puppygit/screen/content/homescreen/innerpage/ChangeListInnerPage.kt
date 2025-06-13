@@ -130,6 +130,7 @@ import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.doJobWithMainContext
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
@@ -2030,7 +2031,7 @@ fun ChangeListInnerPage(
     val selectAll = {
         val list = if(enableFilterState.value) filterList.value else itemList.value
 
-        list.toList().forEach {
+        list.toList().forEachBetter {
             selectItem(it)
         }
 
@@ -2057,7 +2058,7 @@ fun ChangeListInnerPage(
                     Repository.open(curRepo.fullSavePath).use { repo ->
                         val untrakcedFileList = mutableListOf<String>()  // untracked list，在我的app里这种修改类型显示为 "New"
                         val pathspecList = mutableListOf<String>()  // modified、deleted 列表
-                        selectedItemList.forEach {
+                        selectedItemList.forEachBetter {
                             //新文件(Untracked)在index里不存在，若revert，只能删除文件，所以单独加到另一个列表
                             if(it.changeType == Cons.gitStatusNew) {
                                 untrakcedFileList.add(it.canonicalPath)  //删除文件，添加全路径（但其实用仓库内相对路径也行，只是需要把仓库路径和仓库下相对路径拼接一下，而这个全路径是我在查询status list的时候拼好的，所以直接用就行）
@@ -2093,7 +2094,7 @@ fun ChangeListInnerPage(
         Repository.open(curRepo.fullSavePath).use {repo ->
             val refspecList = mutableListOf<String>()
 //                准备refspecList
-            selectedItemList.forEach {
+            selectedItemList.forEachBetter {
                 //不要用index.removeByPath()，那个是停止追踪(make it untracked)，不是unstage！！！
                 refspecList.add(it.relativePathUnderRepo)
             }
@@ -2175,7 +2176,7 @@ fun ChangeListInnerPage(
                 val importSuccess = Box(false)
 
                 try {
-                    importList.forEach {
+                    importList.forEachBetter {
                         val result = repoDb.importRepos(dir=it.canonicalPath, isReposParent=false, repoNameSuffix = repoNameSuffix, parentRepoId = parentRepoId, credentialId = selectedCredentialId)
                         importRepoResult.all += result.all
                         importRepoResult.success += result.success
@@ -2583,7 +2584,7 @@ fun ChangeListInnerPage(
                         val repoIndex = repo.index()
 
                         //开始循环，删除所有选中文件
-                        selectedItemList.forEach {
+                        selectedItemList.forEachBetter {
                             //存在有效仓库，且文件的仓库内相对路径不为空，且不是.git目录本身，且不是.git目录下的文件
                             Libgit2Helper.removeFromGit(repoIndex, it.relativePathUnderRepo, it.toFile().isFile)
                         }

@@ -74,6 +74,7 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.parseLongOrDefault
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -152,7 +153,7 @@ fun AutomationInnerPage(
             selectedRepoList.value.clear()
             unselectedRepoList.value.clear()
             val selectedRepoIdList = mutableListOf<String>()
-            repos.forEach {
+            repos.forEachBetter {
                 if(packageNameLinkedRepos.contains(it.id)) {
                     selectedRepoList.value.add(it)
                     selectedRepoIdList.add(it.id)
@@ -617,7 +618,7 @@ fun AutomationInnerPage(
                 val iconEndPadding = 5.dp
 
                 if(filteredAddedAppList.isNotEmpty()) {
-                    filteredAddedAppList.toList().forEach { appInfo ->
+                    filteredAddedAppList.toList().forEachBetter { appInfo ->
                         item {
                             AppItem(
                                 appInfo = appInfo,
@@ -680,7 +681,7 @@ fun AutomationInnerPage(
 
 
                 if(filteredNotAddedAppList.isNotEmpty()) {
-                    filteredNotAddedAppList.toList().forEach { appInfo ->
+                    filteredNotAddedAppList.toList().forEachBetter { appInfo ->
                         item {
                             AppItem(
                                 appInfo = appInfo,

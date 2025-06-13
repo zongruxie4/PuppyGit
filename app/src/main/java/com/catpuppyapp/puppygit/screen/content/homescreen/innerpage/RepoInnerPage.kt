@@ -109,6 +109,7 @@ import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
@@ -393,7 +394,7 @@ fun RepoInnerPage(
 
                 // save email and username
                 doJobThenOffLoading {
-                    userInfoRepoList.value.toList().forEach { curRepo ->
+                    userInfoRepoList.value.toList().forEachBetter { curRepo ->
 //                    MyLog.d(TAG, "curRepo.value.fullSavePath::"+curRepo.value.fullSavePath)
                         Repository.open(curRepo.fullSavePath).use { repo ->
                             //save email and username
@@ -693,7 +694,7 @@ fun RepoInnerPage(
 //                        repoDtoList[idx].tmpStatus=""  //err状态，tmpStatus本来就没值，不用设
         doJobThenOffLoading {
             //更新仓库状态为待克隆
-            repoList.forEach { curRepo ->
+            repoList.forEachBetter { curRepo ->
                 val repoLock = Libgit2Helper.getRepoLock(curRepo.id)
                 if(isLocked(repoLock)) {
                     return@doJobThenOffLoading
@@ -857,7 +858,7 @@ fun RepoInnerPage(
         //仓库名
         val suffix = ", "
         val sb = StringBuilder()
-        expectDelRepos.forEach { sb.append(it.repoName).append(suffix) }
+        expectDelRepos.forEachBetter { sb.append(it.repoName).append(suffix) }
         willDeleteRepoNames.value = sb.removeSuffix(suffix).toString()
 
         //添加到待删除列表
@@ -954,7 +955,7 @@ fun RepoInnerPage(
             doJobThenOffLoading {
                 var curRepo:RepoEntity? = null
                 try {
-                    deleteList.value.toList().forEach { willDeleteRepo ->
+                    deleteList.value.toList().forEachBetter { willDeleteRepo ->
                         curRepo = willDeleteRepo
 
                         val repoDb = AppModel.dbContainer.repoRepository
@@ -1119,7 +1120,7 @@ fun RepoInnerPage(
 
             val unshallowingText = activityContext.getString(R.string.unshallowing)
 
-            unshallowList.value.toList().forEach { curRepo ->
+            unshallowList.value.toList().forEachBetter { curRepo ->
                 doJobThenOffLoading {
                     val curRepoId = curRepo.id
                     val curRepoIdx = -1  //这个index不使用了，改用repoid更新仓库了
@@ -1548,7 +1549,7 @@ fun RepoInnerPage(
             textCompose = {
                 MySelectionContainer {
                     ScrollableColumn {
-                        apiConfigBeanList.value.forEach {
+                        apiConfigBeanList.value.forEachBetter {
                             val pullurl = it.api.pull_example
                             val pushurl = it.api.push_example
                             val syncurl = it.api.sync_example
@@ -2155,7 +2156,7 @@ fun RepoInnerPage(
                         }
                     }
                 }else { //若选中多个条目或选中一个存在有效上游的条目，则不会弹出设置上游的弹窗，直接执行同步
-                    list.filter { expectRepos(it) }.forEach { curRepo ->
+                    list.filter { expectRepos(it) }.forEachBetter { curRepo ->
                         task(curRepo)
                     }
                 }
@@ -2164,7 +2165,7 @@ fun RepoInnerPage(
             },
 
             push@{
-                selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
+                selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEachBetter { curRepo ->
                     doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                         doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pushing)) {
                             doActAndLogErr(curRepo, "push") {
@@ -2199,14 +2200,14 @@ fun RepoInnerPage(
                         }
                     }
                 }else {
-                    list.filter { expectRepos(it) }.forEach {
+                    list.filter { expectRepos(it) }.forEachBetter {
                         task(it)
                     }
                 }
             },
 
             fetch@{
-                selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
+                selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEachBetter { curRepo ->
                     doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                         //fetch 当前仓库上游的remote
                         doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.fetching)) {
@@ -2222,7 +2223,7 @@ fun RepoInnerPage(
             selectAll@{
                 val list = if(enableFilterState.value) filterList.value else repoList.value
 
-                list.toList().forEach {
+                list.toList().forEachBetter {
                     selectItem(it)
                 }
 
@@ -2338,7 +2339,7 @@ fun RepoInnerPage(
                     //生成仓库名，用于显示
                     val sb = StringBuilder()
                     val suffix = ", "
-                    unshallowableList.forEach { sb.append(it.repoName).append(suffix) }
+                    unshallowableList.forEachBetter { sb.append(it.repoName).append(suffix) }
                     unshallowRepoNames.value = sb.removeSuffix(suffix).toString()
 
                     showUnshallowDialog.value = true
@@ -2415,7 +2416,7 @@ fun RepoInnerPage(
                 val sbpush = StringBuilder("${genHttpHostPortStr(host, port.toString())}/push?token=$token")
                 val sbsync = StringBuilder("${genHttpHostPortStr(host, port.toString())}/sync?token=$token")
 
-                selectedItems.value.forEach {
+                selectedItems.value.forEachBetter {
                     val repoNameOrId = "&repoNameOrId=${it.repoName}"
                     sbpull.append(repoNameOrId)
                     sbpush.append(repoNameOrId)
@@ -2457,7 +2458,7 @@ fun RepoInnerPage(
                 val lb = "\n"
                 val spliter = Cons.itemDetailSpliter
 
-                selectedItems.value.forEach {
+                selectedItems.value.forEachBetter {
                     sb.append(activityContext.getString(R.string.name)).append(": ").append(it.repoName).append(lb).append(lb)
                     sb.append(activityContext.getString(R.string.id)).append(": ").append(it.id).append(lb).append(lb)
                     sb.append(activityContext.getString(R.string.state)).append(": ").append(it.getRepoStateStr(activityContext)).append(lb).append(lb)
@@ -2657,7 +2658,7 @@ private suspend fun doInit(
         val spCopy = specifiedRefreshRepoList.toList()
         specifiedRefreshRepoList.clear()
         //重查指定列表的仓库信息
-        spCopy.forEach {
+        spCopy.forEachBetter forEach@{
             val reQueriedRepo = repoRepository.getById(it.id) ?: return@forEach
 
             specifiedRefreshRepoList.add(reQueriedRepo)
@@ -2666,7 +2667,7 @@ private suspend fun doInit(
         //更新仓库列表
         val newList = mutableListOf<RepoEntity>()
         //保持原始列表的顺序但替换为更新后的仓库（不过如果只调用LibgitHelper.updateRepoInfo()，那么仓库地址可能并没变化，更新要靠后面的clear()和addAll()，若从数据库重查则仓库地址会变化，但不管怎样，只要clear()再addAll()一下，最终结果应该都没问题）
-        repoDtoList.value.toList().forEach { i1->
+        repoDtoList.value.toList().forEachBetter { i1->
             val found = specifiedRefreshRepoList.find { i2-> i2.id == i1.id }
             if(found != null) {
                 newList.add(found)

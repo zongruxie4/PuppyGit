@@ -2928,7 +2928,7 @@ object Libgit2Helper {
     //pathSpecList，仓库路径下的相对路径列表
     fun addToIndexThenWriteToDisk(repo: Repository, pathSpecList: List<String>) {
         val index = repo.index()
-        pathSpecList.forEach {
+        pathSpecList.forEachBetter {
             index.add(it)
         }
         //写入硬盘
@@ -2939,7 +2939,7 @@ object Libgit2Helper {
     //列表pair数据结构：(isFile, path)
     fun removePathSpecListFromIndexThenWriteToDisk(repo: Repository, pathSpecList: List<IgnoreItem>) {
         val repoIndex = repo.index()
-        pathSpecList.forEach {
+        pathSpecList.forEachBetter {
             removeFromIndexThenWriteToDisk(repoIndex, it, requireWriteToDisk=false)  //最后一个值表示不希望调用的函数执行 index.write()，我删完列表后自己会执行，不需要每个条目都执行，所以传false请求调用的函数别执行index.write()
         }
         //写入硬盘，保存修改
@@ -2971,7 +2971,7 @@ object Libgit2Helper {
         val index = repo.index()
         var neverShowErr = true
 
-        list.forEach {
+        list.forEachBetter {
             try {
                 if(it.changeType == Cons.gitStatusDeleted) {  //changeType is "Deleted"
                     index.removeByPath(it.relativePathUnderRepo)
@@ -3243,7 +3243,7 @@ object Libgit2Helper {
         val remoteCredentialList = mutableListOf<RemoteAndCredentials>()
         val masterPassword = AppModel.masterPassword.value
 //            val credentialDb = AppModel.dbContainer.credentialRepository
-        list.forEach {  //添加remote名和凭据进列表
+        list.forEachBetter {  //添加remote名和凭据进列表
             val rac = RemoteAndCredentials()
             rac.remoteName = it.remoteName
 
@@ -4256,7 +4256,7 @@ object Libgit2Helper {
                 return Pair(isNotAll, emptyList())
             }
             val branchNameList = mutableListOf<String>()
-            list.forEach {
+            list.forEachBetter forEach@{
                 val prefixStr = "refs/heads/"  //这里故意没写前面的 +，因为有的可能没+，例如："refs/heads/*:refs/remotes/origin/*"，不过我见过最多的还是带+的例如：“+refs/heads/*:refs/remotes/origin/*”
                 val prefixIndex = it.indexOf(prefixStr)
                 if(prefixIndex < 0){
@@ -5447,7 +5447,7 @@ object Libgit2Helper {
      */
     fun delTags(repoId: String, repo:Repository, tagShortNames:List<String>) {
         val funName = "delTags"
-        tagShortNames.forEach {
+        tagShortNames.forEachBetter {
             try {
                 Tag.delete(repo, it)
             }catch (e:Exception) {
@@ -6458,7 +6458,7 @@ object Libgit2Helper {
      */
     suspend fun cloneSubmodules(repo:Repository, recursive:Boolean, depth:Int, specifiedCredential: CredentialEntity?, submoduleNameList:List<String>, credentialDb:CredentialRepository) {
         val repoFullPathNoSlashSuffix = getRepoWorkdirNoEndsWithSlash(repo)
-        submoduleNameList.forEach { name ->
+        submoduleNameList.forEachBetter forEach@{ name ->
             // sync .gitmodules info(e.g. remoteUrl) to parent repos .git/config and submodules .git/config
             // sm.sync();  // update parent repo's .git/config and submodules .git/config, if use this, need not do init again yet, but if do init again, nothing bad though
             // sm.init(true);  // only update .git/config, 如果传参为false，将不会更新已存在条目，即使与.gitmodules里的信息不匹配，建议传true，强制更新为.gitmodules里的内容
@@ -6625,7 +6625,7 @@ object Libgit2Helper {
     suspend fun updateSubmodule(parentRepo:Repository, specifiedCredential: CredentialEntity?, submoduleNameList: List<String>, recursive: Boolean, credentialDb: CredentialRepository) {
         val repoFullPathNoSlashSuffix = getRepoWorkdirNoEndsWithSlash(parentRepo)
 
-        submoduleNameList.forEach { submoduleName ->
+        submoduleNameList.forEachBetter { submoduleName ->
 
             val sm = resolveSubmodule(parentRepo, submoduleName)
             if(sm==null){
@@ -6788,7 +6788,7 @@ object Libgit2Helper {
                 if(newLines.isEmpty()) {
                     writer.write("\n")
                 }else {
-                    newLines.forEach { line->
+                    newLines.forEachBetter { line->
                         writer.write("$line\n")
                     }
                 }

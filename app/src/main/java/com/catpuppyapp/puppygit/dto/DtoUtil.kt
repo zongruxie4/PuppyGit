@@ -15,6 +15,7 @@ import com.catpuppyapp.puppygit.server.bean.ConfigBean
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
@@ -124,7 +125,7 @@ fun createCommitDto(
 
 
 suspend fun updateRemoteDtoList(repo: Repository, remoteDtoList: List<RemoteDto>, onErr:(errRemote: RemoteDto, e:Exception)->Unit={r,e->}) {
-    remoteDtoList.forEach {
+    remoteDtoList.forEachBetter {
         try {
             updateRemoteDto(repo, it)
 
