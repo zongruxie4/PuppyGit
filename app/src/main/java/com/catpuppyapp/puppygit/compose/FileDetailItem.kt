@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -19,6 +20,7 @@ import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.FsUtils
+import com.catpuppyapp.puppygit.utils.UIHelper
 
 
 //private val bgColorInDarkTheme = Color(0xFF343434)
@@ -52,6 +54,10 @@ fun FileDetailItem(
             }
             .width(width)
         ,
+
+        colors = CardDefaults.cardColors(
+            containerColor = if(selected) MaterialTheme.colorScheme.primaryContainer else UIHelper.defaultCardColor()
+        ),
 
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp
