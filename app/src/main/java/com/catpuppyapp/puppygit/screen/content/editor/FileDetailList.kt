@@ -120,7 +120,8 @@ fun FileDetailList(
         state = listState,
     ) {
         // toList() is necessary , else, may cause concurrent exception
-        filteredList.toList().forEachIndexed { idx, it ->
+        for(idx in filteredList.indices) {
+            val it = filteredList.getOrNull(idx) ?: continue
             item {
                 FileDetailItem(
                     width = width,
