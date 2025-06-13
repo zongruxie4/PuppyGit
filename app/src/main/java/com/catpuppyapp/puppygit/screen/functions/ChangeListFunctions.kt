@@ -268,7 +268,7 @@ object ChangeListFunctions {
 
                 //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
                 val errPrefix= activityContext.getString(R.string.commit_err)
-                createAndInsertError(repoId, "$errPrefix:${ret.msg}")
+                createAndInsertError(repoId, "$errPrefix: ${ret.msg}")
 
                 //若出错，必刷新页面
                 if(requireCloseBottomBar) {
