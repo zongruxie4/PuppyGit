@@ -4,12 +4,20 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.FileDetailItem
 import com.catpuppyapp.puppygit.compose.MyLazyVerticalStaggeredGrid
 import com.catpuppyapp.puppygit.dto.FileDetail
+import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
+import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.RegexUtil
 
 
 private const val itemWidth = 150
@@ -26,39 +34,92 @@ private const val oneItemRequiredWidth = (itemWidth + oneItemRequiredMargin)
 fun FileDetailList(
     contentPadding: PaddingValues,
     state: LazyStaggeredGridState,
-
     list:List<FileDetail>,
+
+    filterListState: LazyStaggeredGridState,
+    filterList: MutableList<FileDetail>,
+    filterOn: MutableState<Boolean>,  // filter on but may haven't a valid keyword, so actually not enabled filter
+    enableFilterState: MutableState<Boolean>,  // indicate filter mode actually enabled or not
+    filterKeyword: MutableState<TextFieldValue>,
+    lastSearchKeyword: MutableState<String>,
+    filterResultNeedRefresh: MutableState<String>,
+    searching: MutableState<Boolean>,
+    searchToken: MutableState<String>,
+    resetSearchVars: ()->Unit,
+
     onClick:(FileDetail)->Unit,
     itemOnLongClick:(idx:Int, FileDetail)->Unit,
     isItemSelected: (FileDetail) -> Boolean,
 ) {
 
+    val activityContext = LocalContext.current
+
     val configuration = AppModel.getCurActivityConfig()
     val screenWidthDp = configuration.screenWidthDp
 
     // calculate item width and counts in each row
-    val (width, maxItemsInEachRow) = remember(configuration.screenWidthDp) {
+//    val (width, maxItemsInEachRow) = remember(configuration.screenWidthDp) {
+    val width = remember(configuration.screenWidthDp) {
         val width = if(screenWidthDp < oneItemRequiredWidth) {
             (screenWidthDp - oneItemRequiredMargin).coerceAtLeast(screenWidthDp)
         }else {  // at least can include 2 items width with margin
             itemWidth
         }
 
-        val actuallyOneItemWidthAndMargin = width + oneItemRequiredMargin
+//        val actuallyOneItemWidthAndMargin = width + oneItemRequiredMargin
+//
+//        val maxItemsInEachRow = screenWidthDp / actuallyOneItemWidthAndMargin
 
-        val maxItemsInEachRow = screenWidthDp / actuallyOneItemWidthAndMargin
+//        Pair(width.dp, maxItemsInEachRow)
 
-        Pair(width.dp, maxItemsInEachRow)
+        width.dp
     }
+
+
+
+    //有仓库
+    //根据关键字过滤条目
+    val keyword = filterKeyword.value.text.lowercase()  //关键字
+    val enableFilter = filterModeActuallyEnabled(filterOn.value, keyword)
+
+    val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
+    val filteredList = filterTheList(
+        needRefresh = filterResultNeedRefresh.value,
+        lastNeedRefresh = lastNeedRefresh,
+        enableFilter = enableFilter,
+        keyword = keyword,
+        lastKeyword = lastSearchKeyword,
+        searching = searching,
+        token = searchToken,
+        activityContext = activityContext,
+        filterList = filterList,
+        list = list,
+        resetSearchVars = resetSearchVars,
+        match = { idx:Int, it: FileDetail ->
+            it.file.name.lowercase().let {
+                it.contains(keyword) || RegexUtil.matchWildcard(it, keyword)
+            } || it.file.path.ioPath.lowercase().contains(keyword)
+                    || it.shortContent.lowercase().contains(keyword)
+        }
+    )
+
+
+
+    val listState = if(enableFilter) filterListState else state
+
+    //更新是否启用filter
+    enableFilterState.value = enableFilter
+
+
 
 
     MyLazyVerticalStaggeredGrid(
         contentPadding = contentPadding,
         itemMinWidth = width,
-        state = state,
+        state = listState,
     ) {
         // toList() is necessary , else, may cause concurrent exception
-        list.toList().forEachIndexed { idx, it ->
+        filteredList.toList().forEachIndexed { idx, it ->
             item {
                 FileDetailItem(
                     width = width,
