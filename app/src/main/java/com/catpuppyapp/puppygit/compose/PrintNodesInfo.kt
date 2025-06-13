@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.DrawCommitNode
+import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 
 @Composable
 fun PrintNodesInfo(
@@ -21,7 +22,7 @@ fun PrintNodesInfo(
 
     //用 "\n" 是为了复制时保持格式，不然一复制就变成一行了
     Text("$title\n", fontWeight = FontWeight.ExtraBold)
-    nodes.forEachIndexed { idx, it->
+    nodes.forEachIndexedBetter { idx, it->
         MyHorizontalDivider(thickness = thickness, color = DrawCommitNode.getNodeColorByIndex(idx))
         Spacer(Modifier.height(spacerHeight))
         Text(it.toStringForView())

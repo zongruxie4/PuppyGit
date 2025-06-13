@@ -20,6 +20,7 @@ import com.catpuppyapp.puppygit.template.CommitMsgTemplateUtil
 import com.catpuppyapp.puppygit.template.PlaceHolder
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
 private const val TAG = "CommitMsgTemplateDialog"
@@ -72,7 +73,7 @@ fun CommitMsgTemplateDialog(
                         CommitMsgTemplateUtil.apply {
                             val phListLastIndex = phList.size-1
 
-                            phList.forEachIndexed {idx, it ->
+                            phList.forEachIndexedBetter {idx, it ->
                                 PlaceHolder(it) {
                                     autoType(it.pattern)
                                 }

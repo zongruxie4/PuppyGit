@@ -136,6 +136,7 @@ import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJob
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.getFileExtOrEmpty
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getFilePathUnderParent
@@ -1053,7 +1054,7 @@ fun FilesInnerPage(
 
                                 //更新已选中条目列表
                                 val selectedItems = selectedItems.value
-                                selectedItems.toList().forEachIndexed() { idx, item ->
+                                selectedItems.toList().forEachIndexedBetter { idx, item ->
                                     if(item == oldFileItemDto) {
                                         selectedItems[idx] = newNameDto
                                     }
@@ -1065,7 +1066,7 @@ fun FilesInnerPage(
                                     changeStateTriggerRefreshPage(needRefreshFilesPage)
                                 }else {
                                     val filterList = filterList.value
-                                    filterList.toList().forEachIndexed() { idx, item ->
+                                    filterList.toList().forEachIndexedBetter { idx, item ->
                                         if(item == oldFileItemDto) {
                                             filterList[idx] = newNameDto
                                         }
@@ -1360,7 +1361,7 @@ fun FilesInnerPage(
                     ) {
                         //面包屑 (breadcrumb)
                         val breadList = currentPathBreadCrumbList.value.toList()
-                        breadList.forEachIndexed { idx, it ->
+                        breadList.forEachIndexedBetter { idx, it ->
                             item {
                                 val separator = Cons.slash
                                 val breadCrumbDropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
@@ -2263,7 +2264,7 @@ fun FilesInnerPage(
                             changeStateTriggerRefreshPage(needRefreshFilesPage)
                         }else {
                             val filterList = filterList.value
-                            filterList.toList().forEachIndexed { idx, item ->
+                            filterList.toList().forEachIndexedBetter { idx, item ->
                                 if(selctedDirs.contains(item.fullPath)) {
                                     filterList[idx] = FileItemDto.genFileItemDtoByFile(File(item.fullPath), activityContext)
                                 }

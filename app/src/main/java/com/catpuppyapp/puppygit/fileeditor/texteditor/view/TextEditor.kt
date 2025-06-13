@@ -81,6 +81,7 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
+import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
@@ -1041,7 +1042,7 @@ fun TextEditor(
             val size = textEditorState.fields.size
 
             //fields本身就是toList()出来的，无需再toList()
-            textEditorState.fields.forEachIndexed{ index, textFieldState ->
+            textEditorState.fields.forEachIndexedBetter { index, textFieldState ->
                 val curLineText = textFieldState.value.text
 
                 // patch开头的行（+ -）和merge开头的行（7个=号）并不冲突

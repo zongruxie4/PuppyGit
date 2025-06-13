@@ -4532,7 +4532,7 @@ object Libgit2Helper {
                             ).let {
                                 val newMergedList = mutableListOf<DrawCommitNode>()
                                 //更新合流节点，主要是为了更新子节点的endAt值
-                                it.mergedList.forEachIndexed{ idx, node->
+                                it.mergedList.forEachIndexedBetter { idx, node->
                                     //更新子节点的值为父节点的
                                     newMergedList.add(
                                         // circleAtHere也更新，如果有多个流汇合到一个圆圈，应该加重

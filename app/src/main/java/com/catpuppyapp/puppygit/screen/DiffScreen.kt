@@ -118,6 +118,7 @@ import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.doJobWithMainContext
+import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
@@ -1648,7 +1649,7 @@ fun DiffScreen(
 //                    item { Spacer(Modifier.height(3.dp)) }
 
                             //数据结构是一个hunk header N 个行
-                            diffItem.hunks.forEachIndexed { hunkIndex, hunkAndLines: PuppyHunkAndLines ->
+                            diffItem.hunks.forEachIndexedBetter { hunkIndex, hunkAndLines: PuppyHunkAndLines ->
 
                                 // hunk header
                                 item {
@@ -1675,7 +1676,7 @@ fun DiffScreen(
                                         //这种方式需要使用缓存，每次遍历lines前都需要先清下缓存，否则可能多显示或少显示某些行
                                         hunkAndLines.clearCachesForShown()
 
-                                        hunkAndLines.lines.forEachIndexed printLine@{ lineIndex, line: PuppyLine ->
+                                        hunkAndLines.lines.forEachIndexedBetter printLine@{ lineIndex, line: PuppyLine ->
                                             //若非 新增行、删除行、上下文 ，不显示
                                             if (line.originType != Diff.Line.OriginType.ADDITION.toString()
                                                 && line.originType != Diff.Line.OriginType.DELETION.toString()
@@ -2099,7 +2100,7 @@ fun DiffScreen(
 
                                 } else { //普通预览，非pro或关闭细节compare时走这里
                                     //遍历行
-                                    hunkAndLines.lines.forEachIndexed printLine@{ lineIndex, line: PuppyLine ->
+                                    hunkAndLines.lines.forEachIndexedBetter printLine@{ lineIndex, line: PuppyLine ->
                                         //若非 新增行、删除行、上下文 ，不显示
                                         if (line.originType == Diff.Line.OriginType.ADDITION.toString()
                                             || line.originType == Diff.Line.OriginType.DELETION.toString()

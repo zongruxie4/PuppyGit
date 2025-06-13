@@ -60,6 +60,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.paddingLineNumber
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -676,7 +677,7 @@ fun DiffRow (
                 //注意：这里不能改成用多个Text组件，不然若超过屏幕宽度软换行会失效
                 Text(
                     text = buildAnnotatedString {
-                        stringPartList.forEachIndexed {idx, it ->
+                        stringPartList.forEachIndexedBetter {idx, it ->
                             val text = content.substring(it.start, it.end)
                             //末尾会有个换行符，移除下，不然显示会多个行
                             val textNoLineSeparator = if(idx == lastIndex) text.removeSuffix(Cons.lineBreak) else text

@@ -47,6 +47,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import kotlinx.coroutines.delay
@@ -397,7 +398,7 @@ private fun Modifier.drawNode(
         var lastStartX = 0F;
 
         //输入线
-        c.draw_inputs.forEachIndexed { idx, node->
+        c.draw_inputs.forEachIndexedBetter { idx, node->
             lastStartX = inputLineStartX
 
             if(isRtl) {
@@ -448,7 +449,7 @@ private fun Modifier.drawNode(
         var outputLineStartX = initOutputLineStartX
 
         //输出线
-        c.draw_outputs.forEachIndexed { idx, node->
+        c.draw_outputs.forEachIndexedBetter { idx, node->
             lastStartX = outputLineStartX
 
             if(isRtl) {
