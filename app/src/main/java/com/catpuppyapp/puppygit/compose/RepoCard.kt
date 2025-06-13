@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -635,7 +636,7 @@ private fun RepoTitle(
     //title的onLongClick和卡片主体的没区别，都是长按启用选择模式，若选择模式已启用则执行区域选择
     titleOnLongClick:(RepoEntity) -> Unit,
 ) {
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(30.dp)
@@ -655,11 +656,13 @@ private fun RepoTitle(
                     Modifier
                 }
             ),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+//        horizontalArrangement = Arrangement.SpaceBetween,
+//        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(.9F),
+        ScrollableRow(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 5.dp, end = MyStyleKt.defaultIconSize),
             verticalAlignment = Alignment.CenterVertically
         ) {
             RepoCardTitleText(repoDto.repoName)
@@ -668,6 +671,7 @@ private fun RepoTitle(
         if(isSelectionMode) {
             Row(
                 modifier = Modifier
+                    .align(Alignment.CenterEnd)
                     .size(MyStyleKt.defaultIconSize)
                     .padding(end = 10.dp),
                 horizontalArrangement = Arrangement.End,
