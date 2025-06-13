@@ -19,11 +19,12 @@ import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.FsUtils
+import com.catpuppyapp.puppygit.utils.UIHelper
 
 
-private val bgColorInDarkTheme = Color(0xFF545454)
+private val bgColorInDarkTheme = Color(0xFF343434)
 private val contentTextColorInDarkTheme = Color(0xFFA8A8A8)
-private val bgColorInLightTheme = Color(0xD8E5E5E5)
+private val bgColorInLightTheme = Color(0xFFDEDEDE)
 private val contentTextColorInLightTheme = Color(0xFF595959)
 
 
@@ -43,7 +44,8 @@ fun FileDetailItem(
     Column(
         modifier = Modifier
             .padding(margin)
-            .background(if(selected) MaterialTheme.colorScheme.primaryContainer else if(inDarkTheme) bgColorInDarkTheme else bgColorInLightTheme)
+//            .background(if(selected) MaterialTheme.colorScheme.primaryContainer else if(inDarkTheme) bgColorInDarkTheme else bgColorInLightTheme)
+            .background(if(selected) MaterialTheme.colorScheme.primaryContainer else UIHelper.defaultCardColor())
             .combinedClickable(
                 onLongClick = { onLongClick(idx, item) },
             ) {
