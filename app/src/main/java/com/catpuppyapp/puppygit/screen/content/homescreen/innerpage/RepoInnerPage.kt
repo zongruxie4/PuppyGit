@@ -92,6 +92,8 @@ import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.server.bean.ConfigBean
 import com.catpuppyapp.puppygit.settings.AppSettings
+import com.catpuppyapp.puppygit.settings.PackageNameAndRepo
+import com.catpuppyapp.puppygit.settings.PackageNameAndRepoSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -955,6 +957,13 @@ fun RepoInnerPage(
             doJobThenOffLoading {
                 var curRepo:RepoEntity? = null
                 try {
+                    val settings = SettingsUtil.getSettingsSnapshot()
+
+                    var updatedPackageNameAndRepoIdMap = settings.automation.packageNameAndRepoIdsMap
+                    val tmpPackageNameAndRepoIdMap = mutableMapOf<String, List<String>>()
+                    var updatedPackageNameAndRepoSettingsMap = settings.automation.packageNameAndRepoAndSettingsMap
+                    val tmpPackageNameAndRepoSettingsMap = mutableMapOf<String, PackageNameAndRepoSettings>()
+
                     deleteList.value.toList().forEachBetter { willDeleteRepo ->
                         curRepo = willDeleteRepo
 
@@ -965,7 +974,30 @@ fun RepoInnerPage(
                             requireDelFilesOnDisk = requireDelFilesOnDisk,
                             requireTransaction = requireTransaction
                         )
+
+                        // update settings and app linked info
+                        for(i in updatedPackageNameAndRepoIdMap) {
+                            tmpPackageNameAndRepoIdMap.put(i.key, i.value.filter { it != willDeleteRepo.id })
+                        }
+                        updatedPackageNameAndRepoIdMap = tmpPackageNameAndRepoIdMap.toMutableMap()
+                        tmpPackageNameAndRepoIdMap.clear()
+
+                        // update settings of app and repo pair
+                        for(i in updatedPackageNameAndRepoSettingsMap) {
+                            val keySuffix = PackageNameAndRepo(repoId = willDeleteRepo.id).toKeySuffix()
+                            if(!i.key.endsWith(keySuffix)) {
+                                tmpPackageNameAndRepoSettingsMap.put(i.key, i.value)
+                            }
+                        }
+                        updatedPackageNameAndRepoSettingsMap = tmpPackageNameAndRepoSettingsMap.toMutableMap()
+                        tmpPackageNameAndRepoSettingsMap.clear()
+
                     }
+
+                    // save updated settings
+                    settings.automation.packageNameAndRepoIdsMap = updatedPackageNameAndRepoIdMap
+                    settings.automation.packageNameAndRepoAndSettingsMap = updatedPackageNameAndRepoSettingsMap
+                    SettingsUtil.updateSettings(settings)
 
                     Msg.requireShow(activityContext.getString(R.string.success))
 

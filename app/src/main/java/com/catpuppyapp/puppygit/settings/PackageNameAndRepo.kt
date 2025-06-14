@@ -10,4 +10,6 @@ data class PackageNameAndRepo(
     fun toKey() = toKeyPrefix()+repoId
 
     fun toKeyPrefix() = "$appPackageName:"
+
+    fun toKeySuffix() = ":$repoId"
 }
