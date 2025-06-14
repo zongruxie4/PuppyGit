@@ -335,7 +335,7 @@ fun getFilesScreenTitle(currentPath:String, activityContext: Context):String {
     }else if(trimedSlashCurPath == FsUtils.getExternalStorageRootPathNoEndsWithSeparator()) {
         activityContext.getString(R.string.external_storage)
     }else if(trimedSlashCurPath == FsUtils.getInnerStorageRootPathNoEndsWithSeparator()) {
-        activityContext.getString(R.string.internal_storage)+" (Inner)"
+        activityContext.getString(R.string.internal_storage)+"(Inner)"
     }else {
         runCatching { FsUtils.splitParentAndName(currentPath).second }.getOrDefault("").ifEmpty { activityContext.getString(R.string.files) }
     }
