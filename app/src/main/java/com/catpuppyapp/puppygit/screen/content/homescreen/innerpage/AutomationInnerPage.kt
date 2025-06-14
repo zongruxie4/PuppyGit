@@ -772,7 +772,7 @@ fun AutomationInnerPage(
                 if(filteredAddedAppList.isNotEmpty()) {
                     filteredAddedAppList.toList().forEachBetter { appInfo ->
                         item {
-                            val splitSpacerWidth = 30.dp
+                            val splitSpacerWidth = 20.dp
 
                             AppItem(
                                 appInfo = appInfo,
