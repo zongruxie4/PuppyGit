@@ -329,7 +329,10 @@ fun SubPageEditor(
 
                 },
                 navigationIcon = {
-                    if(editorIsPreviewModeOn.value || editorPageSearchMode.value || editorAdjustFontSizeMode.value || editorAdjustLineNumFontSizeMode.value) {
+                    if(editorIsPreviewModeOn.value || editorPageSearchMode.value
+                        || editorAdjustFontSizeMode.value || editorAdjustLineNumFontSizeMode.value
+                        || (editorInRecentFilesPage.value && editorFilterRecentListOn.value)
+                    ) {
                         LongPressAbleIconBtn(
                             tooltipText = stringResource(R.string.close),
                             icon =  Icons.Filled.Close,
@@ -343,6 +346,8 @@ fun SubPageEditor(
                                 editorPageRequestFromParent.value = PageRequest.requireSaveFontSizeAndQuitAdjust
                             }else if(editorAdjustLineNumFontSizeMode.value) {
                                 editorPageRequestFromParent.value = PageRequest.requireSaveLineNumFontSizeAndQuitAdjust
+                            }else if(editorInRecentFilesPage.value && editorFilterRecentListOn.value) {
+                                editorRecentFilesQuitFilterMode()
                             }
                         }
                     }else {
