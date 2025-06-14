@@ -281,26 +281,33 @@ class AutomationService: AccessibilityService() {
                                 return@withLock
                             }
 
+                            val repoListWillDoAct = mutableListOf<RepoEntity>()
+                            val nowInMillSec = System.currentTimeMillis()
+                            //离开app后，在一定时间间隔内返回，将不会重复执行pull
+                            val lastLeaveAt = appLeaveTime[packageName] ?: 0L ;
 
-                            val pullIntervalInSec = settings.automation.pullIntervalInSec
-                            //负数将禁用pull
-                            if(pullIntervalInSec >= 0L) {
-                                //离开app后，在一定时间间隔内返回，将不会重复执行pull
-                                val lastLeaveAt = appLeaveTime[packageName] ?: 0L ;
-
-                                //do pull
-                                doJobThenOffLoading pullTask@{
+                            repoList.forEachBetter {
+                                val appAndRepoSettings = AutomationUtil.getAppAndRepoSpecifiedSettings(packageName, it.id, settings)
+                                val pullIntervalInSec = appAndRepoSettings.getPullIntervalActuallyValue(settings)
+                                //负数将禁用pull
+                                if(pullIntervalInSec >= 0L) {
                                     val pullIntervalInMillSec = pullIntervalInSec * 1000L
 
                                     // pullIntervalInMillSec == 0 代表用户设置的pull间隔为0，无间隔，直接执行
                                     // lastLeaveAt == 0 代表没离开过，初次打开app，这时应该直接执行操作，不用检测间隔
                                     // 减法那个条件是检测时间间隔
-                                    if(pullIntervalInMillSec == 0L || lastLeaveAt == 0L || (System.currentTimeMillis() - lastLeaveAt) > pullIntervalInMillSec) {
-                                        pullRepoList(sessionId, settings, repoList)
+                                    if(pullIntervalInMillSec == 0L || lastLeaveAt == 0L || (nowInMillSec - lastLeaveAt) > pullIntervalInMillSec) {
+                                        repoListWillDoAct.add(it)
                                     }
+                                }else {
+                                    MyLog.d(TAG, "Repo '${it.repoName}': pull interval less than 0, pull canceled")
                                 }
-                            }else {
-                                MyLog.d(TAG, "pull interval less than 0, pull canceled")
+                            }
+
+                            repoListWillDoAct.let {
+                                if(it.isNotEmpty()) {
+                                    pullRepoList(sessionId, settings, it)
+                                }
                             }
                         }else {
                             MyLog.d(TAG, "target packageName '$packageName' opened but no need do pull")

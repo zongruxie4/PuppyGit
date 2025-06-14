@@ -13,6 +13,10 @@ data class PackageNameAndRepoSettings(
     fun getPullIntervalFormatted() = parseLongOrDefault(pullInterval, null)?.toString() ?: ""
     fun getPushDelayFormatted() = parseLongOrDefault(pushDelay, null)?.toString() ?: ""
 
+    // this should never is null
+    fun getPullIntervalActuallyValue(settings: AppSettings) = parseLongOrDefault(pullInterval, settings.automation.pullIntervalInSec) ?: 0L
+    fun getPushDelayActuallyValue(settings: AppSettings) = parseLongOrDefault(pushDelay, settings.automation.pushDelayInSec) ?: 0L
+
     companion object {
         // if is not a valid number, save empty string to settings
         fun formatPullIntervalBeforeSaving(value:String) = parseLongOrDefault(value, null)?.toString() ?: ""

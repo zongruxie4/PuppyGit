@@ -136,8 +136,8 @@ object AutomationUtil {
         settings: AppSettings = SettingsUtil.getSettingsSnapshot(),
     ) = getAppAndRepoSpecifiedSettings(appPackageName, repoId, settings).let { appAndRepoSetting ->
         PackageNameAndRepoSettings(
-            appAndRepoSetting.getPullIntervalFormatted().ifBlank { settings.automation.pullIntervalInSec.toString() },
-            appAndRepoSetting.getPushDelayFormatted().ifBlank { settings.automation.pushDelayInSec.toString() },
+            appAndRepoSetting.getPullIntervalActuallyValue(settings).toString(),
+            appAndRepoSetting.getPushDelayActuallyValue(settings).toString(),
         )
     }
 
