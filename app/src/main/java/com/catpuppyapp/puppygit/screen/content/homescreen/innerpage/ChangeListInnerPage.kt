@@ -121,6 +121,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.RegexUtil
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
@@ -3089,7 +3090,7 @@ fun ChangeListInnerPage(
                         list = itemList.value,
                         resetSearchVars = resetSearchVars,
                         match = { idx:Int, it: StatusTypeEntrySaver ->
-                            it.fileName.lowercase().contains(keyword)
+                            it.fileName.lowercase().let { it.contains(keyword) || RegexUtil.matchWildcard(it, keyword) }
                                     || it.relativePathUnderRepo.lowercase().contains(keyword)
                                     || it.getSizeStr().lowercase().contains(keyword)
                                     || it.getChangeTypeAndSuffix(isDiffToLocal).lowercase().contains(keyword)
