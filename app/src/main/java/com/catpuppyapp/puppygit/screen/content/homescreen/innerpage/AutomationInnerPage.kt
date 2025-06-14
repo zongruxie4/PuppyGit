@@ -356,7 +356,7 @@ fun AutomationInnerPage(
                                 unselectedRepoList.value.addAll(tmp)
 
                                 //保存
-                                SettingsUtil.update {
+                                settingsState.value = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
                                     it.automation.packageNameAndRepoIdsMap.let {
                                         it.put(
                                             packageNameForSelectReposDialog.value,
@@ -364,7 +364,9 @@ fun AutomationInnerPage(
                                             selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
                                         )
                                     }
-                                }
+
+                                    it.automation.packageNameAndRepoAndSettingsMap.remove(PackageNameAndRepo(packageNameForSelectReposDialog.value, clickedRepo.id).toKey())
+                                }!!
                             },
                             imageVector = Icons.Outlined.DeleteOutline,
                             contentDescription = stringResource(R.string.delete)
@@ -809,10 +811,21 @@ fun AutomationInnerPage(
                                                 notAddedAppList.value.add(appInfo)
                                                 notAddedAppList.value.addAll(tmp)
 
+                                                val appPackageAndRepoKeyPrefix = PackageNameAndRepo(appInfo.packageName, "").toKeyPrefix()
                                                 //保存，从列表移除
-                                                SettingsUtil.update {
+                                                settingsState.value = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
                                                     it.automation.packageNameAndRepoIdsMap.remove(appInfo.packageName)
-                                                }
+
+                                                    // update app and repo specified settings
+                                                    val newPackageNameAndRepoAndSettingsMap = mutableMapOf<String, PackageNameAndRepoSettings>()
+                                                    for (i in it.automation.packageNameAndRepoAndSettingsMap) {
+                                                        if(!i.key.startsWith(appPackageAndRepoKeyPrefix)) {
+                                                            newPackageNameAndRepoAndSettingsMap.put(i.key, i.value)
+                                                        }
+                                                    }
+
+                                                    it.automation.packageNameAndRepoAndSettingsMap = newPackageNameAndRepoAndSettingsMap
+                                                }!!
                                             },
                                             imageVector = Icons.Outlined.DeleteOutline,
                                             contentDescription = stringResource(R.string.delete)

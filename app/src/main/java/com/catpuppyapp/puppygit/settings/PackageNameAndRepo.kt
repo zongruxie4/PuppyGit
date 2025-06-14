@@ -7,5 +7,7 @@ data class PackageNameAndRepo(
     val appPackageName:String = "",
     val repoId:String = "",
 ) {
-    fun toKey() = "$appPackageName:$repoId"
+    fun toKey() = toKeyPrefix()+repoId
+
+    fun toKeyPrefix() = "$appPackageName:"
 }
