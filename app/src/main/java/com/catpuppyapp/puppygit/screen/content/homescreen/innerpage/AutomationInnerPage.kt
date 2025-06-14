@@ -321,7 +321,7 @@ fun AutomationInnerPage(
                 RepoNameAndIdItem(
                     settings = settingsState.value,
                     selected = true,
-                    appNameForSelectReposDialog.value,
+                    packageNameForSelectReposDialog.value,
                     clickedRepo,
                     trailIconSize * 2 + splitSpacerWidth
                 ) { containerModifier ->
@@ -380,7 +380,7 @@ fun AutomationInnerPage(
                 RepoNameAndIdItem(
                     settings = settingsState.value,
                     selected = false,
-                    appNameForSelectReposDialog.value,
+                    packageNameForSelectReposDialog.value,
                     clickedRepo,
                     trailIconSize
                 ) { containerModifier ->
