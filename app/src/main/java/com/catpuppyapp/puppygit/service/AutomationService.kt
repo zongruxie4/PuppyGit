@@ -339,87 +339,101 @@ class AutomationService: AccessibilityService() {
                                         return@withLock
                                     }
 
-                                    // do push, one package may bind multi repos, start a coroutine do push for them
-                                    val pushDelayInSec = settings.automation.pushDelayInSec
-                                    //负数将禁用push
-                                    if(pushDelayInSec >= 0L) {
-                                        doJobThenOffLoading pushTask@{
-                                            val pushDelayInMillSec =  pushDelayInSec * 1000L
-                                            var taskCanceled = false
+                                    // 按推送延迟时间分组，分成不同的仓库list，各等各的时间，各执行各的操作
+                                    // group repos by push delay time, then do act for each
+                                    AutomationUtil.groupReposByPushDelayTime(
+                                        lastOpenedTarget,
+                                        repoList,
+                                        settings
+                                    ).forEachBetter mark@{ pushDelayInSec, repoList ->
+                                        if(repoList.isEmpty()) {
+                                            return@mark
+                                        }
 
-                                            //大于0，等待超过延迟时间后再执行操作；若等于0，则不检查，直接跳过这段，执行后面的push
-                                            if(pushDelayInMillSec > 0L) {
-                                                val startAt = System.currentTimeMillis()
 
-                                                while (true) {
-                                                    // 每 2 秒检查一次是否需要push，虽然设置的单位是秒，但精度是2秒，避免太多无意义cpu空转，最多误差2秒，可接受
-                                                    delay(Cons.pushDelayCheckFrquencyInMillSec)
+                                        // do push, one package may bind multi repos, start a coroutine do push for them
+                                        //负数将禁用push
+                                        if(pushDelayInSec >= 0L) {
+                                            doJobThenOffLoading pushTask@{
+                                                val pushDelayInMillSec =  pushDelayInSec * 1000L
+                                                var taskCanceled = false
 
-                                                    // 若app重新打开 或者 app在当前任务启动后重新触发了离开（通过leave时间判断），则取消当前push任务
-                                                    //这里的两个值必须每次都从map里获取最新的数据，因为map里的值会在每次离开app后更新
-                                                    if(
-                                                    // app重新打开，当前任务取消
-                                                        targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] == true
-                                                        // app再次离开，当前任务已“过期”，应取消
-                                                        //正常来说，这里获取的app离开时间永远不可能为null，所以 `?: 0L` 应该不会派上用场，
-                                                        // 如果出了问题，真的为null，则代表app没离开，这时不应执行push，或者忽略这个条件都行，这里采用后者，
-                                                        // startAt肯定大于0，所以如果appLeaveTime取出的值为0的话，这个条件永远为假，相当于忽略了，其实就算错误执行一次push也问题不大
-                                                        || startAt < (appLeaveTime[lastOpenedTarget] ?: 0L)
-                                                    ) {
-                                                        taskCanceled = true
-                                                        break
-                                                    }
+                                                //大于0，等待超过延迟时间后再执行操作；若等于0，则不检查，直接跳过这段，执行后面的push
+                                                if(pushDelayInMillSec > 0L) {
+                                                    val startAt = System.currentTimeMillis()
 
-                                                    //如果当前时间减起始时间超过了设定的延迟时间则执行push
-                                                    if((System.currentTimeMillis() - startAt) > pushDelayInMillSec) {
-                                                        break
+                                                    while (true) {
+                                                        // 每 2 秒检查一次是否需要push，虽然设置的单位是秒，但精度是2秒，避免太多无意义cpu空转，最多误差2秒，可接受
+                                                        delay(Cons.pushDelayCheckFrquencyInMillSec)
+
+                                                        // 若app重新打开 或者 app在当前任务启动后重新触发了离开（通过leave时间判断），则取消当前push任务
+                                                        //这里的两个值必须每次都从map里获取最新的数据，因为map里的值会在每次离开app后更新
+                                                        if(
+                                                        // app重新打开，当前任务取消
+                                                            targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] == true
+                                                            // app再次离开，当前任务已“过期”，应取消
+                                                            //正常来说，这里获取的app离开时间永远不可能为null，所以 `?: 0L` 应该不会派上用场，
+                                                            // 如果出了问题，真的为null，则代表app没离开，这时不应执行push，或者忽略这个条件都行，这里采用后者，
+                                                            // startAt肯定大于0，所以如果appLeaveTime取出的值为0的话，这个条件永远为假，相当于忽略了，其实就算错误执行一次push也问题不大
+                                                            || startAt < (appLeaveTime[lastOpenedTarget] ?: 0L)
+                                                        ) {
+                                                            taskCanceled = true
+                                                            break
+                                                        }
+
+                                                        //如果当前时间减起始时间超过了设定的延迟时间则执行push
+                                                        if((System.currentTimeMillis() - startAt) > pushDelayInMillSec) {
+                                                            break
+                                                        }
                                                     }
                                                 }
-                                            }
 
-                                            if(!taskCanceled) {
-                                                //用要推送的仓库减当前显示的app关联的仓库，剩下的是需要推送的仓库，其他的待离开当前app后再计划推送
-                                                var repoList = repoList
-                                                val curShowingPackageName = AutoSrvCache.getCurPackageName()
-                                                if(curShowingPackageName.isNotBlank()) {
-                                                    val repoListOfCurShowingPackage = AutomationUtil.getRepos(settings.automation, curShowingPackageName)
-                                                    if(!repoListOfCurShowingPackage.isNullOrEmpty()) {
-                                                        val newList = mutableListOf<RepoEntity>()
+                                                if(!taskCanceled) {
+                                                    //用要推送的仓库减当前显示的app关联的仓库，剩下的是需要推送的仓库，其他的待离开当前app后再计划推送
+                                                    var repoList = repoList
+                                                    val curShowingPackageName = AutoSrvCache.getCurPackageName()
+                                                    if(curShowingPackageName.isNotBlank()) {
+                                                        val repoListOfCurShowingPackage = AutomationUtil.getRepos(settings.automation, curShowingPackageName)
+                                                        if(!repoListOfCurShowingPackage.isNullOrEmpty()) {
+                                                            val newList = mutableListOf<RepoEntity>()
 
-                                                        //移除当前显示的app关联的仓库，同步剩余仓库
-                                                        repoList.forEachBetter { r1 ->
-                                                            var contains = false
+                                                            //移除当前显示的app关联的仓库，同步剩余仓库
+                                                            repoList.forEachBetter { r1 ->
+                                                                var contains = false
 
-                                                            for(r2 in repoListOfCurShowingPackage) {
-                                                                if(r1.id == r2.id) {
-                                                                    contains = true
-                                                                    break
+                                                                for(r2 in repoListOfCurShowingPackage) {
+                                                                    if(r1.id == r2.id) {
+                                                                        contains = true
+                                                                        break
+                                                                    }
+                                                                }
+
+                                                                //添加要推送的仓库
+                                                                if(contains.not()) {
+                                                                    newList.add(r1)
                                                                 }
                                                             }
 
-                                                            //添加要推送的仓库
-                                                            if(contains.not()) {
-                                                                newList.add(r1)
-                                                            }
+                                                            repoList = newList
                                                         }
-
-                                                        repoList = newList
                                                     }
-                                                }
 
-                                                //其实这里检查不检查是否为空都行，因为最终执行操作的函数会判断，若空直接返回，不过检查下更好
-                                                if(repoList.isEmpty()) {
-                                                    //因为在外部检查了若repoList为空则不启动协程，所以执行到这里如果列表为空，必然是当前app全面覆盖了要推送的仓库
-                                                    MyLog.d(TAG, "push cancelled, current app full-covered target repoList, will do push after current app leave")
-                                                }else {
-                                                    pushRepoList(sessionId, settings, repoList)
-                                                }
+                                                    //其实这里检查不检查是否为空都行，因为最终执行操作的函数会判断，若空直接返回，不过检查下更好
+                                                    if(repoList.isEmpty()) {
+                                                        //因为在外部检查了若repoList为空则不启动协程，所以执行到这里如果列表为空，必然是当前app全面覆盖了要推送的仓库
+                                                        MyLog.d(TAG, "push cancelled, current app full-covered target repoList, will do push after current app leave")
+                                                    }else {
+                                                        pushRepoList(sessionId, settings, repoList)
+                                                    }
 
+                                                }
                                             }
+                                        }else {
+                                            MyLog.d(TAG, "push delay less than 0, push canceled")
                                         }
-                                    }else {
-                                        MyLog.d(TAG, "push delay less than 0, push canceled")
+
                                     }
+
 
                                 }else {
                                     MyLog.d(TAG, "target packageName '$packageName' opened but no need do push")

@@ -141,4 +141,18 @@ object AutomationUtil {
         )
     }
 
+    fun groupReposByPushDelayTime(
+        appPackageName:String,
+        repos:List<RepoEntity>,
+        settings: AppSettings
+    ):Map<Long, List<RepoEntity>> {
+        val pushDelayGroupedMap = mutableMapOf<Long, MutableList<RepoEntity>>()
+        repos.forEachBetter {
+            val pushDelayInSec = getAppAndRepoSpecifiedSettings(appPackageName, it.id, settings).getPushDelayActuallyValue(settings)
+            pushDelayGroupedMap.getOrPut(pushDelayInSec) { mutableListOf() }.apply { add(it) }
+        }
+
+        return pushDelayGroupedMap
+    }
+
 }

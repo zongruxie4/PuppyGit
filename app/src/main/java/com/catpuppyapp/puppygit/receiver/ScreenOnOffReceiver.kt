@@ -12,6 +12,7 @@ import com.catpuppyapp.puppygit.settings.util.AutomationUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.cache.AutoSrvCache
 import com.catpuppyapp.puppygit.utils.doJob
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -49,12 +50,24 @@ class ScreenOnOffReceiver : BroadcastReceiver() {
             AutomationService.appLeaveTime[lastPackage] = System.currentTimeMillis()
 
             //创建push任务
-            job.value = doJob {
+            job.value = doJob job@{
                 try {
                     val settings = SettingsUtil.getSettingsSnapshot()
                     val repoList = AutomationUtil.getRepos(settings.automation, lastPackage)
-                    if(!repoList.isNullOrEmpty()) {
-                        val pushDelayInSec = settings.automation.pushDelayInSec
+
+                    if(repoList.isNullOrEmpty()) {
+                        return@job
+                    }
+
+                    AutomationUtil.groupReposByPushDelayTime(
+                        lastPackage,
+                        repoList,
+                        settings
+                    ).forEachBetter forEach@{ pushDelayInSec, repoList ->
+                        if(repoList.isEmpty()) {
+                            return@forEach
+                        }
+
                         // do push, one package may bind multi repos, start a coroutine do push for them
                         //负数将禁用push
                         if (pushDelayInSec >= 0L) {
