@@ -317,7 +317,12 @@ fun AutomationInnerPage(
             selectedItemFormatter={ clickedRepo ->
                 val splitSpacerWidth = 20.dp
 
-                RepoNameAndIdItem(clickedRepo, trailIconSize * 2 + splitSpacerWidth) { containerModifier ->
+                RepoNameAndIdItem(
+                    selected = true,
+                    appNameForSelectReposDialog.value,
+                    clickedRepo,
+                    trailIconSize * 2 + splitSpacerWidth
+                ) { containerModifier ->
                     Row(
                         modifier = containerModifier
                             .fillMaxWidth()
@@ -370,7 +375,12 @@ fun AutomationInnerPage(
                 MyHorizontalDivider()
             },
             unselectedItemFormatter = { clickedRepo ->
-                RepoNameAndIdItem(clickedRepo, trailIconSize) { containerModifier ->
+                RepoNameAndIdItem(
+                    selected = false,
+                    appNameForSelectReposDialog.value,
+                    clickedRepo,
+                    trailIconSize
+                ) { containerModifier ->
 
                     Row(
                         modifier = containerModifier

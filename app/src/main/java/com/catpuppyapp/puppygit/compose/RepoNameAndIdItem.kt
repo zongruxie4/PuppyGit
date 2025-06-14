@@ -6,12 +6,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.settings.util.AutomationUtil
 
 
 @Composable
 fun RepoNameAndIdItem(
+    selected: Boolean,
+    appPackageName:String,
     repoEntity: RepoEntity,
     trailIconWidth: Dp,
     trailIcons: @Composable BoxScope.(containerModifier:Modifier)->Unit,
@@ -22,7 +27,18 @@ fun RepoNameAndIdItem(
 
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TwoLineTextsAndIcons(repoEntity.repoName, repoEntity.id, trailIconWidth, trailIcons)
+        TwoLineTextsAndIcons(
+            repoEntity.repoName,
+            if(selected) {
+                AutomationUtil.getAppAndRepoSpecifiedSettingsActuallyBeUsed(appPackageName, repoEntity.id).let {
+                    stringResource(R.string.pull_interval)+": "+it.getPullIntervalFormatted()+"s, "+ stringResource(R.string.push_delay)+": "+it.getPushDelayFormatted()+"s"
+                }
+            } else {
+                repoEntity.id
+            },
+            trailIconWidth,
+            trailIcons
+        )
     }
 
 }
