@@ -24,6 +24,7 @@ class SimilarCompareImpl: SimilarCompare {
         matchByWords:Boolean,
         ignoreEndOfNewLine:Boolean,
         degradeToCharMatchingIfMatchByWordFailed:Boolean,
+        treatNoWordMatchAsNoMatchedWhenMatchByWord:Boolean,
     ): IndexModifyResult {
         // empty check
         if(add.isEmpty() || del.isEmpty() || ((onlyLineSeparatorAsEmpty || ignoreEndOfNewLine) && (add.isOnlyLineSeparator() || del.isOnlyLineSeparator()))){ //其中一个为空或只有换行符，不比较，直接返回结果，当作无匹配
@@ -60,7 +61,7 @@ class SimilarCompareImpl: SimilarCompare {
             // match by words
         if(matchByWords) {
             //如果按单词比较为真，尝试以单词比较，如果有匹配，直接返回，如果无匹配，则继续往下执行普通比较
-            result = doMatchByWords(addWillUse, delWillUse, requireBetterMatching)
+            result = doMatchByWords(addWillUse, delWillUse, requireBetterMatching, treatNoWordMatchAsNoMatchedWhenMatchByWord)
         }
 
         // if match by words not enabled or not matched, try match by chars
@@ -122,7 +123,7 @@ class SimilarCompareImpl: SimilarCompare {
         add: CompareParam<T>,
         del: CompareParam<T>,
         requireBetterMatching: Boolean,
-        treatNoWordMatchAsNoMatched:Boolean = DevFeature.treatNoWordMatchAsNoMatchedForDiff.state.value,
+        treatNoWordMatchAsNoMatched:Boolean,
     ):IndexModifyResult {
         val addWordSpacePair = getWordAndIndexList(add, requireBetterMatching)
         val delWordSpacePair = getWordAndIndexList(del, requireBetterMatching)

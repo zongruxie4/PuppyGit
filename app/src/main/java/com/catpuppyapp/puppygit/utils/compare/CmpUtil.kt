@@ -21,6 +21,7 @@ object CmpUtil {
         matchByWords: Boolean,
         swap: Boolean = false,
         degradeMatchByWordsToMatchByCharsIfNonMatched: Boolean = DevFeature.degradeMatchByWordsToMatchByCharsIfNonMatched.state.value,
+        treatNoWordMatchAsNoMatchedWhenMatchByWord:Boolean = DevFeature.treatNoWordMatchAsNoMatchedForDiff.state.value,
 
     ): IndexModifyResult {
         val (add, del) = if(swap) {
@@ -41,6 +42,7 @@ object CmpUtil {
 
             // 降级按单词匹配为按字符匹配，如果按单词匹配无匹配
             degradeToCharMatchingIfMatchByWordFailed = degradeMatchByWordsToMatchByCharsIfNonMatched,
+            treatNoWordMatchAsNoMatchedWhenMatchByWord = treatNoWordMatchAsNoMatchedWhenMatchByWord,
         )
 
         return if(swap) {
