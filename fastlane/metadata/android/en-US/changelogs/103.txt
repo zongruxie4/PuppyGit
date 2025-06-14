@@ -6,3 +6,4 @@
 - Diff: optimize default match strategy
 - limit file names length of commit msg template
 - improve UI (issue #66)
+- Automation: support set pull interval and push delay for each repo

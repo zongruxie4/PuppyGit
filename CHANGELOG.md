@@ -10,6 +10,7 @@
 - Diff: optimize default match strategy
 - limit file names length of commit msg template
 - improve UI (issue #66)
+- Automation: support set pull interval and push delay for each repo
 
 
 
@@ -21,6 +22,7 @@
 - Diff: 优化默认匹配策略
 - 限制模板提交信息的文件名字数
 - 提升 UI (issue #66)
+- 自动化：支持为每个仓库设置拉取间隔和推送延迟
 
 
 ---
