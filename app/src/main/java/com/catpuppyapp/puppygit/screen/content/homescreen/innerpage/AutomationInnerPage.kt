@@ -74,6 +74,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.appendSecondsUnit
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -623,7 +624,7 @@ fun AutomationInnerPage(
                 }) {
                     Column {
                         Text(stringResource(R.string.pull_interval), fontSize = itemFontSize)
-                        Text(pullIntervalInSec.value+"s", fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                        Text(appendSecondsUnit(pullIntervalInSec.value), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
                     }
                 }
 
@@ -636,7 +637,7 @@ fun AutomationInnerPage(
                 }) {
                     Column {
                         Text(stringResource(R.string.push_delay), fontSize = itemFontSize)
-                        Text(pushDelayInSec.value+"s", fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                        Text(appendSecondsUnit(pushDelayInSec.value), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
                     }
                 }
             }

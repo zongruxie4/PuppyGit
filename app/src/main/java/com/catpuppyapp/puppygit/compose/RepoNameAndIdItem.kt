@@ -12,6 +12,7 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.util.AutomationUtil
+import com.catpuppyapp.puppygit.utils.appendSecondsUnit
 
 
 @Composable
@@ -33,7 +34,7 @@ fun RepoNameAndIdItem(
             repoEntity.repoName,
             if(selected) {
                 AutomationUtil.getAppAndRepoSpecifiedSettingsActuallyBeUsed(appPackageName, repoEntity.id, settings).let {
-                    stringResource(R.string.pull_interval)+": "+it.getPullIntervalFormatted()+"s, "+ stringResource(R.string.push_delay)+": "+it.getPushDelayFormatted()+"s"
+                    stringResource(R.string.pull_interval)+": "+appendSecondsUnit(it.getPullIntervalFormatted())+", "+ stringResource(R.string.push_delay)+": "+appendSecondsUnit(it.getPushDelayFormatted())
                 }
             } else {
                 repoEntity.id
