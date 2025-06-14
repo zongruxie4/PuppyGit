@@ -287,8 +287,8 @@ class AutomationService: AccessibilityService() {
                             val lastLeaveAt = appLeaveTime[packageName] ?: 0L ;
 
                             repoList.forEachBetter {
-                                val appAndRepoSettings = AutomationUtil.getAppAndRepoSpecifiedSettings(packageName, it.id, settings)
-                                val pullIntervalInSec = appAndRepoSettings.getPullIntervalActuallyValue(settings)
+                                val pullIntervalInSec = AutomationUtil.getAppAndRepoSpecifiedSettings(packageName, it.id, settings).getPullIntervalActuallyValue(settings)
+
                                 //负数将禁用pull
                                 if(pullIntervalInSec >= 0L) {
                                     val pullIntervalInMillSec = pullIntervalInSec * 1000L
