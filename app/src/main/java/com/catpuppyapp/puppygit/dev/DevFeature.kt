@@ -34,6 +34,19 @@ object DevFeature {
         }
     }
 
+    // treatNoWordMatchAsNoMatched when diff
+    val treatNoWordMatchAsNoMatchedForDiff = object : DevItem<Boolean>(text = "Treat No Words Matched as Non-Matched", state = mutableStateOf(false), desc="Treat none words matched as non-matched when Diff contents and enabled match by words") {
+        override fun update(newValue: Boolean, context: Context?) {
+            //更新状态变量，使用的时候就不用查配置文件了
+            state.value = newValue
+
+            //写入配置文件
+            SettingsUtil.update {
+                it.devSettings.treatNoWordMatchAsNoMatchedForDiff = newValue
+            }
+        }
+    }
+
     // degrade match by words to match by chars when no matched
     val degradeMatchByWordsToMatchByCharsIfNonMatched = object : DevItem<Boolean>(text = "Degrade Match by words", state = mutableStateOf(false), desc="Degrade to Match by chars if Match by words was non-matched, not good for space-split language matching (like English), but good for non-space-split language (like Chinese)") {
         override fun update(newValue: Boolean, context: Context?) {
@@ -96,6 +109,7 @@ object DevFeature {
     // dev menu items
     val settingsItemList = listOf(
         singleDiff,
+        treatNoWordMatchAsNoMatchedForDiff,
         degradeMatchByWordsToMatchByCharsIfNonMatched,
         showMatchedAllAtDiff,
         showRandomLaunchingText,
@@ -103,6 +117,7 @@ object DevFeature {
     )
 
 }
+
 
 abstract class DevItem<T>(
     val text:String,

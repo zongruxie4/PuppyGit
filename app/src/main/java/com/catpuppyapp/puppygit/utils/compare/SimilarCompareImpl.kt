@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.utils.compare
 
+import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.utils.compare.param.CompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
@@ -121,7 +122,7 @@ class SimilarCompareImpl: SimilarCompare {
         add: CompareParam<T>,
         del: CompareParam<T>,
         requireBetterMatching: Boolean,
-        treatNoWordMatchAsNoMatched:Boolean = false,
+        treatNoWordMatchAsNoMatched:Boolean = DevFeature.treatNoWordMatchAsNoMatchedForDiff.state.value,
     ):IndexModifyResult {
         val addWordSpacePair = getWordAndIndexList(add, requireBetterMatching)
         val delWordSpacePair = getWordAndIndexList(del, requireBetterMatching)

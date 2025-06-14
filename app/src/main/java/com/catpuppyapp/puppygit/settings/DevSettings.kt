@@ -28,4 +28,9 @@ data class DevSettings (
      * 然而检测修改这块完全是c写的，java这边根本没有优化空间，而c那边恐怕也接近极限了，所以其实没什么好优化的，还是用legacy方法比较好。
      */
     var legacyChangeListLoadMethod: Boolean = true,
+
+    /**
+     * if true, will treat no words matched as non-matched when diff contents and enabled match by words
+     */
+    var treatNoWordMatchAsNoMatchedForDiff: Boolean = false,
 )
