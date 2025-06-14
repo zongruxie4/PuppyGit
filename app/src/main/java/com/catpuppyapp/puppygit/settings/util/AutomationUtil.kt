@@ -119,4 +119,15 @@ object AutomationUtil {
         settings: AppSettings = SettingsUtil.getSettingsSnapshot(),
     ) = settings.automation.packageNameAndRepoAndSettingsMap.get(PackageNameAndRepo(appPackageName, repoId)) ?: PackageNameAndRepoSettings();
 
+    fun getAppAndRepoSpecifiedSettingsActuallyBeUsed(
+        appPackageName:String,
+        repoId:String,
+        settings: AppSettings = SettingsUtil.getSettingsSnapshot(),
+    ) = getAppAndRepoSpecifiedSettings(appPackageName, repoId, settings).let { appAndRepoSetting ->
+        PackageNameAndRepoSettings(
+            appAndRepoSetting.getPullIntervalFormatted().ifBlank { settings.automation.pullIntervalInSec.toString() },
+            appAndRepoSetting.getPushDelayFormatted().ifBlank { settings.automation.pushDelayInSec.toString() },
+        )
+    }
+
 }
