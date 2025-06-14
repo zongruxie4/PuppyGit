@@ -478,6 +478,10 @@ object UIHelper {
         return with(density) { px.toDp() }
     }
 
+    fun pxToDpAtLeast0(px:Int, density:Density): Dp {
+        return with(density) { px.coerceAtLeast(0).toDp() }
+    }
+
     /**
      * well, no promise this offset can send you to expect position, but maybe closer ;)
      */

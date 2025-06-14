@@ -137,7 +137,7 @@ fun<T> SingleSelectList(
             //I forgot whey limit the width, actually is unnecessary
 //            modifier = dropDownMenuModifier.width((containerSize.value.width/2).coerceAtLeast(MyStyleKt.DropDownMenu.minWidth).dp),
 //            modifier = dropDownMenuModifier.widthIn(min = MyStyleKt.DropDownMenu.minWidth),
-            modifier = dropDownMenuModifier.width(UIHelper.pxToDp(containerSize.value.width.coerceAtLeast(0), density)),
+            modifier = dropDownMenuModifier.width(UIHelper.pxToDpAtLeast0(containerSize.value.width, density)),
 //            modifier = dropDownMenuModifier,
 
             expanded = expandDropdownMenu.value,

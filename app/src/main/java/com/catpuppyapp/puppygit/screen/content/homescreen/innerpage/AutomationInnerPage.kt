@@ -21,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -58,6 +57,7 @@ import com.catpuppyapp.puppygit.compose.SelectedUnSelectedDialog
 import com.catpuppyapp.puppygit.compose.SelectionColumn
 import com.catpuppyapp.puppygit.compose.SettingsContent
 import com.catpuppyapp.puppygit.compose.SettingsTitle
+import com.catpuppyapp.puppygit.compose.SizeIcon
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.AppInfo
 import com.catpuppyapp.puppygit.play.pro.R
@@ -82,7 +82,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val TAG = "AutomationInnerPage"
-
+private val trailIconSize = 24.dp
 
 @Composable
 fun AutomationInnerPage(
@@ -103,6 +103,8 @@ fun AutomationInnerPage(
 //    val haptic = LocalHapticFeedback.current
     val configuration = AppModel.getCurActivityConfig()
     val screenHeightDp = configuration.screenHeightDp.dp
+
+//    val density = LocalDensity.current
 
     //两个作用：1离开页面，返回后重新显示导航按钮；2在设置页面开启、关闭导航按钮后使其立即生效（因为remember离开页面就会销毁，所以每次重进页面都会读取最新的settings值）。
     //20250222: 其实这个pageScrolled现在已经仅代表是否显示navi buttons 了，跟是否滚动没关系了
@@ -195,14 +197,17 @@ fun AutomationInnerPage(
             unselectedItemList = unselectedRepoList.value,
             filterKeyWord = reposFilterKeyword,
             selectedItemFormatter={ clickedRepo ->
-                RepoNameAndIdItem(clickedRepo) {
+                RepoNameAndIdItem(clickedRepo, trailIconSize) { containerModifier ->
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = containerModifier
+                            .fillMaxWidth()
+                        ,
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End
                     ) {
 
-                        Icon(
+                        SizeIcon(
+                            size = trailIconSize,
                             modifier=Modifier.clickable {
                                 selectedRepoList.value.remove(clickedRepo)
 
@@ -234,15 +239,18 @@ fun AutomationInnerPage(
                 MyHorizontalDivider()
             },
             unselectedItemFormatter = { clickedRepo ->
-                RepoNameAndIdItem(clickedRepo) {
+                RepoNameAndIdItem(clickedRepo, trailIconSize) { containerModifier ->
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = containerModifier
+                            .fillMaxWidth()
+                        ,
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End
                     ) {
 
-                        Icon(
+                        SizeIcon(
+                            size = trailIconSize,
                             modifier=Modifier.clickable {
                                 unselectedRepoList.value.remove(clickedRepo)
                                 //添加到已选中列表末尾
@@ -620,16 +628,23 @@ fun AutomationInnerPage(
                 if(filteredAddedAppList.isNotEmpty()) {
                     filteredAddedAppList.toList().forEachBetter { appInfo ->
                         item {
+                            val splitSpacerWidth = 30.dp
+
                             AppItem(
                                 appInfo = appInfo,
-                                trailIcons = {
+                                trailIconWidth = trailIconSize * 2 + splitSpacerWidth,
+                                trailIcons = { containerModifier ->
                                     Row(
-                                        modifier = Modifier.fillMaxWidth().padding(end = iconEndPadding),
+                                        modifier = containerModifier
+                                            .fillMaxWidth()
+                                            .padding(end = iconEndPadding)
+                                        ,
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.End
                                     ) {
 
-                                        Icon(
+                                        SizeIcon(
+                                            size = trailIconSize,
                                             modifier=Modifier.clickable {
                                                 initSelectReposDialog(appInfo.packageName, appInfo.appName)
                                             },
@@ -637,9 +652,10 @@ fun AutomationInnerPage(
                                             contentDescription = stringResource(R.string.settings)
                                         )
 
-                                        Spacer(modifier = Modifier.width(30.dp))
+                                        Spacer(modifier = Modifier.width(splitSpacerWidth))
 
-                                        Icon(
+                                        SizeIcon(
+                                            size = trailIconSize,
                                             modifier=Modifier.clickable {
                                                 addedAppList.value.remove(appInfo)
 
@@ -685,14 +701,19 @@ fun AutomationInnerPage(
                         item {
                             AppItem(
                                 appInfo = appInfo,
-                                trailIcons = {
+                                trailIconWidth = trailIconSize ,
+                                trailIcons = { containerModifier ->
                                     Row(
-                                        modifier = Modifier.fillMaxWidth().padding(end = iconEndPadding),
+                                        modifier = containerModifier
+                                            .fillMaxWidth()
+                                            .padding(end = iconEndPadding)
+                                        ,
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.End
                                     ) {
 
-                                        Icon(
+                                        SizeIcon(
+                                            size = trailIconSize,
                                             modifier=Modifier.clickable {
                                                 notAddedAppList.value.remove(appInfo)
                                                 //添加到已选中列表末尾

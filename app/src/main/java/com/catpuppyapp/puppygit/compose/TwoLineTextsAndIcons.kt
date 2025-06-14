@@ -2,8 +2,9 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -12,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
@@ -20,20 +22,21 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 fun TwoLineTextsAndIcons(
     text1:String,
     text2:String,
-    trailIcons: @Composable () -> Unit
+    trailIconWidth: Dp,
+    trailIcons: @Composable BoxScope.(containerModifier: Modifier) -> Unit
 ) {
-    Row(
+    Box(
         modifier = Modifier
             .padding(5.dp)
             .padding(end = 5.dp)
             .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
             modifier = Modifier
-                .padding(end = 2.dp)
-                .fillMaxWidth(.7f),
+                .align(Alignment.CenterStart)
+                .padding(end = 5.dp)
+                .padding(end = trailIconWidth)
+            ,
             verticalArrangement = Arrangement.Center,
         ) {
             SelectionRow(
@@ -49,7 +52,7 @@ fun TwoLineTextsAndIcons(
             }
         }
 
-        trailIcons()
+        trailIcons(Modifier.align(Alignment.CenterEnd))
 
     }
 }
