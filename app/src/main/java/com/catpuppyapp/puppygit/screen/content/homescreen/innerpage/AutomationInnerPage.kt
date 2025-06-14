@@ -811,7 +811,7 @@ fun AutomationInnerPage(
                                                 notAddedAppList.value.add(appInfo)
                                                 notAddedAppList.value.addAll(tmp)
 
-                                                val appPackageAndRepoKeyPrefix = PackageNameAndRepo(appInfo.packageName, "").toKeyPrefix()
+                                                val appPackageAndRepoKeyPrefix = PackageNameAndRepo(appInfo.packageName).toKeyPrefix()
                                                 //保存，从列表移除
                                                 settingsState.value = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
                                                     it.automation.packageNameAndRepoIdsMap.remove(appInfo.packageName)

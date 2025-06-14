@@ -101,13 +101,24 @@ object AutomationUtil {
         SettingsUtil.update { s ->
             val newMap = mutableMapOf<String, List<String>>()
             val oldMap = s.automation.packageNameAndRepoIdsMap
+
+            val newAppAndRepoSettingsMap = mutableMapOf<String, PackageNameAndRepoSettings>()
+            val oldAppAndRepoSettingsMap = s.automation.packageNameAndRepoAndSettingsMap
             existedApps.forEachBetter { packageName ->
                 //这里oldMap.get()百分百有值（除非并发修改，但在这个函数运行期间并发修改这个map的概率很小，几乎不会发生），
                 // 因为existedApps添加的包名必然是oldMap的key，不过为了逻辑完整以及避免出错，还是 ?: 一个空list保险
                 newMap.put(packageName, oldMap.get(packageName) ?: listOf())
+
+                val keyPrefix = PackageNameAndRepo(packageName).toKeyPrefix()
+                for (i in oldAppAndRepoSettingsMap) {
+                    if(i.key.startsWith(keyPrefix)) {
+                        newAppAndRepoSettingsMap.put(i.key, i.value)
+                    }
+                }
             }
 
             s.automation.packageNameAndRepoIdsMap = newMap
+            s.automation.packageNameAndRepoAndSettingsMap = newAppAndRepoSettingsMap
         }
 
         return Pair(selectedList, unselectedList)
