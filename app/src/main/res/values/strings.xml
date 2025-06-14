@@ -1280,5 +1280,6 @@
     <string name="note_pat_instead_of_password">Note: If you have enabled 2FA, you must use a Personal Access Token instead of the password. The token must have read and write permissions for repository contents and workflows.</string>
     <string name="graph">Graph</string>
     <string name="commit_msg_template">Commit Msg Template</string>
+    <string name="leave_empty_to_use_global_settings">Leave empty to use global settings</string>
 
 </resources>

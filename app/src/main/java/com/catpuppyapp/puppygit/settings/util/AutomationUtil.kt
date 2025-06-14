@@ -6,7 +6,10 @@ import android.provider.Settings
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.AppInfo
 import com.catpuppyapp.puppygit.service.AutomationService
+import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.AutomationSettings
+import com.catpuppyapp.puppygit.settings.PackageNameAndRepo
+import com.catpuppyapp.puppygit.settings.PackageNameAndRepoSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -110,5 +113,10 @@ object AutomationUtil {
         return Pair(selectedList, unselectedList)
     }
 
+    fun getAppAndRepoSpecifiedSettings(
+        appPackageName:String,
+        repoId:String,
+        settings: AppSettings = SettingsUtil.getSettingsSnapshot(),
+    ) = settings.automation.packageNameAndRepoAndSettingsMap.get(PackageNameAndRepo(appPackageName, repoId)) ?: PackageNameAndRepoSettings();
 
 }

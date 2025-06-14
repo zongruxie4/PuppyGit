@@ -1185,5 +1185,6 @@
     <string name="note_pat_instead_of_password">Not: Eğer 2FA\'yı etkinleştirdiyseniz, parola yerine Kişisel Erişim Jetonu (Personal Access Token) kullanmanız gerekir. Bu jetonun, depo içeriği (Contents) ve iş akışları (Workflows) üzerinde okuma ve yazma izinlerine sahip olması gerekmektedir.</string>
     <string name="graph">Grafiği</string>
     <string name="commit_msg_template">Commit Mesajı Şablonu</string>
+    <string name="leave_empty_to_use_global_settings">Genel ayarları kullanmak için boş bırakın</string>
 
 </resources>

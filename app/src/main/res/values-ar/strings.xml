@@ -1175,4 +1175,5 @@
     <string name="note_pat_instead_of_password">ملاحظة: إذا قمت بتمكين المصادقة الثنائية (2FA)، فيجب عليك استخدام رمز وصول شخصي (PAT) بدلاً من كلمة المرور. يجب أن يكون للرمز أذونات قراءة وكتابة لمحتويات المستودع وسير العمل.</string>
     <string name="graph">الرسم البياني</string>
     <string name="commit_msg_template">قالب رسالة التثبيت</string>
+    <string name="leave_empty_to_use_global_settings">اتركه فارغًا لاستخدام الإعدادات العامة</string>
 </resources>

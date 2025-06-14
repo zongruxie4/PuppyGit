@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AppItem
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.ItemListIsEmpty
 import com.catpuppyapp.puppygit.compose.LoadingTextUnScrollable
@@ -63,6 +64,8 @@ import com.catpuppyapp.puppygit.dto.AppInfo
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.screen.shared.SharedState
+import com.catpuppyapp.puppygit.settings.PackageNameAndRepo
+import com.catpuppyapp.puppygit.settings.PackageNameAndRepoSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.settings.util.AutomationUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -179,6 +182,121 @@ fun AutomationInnerPage(
         showSelectReposDialog.value = true
     }
 
+
+    val showRepoOfAppSettingsDialog = rememberSaveable { mutableStateOf(false) }
+    val appPackageNameOfRepoOfAppDialog = rememberSaveable { mutableStateOf("") }
+    val pullIntervalBufOfRepoOfAppDialog = rememberSaveable { mutableStateOf("") }
+    val pushDelayBufOfRepoOfAppDialog = rememberSaveable { mutableStateOf("") }
+    val repoOfRepoOfAppDialog = mutableCustomStateOf(stateKeyTag, "repoOfRepoOfAppDialog") { RepoEntity(id="") }
+    val initRepoOfAppSettingsDialog = { appPackageName:String, targetRepo: RepoEntity ->
+        appPackageNameOfRepoOfAppDialog.value = appPackageName
+        repoOfRepoOfAppDialog.value = targetRepo
+
+        // 获取app关联的仓库的拉取和推送延迟设置，不要获取全局，若没直接留空
+        // get app linked repo pull interval and push delay settings
+        val packageNameAndRepoSettings = AutomationUtil.getAppAndRepoSpecifiedSettings(appPackageName, targetRepo.id)
+        pullIntervalBufOfRepoOfAppDialog.value = packageNameAndRepoSettings.getPullIntervalFormatted()
+        pushDelayBufOfRepoOfAppDialog.value = packageNameAndRepoSettings.getPushDelayFormatted()
+
+        showRepoOfAppSettingsDialog.value = true
+    }
+
+    if(showRepoOfAppSettingsDialog.value) {
+        ConfirmDialog2(
+            title = repoOfRepoOfAppDialog.value.repoName,
+            requireShowTextCompose = true,
+            textCompose = {
+                Column(
+                    modifier= Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                    ,
+                ) {
+                    val padding = MyStyleKt.defaultHorizontalPadding
+
+                    MySelectionContainer {
+                        DefaultPaddingText(stringResource(R.string.leave_empty_to_use_global_settings), color = MyStyleKt.TextColor.getHighlighting())
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(padding),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        value = pullIntervalBufOfRepoOfAppDialog.value,
+                        onValueChange = {
+                            //直接更新，不管用户输入什么，点确定后再检查值是否有效
+                            pullIntervalBufOfRepoOfAppDialog.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.pull_interval_in_seconds))
+                        },
+                    )
+
+
+                    MySelectionContainer {
+                        Text(text = stringResource(R.string.pull_interval_note), fontWeight = FontWeight.Light, modifier = Modifier.padding(padding))
+                    }
+
+                    Spacer(Modifier.height(15.dp))
+
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(padding),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        value = pushDelayBufOfRepoOfAppDialog.value,
+                        onValueChange = {
+                            //直接更新，不管用户输入什么，点确定后再检查值是否有效
+                            pushDelayBufOfRepoOfAppDialog.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.push_delay_in_seconds))
+                        },
+                    )
+
+
+                    MySelectionContainer {
+                        Text(text = stringResource(R.string.push_delay_note), fontWeight = FontWeight.Light, modifier = Modifier.padding(padding))
+                    }
+
+                }
+
+
+            },
+            okBtnText = stringResource(id = R.string.save),
+            cancelBtnText = stringResource(id = R.string.cancel),
+            onCancel = { showRepoOfAppSettingsDialog.value = false }
+        ) {
+            showRepoOfAppSettingsDialog.value = false
+
+            doJobThenOffLoading {
+                //解析
+                val newPullInterval = PackageNameAndRepoSettings.formatPullIntervalBeforeSaving(pullIntervalBufOfRepoOfAppDialog.value)
+                val newPushDelay = PackageNameAndRepoSettings.formatPushDelayBeforeSaving(pushDelayBufOfRepoOfAppDialog.value)
+
+
+                //保存
+                SettingsUtil.update {
+                    it.automation.packageNameAndRepoAndSettingsMap.put(
+                        PackageNameAndRepo(appPackageNameOfRepoOfAppDialog.value, repoOfRepoOfAppDialog.value.id),
+                        PackageNameAndRepoSettings(newPullInterval, newPushDelay)
+                    )
+                }
+
+
+                Msg.requireShow(activityContext.getString(R.string.saved))
+            }
+        }
+
+    }
+
+
+
     val filterRepos = { keyword:String, list:List<RepoEntity> ->
         list.filter { it.repoName.lowercase().contains(keyword) || it.id.lowercase().contains(keyword) }
     }
@@ -197,7 +315,9 @@ fun AutomationInnerPage(
             unselectedItemList = unselectedRepoList.value,
             filterKeyWord = reposFilterKeyword,
             selectedItemFormatter={ clickedRepo ->
-                RepoNameAndIdItem(clickedRepo, trailIconSize) { containerModifier ->
+                val splitSpacerWidth = 20.dp
+
+                RepoNameAndIdItem(clickedRepo, trailIconSize * 2 + splitSpacerWidth) { containerModifier ->
                     Row(
                         modifier = containerModifier
                             .fillMaxWidth()
@@ -205,6 +325,17 @@ fun AutomationInnerPage(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End
                     ) {
+
+                        SizeIcon(
+                            size = trailIconSize,
+                            modifier=Modifier.clickable {
+                                initRepoOfAppSettingsDialog(packageNameForSelectReposDialog.value, clickedRepo)
+                            },
+                            imageVector = Icons.Outlined.Settings,
+                            contentDescription = stringResource(R.string.settings)
+                        )
+
+                        Spacer(modifier = Modifier.width(splitSpacerWidth))
 
                         SizeIcon(
                             size = trailIconSize,
