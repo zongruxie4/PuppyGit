@@ -281,12 +281,12 @@ fun AutomationInnerPage(
 
 
                 //保存
-                SettingsUtil.update {
+                settingsState.value = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
                     it.automation.packageNameAndRepoAndSettingsMap.put(
-                        PackageNameAndRepo(appPackageNameOfRepoOfAppDialog.value, repoOfRepoOfAppDialog.value.id),
+                        PackageNameAndRepo(appPackageNameOfRepoOfAppDialog.value, repoOfRepoOfAppDialog.value.id).toKey(),
                         PackageNameAndRepoSettings(newPullInterval, newPushDelay)
                     )
-                }
+                }!!
 
 
                 Msg.requireShow(activityContext.getString(R.string.saved))
@@ -318,6 +318,7 @@ fun AutomationInnerPage(
                 val splitSpacerWidth = 20.dp
 
                 RepoNameAndIdItem(
+                    settings = settingsState.value,
                     selected = true,
                     appNameForSelectReposDialog.value,
                     clickedRepo,
@@ -376,6 +377,7 @@ fun AutomationInnerPage(
             },
             unselectedItemFormatter = { clickedRepo ->
                 RepoNameAndIdItem(
+                    settings = settingsState.value,
                     selected = false,
                     appNameForSelectReposDialog.value,
                     clickedRepo,
@@ -513,19 +515,19 @@ fun AutomationInnerPage(
                 }
 
                 //保存
-                if(truePullIntervalFalsePushDelay) {
+                settingsState.value = if(truePullIntervalFalsePushDelay) {
                     pullIntervalInSec.value = newValue.toString()
 
-                    SettingsUtil.update {
+                    SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
                         it.automation.pullIntervalInSec = newValue
                     }
                 }else {
                     pushDelayInSec.value = newValue.toString()
 
-                    SettingsUtil.update {
+                    SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
                         it.automation.pushDelayInSec = newValue
                     }
-                }
+                }!!
 
 
                 Msg.requireShow(activityContext.getString(R.string.saved))
@@ -621,7 +623,7 @@ fun AutomationInnerPage(
                 }) {
                     Column {
                         Text(stringResource(R.string.pull_interval), fontSize = itemFontSize)
-                        Text(pullIntervalInSec.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                        Text(pullIntervalInSec.value+"s", fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
                     }
                 }
 
@@ -634,7 +636,7 @@ fun AutomationInnerPage(
                 }) {
                     Column {
                         Text(stringResource(R.string.push_delay), fontSize = itemFontSize)
-                        Text(pushDelayInSec.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                        Text(pushDelayInSec.value+"s", fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
                     }
                 }
             }

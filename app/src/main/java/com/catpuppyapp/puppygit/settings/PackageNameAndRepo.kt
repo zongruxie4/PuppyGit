@@ -6,4 +6,6 @@ import kotlinx.serialization.Serializable
 data class PackageNameAndRepo(
     val appPackageName:String = "",
     val repoId:String = "",
-)
+) {
+    fun toKey() = "$appPackageName:$repoId"
+}

@@ -117,7 +117,7 @@ object AutomationUtil {
         appPackageName:String,
         repoId:String,
         settings: AppSettings = SettingsUtil.getSettingsSnapshot(),
-    ) = settings.automation.packageNameAndRepoAndSettingsMap.get(PackageNameAndRepo(appPackageName, repoId)) ?: PackageNameAndRepoSettings();
+    ) = settings.automation.packageNameAndRepoAndSettingsMap.get(PackageNameAndRepo(appPackageName, repoId).toKey()) ?: PackageNameAndRepoSettings();
 
     fun getAppAndRepoSpecifiedSettingsActuallyBeUsed(
         appPackageName:String,
