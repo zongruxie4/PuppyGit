@@ -115,13 +115,13 @@ class SimilarCompareImpl: SimilarCompare {
 
     /**
      * @param requireBetterMatching if true, will try index of for not-matched words
-     * @param treatNoWordMatchAsNoMatched if true, will return no match when only spaces matched ( no any non-space word matched )
+     * @param treatNoWordMatchAsNoMatched if true, will return no match when only spaces and punctuations matched ( haven't any non-space words matched )
      */
     private fun<T:CharSequence> doMatchByWords(
         add: CompareParam<T>,
         del: CompareParam<T>,
         requireBetterMatching: Boolean,
-        treatNoWordMatchAsNoMatched:Boolean = true, //如果只有空格匹配，没单词匹配，当作无匹配
+        treatNoWordMatchAsNoMatched:Boolean = false,
     ):IndexModifyResult {
         val addWordSpacePair = getWordAndIndexList(add, requireBetterMatching)
         val delWordSpacePair = getWordAndIndexList(del, requireBetterMatching)
