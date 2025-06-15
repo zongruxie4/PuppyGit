@@ -823,8 +823,8 @@ class TextEditorState private constructor(
     suspend fun selectPreviousField() {
         lock.withLock {
             if (isMultipleSelectionMode) return
-            val selectedIndex = selectedIndices.firstOrNull() ?: return
-            if (selectedIndex == 0) return
+            val selectedIndex = focusingLineIdx ?: return
+            if (selectedIndex <= 0) return
             val previousIndex = selectedIndex - 1
 
             //更新状态
@@ -858,8 +858,8 @@ class TextEditorState private constructor(
     suspend fun selectNextField() {
         lock.withLock {
             if (isMultipleSelectionMode) return
-            val selectedIndex = selectedIndices.firstOrNull() ?: return
-            if (selectedIndex == fields.lastIndex) return
+            val selectedIndex = focusingLineIdx ?: return
+            if (selectedIndex >= fields.lastIndex) return
 
             val nextIndex = selectedIndex + 1
 

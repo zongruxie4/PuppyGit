@@ -111,21 +111,26 @@ internal fun MyTextField(
             .focusRequester(focusRequester)
             .onFocusChanged { if (it.isFocused) onFocus() }
             .onPreviewKeyEvent { event ->
-//                val value = textFieldState.value
+                val value = textFieldState.value
                 val selection = currentTextField.selection
 
-                val b1 = onPreviewDelKeyEvent(event, selection) { onDeleteNewLine() }
-                if (b1) return@onPreviewKeyEvent true
+                if(onPreviewDelKeyEvent(event, selection) { onDeleteNewLine() }){
+                    return@onPreviewKeyEvent true
+                }
 
-//                val b2 = onPreviewDownKeyEvent(event, value) { onDownFocus() }
-//                if (b2) return@onPreviewKeyEvent true
-//
-//                val b3 = onPreviewUpKeyEvent(event, selection) { onUpFocus() }
-//                if (b3) return@onPreviewKeyEvent true
+                if (onPreviewDownKeyEvent(event, value) { onDownFocus() }) {
+                    return@onPreviewKeyEvent true
+                }
 
+                if (onPreviewUpKeyEvent(event, selection) { onUpFocus() }) {
+                    return@onPreviewKeyEvent true
+                }
+
+                // even disable this, when new line '\n' added to text filed, will still split new line, so this is unnecessary
 //                val b4 = onPreviewEnterKeyEvent(event) { onAddNewLine(currentTextField.copy(text = insertNewLineAtCursor(value))) }
 //                if (b4) return@onPreviewKeyEvent true
 
+                // if enable, will can't use tab to indent, it will go to next field
 //                val b5 = onPreviewTabKeyEvent(event) { onDownFocus() }
 //                if (b5) return@onPreviewKeyEvent true
 
@@ -179,8 +184,8 @@ private fun onPreviewUpKeyEvent(
     val isUpKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_UP
     if (!isUpKey) return false
 
-    val isEmpty = selection == TextRange.Zero
-    if (!isEmpty) return false
+    val atStartOfLine = selection == TextRange.Zero
+    if (!atStartOfLine) return false
 
     invoke()
     return true
@@ -197,8 +202,9 @@ private fun onPreviewDownKeyEvent(
     val isDownKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_DOWN
     if (!isDownKey) return false
 
-    val isEmpty = value.selection == TextRange(value.text.count())
-    if (!isEmpty) return false
+    // 仅当在行末尾才响应按键，这样的效果是按一下 down ，切换到行末尾，再按一下，切换到下一行
+    val atEndOfLine = value.selection == TextRange(value.text.count())
+    if (!atEndOfLine) return false
 
     invoke()
     return true
