@@ -161,6 +161,11 @@ private val customTextSelectionColors_hideCursorHandle = MyStyleKt.TextSelection
 fun TextEditor(
     stateKeyTag:String,
 
+
+    updateLastCursorAtColumn:(Int)->Unit,
+    getLastCursorAtColumnValue:()->Int,
+
+
     ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     undoStack:UndoStack,
     curPreviewScrollState: ScrollState,
@@ -1288,7 +1293,10 @@ fun TextEditor(
 
                                     doJobThenOffLoading {
                                         try {
-                                            textEditorState.selectPreviousField()
+                                            textEditorState.selectPreviousField(
+                                                updateLastCursorAtColumn,
+                                                getLastCursorAtColumnValue,
+                                            )
                                             if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
                                         }catch (e:Exception) {
                                             Msg.requireShowLongDuration("#onUpFocus err: "+e.localizedMessage)
@@ -1301,7 +1309,10 @@ fun TextEditor(
                                     if (lastScrollEvent.value?.isConsumed == false) return@cb
                                     doJobThenOffLoading {
                                         try {
-                                            textEditorState.selectNextField()
+                                            textEditorState.selectNextField(
+                                                updateLastCursorAtColumn,
+                                                getLastCursorAtColumnValue,
+                                            )
                                             if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
                                         }catch (e:Exception) {
                                             Msg.requireShowLongDuration("#onDownFocus err: "+e.localizedMessage)

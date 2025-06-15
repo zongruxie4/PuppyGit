@@ -184,8 +184,8 @@ private fun onPreviewUpKeyEvent(
     val isUpKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_UP
     if (!isUpKey) return false
 
-    val atStartOfLine = selection == TextRange.Zero
-    if (!atStartOfLine) return false
+//    val atStartOfLine = selection == TextRange.Zero
+//    if (!atStartOfLine) return false
 
     invoke()
     return true
@@ -203,8 +203,8 @@ private fun onPreviewDownKeyEvent(
     if (!isDownKey) return false
 
     // 仅当在行末尾才响应按键，这样的效果是按一下 down ，切换到行末尾，再按一下，切换到下一行
-    val atEndOfLine = value.selection == TextRange(value.text.count())
-    if (!atEndOfLine) return false
+//    val atEndOfLine = value.selection == TextRange(value.text.count())
+//    if (!atEndOfLine) return false
 
     invoke()
     return true

@@ -105,6 +105,9 @@ private const val TAG = "FileEditor"
 fun FileEditor(
     stateKeyTag:String,
 
+    updateLastCursorAtColumn:(Int)->Unit,
+    getLastCursorAtColumnValue:()->Int,
+
     ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
@@ -402,6 +405,10 @@ fun FileEditor(
 
                 TextEditor(
                     stateKeyTag = stateKeyTag,
+
+
+                    updateLastCursorAtColumn = updateLastCursorAtColumn,
+                    getLastCursorAtColumnValue = getLastCursorAtColumnValue,
 
                     ignoreFocusOnce = ignoreFocusOnce,
                     undoStack = undoStack,

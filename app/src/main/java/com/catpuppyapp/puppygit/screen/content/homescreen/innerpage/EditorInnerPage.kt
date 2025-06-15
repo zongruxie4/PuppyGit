@@ -250,6 +250,23 @@ fun EditorInnerPage(
 //    val editorPageFileSavedSuccess = stringResource(R.string.file_saved)
     val unknownErrStrRes = stringResource(R.string.unknown_err)
 
+    // lastCursorAtColumn block start
+    // save last cursor at column when navigate line with keyboard Down/Up, will ignore less value than current, and will reset when open file
+    val lastCursorAtColumn = rememberSaveable { mutableStateOf(0) }
+    val updateLastCursorAtColumn = { newValue:Int ->
+        if(newValue > lastCursorAtColumn.value) {
+            lastCursorAtColumn.value = newValue
+        }
+    }
+    val resetLastCursorAtColumn = {
+        lastCursorAtColumn.value = 0
+    }
+    val getLastCursorAtColumnValue = {
+        lastCursorAtColumn.value
+    }
+    // lastCursorAtColumn block end
+
+
     //在编辑器弹出键盘用的，不过后来用simple editor库了，就不需要这个了
 //    val keyboardCtl = LocalSoftwareKeyboardController.current
 
@@ -1537,6 +1554,9 @@ fun EditorInnerPage(
         FileEditor(
             stateKeyTag = stateKeyTag,
 
+            updateLastCursorAtColumn = updateLastCursorAtColumn,
+            getLastCursorAtColumnValue = getLastCursorAtColumnValue,
+
             ignoreFocusOnce = ignoreFocusOnce,
             softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
             requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
@@ -1653,6 +1673,7 @@ fun EditorInnerPage(
             try {
                 doActWithLockIfFree(loadLock, "EditorInnerPage#Init#${needRefreshEditorPage.value}#${editorPageShowingFilePath.value.ioPath}") {
                     doInit(
+                        resetLastCursorAtColumn = resetLastCursorAtColumn,
                         requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
                         ignoreFocusOnce = ignoreFocusOnce,
                         isPreviewModeOn = isPreviewModeOn,
@@ -1717,6 +1738,7 @@ fun EditorInnerPage(
 }
 
 private suspend fun doInit(
+    resetLastCursorAtColumn: ()->Unit,
     requirePreviewScrollToEditorCurPos: MutableState<Boolean>,
     ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     isPreviewModeOn: MutableState<Boolean>,
@@ -1881,6 +1903,7 @@ private suspend fun doInit(
 
             // 新打开文件，重置此值，不然会聚焦失败一次
             ignoreFocusOnce.value = false
+            resetLastCursorAtColumn()
 
             //读取文件内容
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))

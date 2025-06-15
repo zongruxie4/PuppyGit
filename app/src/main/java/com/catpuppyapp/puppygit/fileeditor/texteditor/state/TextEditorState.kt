@@ -820,12 +820,21 @@ class TextEditorState private constructor(
         }
     }
 
-    suspend fun selectPreviousField() {
+    suspend fun selectPreviousField(
+        updateLastCursorAtColumn:(Int)->Unit,
+        getLastCursorAtColumnValue:()->Int,
+    ) {
         lock.withLock {
             if (isMultipleSelectionMode) return
             val selectedIndex = focusingLineIdx ?: return
             if (selectedIndex <= 0) return
             val previousIndex = selectedIndex - 1
+
+            val curField = fields.getOrNull(selectedIndex) ?: return
+            val targetColumn = curField.value.selection.max.let {
+                updateLastCursorAtColumn(it)
+                getLastCursorAtColumnValue()
+            }
 
             //更新状态
 //            val newFields = fields.toMutableList()
@@ -839,7 +848,8 @@ class TextEditorState private constructor(
 //                out_focusingLineIdx = newFocusingLineIdx,
 //                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = previousIndex,
-                option = SelectionOption.LAST_POSITION
+                option = SelectionOption.CUSTOM,
+                columnStartIndexInclusive = targetColumn
             )
 
             val newState = internalCreate(
@@ -855,13 +865,22 @@ class TextEditorState private constructor(
         }
     }
 
-    suspend fun selectNextField() {
+    suspend fun selectNextField(
+        updateLastCursorAtColumn:(Int)->Unit,
+        getLastCursorAtColumnValue:()->Int,
+    ) {
         lock.withLock {
             if (isMultipleSelectionMode) return
             val selectedIndex = focusingLineIdx ?: return
             if (selectedIndex >= fields.lastIndex) return
 
             val nextIndex = selectedIndex + 1
+
+            val curField = fields.getOrNull(selectedIndex) ?: return
+            val targetColumn = curField.value.selection.max.let {
+                updateLastCursorAtColumn(it)
+                getLastCursorAtColumnValue()
+            }
 
             //更新状态
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
@@ -873,7 +892,8 @@ class TextEditorState private constructor(
                 isMutableSelectedIndices = false,
 //                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = nextIndex,
-                option = SelectionOption.FIRST_POSITION
+                option = SelectionOption.CUSTOM,
+                columnStartIndexInclusive = targetColumn,
             )
 
             val newState = internalCreate(
@@ -956,6 +976,9 @@ class TextEditorState private constructor(
         targetIndexValidOrThrow(targetIndex, ret_fields.size)
 
         val target = ret_fields[targetIndex]
+        val textLenOfTarget = target.value.text.length
+        val columnStartIndexInclusive = columnStartIndexInclusive.coerceAtMost(textLenOfTarget)
+        val columnEndIndexExclusive = columnEndIndexExclusive.coerceAtMost(textLenOfTarget)
 
         val selection = when (option) {
             SelectionOption.CUSTOM -> {
@@ -964,12 +987,12 @@ class TextEditorState private constructor(
             SelectionOption.NONE -> target.value.selection
             SelectionOption.FIRST_POSITION -> TextRange.Zero
             SelectionOption.LAST_POSITION -> {
-                TextRange(target.value.text.length)
+                TextRange(textLenOfTarget)
             }
         }
 
 
-        val requireHighlighting = isStartInclusiveEndExclusiveRangeValid(start = highlightingStartIndex, endExclusive = highlightingEndExclusiveIndex, size = target.value.text.length)
+        val requireHighlighting = isStartInclusiveEndExclusiveRangeValid(start = highlightingStartIndex, endExclusive = highlightingEndExclusiveIndex, size = textLenOfTarget)
         val deHighlightingNonTarget = requireHighlighting
 //        val requireLossFocus = requireHighlighting  // 高亮关键字不聚焦是为了避免有的语言（例如英语）输入法，明明没编辑，也会触发onValueChange导致字段被更新，然后高亮闪一下消失，但不聚焦又不会弹出键盘和定位光标，用起来不方便，所以取消，如果想避免高亮关键字闪一下就消失，可开只读模式再搜索
         val requireLossFocus = false  //定位光标到关键字后面，英语可能会闪烁一下就消失，具体应该取决于输入法是否自动读写光标范围内的输入
