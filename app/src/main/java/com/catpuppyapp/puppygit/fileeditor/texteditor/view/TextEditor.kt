@@ -1293,7 +1293,8 @@ fun TextEditor(
 
                                     doJobThenOffLoading {
                                         try {
-                                            textEditorState.selectPreviousField(
+                                            textEditorState.selectPrevOrNextField(
+                                                isNext = false,
                                                 updateLastCursorAtColumn,
                                                 getLastCursorAtColumnValue,
                                             )
@@ -1309,7 +1310,8 @@ fun TextEditor(
                                     if (lastScrollEvent.value?.isConsumed == false) return@cb
                                     doJobThenOffLoading {
                                         try {
-                                            textEditorState.selectNextField(
+                                            textEditorState.selectPrevOrNextField(
+                                                isNext = true,
                                                 updateLastCursorAtColumn,
                                                 getLastCursorAtColumnValue,
                                             )

@@ -820,17 +820,28 @@ class TextEditorState private constructor(
         }
     }
 
-    suspend fun selectPreviousField(
+    suspend fun selectPrevOrNextField(
+        isNext:Boolean,
         updateLastCursorAtColumn:(Int)->Unit,
         getLastCursorAtColumnValue:()->Int,
     ) {
         lock.withLock {
             if (isMultipleSelectionMode) return
             val selectedIndex = focusingLineIdx ?: return
-            if (selectedIndex <= 0) return
-            val previousIndex = selectedIndex - 1
+
+            // reached start or end, can't move any further
+            if((isNext && selectedIndex >= fields.lastIndex)
+                || (isNext.not() && selectedIndex <= 0)
+            ) {
+                return
+            }
+
+            val moveTargetIndex = if(isNext) selectedIndex + 1 else (selectedIndex - 1)
 
             val curField = fields.getOrNull(selectedIndex) ?: return
+
+            // use max, because the end index of selection range maybe is not the max one
+            // A thing I am not sure: when layout direction is RTL, maybe need use min instead of max? (not important, because most time navigate by Down/Up key without selection of text)
             val targetColumn = curField.value.selection.max.let {
                 updateLastCursorAtColumn(it)
                 getLastCursorAtColumnValue()
@@ -847,7 +858,7 @@ class TextEditorState private constructor(
                 isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
 //                init_focusingLineIdx = focusingLineIdx,
-                targetIndex = previousIndex,
+                targetIndex = moveTargetIndex,
                 option = SelectionOption.CUSTOM,
                 columnStartIndexInclusive = targetColumn
             )
@@ -859,51 +870,6 @@ class TextEditorState private constructor(
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
                 focusingLineIdx = sfiRet.focusingLineIdx
-            )
-
-            onChanged(newState, null, false)
-        }
-    }
-
-    suspend fun selectNextField(
-        updateLastCursorAtColumn:(Int)->Unit,
-        getLastCursorAtColumnValue:()->Int,
-    ) {
-        lock.withLock {
-            if (isMultipleSelectionMode) return
-            val selectedIndex = focusingLineIdx ?: return
-            if (selectedIndex >= fields.lastIndex) return
-
-            val nextIndex = selectedIndex + 1
-
-            val curField = fields.getOrNull(selectedIndex) ?: return
-            val targetColumn = curField.value.selection.max.let {
-                updateLastCursorAtColumn(it)
-                getLastCursorAtColumnValue()
-            }
-
-            //更新状态
-//            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
-            val sfiRet = selectFieldInternal(
-                init_fields = fields,
-                init_selectedIndices = selectedIndices,
-//                out_focusingLineIdx = newFocusingLineIdx,
-                isMutableFields = false,
-                isMutableSelectedIndices = false,
-//                init_focusingLineIdx = focusingLineIdx,
-                targetIndex = nextIndex,
-                option = SelectionOption.CUSTOM,
-                columnStartIndexInclusive = targetColumn,
-            )
-
-            val newState = internalCreate(
-                fields = sfiRet.fields,
-                fieldsId = fieldsId,
-                selectedIndices = sfiRet.selectedIndices,
-                isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = newFocusingLineIdx.value
-                focusingLineIdx = sfiRet.focusingLineIdx
-
             )
 
             onChanged(newState, null, false)
