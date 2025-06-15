@@ -46,7 +46,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -1128,41 +1128,42 @@ fun TextEditor(
 
                                     }
                                 }
-                                .onKeyEvent { keyEvent ->
+                                .onPreviewKeyEvent opke@{ keyEvent ->
                                     // return true to stop key event propaganda
                                     if(keyEvent.type != KeyEventType.KeyDown) {
-                                        return@onKeyEvent false
+                                        return@opke false
                                     }
 
                                     if (keyEvent.isCtrlPressed && keyEvent.key == Key.S) { // save
                                         requestFromParent.value = PageRequest.requireSave
-                                        true
-                                    } else if (keyEvent.isCtrlPressed && keyEvent.key == Key.W) { // close
+                                        return@opke true
+                                    }
+
+                                    if (keyEvent.isCtrlPressed && keyEvent.key == Key.W) { // close
                                         requestFromParent.value = PageRequest.requireClose
-                                        true
+                                        return@opke true
                                     }
 
                                         // redo and undo supported by BasicTextField
                                         // see: https://developer.android.com/develop/ui/compose/touch-input/keyboard-input/commands
-//                                    else if (keyEvent.isCtrlPressed && keyEvent.key == Key.Z) { // undo
-//                                        requestFromParent.value = PageRequest.requestUndo
-//                                        true
-//                                    } else if (
-//                                         // ctrl+y or ctrl+shift+z
-//                                        (keyEvent.isCtrlPressed && keyEvent.key == Key.Y)
-//                                        || (keyEvent.isCtrlPressed && keyEvent.isShiftPressed && keyEvent.key == Key.Z)
-//                                    ) { // redo
-//                                        requestFromParent.value = PageRequest.requestRedo
-//                                        true
-//                                    }
-
-                                    else if (keyEvent.isCtrlPressed && keyEvent.key == Key.F) { // search
-                                        requestFromParent.value = PageRequest.requireSearch  //发请求，由TextEditor组件开启搜索模式
-                                        true
-                                    } else {
-                                        false
+                                    if ((keyEvent.isCtrlPressed && keyEvent.key == Key.Y)
+                                        || (keyEvent.isCtrlPressed && keyEvent.isShiftPressed && keyEvent.key == Key.Z)
+                                    ) { // redo
+                                        requestFromParent.value = PageRequest.requestRedo
+                                        return@opke true
                                     }
 
+                                    if (keyEvent.isCtrlPressed && keyEvent.key == Key.Z) { // undo
+                                        requestFromParent.value = PageRequest.requestUndo
+                                        return@opke true
+                                    }
+
+                                    if (keyEvent.isCtrlPressed && keyEvent.key == Key.F) { // search
+                                        requestFromParent.value = PageRequest.requireSearch  //发请求，由TextEditor组件开启搜索模式
+                                        return@opke true
+                                    }
+
+                                    return@opke false
                                 }
                                 .then(modifier)
                         ) {
