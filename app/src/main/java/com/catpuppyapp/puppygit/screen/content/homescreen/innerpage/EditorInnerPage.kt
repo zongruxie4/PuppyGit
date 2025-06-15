@@ -808,6 +808,12 @@ fun EditorInnerPage(
         }
     }
 
+    if(requestFromParent.value == PageRequest.requireClose) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            showCloseDialog.value=true
+        }
+    }
+
     if(requestFromParent.value == PageRequest.editorPreviewPageGoBack) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             previewNavBack()

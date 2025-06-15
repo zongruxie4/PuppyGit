@@ -41,6 +41,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -1120,7 +1125,41 @@ fun TextEditor(
                                         textEditorState.selectField(targetIndex = index)
 
                                     }
-                                }.then(modifier)
+                                }
+                                .onKeyEvent { keyEvent ->
+                                    // return true to stop key event propaganda
+
+                                    if (keyEvent.isCtrlPressed && keyEvent.key == Key.S) { // save
+                                        requestFromParent.value = PageRequest.requireSave
+                                        true
+                                    } else if (keyEvent.isCtrlPressed && keyEvent.key == Key.W) { // close
+                                        requestFromParent.value = PageRequest.requireClose
+                                        true
+                                    }
+
+                                        // redo and undo supported by BasicTextField
+                                        // see: https://developer.android.com/develop/ui/compose/touch-input/keyboard-input/commands
+//                                    else if (keyEvent.isCtrlPressed && keyEvent.key == Key.Z) { // undo
+//                                        requestFromParent.value = PageRequest.requestUndo
+//                                        true
+//                                    } else if (
+//                                         // ctrl+y or ctrl+shift+z
+//                                        (keyEvent.isCtrlPressed && keyEvent.key == Key.Y)
+//                                        || (keyEvent.isCtrlPressed && keyEvent.isShiftPressed && keyEvent.key == Key.Z)
+//                                    ) { // redo
+//                                        requestFromParent.value = PageRequest.requestRedo
+//                                        true
+//                                    }
+
+                                    else if (keyEvent.isCtrlPressed && keyEvent.key == Key.F) { // search
+                                        requestFromParent.value = PageRequest.requireSearch  //发请求，由TextEditor组件开启搜索模式
+                                        true
+                                    } else {
+                                        false
+                                    }
+
+                                }
+                                .then(modifier)
                         ) {
                             MyTextField(
                                 ignoreFocusOnce = ignoreFocusOnce,
