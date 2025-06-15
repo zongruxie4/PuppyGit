@@ -344,7 +344,8 @@ fun getFilesScreenTitle(currentPath:String, activityContext: Context):String {
 fun getEditorStateOnChange(
     editorPageTextEditorState:CustomStateSaveable<TextEditorState>,
     lastTextEditorState:CustomStateSaveable<TextEditorState>,
-    undoStack:UndoStack
+    undoStack:UndoStack,
+    resetLastCursorAtColumn:()->Unit,
 ):(newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit {
 
     return { newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean ->
@@ -357,6 +358,9 @@ fun getEditorStateOnChange(
         // last state == null || 不等于新state的filesId，则入栈
         //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
         if(lastState.maybeNotEquals(newState)) {
+            // if content changed, reset remembered last cursor at column，then next time navigate line by Down/Up key will update the column to the expect value
+            // 如果内容改变，重置记录的光标所在列，这样下次按键盘上下键导航的位置就会重新更新为期望的值
+            resetLastCursorAtColumn()
 //                    if(lastTextEditorState.value?.fields != newState.fields) {
             //true或null，存undo; false存redo。null本来是在选择行之类的场景的，没改内容，可以不存，但我后来感觉存上比较好
             val saved = if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true

@@ -1919,7 +1919,8 @@ private suspend fun doInit(
                 onChanged = getEditorStateOnChange(
                     editorPageTextEditorState = editorPageTextEditorState,
                     lastTextEditorState = lastTextEditorState,
-                    undoStack = undoStack
+                    undoStack = undoStack,
+                    resetLastCursorAtColumn = resetLastCursorAtColumn,
                 )
             )
 

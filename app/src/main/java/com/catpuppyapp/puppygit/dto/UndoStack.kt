@@ -93,7 +93,7 @@ class UndoStack(
                 undoLastSaveAt.longValue = now
 
                 //若超过数量限制移除第一个
-                if(undoStack.size > sizeLimit) {
+                if(undoStack.size.let { it > 0 && it > sizeLimit }) {
                     undoStack.removeAt(0)
                 }
 
