@@ -18,8 +18,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.HorizontalRule
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -368,7 +368,7 @@ fun AutomationInnerPage(
                                     it.automation.packageNameAndRepoAndSettingsMap.remove(PackageNameAndRepo(packageNameForSelectReposDialog.value, clickedRepo.id).toKey())
                                 }!!
                             },
-                            imageVector = Icons.Outlined.DeleteOutline,
+                            imageVector = Icons.Filled.HorizontalRule,
                             contentDescription = stringResource(R.string.delete)
                         )
                     }
@@ -827,7 +827,7 @@ fun AutomationInnerPage(
                                                     it.automation.packageNameAndRepoAndSettingsMap = newPackageNameAndRepoAndSettingsMap
                                                 }!!
                                             },
-                                            imageVector = Icons.Outlined.DeleteOutline,
+                                            imageVector = Icons.Filled.HorizontalRule,
                                             contentDescription = stringResource(R.string.delete)
                                         )
                                     }
