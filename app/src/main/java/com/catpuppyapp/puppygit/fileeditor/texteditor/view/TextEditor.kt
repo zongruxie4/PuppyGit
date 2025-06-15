@@ -1128,6 +1128,10 @@ fun TextEditor(
 
                                     }
                                 }
+
+                                // redo and undo shortcuts supports as default by BasicTextField,
+                                //  so here must use `onPreviewKeyEvent` rather than `onKeyEvent` to intercept the key events
+                                // see: https://developer.android.com/develop/ui/compose/touch-input/keyboard-input/commands
                                 .onPreviewKeyEvent opke@{ keyEvent ->
                                     // return true to stop key event propaganda
                                     if(keyEvent.type != KeyEventType.KeyDown) {
@@ -1144,8 +1148,7 @@ fun TextEditor(
                                         return@opke true
                                     }
 
-                                        // redo and undo supported by BasicTextField
-                                        // see: https://developer.android.com/develop/ui/compose/touch-input/keyboard-input/commands
+                                    // `ctrl+shift+z` must before `ctrl+z` , else the `ctrl+z` will intercept the key event, so never reached `ctrl+shift+z`
                                     if ((keyEvent.isCtrlPressed && keyEvent.key == Key.Y)
                                         || (keyEvent.isCtrlPressed && keyEvent.isShiftPressed && keyEvent.key == Key.Z)
                                     ) { // redo
