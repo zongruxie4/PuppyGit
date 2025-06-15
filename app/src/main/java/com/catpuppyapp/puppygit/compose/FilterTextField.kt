@@ -42,6 +42,7 @@ fun FilterTextField(
     loading:Boolean = false,
     placeholderText:String = stringResource(R.string.input_keyword),
     singleLine:Boolean = true,
+    requireFocus: Boolean = true,
     trailingIcon: (@Composable ()->Unit)? = null,
     showClear:Boolean = filterKeyWord.value.text.isNotEmpty(),
     onClear:(()->Unit)? = {filterKeyWord.value = TextFieldValue("")},
@@ -104,13 +105,15 @@ fun FilterTextField(
         }
     }
 
-    // select keyword
-    LaunchedEffect(Unit) {
-        filterKeyWord.apply {
-            value = value.copy(text = value.text, selection = TextRange(0, value.text.length))
+    if(requireFocus) {
+        // select all of keyword
+        LaunchedEffect(Unit) {
+            filterKeyWord.apply {
+                value = value.copy(text = value.text, selection = TextRange(0, value.text.length))
+            }
         }
-    }
 
-    // focus
-    Focuser(focusRequester, scope)
+        // focus
+        Focuser(focusRequester, scope)
+    }
 }
