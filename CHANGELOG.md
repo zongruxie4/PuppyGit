@@ -11,6 +11,7 @@
 - limit file names length of commit msg template
 - improve UI (issue #66)
 - Automation: support set pull interval and push delay for each repo
+- Editor support Ctrl+S/Ctrl+W/Ctrl+F to save/close/find the file
 
 
 
@@ -23,6 +24,7 @@
 - 限制模板提交信息的文件名字数
 - 提升 UI (issue #66)
 - 自动化：支持为每个仓库设置拉取间隔和推送延迟
+- 编辑器支持 Ctrl+S/Ctrl+W/Ctrl+F 执行 保存/关闭/查找 文件
 
 
 ---

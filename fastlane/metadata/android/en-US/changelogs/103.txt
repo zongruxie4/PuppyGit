@@ -7,3 +7,4 @@
 - limit file names length of commit msg template
 - improve UI (issue #66)
 - Automation: support set pull interval and push delay for each repo
+- Editor support Ctrl+S/Ctrl+W/Ctrl+F to save/close/find the file
