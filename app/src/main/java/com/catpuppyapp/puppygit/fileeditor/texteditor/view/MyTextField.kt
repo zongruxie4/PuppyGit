@@ -111,7 +111,7 @@ internal fun MyTextField(
             .focusRequester(focusRequester)
             .onFocusChanged { if (it.isFocused) onFocus() }
             .onPreviewKeyEvent { event ->
-                val value = textFieldState.value
+//                val value = textFieldState.value
                 val selection = currentTextField.selection
 
                 val b1 = onPreviewDelKeyEvent(event, selection) { onDeleteNewLine() }
@@ -123,8 +123,8 @@ internal fun MyTextField(
 //                val b3 = onPreviewUpKeyEvent(event, selection) { onUpFocus() }
 //                if (b3) return@onPreviewKeyEvent true
 
-                val b4 = onPreviewEnterKeyEvent(event) { onAddNewLine(currentTextField.copy(text = insertNewLineAtCursor(value))) }
-                if (b4) return@onPreviewKeyEvent true
+//                val b4 = onPreviewEnterKeyEvent(event) { onAddNewLine(currentTextField.copy(text = insertNewLineAtCursor(value))) }
+//                if (b4) return@onPreviewKeyEvent true
 
 //                val b5 = onPreviewTabKeyEvent(event) { onDownFocus() }
 //                if (b5) return@onPreviewKeyEvent true
