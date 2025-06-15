@@ -7,14 +7,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.catpuppyapp.puppygit.style.MyStyleKt
 
 
 /**
@@ -25,6 +26,7 @@ fun CenterIconButton(
     icon:ImageVector,
     text:String,
     iconDesc:String? = text.ifBlank { null },
+    mainColor: Color? = null,
     attachContent: @Composable () -> Unit = {},
     condition: Boolean = true,  //显示图标还是其他内容
     elseContent: @Composable ()->Unit = {},  // condition为false显示此内容
@@ -54,14 +56,14 @@ fun CenterIconButton(
                     modifier = Modifier.size(50.dp),
                     imageVector = icon,
                     contentDescription = iconDesc,
-                    tint = MyStyleKt.IconColor.normal
+                    tint = mainColor ?: LocalContentColor.current,
                 )
             }
 
             Row {
                 Text(
                     text = text,
-                    color = MyStyleKt.IconColor.normal,
+                    color = mainColor ?: Color.Unspecified,
 //                    style = MyStyleKt.ClickableText.getStyle(),
 //                    color = MyStyleKt.ClickableText.getColor(),
 //                    fontSize = MyStyleKt.TextSize.default

@@ -2297,7 +2297,7 @@ fun FilesInnerPage(
                     ) {
                         GrantManageStoragePermissionClickableText(activityContext)
 
-                        Spacer(Modifier.height(15.dp))
+                        Spacer(Modifier.height(5.dp))
 
                         MyCheckBox(text = stringResource(R.string.paths_are_repo_parent_dir), value = isReposParentFolderForImport)
 
