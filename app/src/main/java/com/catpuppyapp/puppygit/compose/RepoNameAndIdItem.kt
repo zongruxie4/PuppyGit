@@ -37,7 +37,8 @@ fun RepoNameAndIdItem(
                     stringResource(R.string.pull_interval)+": "+appendSecondsUnit(it.getPullIntervalFormatted())+", "+ stringResource(R.string.push_delay)+": "+appendSecondsUnit(it.getPushDelayFormatted())
                 }
             } else {
-                repoEntity.id
+//                repoEntity.id
+                ""
             },
             trailIconWidth,
             trailIcons

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Text
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
+private val minHeight = 40.dp
 
 @Composable
 fun TwoLineTextsAndIcons(
@@ -29,13 +31,16 @@ fun TwoLineTextsAndIcons(
         modifier = Modifier
             .padding(5.dp)
             .padding(end = 5.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .heightIn(min = minHeight)
+        ,
     ) {
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .padding(end = 5.dp)
                 .padding(end = trailIconWidth)
+//                .fillMaxWidth()  // no need fill max width
             ,
             verticalArrangement = Arrangement.Center,
         ) {
@@ -45,10 +50,12 @@ fun TwoLineTextsAndIcons(
                 Text(text = text1, fontSize = MyStyleKt.Title.firstLineFontSizeSmall, fontWeight = FontWeight.Bold)
             }
 
-            SelectionRow(
-                Modifier.horizontalScroll(rememberScrollState())
-            ) {
-                Text(text = text2, fontSize = MyStyleKt.Title.secondLineFontSize, fontWeight = FontWeight.Light)
+            if(text2.isNotEmpty()) {
+                SelectionRow(
+                    Modifier.horizontalScroll(rememberScrollState())
+                ) {
+                    Text(text = text2, fontSize = MyStyleKt.Title.secondLineFontSize, fontWeight = FontWeight.Light)
+                }
             }
         }
 
