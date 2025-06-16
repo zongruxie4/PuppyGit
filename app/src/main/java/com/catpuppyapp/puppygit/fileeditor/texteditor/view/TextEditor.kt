@@ -90,6 +90,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.hideForAWhile
+import com.catpuppyapp.puppygit.utils.parseLineAndColumn
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
@@ -545,22 +546,7 @@ fun TextEditor(
         }
     }
 
-    // get line number(line index+1)
-    val getLineVal = {i:String ->
-        try {
-            //删下首尾空格，增加容错率，然后尝试转成int
-            val line = i.trim().toInt()
-            if(line==LineNum.EOF.LINE_NUM) {  // if is EOF, return last line number, then can go to end of file
-                textEditorState.fields.size
-            }else{
-                Math.max(1, line)
-            }
-        }catch (e:Exception) {
-            // parse int failed, then go first line
-            1
-        }
 
-    }
 
     /**
      * 入参是行号，不是索引，最小是1
@@ -569,9 +555,14 @@ fun TextEditor(
     val doGoToLine = { line:String ->
         //x 会报错，提示index必须为非负数) 测试下如果是-1会怎样？是否会报错？
 //        val lineIntVal = -1
-        val lineIntVal = getLineVal(line)
+        val (lineNum, columnNum) = parseLineAndColumn(line, textEditorState.fields.size)
         //行号减1即要定位行的索引
-        lastScrollEvent.value = ScrollEvent(index = lineIntVal-1, forceGo=true, goColumn = true)
+        lastScrollEvent.value = ScrollEvent(
+            index = lineNum - 1,
+            forceGo = true,
+            goColumn = true,
+            columnStartIndexInclusive = columnNum - 1,
+        )
     }
 
     if(showGoToLineDialog.value) {
@@ -612,7 +603,7 @@ fun TextEditor(
                         },
                         placeholder = {
                             //显示行号范围，例如："Range: 1-123"
-                            Text(stringResource(R.string.range) + ": $lineNumRange")
+                            Text("e.g. 1:5")
                         }
                     )
 
@@ -627,7 +618,8 @@ fun TextEditor(
                         ClickableText(
                             text = stringResource(R.string.first_line),
                             modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                goToLineValue.value = TextFieldValue(firstLine)
+                                // selection to length of text field for make user append ':column' more convenient
+                                goToLineValue.value = firstLine.let{ TextFieldValue(it, selection = TextRange(it.length)) }
                             },
                             fontWeight = FontWeight.Light
                         )
@@ -637,7 +629,7 @@ fun TextEditor(
                         ClickableText(
                             text = stringResource(R.string.last_line),
                             modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                goToLineValue.value = TextFieldValue(lastLine)
+                                goToLineValue.value = lastLine.let {TextFieldValue(it, selection = TextRange(it.length)) }
                             },
                             fontWeight = FontWeight.Light
                         )

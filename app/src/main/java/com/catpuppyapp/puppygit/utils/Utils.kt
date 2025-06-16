@@ -15,6 +15,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.AppInfo
@@ -1283,3 +1284,25 @@ fun getRangeForRenameFile(fileName:String):TextRange {
 
 fun appendSecondsUnit(str:String) = str+"s";
 
+
+/**
+ * get line number and column both are start from 1, support format 'line:column'
+ *
+ * @return Pair(lineNum, columnNum), both are starts from 1, you can subtract 1 to trans them to index
+ */
+fun parseLineAndColumn(str:String, actuallyLastLineNum:Int) = try {
+        val lineAndColumn = str.split(":")
+
+        //删下首尾空格，增加容错率，然后尝试转成int
+        val line = lineAndColumn[0].trim().toInt()
+        val retLine = if(line == LineNum.EOF.LINE_NUM) {  // if is EOF, return last line number, then can go to end of file
+            actuallyLastLineNum
+        }else {
+            line.coerceAtLeast(1)
+        }
+
+        Pair(retLine, lineAndColumn.getOrNull(1)?.trim()?.toInt() ?: 1)
+    }catch (e:Exception) {
+        // parse int failed, then go first line
+        Pair(1, 1)
+    }
