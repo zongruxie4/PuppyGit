@@ -571,7 +571,7 @@ fun TextEditor(
 //        val lineIntVal = -1
         val lineIntVal = getLineVal(line)
         //行号减1即要定位行的索引
-        lastScrollEvent.value = ScrollEvent(index = lineIntVal-1, forceGo=true)
+        lastScrollEvent.value = ScrollEvent(index = lineIntVal-1, forceGo=true, goColumn = true)
     }
 
     if(showGoToLineDialog.value) {
