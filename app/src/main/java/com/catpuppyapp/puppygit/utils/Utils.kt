@@ -15,10 +15,10 @@ import androidx.compose.ui.text.TextRange
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import com.catpuppyapp.puppygit.constants.Cons
-import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.AppInfo
+import com.catpuppyapp.puppygit.dto.LineNumParseResult
 import com.catpuppyapp.puppygit.dto.rawAppInfoToAppInfo
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.play.pro.R
@@ -1290,19 +1290,23 @@ fun appendSecondsUnit(str:String) = str+"s";
  *
  * @return Pair(lineNum, columnNum), both are starts from 1, you can subtract 1 to trans them to index
  */
-fun parseLineAndColumn(str:String, actuallyLastLineNum:Int) = try {
-        val lineAndColumn = str.split(":")
+fun parseLineAndColumn(str:String) = try {
+    val lineAndColumn = str.split(":")
 
-        //删下首尾空格，增加容错率，然后尝试转成int
-        val line = lineAndColumn[0].trim().toInt()
-        val retLine = if(line == LineNum.EOF.LINE_NUM) {  // if is EOF, return last line number, then can go to end of file
-            actuallyLastLineNum
-        }else {
-            line.coerceAtLeast(1)
-        }
+    //删下首尾空格，增加容错率，然后尝试转成int
+    val lineNum = lineAndColumn[0].trim().toInt()
 
-        Pair(retLine, lineAndColumn.getOrNull(1)?.trim()?.toInt() ?: 1)
-    }catch (e:Exception) {
-        // parse int failed, then go first line
-        Pair(1, 1)
-    }
+//       // deprecated, because supported to go to relative line number and it maybe less than 1, maybe same as EOF line num, so, ignore EOF check at here
+//        val retLine = if(line == LineNum.EOF.LINE_NUM) {  // if is EOF, return last line number, then can go to end of file
+//            actuallyLastLineNum
+//        }else {
+//            line
+//        }
+
+    val columnNum = lineAndColumn.getOrNull(1)?.trim()?.toInt() ?: 1
+    val isRelative = str.startsWith("+") || str.startsWith("-")
+    LineNumParseResult(lineNum, columnNum, isRelative)
+}catch (e:Exception) {
+    // parse int failed, then go first line
+    LineNumParseResult()
+}

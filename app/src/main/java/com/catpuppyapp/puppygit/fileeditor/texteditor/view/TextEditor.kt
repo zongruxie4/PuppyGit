@@ -555,13 +555,16 @@ fun TextEditor(
     val doGoToLine = { line:String ->
         //x 会报错，提示index必须为非负数) 测试下如果是-1会怎样？是否会报错？
 //        val lineIntVal = -1
-        val (lineNum, columnNum) = parseLineAndColumn(line, textEditorState.fields.size)
+        val linNumParseResult = parseLineAndColumn(line)
         //行号减1即要定位行的索引
         lastScrollEvent.value = ScrollEvent(
-            index = lineNum - 1,
+            index = linNumParseResult.lineNumToIndex(
+                curLineIndex = textEditorState.focusingLineIdx ?: listState.firstVisibleItemIndex,
+                maxLineIndex = textEditorState.fields.size
+            ),
             forceGo = true,
             goColumn = true,
-            columnStartIndexInclusive = columnNum - 1,
+            columnStartIndexInclusive = linNumParseResult.columnNumToIndex(),
         )
     }
 
