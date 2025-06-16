@@ -1294,7 +1294,7 @@ fun TextEditor(
                         coroutineScope = scope,
                         listState = listState,
                         index = if(useLastEditPos) {
-                            lastEditedPos.firstVisibleLineIndex
+                            lastEditedPos.getLineIdxForRestoreView()ffffffffffff
                         } else if(goToLine == LineNum.EOF.LINE_NUM) {
                             textEditorState.fields.size - 1
                         } else {
@@ -1305,8 +1305,9 @@ fun TextEditor(
                     //如果定位到上次退出位置，进一步检查是否需要定位到最后编辑列
                     //因为定位column会弹出键盘所以暂时不定位了，我不想一打开编辑器自动弹出键盘，因为键盘会自动读取上下文，可能意外获取屏幕上的文本泄漏隐私
                     if(bug_Editor_GoToColumnCantHideKeyboard_Fixed && useLastEditPos) {
+                        delay一下，检查最后编辑行是否可见，若不可见，滚动到最后编辑行
                         //是否需要定位到上次编辑的列，若否，只定位到最后退出前的首个可见行
-                        val restoreLastEditColumn = SettingsUtil.getSettingsSnapshot().editor.restoreLastEditColumn
+                        val restoreLastEditColumn = settings.editor.restoreLastEditColumn
                         //                val restoreLastEditColumn = true  //test2024081116726433
 
                         //如果是readOnly模式，就没必要定位到对应列了，就算定位了也无效，多此一举
