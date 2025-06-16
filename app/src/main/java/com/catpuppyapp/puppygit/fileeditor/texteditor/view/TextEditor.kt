@@ -907,6 +907,7 @@ fun TextEditor(
             contentPadding = contentPaddingValues
         ) {
             val size = textEditorState.fields.size
+            val lastIndexOfFields = size - 1
 
             //fields本身就是toList()出来的，无需再toList()
             textEditorState.fields.forEachIndexedBetter { index, textFieldState ->
@@ -932,8 +933,12 @@ fun TextEditor(
                 }
 
 
-                if(mergeMode && curLineText.startsWith(settings.editor.conflictStartStr)) {
-                    item {
+
+
+                //很多时候改了内容，但没改id，懒得一个个改了，直接弃用id作key，让compose自己判断什么时候需要重组，有问题再说
+//                    item(key = textFieldState.id) {
+                item {
+                    if(mergeMode && curLineText.startsWith(settings.editor.conflictStartStr)) {
                         AcceptButtons(
                             lineIndex = index,
                             lineText = curLineText,
@@ -944,11 +949,7 @@ fun TextEditor(
                             prepareAcceptBlock = prepareAcceptBlock,
                         )
                     }
-                }
 
-                //很多时候改了内容，但没改id，懒得一个个改了，直接弃用id作key，让compose自己判断什么时候需要重组，有问题再说
-//                    item(key = textFieldState.id) {
-                item {
                     decorationBox(
                         index,
                         size,
@@ -1208,10 +1209,8 @@ fun TextEditor(
                             )
                         }
                     }
-                }
 
-                if(mergeMode && curLineText.startsWith(settings.editor.conflictEndStr)) {
-                    item {
+                    if(mergeMode && curLineText.startsWith(settings.editor.conflictEndStr)) {
                         AcceptButtons(
                             lineIndex = index,
                             lineText = curLineText,
@@ -1222,48 +1221,52 @@ fun TextEditor(
                             prepareAcceptBlock = prepareAcceptBlock,
                         )
                     }
-                }
-
-            }
-
-            item {
-                Spacer(modifier = Modifier
-                    .width(virtualWidth)
-                    //设高度为屏幕高度-50dp，基本上能滚动到顶部，但会留出最后一行多一些的空间
-                    .height(virtualHeight)
-                    .clickable(
-                        //隐藏点击效果（就是一点屏幕明暗变化一下那个效果）
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        //非选择模式，点空白区域，聚焦最后一行
-                        if(textEditorState.isMultipleSelectionMode.not()) {
-                            doJobThenOffLoading {
-                                //点击空白区域定位到最后一行最后一个字符后面
-                                //第1个参数是行索引；第2个参数是当前行的哪个位置
-                                textEditorState.selectField(
-                                    textEditorState.fields.lastIndex,
-                                    SelectionOption.LAST_POSITION
-                                )
 
 
-                                //确保弹出键盘，不加的话“点击空白区域，关闭键盘，再点击空白区域”就不弹出键盘了
-                                //显示键盘，不在主线程运行也可以
-                                keyboardController?.show()
+                    // show virtual space
+                    if(index == lastIndexOfFields) {
+                        Spacer(modifier = Modifier
+                            .width(virtualWidth)
+                            //设高度为屏幕高度-50dp，基本上能滚动到顶部，但会留出最后一行多一些的空间
+                            .height(virtualHeight)
+                            .clickable(
+                                //隐藏点击效果（就是一点屏幕明暗变化一下那个效果）
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                //非选择模式，点空白区域，聚焦最后一行
+                                if(textEditorState.isMultipleSelectionMode.not()) {
+                                    doJobThenOffLoading {
+                                        //点击空白区域定位到最后一行最后一个字符后面
+                                        //第1个参数是行索引；第2个参数是当前行的哪个位置
+                                        textEditorState.selectField(
+                                            textEditorState.fields.lastIndex,
+                                            SelectionOption.LAST_POSITION
+                                        )
 
-                                //显示键盘（在主线程运行，可选，其实不在主线程也行）
+
+                                        //确保弹出键盘，不加的话“点击空白区域，关闭键盘，再点击空白区域”就不弹出键盘了
+                                        //显示键盘，不在主线程运行也可以
+                                        keyboardController?.show()
+
+                                        //显示键盘（在主线程运行，可选，其实不在主线程也行）
 //                                    withMainContext {
 //                                        keyboardController?.show()
 //                                    }
-                            }
+                                    }
 
-                        }
-                    }
+                                }
+                            }
 //                    .background(Color.Red)  //debug
-                    ,
-                )
-//                PaddingRow()
+                            ,
+                        )
+                    }
+                }
+
+
+
             }
+
         }
 
 
@@ -1298,8 +1301,6 @@ fun TextEditor(
                     //会用goToLine的值减1得到索引，所以0也不行
                     val useLastEditPos = LineNum.shouldRestoreLastPosition(goToLine)
 
-                    //注意：合并模式下go to line可能不准，因为可能会有accept ours/theirs按钮作为lazy column的item占了位置
-                    // this go to line maybe not accurate when merge mode on, because accept ours/theirs buttons in the lazy column
                     //滚动一定要放到scope里执行，不然这个东西一滚动，整个LaunchedEffect代码块后面就不执行了
                     //如果goToLine大于0，把行号减1换成索引；否则跳转到上次退出前的第一可见行
                     UIHelper.scrollToItem(
