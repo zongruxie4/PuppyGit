@@ -847,154 +847,6 @@ fun TextEditor(
         }
     }
 
-    LaunchedEffect(lastScrollEvent.value) TextEditorLaunchedEffect@{
-        try {
-            val lastScrollEvent = lastScrollEvent.value
-//        if(debugModeOn) {
-            //还行不是很长
-//            println("lastScrollEvent.toString() + firstLineIndexState.value:"+(lastScrollEvent.toString() + firstLineIndexState.value))
-//        }
-
-//        if(debugModeOn) {
-//            println("滚动事件更新了："+lastScrollEvent)
-////            println("最后编辑行："+lastEditedPos)
-//            println("第一个可见行："+firstLineIndexState.value)
-//        }
-            //如果值不是-1将会保存
-//        var maybeWillSaveEditedLineIndex = -1  //最后编辑行
-//        var maybeWillSaveFirstVisibleLineIndex = -1  //首个可见行
-
-            //初始化（组件创建，第一次执行LaunchedEffect）之后，更新最新可见行
-//        if(isInitDone.value) {
-//            lastFirstVisibleLineIndexState = Math.max(0, firstLineIndexState.value)
-//        }
-
-            //刚打开文件，定位到上次记录的行，这个滚动只在初始化时执行一次
-            if(lastScrollEvent==null && !isInitDone.value) {
-                //放到第一行是为了避免重入
-                isInitDone.value=true
-
-                //goToLine触发场景：预览diff，发现某行需要改，点击行号，就会直接定位到对应行了
-                //会用goToLine的值减1得到索引，所以0也不行
-                val useLastEditPos = LineNum.shouldRestoreLastPosition(goToLine)
-
-                //滚动一定要放到scope里执行，不然这个东西一滚动，整个LaunchedEffect代码块后面就不执行了
-                //如果goToLine大于0，把行号减1换成索引；否则跳转到上次退出前的第一可见行
-                UIHelper.scrollToItem(
-                    coroutineScope = scope,
-                    listState = listState,
-                    index = if(useLastEditPos) {
-                        lastEditedPos.firstVisibleLineIndex
-                    } else if(goToLine == LineNum.EOF.LINE_NUM) {
-                        textEditorState.fields.size - 1
-                    } else {
-                        goToLine - 1
-                    }
-                )
-
-                //如果定位到上次退出位置，进一步检查是否需要定位到最后编辑列
-                //因为定位column会弹出键盘所以暂时不定位了，我不想一打开编辑器自动弹出键盘，因为键盘会自动读取上下文，可能意外获取屏幕上的文本泄漏隐私
-                if(bug_Editor_GoToColumnCantHideKeyboard_Fixed && useLastEditPos) {
-                    //是否需要定位到上次编辑的列，若否，只定位到最后退出前的首个可见行
-                    val restoreLastEditColumn = SettingsUtil.getSettingsSnapshot().editor.restoreLastEditColumn
-    //                val restoreLastEditColumn = true  //test2024081116726433
-
-                    //如果是readOnly模式，就没必要定位到对应列了，就算定位了也无效，多此一举
-                    if(!readOnlyMode && useLastEditPos && restoreLastEditColumn) {
-                        //定位到指定列。注意：会弹出键盘！没找到好的不弹键盘的方案，所以我把定位列功能默认禁用了
-                        textEditorState.selectField(
-                            lastEditedPos.lineIndex,
-                            option = SelectionOption.CUSTOM,
-                            columnStartIndexInclusive = lastEditedPos.columnIndex
-                        )
-
-                        keyboardController?.hideForAWhile()
-                    }
-
-                }
-
-                return@TextEditorLaunchedEffect
-
-
-                //只有当滚动事件不为null且isConsumed为假时，才执行下面的代码块
-            }else if(lastScrollEvent?.isConsumed == false) {  //编辑了文件，行号有更新，更新配置文件记录的行并定位到对应的行
-                //消费以避免重复执行（设置isConsumed为true）
-                lastScrollEvent?.consume()
-
-                //检查是否不检查行是否可见，直接强制跳转
-                val forceGo = lastScrollEvent?.forceGo == true
-                lastScrollEvent?.index?.let { index ->
-//                val safeIndex = Math.max(0, index)
-//                maybeWillSaveEditedLineIndex = safeIndex
-
-                    //先跳转，然后更新配置文件
-                    //跳转
-                    //强制跳转，无论是否可见
-                    if(forceGo) {
-                        //强制跳转不应该更新最后编辑行，因为跳转后并不会自动focus跳转到的那行，最后编辑行其实还是之前的那个，所以，只更新可见行即可
-//                    maybeWillSaveEditedLineIndex = -1
-
-                        //强制跳转的话，第一个可见行就是跳转的那行
-//                    lastFirstVisibleLineIndexState = index
-                        //定位行
-                        UIHelper.scrollToItem(scope, listState, index)
-
-//                        println("lastScrollEvent!!.columnStartIndexInclusive:${lastScrollEvent!!.columnStartIndexInclusive}")  //test1791022120240812
-                        //定位列，如果请求定位列的话
-                        if(lastScrollEvent?.goColumn==true) {
-                            //选中关键字
-                            textEditorState.selectField(
-                                targetIndex = index,
-                                option = SelectionOption.CUSTOM,
-                                columnStartIndexInclusive = lastScrollEvent!!.columnStartIndexInclusive,
-                                //如果选中某行子字符串的功能修复了，就使用正常的endIndex；否则使用startIndex，定位光标到关键字出现的位置但不选中关键字
-                                columnEndIndexExclusive = if(bug_Editor_SelectColumnRangeOfLine_Fixed) lastScrollEvent!!.columnEndIndexExclusive else lastScrollEvent!!.columnStartIndexInclusive,
-                                requireSelectLine = false,
-                                highlightingStartIndex = lastScrollEvent.highlightingStartIndex,
-                                highlightingEndExclusiveIndex = lastScrollEvent.highlightingEndExclusiveIndex,
-                            )
-
-                            //请求失焦则关闭键盘
-                            if(lastScrollEvent.requireHideKeyboard) {
-                                keyboardController?.hide()
-                            }
-                        }
-                    }else {
-                        //更新最后编辑行状态
-                        lastEditedLineIndexState.intValue = index
-//                        println("index="+index)
-                        //检查一下，如果对应索引不可见则跳转
-                        // list.minBy(item.index) 用元素的index排序，取出index最小的元素，后面跟.index，即取出最小index元素的index,maxBy和minBy异曲同工
-//                    val first = lazyColumnState.layoutInfo.visibleItemsInfo.minBy { it.index }.index
-//                    lastFirstVisibleLineIndexState = first
-
-                        val first = listState.firstVisibleItemIndex
-//                    if(debugModeOn) { //期望 true，结果 true，测试通过
-//                        println("firstLineIndexState.value == first:"+(firstLineIndexState.value == first))
-//                    }
-                        val end = listState.layoutInfo.visibleItemsInfo.maxBy { it.index }.index
-                        //如果指定行不在可见范围内，滚动到指定行以使其可见
-                        if (index < first || index > end) {
-                            //滚动到指定行
-                            UIHelper.scrollToItem(scope, listState, index)
-                        }
-                    }
-                }
-            }
-
-        }catch (e:Exception) {
-            MyLog.e(TAG, "#TextEditorLaunchedEffect@ , err: "+e.stackTraceToString())
-        }
-
-//        if(debugModeOn) {
-//            println("maybeSaveEditedLineIndex=$maybeWillSaveEditedLineIndex")
-//            println("maybeSaveFirstVisibleLineIndex=$maybeWillSaveFirstVisibleLineIndex")
-//            println("lastEditedLineIndexState=$lastEditedLineIndexState")
-//            println("lastFirstVisibleLineIndexState=$lastFirstVisibleLineIndexState")
-//        }
-
-    }
-
     DisposableEffect(Unit) {
         onDispose TextEditorOnDispose@{
             try {
@@ -1404,6 +1256,154 @@ fun TextEditor(
             }
         }
 
+
+        LaunchedEffect(lastScrollEvent.value) TextEditorLaunchedEffect@{
+            try {
+                val lastScrollEvent = lastScrollEvent.value
+//        if(debugModeOn) {
+                //还行不是很长
+//            println("lastScrollEvent.toString() + firstLineIndexState.value:"+(lastScrollEvent.toString() + firstLineIndexState.value))
+//        }
+
+//        if(debugModeOn) {
+//            println("滚动事件更新了："+lastScrollEvent)
+////            println("最后编辑行："+lastEditedPos)
+//            println("第一个可见行："+firstLineIndexState.value)
+//        }
+                //如果值不是-1将会保存
+//        var maybeWillSaveEditedLineIndex = -1  //最后编辑行
+//        var maybeWillSaveFirstVisibleLineIndex = -1  //首个可见行
+
+                //初始化（组件创建，第一次执行LaunchedEffect）之后，更新最新可见行
+//        if(isInitDone.value) {
+//            lastFirstVisibleLineIndexState = Math.max(0, firstLineIndexState.value)
+//        }
+
+                //刚打开文件，定位到上次记录的行，这个滚动只在初始化时执行一次
+                if(lastScrollEvent==null && !isInitDone.value) {
+                    //放到第一行是为了避免重入
+                    isInitDone.value=true
+
+                    //goToLine触发场景：预览diff，发现某行需要改，点击行号，就会直接定位到对应行了
+                    //会用goToLine的值减1得到索引，所以0也不行
+                    val useLastEditPos = LineNum.shouldRestoreLastPosition(goToLine)
+
+                    //滚动一定要放到scope里执行，不然这个东西一滚动，整个LaunchedEffect代码块后面就不执行了
+                    //如果goToLine大于0，把行号减1换成索引；否则跳转到上次退出前的第一可见行
+                    UIHelper.scrollToItem(
+                        coroutineScope = scope,
+                        listState = listState,
+                        index = if(useLastEditPos) {
+                            lastEditedPos.firstVisibleLineIndex
+                        } else if(goToLine == LineNum.EOF.LINE_NUM) {
+                            textEditorState.fields.size - 1
+                        } else {
+                            goToLine - 1
+                        }
+                    )
+
+                    //如果定位到上次退出位置，进一步检查是否需要定位到最后编辑列
+                    //因为定位column会弹出键盘所以暂时不定位了，我不想一打开编辑器自动弹出键盘，因为键盘会自动读取上下文，可能意外获取屏幕上的文本泄漏隐私
+                    if(bug_Editor_GoToColumnCantHideKeyboard_Fixed && useLastEditPos) {
+                        //是否需要定位到上次编辑的列，若否，只定位到最后退出前的首个可见行
+                        val restoreLastEditColumn = SettingsUtil.getSettingsSnapshot().editor.restoreLastEditColumn
+                        //                val restoreLastEditColumn = true  //test2024081116726433
+
+                        //如果是readOnly模式，就没必要定位到对应列了，就算定位了也无效，多此一举
+                        if(!readOnlyMode && useLastEditPos && restoreLastEditColumn) {
+                            //定位到指定列。注意：会弹出键盘！没找到好的不弹键盘的方案，所以我把定位列功能默认禁用了
+                            textEditorState.selectField(
+                                lastEditedPos.lineIndex,
+                                option = SelectionOption.CUSTOM,
+                                columnStartIndexInclusive = lastEditedPos.columnIndex
+                            )
+
+                            keyboardController?.hideForAWhile()
+                        }
+
+                    }
+
+                    return@TextEditorLaunchedEffect
+
+
+                    //只有当滚动事件不为null且isConsumed为假时，才执行下面的代码块
+                }else if(lastScrollEvent?.isConsumed == false) {  //编辑了文件，行号有更新，更新配置文件记录的行并定位到对应的行
+                    //消费以避免重复执行（设置isConsumed为true）
+                    lastScrollEvent?.consume()
+
+                    //检查是否不检查行是否可见，直接强制跳转
+                    val forceGo = lastScrollEvent?.forceGo == true
+                    lastScrollEvent?.index?.let { index ->
+//                val safeIndex = Math.max(0, index)
+//                maybeWillSaveEditedLineIndex = safeIndex
+
+                        //先跳转，然后更新配置文件
+                        //跳转
+                        //强制跳转，无论是否可见
+                        if(forceGo) {
+                            //强制跳转不应该更新最后编辑行，因为跳转后并不会自动focus跳转到的那行，最后编辑行其实还是之前的那个，所以，只更新可见行即可
+//                    maybeWillSaveEditedLineIndex = -1
+
+                            //强制跳转的话，第一个可见行就是跳转的那行
+//                    lastFirstVisibleLineIndexState = index
+                            //定位行
+                            UIHelper.scrollToItem(scope, listState, index)
+
+//                        println("lastScrollEvent!!.columnStartIndexInclusive:${lastScrollEvent!!.columnStartIndexInclusive}")  //test1791022120240812
+                            //定位列，如果请求定位列的话
+                            if(lastScrollEvent?.goColumn==true) {
+                                //选中关键字
+                                textEditorState.selectField(
+                                    targetIndex = index,
+                                    option = SelectionOption.CUSTOM,
+                                    columnStartIndexInclusive = lastScrollEvent!!.columnStartIndexInclusive,
+                                    //如果选中某行子字符串的功能修复了，就使用正常的endIndex；否则使用startIndex，定位光标到关键字出现的位置但不选中关键字
+                                    columnEndIndexExclusive = if(bug_Editor_SelectColumnRangeOfLine_Fixed) lastScrollEvent!!.columnEndIndexExclusive else lastScrollEvent!!.columnStartIndexInclusive,
+                                    requireSelectLine = false,
+                                    highlightingStartIndex = lastScrollEvent.highlightingStartIndex,
+                                    highlightingEndExclusiveIndex = lastScrollEvent.highlightingEndExclusiveIndex,
+                                )
+
+                                //请求失焦则关闭键盘
+                                if(lastScrollEvent.requireHideKeyboard) {
+                                    keyboardController?.hide()
+                                }
+                            }
+                        }else {
+                            //更新最后编辑行状态
+                            lastEditedLineIndexState.intValue = index
+//                        println("index="+index)
+                            //检查一下，如果对应索引不可见则跳转
+                            // list.minBy(item.index) 用元素的index排序，取出index最小的元素，后面跟.index，即取出最小index元素的index,maxBy和minBy异曲同工
+//                    val first = lazyColumnState.layoutInfo.visibleItemsInfo.minBy { it.index }.index
+//                    lastFirstVisibleLineIndexState = first
+
+                            val first = listState.firstVisibleItemIndex
+//                    if(debugModeOn) { //期望 true，结果 true，测试通过
+//                        println("firstLineIndexState.value == first:"+(firstLineIndexState.value == first))
+//                    }
+                            val end = listState.layoutInfo.visibleItemsInfo.maxBy { it.index }.index
+                            //如果指定行不在可见范围内，滚动到指定行以使其可见
+                            if (index < first || index > end) {
+                                //滚动到指定行
+                                UIHelper.scrollToItem(scope, listState, index)
+                            }
+                        }
+                    }
+                }
+
+            }catch (e:Exception) {
+                MyLog.e(TAG, "#TextEditorLaunchedEffect@ , err: "+e.stackTraceToString())
+            }
+
+//        if(debugModeOn) {
+//            println("maybeSaveEditedLineIndex=$maybeWillSaveEditedLineIndex")
+//            println("maybeSaveFirstVisibleLineIndex=$maybeWillSaveFirstVisibleLineIndex")
+//            println("lastEditedLineIndexState=$lastEditedLineIndexState")
+//            println("lastFirstVisibleLineIndexState=$lastFirstVisibleLineIndexState")
+//        }
+
+        }
     }
 }
 
