@@ -89,11 +89,11 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
+import com.catpuppyapp.puppygit.utils.hideForAWhile
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 
 private const val TAG ="TextEditor"
@@ -908,20 +908,7 @@ fun TextEditor(
                             columnStartIndexInclusive = lastEditedPos.columnIndex
                         )
 
-                        doJobThenOffLoading {
-                            // stop popup soft keyboard when open a file
-                            val hideKb = doJobThenOffLoading {
-                                runCatching {
-                                    while (true) {
-                                        delay(1)
-                                        keyboardController?.hide()
-                                    }
-                                }
-                            }
-
-                            delay(500)
-                            hideKb?.cancel()
-                        }
+                        keyboardController?.hideForAWhile()
                     }
 
                 }
