@@ -826,7 +826,9 @@ class TextEditorState private constructor(
         getLastCursorAtColumnValue:()->Int,
     ) {
         lock.withLock {
-            if (isMultipleSelectionMode) return
+            // expect can move select prev/next line in selection mode, but maybe won't work
+//            if (isMultipleSelectionMode) return
+
             val selectedIndex = focusingLineIdx ?: return
 
             // reached start or end, can't move any further
