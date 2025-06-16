@@ -1059,6 +1059,7 @@ fun TextEditor(
                                 .then(modifier)
                         ) {
                             MyTextField(
+                                softKeyboardController = keyboardController,
                                 ignoreFocusOnce = ignoreFocusOnce,
                                 //搜索模式已经没必要聚焦了，因为不需要光标定位行了，直接高亮关键字了，而且搜索模式会把focusingLineIdx设为null以避免聚焦行弹出键盘误判内容已改变从而触发重组导致高亮关键字功能失效
 //                                    focusThisLine = if(textEditorState.isContentEdited.value) index == textEditorState.focusingLineIdx else false,

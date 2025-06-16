@@ -26,6 +26,7 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -34,6 +35,7 @@ import com.catpuppyapp.puppygit.dev.bug_Editor_WrongUpdateEditColumnIdx_Fixed
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.hideForAWhile
 import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 
 
@@ -42,6 +44,7 @@ private const val TAG = "MyTextField"
 
 @Composable
 internal fun MyTextField(
+    softKeyboardController: SoftwareKeyboardController?,
     ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     focusThisLine:Boolean,
     textFieldState: TextFieldState,
@@ -140,15 +143,23 @@ internal fun MyTextField(
 
 
     if(focusThisLine) {
-        if(ignoreFocusOnce.value) {
-            MyLog.d(TAG, "TextEditor#MyTextField: ignore focus once")
-            ignoreFocusOnce.value = false
-        }else {
-            LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
+        LaunchedEffect(Unit) {
+            runCatching {
+                focusRequester.requestFocus()
+
+                if(ignoreFocusOnce.value) {
+                    ignoreFocusOnce.value = false
+                    // focus, but don't show the soft keyboard
+                    softKeyboardController?.hideForAWhile()
+
+                    MyLog.d(TAG, "TextEditor#MyTextField: ignore focus once")
+                }
+            }
         }
     }
 
 }
+
 
 private fun onPreviewDelKeyEvent(
     event: KeyEvent,
