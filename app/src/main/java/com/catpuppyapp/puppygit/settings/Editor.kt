@@ -23,7 +23,7 @@ data class Editor (
     //打开文件时是否定位到上次编辑列（或者说恢复光标位置到上次编辑的列）
     //注意：如果有删除文本但没保存，这个定位会不准，但经我测试，没遇到会导致app崩溃的情况，所以问题不大
     //若bug `bug_Editor_GoToColumnCantHideKeyboard_Fixed` 未修复，此值无效，启动editor将强制不定位到上次编辑列
-    var restoreLastEditColumn:Boolean=false,  //打开文件时，定位到上次编辑列。注意：会弹出键盘！（我理想中的情况是不会弹出键盘，因为自动弹出键盘有可能会使文本内容被键盘意外读取而泄漏隐私，但没找到合适的方案隐藏键盘。）
+    var restoreLastEditColumn:Boolean=true,  //打开文件时，定位到上次编辑列。注意：会弹出键盘！（我理想中的情况是不会弹出键盘，因为自动弹出键盘有可能会使文本内容被键盘意外读取而泄漏隐私，但没找到合适的方案隐藏键盘。）
 
     var editCacheKeepInDays:Int = 3,  //编辑缓存文件保存天数，超过天数的文件会在启动app时删除
     var editCacheEnable:Boolean = false,  //是否启用编辑缓存，修改后重启app生效
