@@ -954,8 +954,8 @@ class TextEditorState private constructor(
 
         val target = ret_fields[targetIndex]
         val textLenOfTarget = target.value.text.length
-        val columnStartIndexInclusive = columnStartIndexInclusive.coerceAtMost(textLenOfTarget)
-        val columnEndIndexExclusive = columnEndIndexExclusive.coerceAtMost(textLenOfTarget)
+        val columnStartIndexInclusive = columnStartIndexInclusive.coerceAtMost(textLenOfTarget).coerceAtLeast(0)
+        val columnEndIndexExclusive = columnEndIndexExclusive.coerceAtMost(textLenOfTarget).coerceAtLeast(0)
 
         val selection = when (option) {
             SelectionOption.CUSTOM -> {
