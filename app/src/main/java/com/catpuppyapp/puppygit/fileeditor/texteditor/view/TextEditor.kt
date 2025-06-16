@@ -1153,7 +1153,6 @@ fun TextEditor(
                                         return@opke true
                                     }
 
-                                    // `ctrl+shift+z` must before `ctrl+z` , else the `ctrl+z` will intercept the key event, so never reached `ctrl+shift+z`
                                     if ((keyEvent.isCtrlPressed && keyEvent.key == Key.Y)
                                         || (keyEvent.isCtrlPressed && keyEvent.isShiftPressed && keyEvent.key == Key.Z)
                                     ) { // redo
@@ -1161,13 +1160,31 @@ fun TextEditor(
                                         return@opke true
                                     }
 
-                                    if (keyEvent.isCtrlPressed && keyEvent.key == Key.Z) { // undo
+                                    if (keyEvent.isShiftPressed.not() && keyEvent.isCtrlPressed && keyEvent.key == Key.Z) { // undo
                                         requestFromParent.value = PageRequest.requestUndo
                                         return@opke true
                                     }
 
                                     if (keyEvent.isCtrlPressed && keyEvent.key == Key.F) { // search
                                         requestFromParent.value = PageRequest.requireSearch  //发请求，由TextEditor组件开启搜索模式
+                                        return@opke true
+                                    }
+
+                                    if (keyEvent.isCtrlPressed && keyEvent.key == Key.MoveHome) { // go to top of file
+                                        lastScrollEvent.value = ScrollEvent(0)
+
+                                        doJobThenOffLoading {
+                                            textEditorState.goToEndOrTopOfFile(goToTop = true)
+                                        }
+                                        return@opke true
+                                    }
+
+                                    if (keyEvent.isCtrlPressed && keyEvent.key == Key.MoveEnd) { // go to end of file
+                                        lastScrollEvent.value = ScrollEvent(textEditorState.fields.lastIndex.coerceAtLeast(0))
+
+                                        doJobThenOffLoading {
+                                            textEditorState.goToEndOrTopOfFile(goToTop = false)
+                                        }
                                         return@opke true
                                     }
 

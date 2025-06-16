@@ -929,6 +929,14 @@ class TextEditorState private constructor(
         highlightingStartIndex: Int = -1,
         highlightingEndExclusiveIndex: Int = -1,
     ):SelectFieldInternalRet {
+        try {
+            targetIndexValidOrThrow(targetIndex, init_fields.size)
+        }catch (e: Exception) { // should never throw
+            MyLog.e(TAG, "TextEditorState.selectFieldInternal() err: ${e.stackTraceToString()}")
+        }
+
+        val targetIndex = targetIndex.coerceAtMost(init_fields.lastIndex).coerceAtLeast(0)
+
         //后面会根据需要决定是否创建拷贝
         var ret_fields = init_fields
         var ret_selectedIndices = init_selectedIndices
@@ -939,7 +947,8 @@ class TextEditorState private constructor(
         val out_selectedIndices = Unit
         val init_focusingLineIdx = Unit
 
-        targetIndexValidOrThrow(targetIndex, ret_fields.size)
+
+
 
         val target = ret_fields[targetIndex]
         val textLenOfTarget = target.value.text.length
@@ -1594,6 +1603,36 @@ class TextEditorState private constructor(
             onChanged = onChanged
         )
     }
+
+
+    suspend fun goToEndOrTopOfFile(goToTop:Boolean) {
+        lock.withLock {
+            val targetIndex = if(goToTop) 0 else fields.lastIndex.coerceAtLeast(0)
+
+            val sfiRet = selectFieldInternal(
+                init_fields = fields,
+                init_selectedIndices = selectedIndices,
+                isMutableFields = false,
+                isMutableSelectedIndices = false,
+                targetIndex = targetIndex,
+                option = if(goToTop) SelectionOption.FIRST_POSITION else SelectionOption.LAST_POSITION,
+            )
+
+            val newState = internalCreate(
+                fields = sfiRet.fields,
+                fieldsId = fieldsId,
+                selectedIndices = sfiRet.selectedIndices,
+                isMultipleSelectionMode = isMultipleSelectionMode,
+                focusingLineIdx = sfiRet.focusingLineIdx
+            )
+
+            onChanged(newState, null, false)
+        }
+    }
+
+
+
+
 
     companion object {
         fun create(
