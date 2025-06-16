@@ -94,6 +94,8 @@ import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import io.ktor.util.collections.ConcurrentMap
+import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 
 private const val TAG ="TextEditor"
@@ -223,7 +225,10 @@ fun TextEditor(
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
     val conflictKeyword = remember(settings.editor.conflictStartStr) { mutableStateOf(settings.editor.conflictStartStr) }
 
-
+    val lineVisibleMap = mutableCustomStateOf(stateKeyTag, "lineVisibleMap") { ConcurrentMap<Int, Boolean>() }
+    val setLineIndexToVisible = {lineIndex:Int -> lineVisibleMap.value.put(lineIndex, true)}
+    val setLineIndexToInvisible = {lineIndex:Int -> lineVisibleMap.value.put(lineIndex, false)}
+    val isLineIdxVisible = {lineIndex:Int -> lineVisibleMap.value.getOrDefault(lineIndex, false)}
 
 
     //最后显示屏幕范围的第一行的索引
@@ -960,6 +965,16 @@ fun TextEditor(
                         textEditorState.isMultipleSelectionMode,
 
                     ) { modifier ->
+                        LaunchedEffect(Unit) {
+                            setLineIndexToVisible(index)
+                        }
+
+                        DisposableEffect(Unit) {
+                            onDispose {
+                                setLineIndexToInvisible(index)
+                            }
+                        }
+
                         // FileEditor里的innerTextFiled()会执行这的代码
                         Box(
                             modifier = Modifier
@@ -1288,13 +1303,15 @@ fun TextEditor(
                     //会用goToLine的值减1得到索引，所以0也不行
                     val useLastEditPos = LineNum.shouldRestoreLastPosition(goToLine)
 
+                    //注意：合并模式下go to line可能不准，因为可能会有accept ours/theirs按钮作为lazy column的item占了位置
+                    // this go to line maybe not accurate when merge mode on, because accept ours/theirs buttons in the lazy column
                     //滚动一定要放到scope里执行，不然这个东西一滚动，整个LaunchedEffect代码块后面就不执行了
                     //如果goToLine大于0，把行号减1换成索引；否则跳转到上次退出前的第一可见行
                     UIHelper.scrollToItem(
                         coroutineScope = scope,
                         listState = listState,
                         index = if(useLastEditPos) {
-                            lastEditedPos.getLineIdxForRestoreView()ffffffffffff
+                            lastEditedPos.firstVisibleLineIndex
                         } else if(goToLine == LineNum.EOF.LINE_NUM) {
                             textEditorState.fields.size - 1
                         } else {
@@ -1304,24 +1321,29 @@ fun TextEditor(
 
                     //如果定位到上次退出位置，进一步检查是否需要定位到最后编辑列
                     //因为定位column会弹出键盘所以暂时不定位了，我不想一打开编辑器自动弹出键盘，因为键盘会自动读取上下文，可能意外获取屏幕上的文本泄漏隐私
-                    if(bug_Editor_GoToColumnCantHideKeyboard_Fixed && useLastEditPos) {
-                        delay一下，检查最后编辑行是否可见，若不可见，滚动到最后编辑行
-                        //是否需要定位到上次编辑的列，若否，只定位到最后退出前的首个可见行
-                        val restoreLastEditColumn = settings.editor.restoreLastEditColumn
-                        //                val restoreLastEditColumn = true  //test2024081116726433
 
-                        //如果是readOnly模式，就没必要定位到对应列了，就算定位了也无效，多此一举
-                        if(!readOnlyMode && useLastEditPos && restoreLastEditColumn) {
+                    //是否需要定位到上次编辑的列，若否，只定位到最后退出前的首个可见行
+                    //如果是readOnly模式，就没必要定位到对应列了，就算定位了也无效，多此一举
+                    if(bug_Editor_GoToColumnCantHideKeyboard_Fixed && useLastEditPos && settings.editor.restoreLastEditColumn && !readOnlyMode) {
+                        // delay一下，等滚动到上次可见行，然后检查最后编辑行是否可见，若不可见，滚动到最后编辑行
+                        doJobThenOffLoading {
+                            delay(500)
+
+                            val lastEditedLineIdx = lastEditedPos.lineIndex
+                            if(isLineIdxVisible(lastEditedLineIdx).not()) {
+                                UIHelper.scrollToItem(scope, listState, lastEditedLineIdx)
+                            }
+
                             //定位到指定列。注意：会弹出键盘！没找到好的不弹键盘的方案，所以我把定位列功能默认禁用了
                             textEditorState.selectField(
-                                lastEditedPos.lineIndex,
+                                lastEditedLineIdx,
                                 option = SelectionOption.CUSTOM,
                                 columnStartIndexInclusive = lastEditedPos.columnIndex
                             )
 
                             keyboardController?.hideForAWhile()
-                        }
 
+                        }
                     }
 
                     return@TextEditorLaunchedEffect
