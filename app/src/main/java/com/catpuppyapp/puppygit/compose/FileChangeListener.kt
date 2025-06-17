@@ -3,90 +3,45 @@ package com.catpuppyapp.puppygit.compose
 import android.content.Context
 import android.database.ContentObserver
 import android.net.Uri
-import android.os.FileObserver
 import android.os.Handler
+import android.os.Parcelable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.catpuppyapp.puppygit.etc.PathType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.parcelize.Parcelize
 import java.io.File
 
 private const val TAG = "FileChangeListener"
 
-/**
- * this is bad for jni and no promise for content uri, so deprecated
- */
-@Composable
-fun FileChangeListener_bad_for_jni(
-    context: Context,
-    path: FilePath,
-    onChange:()->Unit,
-) {
-    // use state to avoid lambda catching copy of values
-    val filePath = path.ioPath.let { remember(it) { mutableStateOf(it) } }
-    val pathType = path.ioPathType.let { remember(it) { mutableStateOf(it) } }
-    val trueAbsFalseUri = (pathType.value == PathType.ABSOLUTE).let { remember(it) { mutableStateOf(it) } }
 
-    val fileObserver = remember { mutableStateOf<FileObserver?>(null) }
-    val contentObserver = remember { mutableStateOf<ContentObserver?>(null) }
-
-    val startListen = {
-        if(trueAbsFalseUri.value) {
-            fileObserver.value = object : FileObserver(filePath.value, FileObserver.MODIFY) {
-                override fun onEvent(event: Int, path: String?) {
-                    if (event == FileObserver.MODIFY) {
-                        onChange()
-                    }
-                }
+@Parcelize
+data class FileChangeListenerState(
+    private val ignoreOnceState: Boolean = false,
+) : Parcelable {
+    companion object {
+        fun ignoreOnce(state: MutableState<FileChangeListenerState>) = state.apply { value = value.copy(ignoreOnceState = true) }
+        fun doActOrClearIgnoreOnce(state: MutableState<FileChangeListenerState>, act:()->Unit) {
+            if(state.value.ignoreOnceState) {
+                state.apply { value = value.copy(ignoreOnceState = false) }
+            }else {
+                act()
             }
-
-            fileObserver.value?.startWatching()
-        }else {
-            contentObserver.value = object : ContentObserver(Handler()) {
-                // idk the selfChange what for? indicate changed by this ContentObserver instance itself?
-                override fun onChange(selfChange: Boolean) {
-                    super.onChange(selfChange)
-                    onChange()
-                }
-            }.apply {
-                context.contentResolver.registerContentObserver(
-                    Uri.parse(filePath.value),
-                    true,
-                    this
-                )
-            }
-        }
-    }
-
-    val stopListen = {
-        runCatching {
-            fileObserver.value?.stopWatching()
-            contentObserver.value?.let {
-                context.contentResolver.unregisterContentObserver(it)
-            }
-        }
-    }
-
-    LaunchedEffect(filePath.value) {
-        if(trueAbsFalseUri.value) {
-            stopListen()
-            startListen()
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            stopListen()
         }
     }
 }
+
+@Composable
+fun rememberFileChangeListenerState() = rememberSaveable { mutableStateOf(FileChangeListenerState()) }
 
 
 /**
@@ -94,6 +49,7 @@ fun FileChangeListener_bad_for_jni(
  */
 @Composable
 fun FileChangeListener(
+    state: MutableState<FileChangeListenerState>,
     context: Context,
     path: FilePath,
 
@@ -102,7 +58,7 @@ fun FileChangeListener(
     //   but welp for absolute file path got changed notify early
     intervalInMillSec: Long = 1000,
 
-    onChange:(newFileLen:Long, newFileLastModified:Long)->Unit,
+    onChange:()->Unit,
 ) {
     // use state to avoid lambda catching copy of values
     val filePath = path.ioPath.let { remember(it) { mutableStateOf(it) } }
@@ -143,7 +99,7 @@ fun FileChangeListener(
                                 oldFileLen = newFileLen
                                 oldFileModified = newFileModified
 
-                                onChange(newFileLen, newFileModified)
+                                FileChangeListenerState.doActOrClearIgnoreOnce(state, onChange)
                             }
                         }
                     }catch(canceled: Exception){
@@ -158,7 +114,8 @@ fun FileChangeListener(
                     // idk the selfChange what for? indicate changed by this ContentObserver instance itself?
                     override fun onChange(selfChange: Boolean) {
                         super.onChange(selfChange)
-                        onChange(0, 0)
+
+                        FileChangeListenerState.doActOrClearIgnoreOnce(state, onChange)
                     }
                 }.apply {
                     context.contentResolver.registerContentObserver(
