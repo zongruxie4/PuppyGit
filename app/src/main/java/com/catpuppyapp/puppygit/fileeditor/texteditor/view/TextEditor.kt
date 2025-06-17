@@ -1377,6 +1377,9 @@ fun TextEditor(
                             delay(300)
 
                             val lastEditedLineIdx = lastEditedPos.lineIndex
+                            // if target line invisible, scroll to it, e.g. edited line 100 then scroll to line 1 then quit,
+                            //   in that case, when next time open file, will scroll to line 1 first, but when reached here, will found line 100 is invisible,
+                            //   then need one more scroll to make line 100 visible
                             if(isLineIdxVisible(lastEditedLineIdx).not()) {
                                 UIHelper.scrollToItem(scope, listState, lastEditedLineIdx)
                             }
