@@ -39,3 +39,18 @@ inline fun <K, V> Map<K, V>.forEachBetter(
         foreach(key, value)
     }
 }
+
+fun <T, R> List<T>.filterAndMap(
+    predicate:(T)->Boolean,
+    transform:(T)->R,
+):List<R> {
+    val ret = mutableListOf<R>()
+
+    forEachBetter {
+        if(predicate(it)) {
+            ret.add(transform(it))
+        }
+    }
+
+    return ret
+}

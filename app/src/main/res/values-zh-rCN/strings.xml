@@ -813,7 +813,7 @@
     <string name="will_scan_repos_under_this_folder">将扫描此文件夹下的仓库</string>
     <string name="path_is_not_a_dir">路径不是目录</string>
 <!--    eg: 10 imported-->
-    <string name="n_imported">ph_a3f241dc_1 个已导入</string>
+    <string name="n_imported">ph_a3f241dc_1 项已导入</string>
     <string name="three_dots_icon_for_choose_folder">代表选择文件夹的由三个点组成的图标</string>
     <string name="rename_repo">重命名仓库</string>
     <string name="new_name">新名称</string>

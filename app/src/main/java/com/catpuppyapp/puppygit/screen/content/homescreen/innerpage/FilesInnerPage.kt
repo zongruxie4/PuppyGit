@@ -136,6 +136,7 @@ import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJob
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.filterAndMap
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.getFileExtOrEmpty
@@ -2611,10 +2612,20 @@ fun FilesInnerPage(
             },
 
             importAsRepo@{
-                initImportAsRepoDialog(selectedItems.value.filter { it.isDir }.map { it.fullPath })
+                initImportAsRepoDialog(
+                    selectedItems.value.filterAndMap(
+                        predicate = { it.isDir },
+                        transform = { it.fullPath }
+                    )
+                )
             },
             initRepo@{
-                initInitRepoDialog(selectedItems.value.filter { it.isDir }.map { it.fullPath })
+                initInitRepoDialog(
+                    selectedItems.value.filterAndMap(
+                        predicate = { it.isDir },
+                        transform = { it.fullPath }
+                    )
+                )
             },
 
             import@{
