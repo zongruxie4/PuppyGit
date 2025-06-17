@@ -97,7 +97,9 @@ fun FileChangeListener(
     context: Context,
     path: FilePath,
 
-    // interval for check file change, not used for saf uri
+    // interval for check file change, not used for saf uri.
+    // decrease this value will not help content uri listener to get new changed notify early,
+    //   but welp for absolute file path got changed notify early
     intervalInMillSec: Long = 1000,
 
     onChange:(newFileLen:Long, newFileLastModified:Long)->Unit,
