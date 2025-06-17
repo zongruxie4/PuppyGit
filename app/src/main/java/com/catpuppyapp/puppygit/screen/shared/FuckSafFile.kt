@@ -5,11 +5,19 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.catpuppyapp.puppygit.etc.PathType
 import com.catpuppyapp.puppygit.utils.FsUtils
+import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import kotlin.coroutines.cancellation.CancellationException
+
+
+private const val TAG = "FuckSafFile"
 
 /**
  * fuck the saf api, saf should full-compatible with File api and support jni, else it just shit
@@ -141,5 +149,31 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
 
     override fun toString(): String {
         return canonicalPath
+    }
+
+    fun createChangeListener(intervalInMillSec:Long, onChange:()->Unit):Job? {
+        return doJobThenOffLoading {
+            try {
+                var oldFileLen = length()
+                var oldFileModified = lastModified()
+                while (true) {
+                    delay(intervalInMillSec)
+
+                    val newFileLen = length()
+                    val newFileModified = lastModified()
+                    if (oldFileLen != newFileLen || oldFileModified != newFileModified) {
+                        oldFileLen = newFileLen
+                        oldFileModified = newFileModified
+
+                        onChange()
+                    }
+                }
+            } catch (_: CancellationException) {
+                // task may be canceled normally, just ignore
+
+            } catch (e: Exception) {
+                MyLog.d(TAG, "listen change of file err: filePath='${path.ioPath}', err=${e.stackTraceToString()}")
+            }
+        }
     }
 }

@@ -1620,7 +1620,7 @@ fun EditorInnerPage(
     FileChangeListener(
         state = fileChangeListenerState,
         context = activityContext,
-        path = editorPageShowingFilePath.value,
+        path = editorPageShowingFilePath.value.ioPath,
     ) {
         val printFilePath = "filePath = '${editorPageShowingFilePath.value.ioPath}'"
 
