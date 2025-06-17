@@ -376,7 +376,11 @@ fun FileEditor(
                     }
                 }
             } else {
-                //更新键盘显示状态
+
+                // 20250618: these code not work after update jetpack compose, no way to prevent the software keyboard popup for now
+
+                // shit code start
+                //update soft keyboard visible state
                 SharedState.editor_softKeyboardIsVisible.value = UIHelper.isSoftkeyboardVisible()
 
                 DisposableEffect(Unit) {
@@ -401,6 +405,7 @@ fun FileEditor(
                     MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_PAUSE: called, ignoreFocusOnce=${ignoreFocusOnce.value}")
 
                 }
+                // shit code end
 
 
 
