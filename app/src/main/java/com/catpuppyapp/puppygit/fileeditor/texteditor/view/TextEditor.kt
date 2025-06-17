@@ -1374,7 +1374,7 @@ fun TextEditor(
                     if(bug_Editor_GoToColumnCantHideKeyboard_Fixed && useLastEditPos && settings.editor.restoreLastEditColumn && !readOnlyMode) {
                         // delay一下，等滚动到上次可见行，然后检查最后编辑行是否可见，若不可见，滚动到最后编辑行
                         doJobThenOffLoading {
-                            delay(500)
+                            delay(300)
 
                             val lastEditedLineIdx = lastEditedPos.lineIndex
                             if(isLineIdxVisible(lastEditedLineIdx).not()) {

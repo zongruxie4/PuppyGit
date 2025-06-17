@@ -304,10 +304,16 @@ class TextEditorState private constructor(
 
     suspend fun splitNewLine(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
-            targetIndexValidOrThrow(targetIndex, fields.size)
+            try {
+                targetIndexValidOrThrow(targetIndex, fields.size)
+            }catch (e: Exception) { // will throw when line dost, maybe changed by external or other cases, but it's fine, no need throw exception
+                MyLog.d(TAG, "TextEditorState.splitNewLine() err: ${e.stackTraceToString()}")
+                return
+            }
 
             if (!textFieldValue.text.contains('\n')) {
-                throw InvalidParameterException("textFieldValue doesn't contains newline")
+//                throw InvalidParameterException("textFieldValue doesn't contains newline")
+                return
             }
 
             val newText = textFieldValue.text
@@ -500,10 +506,16 @@ class TextEditorState private constructor(
 
     suspend fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
-            targetIndexValidOrThrow(targetIndex, fields.size)
+            try {
+                targetIndexValidOrThrow(targetIndex, fields.size)
+            }catch (e: Exception) { // will throw when line dost, maybe changed by external or other cases, but it's fine, no need throw exception
+                MyLog.d(TAG, "TextEditorState.updateField() err: ${e.stackTraceToString()}")
+                return
+            }
 
             if (textFieldValue.text.contains('\n')) {
-                throw InvalidParameterException("textFieldValue contains newline")  // contains new line应调用splitNewLine
+//                throw InvalidParameterException("textFieldValue contains newline")  // contains new line应调用splitNewLine
+                return
             }
 
             val newText = textFieldValue.text
@@ -656,9 +668,13 @@ class TextEditorState private constructor(
 
     suspend fun deleteNewLine(targetIndex: Int) {
         lock.withLock {
-            targetIndexValidOrThrow(targetIndex, fields.size)
+            try {
+                targetIndexValidOrThrow(targetIndex, fields.size)
+            }catch (e: Exception) { // will throw when line dost, maybe changed by external or other cases, but it's fine, no need throw exception
+                MyLog.d(TAG, "TextEditorState.deleteNewLine() err: ${e.stackTraceToString()}")
+            }
 
-            if (targetIndex == 0) {
+            if (targetIndex <= 0) {
                 return
             }
 
@@ -934,8 +950,8 @@ class TextEditorState private constructor(
     ):SelectFieldInternalRet {
         try {
             targetIndexValidOrThrow(targetIndex, init_fields.size)
-        }catch (e: Exception) { // should never throw
-            MyLog.e(TAG, "TextEditorState.selectFieldInternal() err: ${e.stackTraceToString()}")
+        }catch (e: Exception) { // will throw when line dost, maybe changed by external or other cases, but it's fine, no need throw exception
+            MyLog.d(TAG, "TextEditorState.selectFieldInternal() err: ${e.stackTraceToString()}")
         }
 
         val targetIndex = targetIndex.coerceAtMost(init_fields.lastIndex).coerceAtLeast(0)
@@ -1172,8 +1188,8 @@ class TextEditorState private constructor(
                 }
             }
 
-        }catch (_:Exception) {
-
+        }catch (e:Exception) {
+            MyLog.d(TAG, "TextEditorState.indexAndValueOf() err: ${e.stackTraceToString()}")
         }
 
         return retPair
