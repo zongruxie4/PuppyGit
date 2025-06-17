@@ -382,9 +382,12 @@ fun FileEditor(
                 // shit code start
                 //update soft keyboard visible state
                 SharedState.editor_softKeyboardIsVisible.value = UIHelper.isSoftkeyboardVisible()
+                val isOnPause = remember { mutableStateOf(false) }
 
+                // old version compose will call disposable effect and ON_PAUSE lifecycle together, but now changed behavior?
                 DisposableEffect(Unit) {
                     onDispose {
+                        isOnPause.value = false
                         MyLog.d(TAG, "FileEditor#DisposableEffect#onDispose: called, imeVisible=${SharedState.editor_softKeyboardIsVisible.value}")
                         ignoreFocusOnce.value = softKbVisibleWhenLeavingEditor.value.not() && SharedState.editor_softKeyboardIsVisible.value.not();
                         softKbVisibleWhenLeavingEditor.value = false
@@ -395,6 +398,7 @@ fun FileEditor(
                 }
 
                 LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+                    isOnPause.value = true
                     MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_PAUSE: called, imeVisible=${SharedState.editor_softKeyboardIsVisible.value}")
                     // 如果离开页面时，软键盘状态是隐藏，则切换回来后不弹出键盘
                     SharedState.editor_softKeyboardIsVisible.value.let {
@@ -403,6 +407,15 @@ fun FileEditor(
                     }
 
                     MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_PAUSE: called, ignoreFocusOnce=${ignoreFocusOnce.value}")
+
+                }
+
+                LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+                    if(isOnPause.value) {
+                        ignoreFocusOnce.value = softKbVisibleWhenLeavingEditor.value.not()  // if invisible, then ignore once popup soft keyboard
+                    }
+
+                    MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_RESUME: called, ignoreFocusOnce=${ignoreFocusOnce.value}")
 
                 }
                 // shit code end

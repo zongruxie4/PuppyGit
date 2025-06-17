@@ -141,16 +141,16 @@ internal fun MyTextField(
 
 
     if(focusThisLine) {
-        LaunchedEffect(Unit) {
+        LaunchedEffect(ignoreFocusOnce.value) {
             runCatching {
-                focusRequester.requestFocus()
-
                 if(ignoreFocusOnce.value) {
                     ignoreFocusOnce.value = false
                     // focus, but don't show the soft keyboard
                     hideSoftKeyboardForAWhile()
 
                     MyLog.d(TAG, "TextEditor#MyTextField: ignore focus once")
+                }else {
+                    focusRequester.requestFocus()
                 }
             }
         }
