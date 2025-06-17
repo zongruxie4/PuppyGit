@@ -20,24 +20,26 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 import java.io.File
+import kotlin.coroutines.cancellation.CancellationException
+
 
 private const val TAG = "FileChangeListener"
 
+private fun doActOrClearIgnoreOnce(state: MutableState<FileChangeListenerState>, act:()->Unit) {
+    if(state.value.ignoreOnceState) {
+        state.apply { value = value.copy(ignoreOnceState = false) }
+        MyLog.d(TAG, "#FileChangeListenerState: ignore file changed event once")
+    }else {
+        act()
+    }
+}
 
 @Parcelize
 data class FileChangeListenerState(
-    private val ignoreOnceState: Boolean = false,
+    internal val ignoreOnceState: Boolean = false,
 ) : Parcelable {
     companion object {
         fun ignoreOnce(state: MutableState<FileChangeListenerState>) = state.apply { value = value.copy(ignoreOnceState = true) }
-        fun doActOrClearIgnoreOnce(state: MutableState<FileChangeListenerState>, act:()->Unit) {
-            if(state.value.ignoreOnceState) {
-                state.apply { value = value.copy(ignoreOnceState = false) }
-                MyLog.d(TAG, "#FileChangeListenerState: ignore file changed event once")
-            }else {
-                act()
-            }
-        }
     }
 }
 
@@ -100,11 +102,11 @@ fun FileChangeListener(
                                 oldFileLen = newFileLen
                                 oldFileModified = newFileModified
 
-                                FileChangeListenerState.doActOrClearIgnoreOnce(state, onChange)
+                                doActOrClearIgnoreOnce(state, onChange)
                             }
                         }
-                    }catch(canceled: Exception){
-                        // task may be canceled, just ignore
+                    }catch(_: CancellationException){
+                        // task may be canceled normally, just ignore
 
                     }catch (e: Exception) {
                         MyLog.d(TAG, "listen change of file err: filePath='${filePath.value}', err=${e.stackTraceToString()}")
@@ -116,7 +118,7 @@ fun FileChangeListener(
                     override fun onChange(selfChange: Boolean) {
                         super.onChange(selfChange)
 
-                        FileChangeListenerState.doActOrClearIgnoreOnce(state, onChange)
+                        doActOrClearIgnoreOnce(state, onChange)
                     }
                 }.apply {
                     context.contentResolver.registerContentObserver(
