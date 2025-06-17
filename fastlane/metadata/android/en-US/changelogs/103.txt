@@ -8,3 +8,4 @@
 - improve UI (issue #66)
 - Automation: support set pull interval and push delay for each repo
 - Editor support Ctrl+S/Ctrl+W/Ctrl+F to save/close/find the file
+- Editor support auto reload when file changed by external

@@ -12,6 +12,7 @@
 - improve UI (issue #66)
 - Automation: support set pull interval and push delay for each repo
 - Editor support Ctrl+S/Ctrl+W/Ctrl+F to save/close/find the file
+- Editor support auto reload when file changed by external
 
 
 
@@ -25,6 +26,7 @@
 - 提升 UI (issue #66)
 - 自动化：支持为每个仓库设置拉取间隔和推送延迟
 - 编辑器支持 Ctrl+S/Ctrl+W/Ctrl+F 执行 保存/关闭/查找 文件
+- 编辑器支持在文件被外部修改时自动重载
 
 
 ---
