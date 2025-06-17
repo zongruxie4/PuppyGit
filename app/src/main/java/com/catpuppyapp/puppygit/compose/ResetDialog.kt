@@ -165,7 +165,8 @@ fun ResetDialog(
                 },
             ) {
                 Text(
-                    text = stringResource(id = R.string.reset),
+                    text = stringResource(R.string.reset),
+                    color = MyStyleKt.TextColor.danger()
                 )
             }
         },

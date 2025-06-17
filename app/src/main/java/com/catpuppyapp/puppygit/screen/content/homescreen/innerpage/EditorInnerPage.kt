@@ -1624,7 +1624,15 @@ fun EditorInnerPage(
     ) {
         val printFilePath = "filePath = '${editorPageShowingFilePath.value.ioPath}'"
 
-        if(isEdited.value.not() && isSaving.value.not()) {
+        if(
+            // 未在Editor点击 open as，用外部程序打开，显示询问是否重载的弹窗，
+            // 若显示此弹窗，用户可手动确认是否重载，所以没必要自动重载
+            showBackFromExternalAppAskReloadDialog.value.not()
+
+            && editorPageShowingFilePath.value.isNotBlank()
+            && isEdited.value.not()  // if edited, should not auto reload to avoid lost user changes
+            && isSaving.value.not()  // not saving in progress
+        ) {
             MyLog.d(TAG, "file is changed by external, will reload it, $printFilePath")
 
             val force = true
@@ -1645,9 +1653,6 @@ fun EditorInnerPage(
     // 此组件的一定会触发；若此组件的被触发，Activity的不一定触发。而且，由于compose是基于Activity创建的，
     // 所以compose的on pause会先被调用，而Activity的之后才会调用，如果想要检测Activity的on_pause的话需要注意这一点。
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
-        // ignore reload check once for file change listener to avoid conflict with ON_RESUME reload, it may cause a double reload
-        FileChangeListenerState.ignoreOnce(fileChangeListenerState)
-
         val requireShowMsgToUser = true
 
         val requireBackupContent = true
@@ -1666,7 +1671,7 @@ fun EditorInnerPage(
         //先调用保存文件再log，以免app崩溃时慢一拍导致没存上
         MyLog.d(TAG, "#Lifecycle.Event.ON_PAUSE: will save file: ${editorPageShowingFilePath.value}")
 
-        MyLog.d(TAG, "#Lifecycle.Event.ON_PAUSE: called")
+//        MyLog.d(TAG, "#Lifecycle.Event.ON_PAUSE: called")
 
     }
 
@@ -1683,19 +1688,6 @@ fun EditorInnerPage(
 
                 MyLog.d(TAG, "#Lifecycle.Event.ON_RESUME: Preview Mode is On, will reload file: ${previewPath}")
 
-            }else if(
-                // 未在Editor点击 open as，用外部程序打开，显示询问是否重载的弹窗，
-                // 若显示此弹窗，用户可手动确认是否重载，所以没必要自动重载
-                showBackFromExternalAppAskReloadDialog.value.not()
-
-                && editorPageShowingFilePath.value.isNotBlank()
-                && isEdited.value.not()  //isEdited为假则代表已经保存当前的内容
-            ) {
-                //非force如果检测最后修改时间和大小没变则不会重载，但如果之前打开出错，则会强制尝试重新加载文件，完美
-                val force = false
-                reloadFile(force)
-
-                MyLog.d(TAG, "#Lifecycle.Event.ON_RESUME: Edit Mode is On, will reload file: ${editorPageShowingFilePath.value}")
             }
         }
 
