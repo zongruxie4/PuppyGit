@@ -37,4 +37,6 @@ object SharedState {
 
     val editor_softKeyboardIsVisible = Box(false)
 
+    // used for ignore reload once when saving file by app self and detected by file change listener
+    val editorIgnoreReloadOnce = Box(false)
 }
