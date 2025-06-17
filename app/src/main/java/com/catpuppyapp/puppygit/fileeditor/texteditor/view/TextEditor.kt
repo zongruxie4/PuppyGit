@@ -813,42 +813,54 @@ fun TextEditor(
             showAcceptConfirmDialog.value=false
 
             doJobThenOffLoading {
-                var baseFields:List<TextFieldState>? = null
-                if(acceptOursState.value) {
-                    baseFields = textEditorState.setChangeTypeToFields(
-                        IntRange(start = startConflictLineIndexState.value, endInclusive = splitConflictLineIndexState.value).toList(),
-                        LineChangeType.ACCEPT_OURS,
-                        baseFields,
-                        applyNewSate = false,
-                    )
+                try {
+                    var baseFields:List<TextFieldState>? = null
 
+                    if(acceptOursState.value) {
+                        baseFields = textEditorState.setChangeTypeToFields(
+                            IntRange(start = startConflictLineIndexState.value, endInclusive = splitConflictLineIndexState.value).toList(),
+                            LineChangeType.ACCEPT_OURS,
+                            baseFields,
+                            applyNewSate = false,
+                        )
+
+                    }
+
+                    if(acceptTheirsState.value) {
+                        baseFields = textEditorState.setChangeTypeToFields(
+                            IntRange(start = splitConflictLineIndexState.value, endInclusive = endConflictLineIndexState.value).toList(),
+                            LineChangeType.ACCEPT_THEIRS,
+                            baseFields,
+                            applyNewSate = false,
+                        )
+                    }
+
+
+                    val indicesWillDel = if((acceptOursState.value && acceptTheirsState.value.not()) || (acceptOursState.value.not() && acceptTheirsState.value)){
+                        //accept ours/theirs
+                        val tmp = mutableListOf(delSingleIndex.value)
+                        tmp.addAll(IntRange(start = delStartIndex.value, endInclusive = delEndIndex.value).toList())
+                        tmp
+                    }else if(acceptOursState.value && acceptTheirsState.value) {  // accept both
+                        val tmp = mutableListOf(delSingleIndex.value)
+                        tmp.add(delStartIndex.value)
+                        tmp.add(delEndIndex.value)
+                        tmp
+                    }else {  // reject both
+                        IntRange(start = delStartIndex.value, endInclusive = delEndIndex.value).toList()
+                    }
+
+                    textEditorState.deleteLineByIndices(indicesWillDel, baseFields)
+
+                }catch (e: Exception) {
+                    val errPrefix = if(acceptOursState.value && acceptTheirsState.value) "Accept Both err"
+                    else if(acceptOursState.value.not() && acceptTheirsState.value) "Accept Theirs err"
+                    else if(acceptOursState.value && acceptTheirsState.value.not()) "Accept Ours err"
+                    else "Reject Both err";
+
+                    Msg.requireShowLongDuration("$errPrefix: ${e.localizedMessage}")
+                    MyLog.e(TAG, "TextEditor#AcceptConfirmDialog: $errPrefix: ${e.stackTraceToString()}")
                 }
-
-                if(acceptTheirsState.value) {
-                    baseFields = textEditorState.setChangeTypeToFields(
-                        IntRange(start = splitConflictLineIndexState.value, endInclusive = endConflictLineIndexState.value).toList(),
-                        LineChangeType.ACCEPT_THEIRS,
-                        baseFields,
-                        applyNewSate = false,
-                    )
-                }
-
-
-                val indicesWillDel = if((acceptOursState.value && acceptTheirsState.value.not()) || (acceptOursState.value.not() && acceptTheirsState.value)){
-                    //accept ours/theirs
-                    val tmp = mutableListOf(delSingleIndex.value)
-                    tmp.addAll(IntRange(start = delStartIndex.value, endInclusive = delEndIndex.value).toList())
-                    tmp
-                }else if(acceptOursState.value && acceptTheirsState.value) {  // accept both
-                    val tmp = mutableListOf(delSingleIndex.value)
-                    tmp.add(delStartIndex.value)
-                    tmp.add(delEndIndex.value)
-                    tmp
-                }else {  // reject both
-                    IntRange(start = delStartIndex.value, endInclusive = delEndIndex.value).toList()
-                }
-
-                textEditorState.deleteLineByIndices(indicesWillDel, baseFields)
             }
         }
     }
