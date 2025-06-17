@@ -52,7 +52,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
@@ -689,7 +688,7 @@ fun TextEditor(
         val curStartsWithSplit = curLineText.startsWith(settings.editor.conflictSplitStr)
         val curStartsWithEnd = curLineText.startsWith(settings.editor.conflictEndStr)
         if(!(curStartsWithStart || curStartsWithSplit || curStartsWithEnd)) {
-            Msg.requireShow(activityContext.getString(R.string.invalid_conflict_block))
+            Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_conflict_block))
             return@label
         }
 
@@ -712,7 +711,7 @@ fun TextEditor(
         val (firstIndex, _) = textEditorState.indexAndValueOf(startIndex=index, direction=firstFindDirection, predicate={it.startsWith(firstExpectStr)}, includeStartIndex = false)
 
         if(firstIndex == -1) {
-            Msg.requireShow(activityContext.getString(R.string.invalid_conflict_block))
+            Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_conflict_block))
             return@label
         }
 
@@ -735,8 +734,8 @@ fun TextEditor(
         }
         val (secondIndex, _) = textEditorState.indexAndValueOf(startIndex=secondStartFindIndexAt, direction=secondFindDirection, predicate={it.startsWith(secondExpectStr)}, includeStartIndex = false)
 
-        if(secondIndex==-1) {
-            Msg.requireShow(activityContext.getString(R.string.invalid_conflict_block))
+        if(secondIndex == -1) {
+            Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_conflict_block))
             return@label
         }
 

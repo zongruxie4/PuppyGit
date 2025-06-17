@@ -1146,7 +1146,7 @@ class TextEditorState private constructor(
         var retPair = Pair(-1, "")
 
         try {
-            val range = if(direction== FindDirection.UP) {
+            val range = if(direction == FindDirection.UP) {
                 val endIndex = if(includeStartIndex) startIndex else (startIndex-1)
                 if(!isGoodIndexForList(endIndex, list)) {
                     throw RuntimeException("bad index range")

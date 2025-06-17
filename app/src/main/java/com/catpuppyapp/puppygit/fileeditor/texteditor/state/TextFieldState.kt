@@ -99,6 +99,10 @@ enum class LineChangeType {
     NEW,
     UPDATED,
 
+    // represent create by accept ours/theirs when merge mode on
+    ACCEPT_OURS,
+    ACCEPT_THEIRS,
+
     //逻辑上来说其实还应该有个deleted，但删了就看不到了，无意义，所以实际不需要
 
 }
