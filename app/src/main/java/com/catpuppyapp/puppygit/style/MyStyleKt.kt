@@ -394,4 +394,60 @@ object MyStyleKt{
         }
     }
 
+    object ConflictBlock {
+        private val conflictOursBlockBgColorInDarkThem =  Theme.Orange.copy(alpha = 0.1f)
+        private val conflictOursBlockBgColorInLightThem =  Theme.Orange.copy(alpha = 0.2f)
+        fun getConflictOursBlockBgColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+            return if(inDarkTheme) conflictOursBlockBgColorInDarkThem else conflictOursBlockBgColorInLightThem
+        }
+
+        private val conflictTheirsBgColorInDarkTheme = Color.Magenta.copy(alpha = 0.1f)
+        private val conflictTheirsBgColorInLightTheme = Color.Magenta.copy(alpha = 0.2f)
+        fun getConflictTheirsBlockBgColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+            return if(inDarkTheme) conflictTheirsBgColorInDarkTheme else conflictTheirsBgColorInLightTheme
+        }
+
+        private val conflictStartLineBgColorInDarkTheme = Theme.Orange.copy(alpha = 0.2f)
+        private val conflictStartLineBgColorInLightTheme = Theme.Orange.copy(alpha = 0.4f)
+        fun getConflictStartLineBgColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+            return if(inDarkTheme) conflictStartLineBgColorInDarkTheme else conflictStartLineBgColorInLightTheme
+        }
+
+        private val conflictSplitLineBgColorInDarkTheme = Theme.darkLightBlue.copy(alpha = 0.4f)
+        private val conflictSplitLineBgColorInLightTheme = Color.Blue.copy(alpha = 0.2f)
+        fun getConflictSplitLineBgColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+            return if(inDarkTheme) conflictSplitLineBgColorInDarkTheme else conflictSplitLineBgColorInLightTheme
+        }
+
+        private val conflictEndLineBgColorInDarkTheme = Color.Magenta.copy(alpha = 0.2f)
+        private val conflictEndLineBgColorInLightTheme = Color.Magenta.copy(alpha = 0.4f)
+        fun getConflictEndLineBgColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+            return if(inDarkTheme) conflictEndLineBgColorInDarkTheme else conflictEndLineBgColorInLightTheme
+        }
+
+        private val acceptOursIconColorInDarkTheme = Theme.Orange.copy(.4f)
+        private val acceptOursIconColorInLightTheme = Theme.Orange.copy(.8f)
+        fun getAcceptOursIconColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+            return if(inDarkTheme) acceptOursIconColorInDarkTheme else acceptOursIconColorInLightTheme
+        }
+
+        private val acceptTheirsIconColorInDarkTheme = Color.Magenta.copy(.4f)
+        private val acceptTheirsIconColorInLightTheme = Color.Magenta.copy(.8f)
+        fun getAcceptTheirsIconColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+            return if(inDarkTheme) acceptTheirsIconColorInDarkTheme else acceptTheirsIconColorInLightTheme
+        }
+
+        private val acceptBothIconColorInDarkTheme = Theme.darkLightBlue.copy(alpha = 0.6f)
+        private val acceptBothIconColorInLightTheme = Color.Blue.copy(.8f)
+        fun getAcceptBothIconColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+            return if(inDarkTheme) acceptBothIconColorInDarkTheme else acceptBothIconColorInLightTheme
+        }
+
+        private val rejectBothIconColorInDarkTheme = Color.Red.copy(.4f)
+        private val rejectBothIconColorInLightTheme = Color.Red.copy(.8f)
+        fun getRejectBothIconColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+            return if(inDarkTheme) rejectBothIconColorInDarkTheme else rejectBothIconColorInLightTheme
+        }
+
+    }
 }

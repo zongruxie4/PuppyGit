@@ -201,16 +201,16 @@ fun TextEditor(
     val density = LocalDensity.current
     val deviceConfiguration = AppModel.getCurActivityConfig()
 
-    val conflictOursBlockBgColor = UIHelper.getConflictOursBlockBgColor()
-    val conflictTheirsBlockBgColor = UIHelper.getConflictTheirsBlockBgColor()
-    val conflictStartLineBgColor = UIHelper.getConflictStartLineBgColor()
-    val conflictSplitLineBgColor = UIHelper.getConflictSplitLineBgColor()
-    val conflictEndLineBgColor = UIHelper.getConflictEndLineBgColor()
+    val conflictOursBlockBgColor = MyStyleKt.ConflictBlock.getConflictOursBlockBgColor()
+    val conflictTheirsBlockBgColor = MyStyleKt.ConflictBlock.getConflictTheirsBlockBgColor()
+    val conflictStartLineBgColor = MyStyleKt.ConflictBlock.getConflictStartLineBgColor()
+    val conflictSplitLineBgColor = MyStyleKt.ConflictBlock.getConflictSplitLineBgColor()
+    val conflictEndLineBgColor = MyStyleKt.ConflictBlock.getConflictEndLineBgColor()
 
-    val acceptOursBtnColor = UIHelper.getAcceptOursIconColor()
-    val acceptTheirsBtnColor = UIHelper.getAcceptTheirsIconColor()
-    val acceptBothBtnColor = UIHelper.getAcceptBothIconColor()
-    val rejectBothBtnColor = UIHelper.getRejectBothIconColor()
+    val acceptOursBtnColor = MyStyleKt.ConflictBlock.getAcceptOursIconColor()
+    val acceptTheirsBtnColor = MyStyleKt.ConflictBlock.getAcceptTheirsIconColor()
+    val acceptBothBtnColor = MyStyleKt.ConflictBlock.getAcceptBothIconColor()
+    val rejectBothBtnColor = MyStyleKt.ConflictBlock.getRejectBothIconColor()
 
     val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current
