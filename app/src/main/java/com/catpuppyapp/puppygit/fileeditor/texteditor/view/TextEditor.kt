@@ -69,6 +69,7 @@ import com.catpuppyapp.puppygit.dev.bug_Editor_GoToColumnCantHideKeyboard_Fixed
 import com.catpuppyapp.puppygit.dev.bug_Editor_SelectColumnRangeOfLine_Fixed
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.FindDirection
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.LineChangeType
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.SelectionOption
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
@@ -669,6 +670,9 @@ fun TextEditor(
 
     val delStartIndex = rememberSaveable { mutableIntStateOf(-1) }
     val delEndIndex = rememberSaveable { mutableIntStateOf(-1) }
+    val startConflictLineIndexState = rememberSaveable { mutableIntStateOf(-1) }
+    val splitConflictLineIndexState = rememberSaveable { mutableIntStateOf(-1) }
+    val endConflictLineIndexState = rememberSaveable { mutableIntStateOf(-1) }
     val delSingleIndex = rememberSaveable { mutableIntStateOf(-1) }
     val acceptOursState = rememberSaveable { mutableStateOf(false) }
     val acceptTheirsState = rememberSaveable { mutableStateOf(false) }
@@ -743,6 +747,10 @@ fun TextEditor(
         val splitConflictLineIndex = if(curStartsWithStart || curStartsWithEnd) firstIndex else index  // this is split conflict str index
         val endConflictLineIndex = if(curStartsWithStart || curStartsWithSplit) secondIndex else index  // this is end conflict str index
 
+        startConflictLineIndexState.value = startConflictLineIndex
+        splitConflictLineIndexState.value = splitConflictLineIndex
+        endConflictLineIndexState.value = endConflictLineIndex
+
         // special case: start may larger than end index, e.g. will keep 30 to 20, but, only shown wrong, will not err when deleting
         // 特殊情况：start index可能大于end index，例如：30 到 20，不过只是显示有误，实际执行无误
         if(acceptOurs && acceptTheirs.not()) {
@@ -804,7 +812,28 @@ fun TextEditor(
         ) {
             showAcceptConfirmDialog.value=false
 
-            doJobThenOffLoading{
+            doJobThenOffLoading {
+                var baseFields:List<TextFieldState>? = null
+                if(acceptOursState.value) {
+                    baseFields = textEditorState.setChangeTypeToFields(
+                        IntRange(start = startConflictLineIndexState.value, endInclusive = splitConflictLineIndexState.value).toList(),
+                        LineChangeType.ACCEPT_OURS,
+                        baseFields,
+                        applyNewSate = false,
+                    )
+
+                }
+
+                if(acceptTheirsState.value) {
+                    baseFields = textEditorState.setChangeTypeToFields(
+                        IntRange(start = splitConflictLineIndexState.value, endInclusive = endConflictLineIndexState.value).toList(),
+                        LineChangeType.ACCEPT_THEIRS,
+                        baseFields,
+                        applyNewSate = false,
+                    )
+                }
+
+
                 val indicesWillDel = if((acceptOursState.value && acceptTheirsState.value.not()) || (acceptOursState.value.not() && acceptTheirsState.value)){
                     //accept ours/theirs
                     val tmp = mutableListOf(delSingleIndex.value)
@@ -819,7 +848,7 @@ fun TextEditor(
                     IntRange(start = delStartIndex.value, endInclusive = delEndIndex.value).toList()
                 }
 
-                textEditorState.deleteLineByIndices(indicesWillDel)
+                textEditorState.deleteLineByIndices(indicesWillDel, baseFields)
             }
         }
     }

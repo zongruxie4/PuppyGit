@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
+import com.catpuppyapp.puppygit.utils.UIHelper
 
 
 private val lineChangeType_NEW_dark =  Color(0xFF33691E)
@@ -87,9 +88,14 @@ class TextFieldState(
             if(inDarkTheme) lineChangeType_NEW_dark else lineChangeType_NEW
         }else if(changeType == LineChangeType.UPDATED) {
             if(inDarkTheme) lineChangeType_UPDATED_dark else lineChangeType_UPDATED
+        }else if(changeType == LineChangeType.ACCEPT_OURS) {
+            UIHelper.getConflictOursBlockBgColor(inDarkTheme).copy(alpha = .8f)
+        }else if(changeType == LineChangeType.ACCEPT_THEIRS) {
+            UIHelper.getConflictTheirsBlockBgColor(inDarkTheme).copy(alpha = .8f)
         }else {
             //和背景颜色一样，所以等应该看不出差别，如果能显示出差异，可改成透明
-            Color.Unspecified
+//            Color.Unspecified
+            Color.Transparent
         }
     }
 }

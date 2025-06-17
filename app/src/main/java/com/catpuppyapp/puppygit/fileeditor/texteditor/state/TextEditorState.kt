@@ -20,6 +20,7 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.forEachBetter
+import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
@@ -1179,18 +1180,19 @@ class TextEditorState private constructor(
 
     }
 
-    suspend fun deleteLineByIndices(indices:List<Int>) {
+    suspend fun deleteLineByIndices(indices:List<Int>, baseFields:List<TextFieldState>?) {
         if(indices.isEmpty()) {
             return
         }
 
         lock.withLock {
-            val newList = fields.filterIndexed {index, _ ->
-                !indices.contains(index)
+            val newFields = mutableListOf<TextFieldState>();
+            (baseFields ?: fields).forEachIndexedBetter { index, field ->
+                if(!indices.contains(index)) {
+                    newFields.add(field)
+                }
             }
 
-            val newFields = mutableListOf<TextFieldState>()
-            newFields.addAll(newList)
 
             isContentEdited?.value=true
             editorPageIsContentSnapshoted?.value= false
@@ -1632,8 +1634,36 @@ class TextEditorState private constructor(
         }
     }
 
+    suspend fun setChangeTypeToFields(
+        indices: List<Int>,
+        changeType: LineChangeType,
+        baseFields:List<TextFieldState>?,
+        applyNewSate:Boolean,
+    ):List<TextFieldState>? {
+        if(indices.isEmpty()) return null;
 
+        lock.withLock {
+            val newFields = (baseFields ?: fields).toMutableList()
+            indices.forEachBetter forEach@{ idx ->
+                val textField = newFields.getOrNull(idx) ?: return@forEach;
+                newFields[idx] = textField.copy(changeType = changeType)
+            }
 
+            if(applyNewSate) {
+                val newState = internalCreate(
+                    fields = newFields,
+                    fieldsId = fieldsId,
+                    selectedIndices = selectedIndices,
+                    isMultipleSelectionMode = isMultipleSelectionMode,
+                    focusingLineIdx = focusingLineIdx
+                )
+
+                onChanged(newState, null, false)
+            }
+
+            return newFields
+        }
+    }
 
 
     companion object {

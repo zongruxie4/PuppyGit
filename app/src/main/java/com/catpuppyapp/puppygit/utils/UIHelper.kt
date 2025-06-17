@@ -282,38 +282,38 @@ object UIHelper {
     }
 
 
-    fun getConflictOursBlockBgColor():Color {
-        return if(Theme.inDarkTheme) Theme.Orange.copy(alpha = 0.1f) else Theme.Orange.copy(alpha = 0.2f)
+    fun getConflictOursBlockBgColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+        return if(inDarkTheme) Theme.Orange.copy(alpha = 0.1f) else Theme.Orange.copy(alpha = 0.2f)
     }
 
-    fun getConflictTheirsBlockBgColor():Color {
-        return if(Theme.inDarkTheme) Color.Magenta.copy(alpha = 0.1f) else Color.Magenta.copy(alpha = 0.2f)
+    fun getConflictTheirsBlockBgColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+        return if(inDarkTheme) Color.Magenta.copy(alpha = 0.1f) else Color.Magenta.copy(alpha = 0.2f)
     }
 
-    fun getConflictStartLineBgColor():Color {
-        return if(Theme.inDarkTheme) Theme.Orange.copy(alpha = 0.2f) else Theme.Orange.copy(alpha = 0.4f)
+    fun getConflictStartLineBgColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+        return if(inDarkTheme) Theme.Orange.copy(alpha = 0.2f) else Theme.Orange.copy(alpha = 0.4f)
     }
 
-    fun getConflictSplitLineBgColor():Color {
-        return if(Theme.inDarkTheme) Theme.darkLightBlue.copy(alpha = 0.4f) else Color.Blue.copy(alpha = 0.2f)
+    fun getConflictSplitLineBgColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+        return if(inDarkTheme) Theme.darkLightBlue.copy(alpha = 0.4f) else Color.Blue.copy(alpha = 0.2f)
     }
 
-    fun getConflictEndLineBgColor():Color {
-        return if(Theme.inDarkTheme) Color.Magenta.copy(alpha = 0.2f) else Color.Magenta.copy(alpha = 0.4f)
+    fun getConflictEndLineBgColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+        return if(inDarkTheme) Color.Magenta.copy(alpha = 0.2f) else Color.Magenta.copy(alpha = 0.4f)
     }
 
-    fun getAcceptOursIconColor():Color {
-        return if(Theme.inDarkTheme) Theme.Orange.copy(.4f) else Theme.Orange.copy(.8f)
+    fun getAcceptOursIconColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+        return if(inDarkTheme) Theme.Orange.copy(.4f) else Theme.Orange.copy(.8f)
     }
 
-    fun getAcceptTheirsIconColor():Color {
-        return if(Theme.inDarkTheme) Color.Magenta.copy(.4f) else Color.Magenta.copy(.8f)
+    fun getAcceptTheirsIconColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+        return if(inDarkTheme) Color.Magenta.copy(.4f) else Color.Magenta.copy(.8f)
     }
-    fun getAcceptBothIconColor():Color {
-        return if(Theme.inDarkTheme) Theme.darkLightBlue.copy(alpha = 0.6f) else Color.Blue.copy(.8f)
+    fun getAcceptBothIconColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+        return if(inDarkTheme) Theme.darkLightBlue.copy(alpha = 0.6f) else Color.Blue.copy(.8f)
     }
-    fun getRejectBothIconColor():Color {
-        return if(Theme.inDarkTheme) Color.Red.copy(.4f) else Color.Red.copy(.8f)
+    fun getRejectBothIconColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+        return if(inDarkTheme) Color.Red.copy(.4f) else Color.Red.copy(.8f)
     }
 
 
