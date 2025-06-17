@@ -3,9 +3,11 @@ package com.catpuppyapp.puppygit.utils
 import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
@@ -482,6 +484,12 @@ object UIHelper {
         return with(density) { (keyboardHeight.toDp().value.toInt() + offsetInDp).coerceAtLeast(0).dp }
     }
 
+
+    @OptIn(ExperimentalLayoutApi::class)
+    @Composable
+    fun isSoftkeyboardVisible():Boolean {
+        return WindowInsets.isImeVisible
+    }
 
     @Composable
     fun getNaviBarsPadding(

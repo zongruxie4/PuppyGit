@@ -377,7 +377,7 @@ fun FileEditor(
                 }
             } else {
                 //更新键盘显示状态
-                SharedState.editor_softKeyboardIsVisible.value = WindowInsets.isImeVisible
+                SharedState.editor_softKeyboardIsVisible.value = UIHelper.isSoftkeyboardVisible()
 
                 DisposableEffect(Unit) {
                     onDispose {

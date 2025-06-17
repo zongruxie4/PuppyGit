@@ -89,7 +89,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
-import com.catpuppyapp.puppygit.utils.hideForAWhile
+import com.catpuppyapp.puppygit.utils.hideWhenTimeout
 import com.catpuppyapp.puppygit.utils.parseLineAndColumn
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
@@ -933,6 +933,16 @@ fun TextEditor(
         }
     }
 
+
+    // this can't immediately got keyboard hide or shown, so disabled
+//    val softKbIsVisible = UIHelper.isSoftkeyboardVisible().let { remember(it) { derivedStateOf { it } } }
+
+    val hideSoftKeyboardForAWhile = {
+//        keyboardController?.hideForAWhile()
+        keyboardController?.hideWhenTimeout()
+        Unit
+    }
+
     CompositionLocalProvider(
 //        LocalTextInputService provides (if(allowKeyboard.value && !readOnlyMode) LocalTextInputService.current else null),  //为null可阻止弹出键盘
         LocalTextSelectionColors provides (if(!needShowCursorHandle.value) customTextSelectionColors_hideCursorHandle else if(inDarkTheme) customTextSelectionColors_darkMode else customTextSelectionColors),
@@ -1099,7 +1109,7 @@ fun TextEditor(
                                 .then(modifier)
                         ) {
                             MyTextField(
-                                softKeyboardController = keyboardController,
+                                hideSoftKeyboardForAWhile = hideSoftKeyboardForAWhile,
                                 ignoreFocusOnce = ignoreFocusOnce,
                                 //搜索模式已经没必要聚焦了，因为不需要光标定位行了，直接高亮关键字了，而且搜索模式会把focusingLineIdx设为null以避免聚焦行弹出键盘误判内容已改变从而触发重组导致高亮关键字功能失效
 //                                    focusThisLine = if(textEditorState.isContentEdited.value) index == textEditorState.focusingLineIdx else false,
@@ -1378,7 +1388,8 @@ fun TextEditor(
                                 columnStartIndexInclusive = lastEditedPos.columnIndex
                             )
 
-                            keyboardController?.hideForAWhile()
+
+                            hideSoftKeyboardForAWhile()
 
                         }
                     }
