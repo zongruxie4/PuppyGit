@@ -48,6 +48,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.FileChangeListener
+import com.catpuppyapp.puppygit.compose.FileChangeListenerState
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -59,6 +60,7 @@ import com.catpuppyapp.puppygit.compose.PageCenterIconButton
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
+import com.catpuppyapp.puppygit.compose.rememberFileChangeListenerState
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -316,6 +318,8 @@ fun EditorInnerPage(
 
     }
 
+    val fileChangeListenerState = rememberFileChangeListenerState()
+
 
     editorOpenFileErr.value = remember {
         derivedStateOf {editorPageShowingFileHasErr.value && !editorPageShowingFileIsReady.value}
@@ -345,7 +349,7 @@ fun EditorInnerPage(
         doJobThenOffLoading {
             saveLock.withLock {
                 if(needAndReadyDoSave()) {
-                    SharedState.editorIgnoreReloadOnce.value = true
+                    FileChangeListenerState.ignoreOnce(fileChangeListenerState)
 
                     doSave()
                     MyLog.d(TAG, "#doSaveInCoroutine: file saved")
@@ -362,7 +366,7 @@ fun EditorInnerPage(
             //离开页面时，保存文件
         saveLock.withLock {
             if(needAndReadyDoSave()) {
-                SharedState.editorIgnoreReloadOnce.value = true
+                FileChangeListenerState.ignoreOnce(fileChangeListenerState)
 
                 doSave()
                 MyLog.d(TAG, "#doSaveNoCoroutine: file saved")
@@ -382,7 +386,7 @@ fun EditorInnerPage(
             saveLock.withLock {
                 if(needAndReadyDoSave()) {
                     try {
-                        SharedState.editorIgnoreReloadOnce.value = true
+                        FileChangeListenerState.ignoreOnce(fileChangeListenerState)
 
                         isSaving.value=true
 
@@ -1613,25 +1617,20 @@ fun EditorInnerPage(
 //    }
 
 
-
     FileChangeListener(
-        activityContext,
-        editorPageShowingFilePath.value,
-    ) { newFileLen, newLastModified ->
+        state = fileChangeListenerState,
+        context = activityContext,
+        path = editorPageShowingFilePath.value,
+    ) {
         val printFilePath = "filePath = '${editorPageShowingFilePath.value.ioPath}'"
 
-        if(SharedState.editorIgnoreReloadOnce.value) {
-            SharedState.editorIgnoreReloadOnce.value = false
-            MyLog.d(TAG, "file is changed by internal, ignore reload once, $printFilePath")
-        }else {
-            if(isEdited.value.not() && isSaving.value.not()) {
-                MyLog.d(TAG, "file is changed by external, will reload it, $printFilePath")
+        if(isEdited.value.not() && isSaving.value.not()) {
+            MyLog.d(TAG, "file is changed by external, will reload it, $printFilePath")
 
-                val force = true
-                reloadFile(force)
-            }else {
-                MyLog.d(TAG, "file is changed by external, but currently app was modified file also, so will not reload it, $printFilePath")
-            }
+            val force = true
+            reloadFile(force)
+        }else {
+            MyLog.d(TAG, "file is changed by external, but currently app was modified file also, so will not reload it, $printFilePath")
         }
     }
 
@@ -1647,7 +1646,7 @@ fun EditorInnerPage(
     // 所以compose的on pause会先被调用，而Activity的之后才会调用，如果想要检测Activity的on_pause的话需要注意这一点。
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
         // ignore reload check once for file change listener to avoid conflict with ON_RESUME reload, it may cause a double reload
-        SharedState.editorIgnoreReloadOnce.value = true
+        FileChangeListenerState.ignoreOnce(fileChangeListenerState)
 
         val requireShowMsgToUser = true
 

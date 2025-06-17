@@ -33,6 +33,7 @@ data class FileChangeListenerState(
         fun doActOrClearIgnoreOnce(state: MutableState<FileChangeListenerState>, act:()->Unit) {
             if(state.value.ignoreOnceState) {
                 state.apply { value = value.copy(ignoreOnceState = false) }
+                MyLog.d(TAG, "#FileChangeListenerState: ignore file changed event once")
             }else {
                 act()
             }
