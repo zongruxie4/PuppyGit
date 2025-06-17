@@ -108,8 +108,8 @@ fun FileEditor(
     updateLastCursorAtColumn:(Int)->Unit,
     getLastCursorAtColumnValue:()->Int,
 
-    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
-    softKbVisibleWhenLeavingEditor: CustomBoxSaveable<Boolean>,
+    ignoreFocusOnce: MutableState<Boolean>,
+    softKbVisibleWhenLeavingEditor: MutableState<Boolean>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     isSubPageMode:Boolean,

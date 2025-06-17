@@ -170,7 +170,7 @@ fun TextEditor(
     getLastCursorAtColumnValue:()->Int,
 
 
-    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
+    ignoreFocusOnce: MutableState<Boolean>,
     undoStack:UndoStack,
     curPreviewScrollState: ScrollState,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,

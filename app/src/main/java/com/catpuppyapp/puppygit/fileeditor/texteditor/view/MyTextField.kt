@@ -43,7 +43,7 @@ private const val TAG = "MyTextField"
 @Composable
 internal fun MyTextField(
     hideSoftKeyboardForAWhile: ()->Unit,
-    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
+    ignoreFocusOnce: MutableState<Boolean>,
     focusThisLine:Boolean,
     textFieldState: TextFieldState,
     enabled: Boolean,
