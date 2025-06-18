@@ -94,7 +94,6 @@ import com.catpuppyapp.puppygit.utils.parseLineAndColumn
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 
@@ -225,10 +224,19 @@ fun TextEditor(
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
     val conflictKeyword = remember(settings.editor.conflictStartStr) { mutableStateOf(settings.editor.conflictStartStr) }
 
-    val lineVisibleMap = mutableCustomStateOf(stateKeyTag, "lineVisibleMap") { ConcurrentMap<Int, Boolean>() }
-    val setLineIndexToVisible = {lineIndex:Int -> lineVisibleMap.value.put(lineIndex, true)}
-    val setLineIndexToInvisible = {lineIndex:Int -> lineVisibleMap.value.put(lineIndex, false)}
-    val isLineIdxVisible = {lineIndex:Int -> lineVisibleMap.value.getOrDefault(lineIndex, false)}
+    val scrollIfIndexInvisible = { index:Int ->
+        try {
+            val first = listState.firstVisibleItemIndex
+            val end = listState.layoutInfo.visibleItemsInfo.maxByOrNull { it.index }?.index
+            //如果指定行不在可见范围内，滚动到指定行以使其可见
+            if (end != null && (index < first || index > end)) {
+                //滚动到指定行
+                UIHelper.scrollToItem(scope, listState, index)
+            }
+        }catch (e: Exception) {
+            MyLog.d(TAG, "#scrollIfIndexInvisible err: ${e.stackTraceToString()}")
+        }
+    }
 
 
     //最后显示屏幕范围的第一行的索引
@@ -637,7 +645,7 @@ fun TextEditor(
                             text = stringResource(R.string.first_line),
                             modifier = MyStyleKt.ClickableText.modifier.clickable {
                                 // selection to length of text field for make user append ':column' more convenient
-                                goToLineValue.value = firstLine.let{ TextFieldValue(it, selection = TextRange(it.length)) }
+                                goToLineValue.value = firstLine.let { TextFieldValue(it, selection = TextRange(it.length)) }
                             },
                             fontWeight = FontWeight.Light
                         )
@@ -647,7 +655,7 @@ fun TextEditor(
                         ClickableText(
                             text = stringResource(R.string.last_line),
                             modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                goToLineValue.value = lastLine.let {TextFieldValue(it, selection = TextRange(it.length)) }
+                                goToLineValue.value = lastLine.let { TextFieldValue(it, selection = TextRange(it.length)) }
                             },
                             fontWeight = FontWeight.Light
                         )
@@ -1020,15 +1028,6 @@ fun TextEditor(
                         textEditorState.isMultipleSelectionMode,
 
                     ) { modifier ->
-                        LaunchedEffect(Unit) {
-                            setLineIndexToVisible(index)
-                        }
-
-                        DisposableEffect(Unit) {
-                            onDispose {
-                                setLineIndexToInvisible(index)
-                            }
-                        }
 
                         // FileEditor里的innerTextFiled()会执行这的代码
                         Box(
@@ -1064,7 +1063,7 @@ fun TextEditor(
                                 // see: https://developer.android.com/develop/ui/compose/touch-input/keyboard-input/commands
                                 .onPreviewKeyEvent opke@{ keyEvent ->
                                     // return true to stop key event propaganda
-                                    if(keyEvent.type != KeyEventType.KeyDown) {
+                                    if (keyEvent.type != KeyEventType.KeyDown) {
                                         return@opke false
                                     }
 
@@ -1118,6 +1117,9 @@ fun TextEditor(
                                 .then(modifier)
                         ) {
                             MyTextField(
+                                scrollIfInvisible = {
+                                    scrollIfIndexInvisible(index)
+                                },
                                 disableSoftKb = disableSoftKb.value,
                                 readOnly = readOnlyMode,
                                 //搜索模式已经没必要聚焦了，因为不需要光标定位行了，直接高亮关键字了，而且搜索模式会把focusingLineIdx设为null以避免聚焦行弹出键盘误判内容已改变从而触发重组导致高亮关键字功能失效
@@ -1295,7 +1297,7 @@ fun TextEditor(
                                 indication = null
                             ) {
                                 //非选择模式，点空白区域，聚焦最后一行
-                                if(textEditorState.isMultipleSelectionMode.not()) {
+                                if (textEditorState.isMultipleSelectionMode.not()) {
                                     doJobThenOffLoading {
                                         //点击空白区域定位到最后一行最后一个字符后面
                                         //第1个参数是行索引；第2个参数是当前行的哪个位置
@@ -1389,9 +1391,8 @@ fun TextEditor(
                             // if target line invisible, scroll to it, e.g. edited line 100 then scroll to line 1 then quit,
                             //   in that case, when next time open file, will scroll to line 1 first, but when reached here, will found line 100 is invisible,
                             //   then need one more scroll to make line 100 visible
-                            if(isLineIdxVisible(lastEditedLineIdx).not()) {
-                                UIHelper.scrollToItem(scope, listState, lastEditedLineIdx)
-                            }
+                            scrollIfIndexInvisible(lastEditedLineIdx)
+
 
                             //定位到指定列。注意：会弹出键盘！没找到好的不弹键盘的方案，所以我把定位列功能默认禁用了
                             textEditorState.selectField(
@@ -1461,16 +1462,7 @@ fun TextEditor(
 //                    val first = lazyColumnState.layoutInfo.visibleItemsInfo.minBy { it.index }.index
 //                    lastFirstVisibleLineIndexState = first
 
-                            val first = listState.firstVisibleItemIndex
-//                    if(debugModeOn) { //期望 true，结果 true，测试通过
-//                        println("firstLineIndexState.value == first:"+(firstLineIndexState.value == first))
-//                    }
-                            val end = listState.layoutInfo.visibleItemsInfo.maxBy { it.index }.index
-                            //如果指定行不在可见范围内，滚动到指定行以使其可见
-                            if (index < first || index > end) {
-                                //滚动到指定行
-                                UIHelper.scrollToItem(scope, listState, index)
-                            }
+                            scrollIfIndexInvisible(index)
                         }
                     }
                 }

@@ -42,6 +42,7 @@ private const val TAG = "MyTextField"
 
 @Composable
 internal fun MyTextField(
+    scrollIfInvisible:()->Unit,
     disableSoftKb:Boolean,
     readOnly:Boolean,
     focusThisLine:Boolean,
@@ -95,7 +96,11 @@ internal fun MyTextField(
                 //存在选中文本时，显示光标拖手和背景颜色（handle
                 needShowCursorHandle.value = it.selection.start != it.selection.end
 
+                // no change
                 if (currentTextField == it) return@BasicTextField
+
+                // scroll if invisible
+                scrollIfInvisible()
 
                 if (it.text.contains('\n')) onContainNewLine(it) else onUpdateText(it)
             },
