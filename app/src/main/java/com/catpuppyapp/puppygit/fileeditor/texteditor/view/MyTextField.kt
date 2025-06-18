@@ -158,9 +158,9 @@ internal fun MyTextField(
 
 
 
-    LaunchedEffect(Unit) {
-        runCatching {
-            if(focusThisLine) {
+    if(focusThisLine) {
+        LaunchedEffect(Unit) {
+            runCatching {
                 focusRequester.requestFocus()
             }
         }
