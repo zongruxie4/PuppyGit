@@ -2,7 +2,9 @@ package com.catpuppyapp.puppygit.ui.theme
 
 import android.content.Context
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -95,15 +97,15 @@ fun PuppyGitAndroidTheme(
             val context = LocalContext.current
             if (darkTheme) {
                 Theme.inDarkTheme = true;
-                dynamicDarkColorScheme(context)
+                getDynamicColor(true, context)
             }else {
-                Theme.inDarkTheme=false
-                dynamicLightColorScheme(context)
+                Theme.inDarkTheme = false
+                getDynamicColor(false, context)
             }
         }
 
         darkTheme -> {
-            Theme.inDarkTheme=true;
+            Theme.inDarkTheme = true;
             DarkColorScheme
         }
 
@@ -136,4 +138,18 @@ fun PuppyGitAndroidTheme(
         typography = Typography,
         content = content
     )
+}
+
+@RequiresApi(Build.VERSION_CODES.S)
+@Composable
+private fun getDynamicColor(inDarkTheme: Boolean, context: Context): ColorScheme {
+    return (if(inDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)).let {
+        // default primary color maybe will cause difficult to distinguish, so use secondary color instead of it
+        it.copy(
+            primary = it.secondary,
+            primaryContainer = it.secondaryContainer,
+            onPrimary = it.onSecondary,
+            onPrimaryContainer = it.onSecondaryContainer
+        )
+    }
 }

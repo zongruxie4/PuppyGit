@@ -65,7 +65,7 @@ fun drawerContent(
                 modifier = m,
 
                 //设置选中条目背景颜色
-                colors = NavigationDrawerItemDefaults.colors(selectedContainerColor = MaterialTheme.colorScheme.inversePrimary),
+                colors = NavigationDrawerItemDefaults.colors(selectedContainerColor = MaterialTheme.colorScheme.primaryContainer),
                 icon = {
                     Icon(imageVector = drawIconList[index], contentDescription = text)
                 },

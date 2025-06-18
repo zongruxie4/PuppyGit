@@ -9,7 +9,7 @@ data class DevSettings (
      * follow system color scheme, but maybe will cause color difficult to distinguish.
      * see: https://github.com/catpuppyapp/PuppyGit/issues/66
      */
-    var dynamicColorsScheme: Boolean = false,
+    var dynamicColorsScheme: Boolean = true,
 
     /**
      * diff页面每次只显示一个文件，性能更好
