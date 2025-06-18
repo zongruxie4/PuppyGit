@@ -248,7 +248,7 @@ fun TextEditor(
 
     //此值为假或readOnly为真则不显示键盘
     //没找到合适的方法手动启用，因此默认启用，暂时没更改的场景
-    val disableSoftKb = rememberSaveable { mutableStateOf(true) }
+    val disableSoftKb = rememberSaveable { mutableStateOf(false) }
 
     val expectConflictStrDto = rememberSaveable(settings.editor.conflictStartStr, settings.editor.conflictSplitStr, settings.editor.conflictEndStr) {
         mutableStateOf(
@@ -386,10 +386,14 @@ fun TextEditor(
     //上级页面发来的request，请求执行某些操作
     if(requestFromParent.value==PageRequest.hideKeyboardForAWhile) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-//            keyboardController?.hideWhenTimeout()
+            keyboardController?.hideWhenTimeout()
+
+            // not work as expected, if timeout, will show soft keyboard immediately but expect show soft keyboard after user tap screen
 //            doJobThenOffLoading(
-//                loadingOn = { allowKeyboard.value = false },
-//                loadingOff = { allowKeyboard.value = true },
+//                loadingOn = { disableSoftKb.value = true },
+//                loadingOff = {
+//                    disableSoftKb.value = false
+//                },
 //            ) {
 //                delay(300)
 //            }
