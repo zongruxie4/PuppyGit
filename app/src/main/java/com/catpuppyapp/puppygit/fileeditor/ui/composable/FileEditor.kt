@@ -383,6 +383,15 @@ fun FileEditor(
                 SharedState.editor_softKeyboardIsVisible.value = UIHelper.isSoftkeyboardVisible()
                 val isOnPause = remember { mutableStateOf(false) }
 
+                // for hide the software keyboard
+                // this not work for ON_RESUME, will still restore software keyboard, dunno why
+                val createIgnoreFocusTextEditorStateIfNeed = {
+                    // if software keyboard disabled, no need lose focus, else try lose focus for avoid unexpected software keyboard popup
+                    if(ignoreFocusOnce.value && disableSoftKb.value.not()) {
+                        textEditorState.value = textEditorState.value.copy(focusingLineIdx = null)
+                    }
+                }
+
                 // old version compose will call disposable effect and ON_PAUSE lifecycle together, but now changed behavior?
                 DisposableEffect(Unit) {
                     onDispose {
@@ -391,10 +400,7 @@ fun FileEditor(
                         ignoreFocusOnce.value = softKbVisibleWhenLeavingEditor.value.not() && SharedState.editor_softKeyboardIsVisible.value.not();
                         softKbVisibleWhenLeavingEditor.value = false
 
-                        // for hide the software keyboard
-                        if(ignoreFocusOnce.value && disableSoftKb.value.not()) {
-                            textEditorState.value = textEditorState.value.copy(focusingLineIdx = null)
-                        }
+                        createIgnoreFocusTextEditorStateIfNeed()
 
                         MyLog.d(TAG, "FileEditor#DisposableEffect#onDispose: called, ignoreFocusOnce=${ignoreFocusOnce.value}")
 
@@ -419,10 +425,7 @@ fun FileEditor(
                         ignoreFocusOnce.value = it.not()  // if invisible, then ignore once popup soft keyboard
                     }
 
-                    if(ignoreFocusOnce.value && disableSoftKb.value.not()) {
-                        // this not work for ON_RESUME, will still restore software keyboard, dunno why
-                        textEditorState.value = textEditorState.value.copy(focusingLineIdx = null)
-                    }
+                    createIgnoreFocusTextEditorStateIfNeed()
 
                     MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_PAUSE: called, ignoreFocusOnce=${ignoreFocusOnce.value}")
 
