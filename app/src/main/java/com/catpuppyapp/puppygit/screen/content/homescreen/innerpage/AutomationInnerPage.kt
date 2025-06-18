@@ -86,7 +86,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val TAG = "AutomationInnerPage"
-private val trailIconSize = 24.dp
+private val trailIconSize = MyStyleKt.trailIconSize
 
 @Composable
 fun AutomationInnerPage(
@@ -316,7 +316,7 @@ fun AutomationInnerPage(
             unselectedItemList = unselectedRepoList.value,
             filterKeyWord = reposFilterKeyword,
             selectedItemFormatter={ clickedRepo ->
-                val splitSpacerWidth = 20.dp
+                val splitSpacerWidth = MyStyleKt.trailIconSplitSpacerWidth
 
                 RepoNameAndIdItem(
                     settings = settingsState.value,

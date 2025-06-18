@@ -31,17 +31,17 @@ fun RepoNameAndIdItem(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TwoLineTextsAndIcons(
-            repoEntity.repoName,
-            if(selected) {
+            text1 = repoEntity.repoName,
+            text2 = if(selected) {
                 AutomationUtil.getAppAndRepoSpecifiedSettingsActuallyBeUsed(appPackageName, repoEntity.id, settings).let {
                     stringResource(R.string.pull_interval)+": "+appendSecondsUnit(it.getPullIntervalFormatted())+", "+ stringResource(R.string.push_delay)+": "+appendSecondsUnit(it.getPushDelayFormatted())
                 }
             } else {
-//                repoEntity.id
+//               // repoEntity.id
                 ""
             },
-            trailIconWidth,
-            trailIcons
+            trailIconWidth = trailIconWidth,
+            trailIcons = trailIcons
         )
     }
 

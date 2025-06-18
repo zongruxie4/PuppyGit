@@ -157,8 +157,8 @@ fun <T> SelectedItemDialog3(
     textFormatterForCopy:(T)->String,
 
     // more customizable
-    useBoxTextCompose:Boolean = false,
-    boxText:@Composable BoxScope.(T) -> Unit = {},
+    customText:@Composable (BoxScope.(T) -> Unit)? = null,
+    customTrailIcon:@Composable (BoxScope.(T) -> Unit)? = null,
 
     //清空条目列表
     clearAll:()->Unit,
@@ -176,8 +176,8 @@ fun <T> SelectedItemDialog3(
         selectedItems = selectedItems,
         title = title,
         text = {
-            if(useBoxTextCompose) {
-                boxText(it)
+            if(customText != null) {
+                customText(it)
             }else {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(start = 5.dp, end = trailingIconSize).align(Alignment.CenterStart).horizontalScroll(rememberScrollState()),
@@ -190,18 +190,22 @@ fun <T> SelectedItemDialog3(
             }
         },
         trailIcon = {
-            Row(
-                modifier = Modifier.size(trailingIconSize).align(Alignment.CenterEnd),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(
-                    onClick = { switchItemSelected(it) }
+            if(customTrailIcon != null) {
+                customTrailIcon(it)
+            }else {
+                Row(
+                    modifier = Modifier.size(trailingIconSize).align(Alignment.CenterEnd),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.DeleteOutline,
-                        contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
-                    )
+                    IconButton(
+                        onClick = { switchItemSelected(it) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.DeleteOutline,
+                            contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
+                        )
+                    }
                 }
             }
         },
