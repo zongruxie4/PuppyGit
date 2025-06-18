@@ -90,6 +90,7 @@ import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.SelectedFileListItem
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.SingleLineCardButton
 import com.catpuppyapp.puppygit.compose.SingleSelection
@@ -2413,19 +2414,21 @@ fun FilesInnerPage(
         }
     }
 
+    val goToParentAndScrollToItem = { item: FileItemDto ->
+
+    }
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
 //    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     val showSelectedItemsShortDetailsDialogForImportMode = rememberSaveable { mutableStateOf(false)}
 //    val selectedItemsShortDetailsStrForImportMode = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
-        SelectedItemDialog(
-//            detailStr = selectedItemsShortDetailsStr.value,
-            selectedItems = selectedItems.value,
-            formatter = {if(AppModel.devModeOn) it.fullPath else it.name},
-            switchItemSelected = switchItemSelected,
+        SelectedFileListItem(
+           list = selectedItems.value,
+            textFormatterForCopy = {it.name+"\n"+it.fullPath+"\n\n"},
+            removeItem = switchItemSelected,
             clearAll = {selectedItems.value.clear()},
-
+            goToParentAndScrollToItem = goToParentAndScrollToItem,
             closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
         )
     }

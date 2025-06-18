@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
+import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
 import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +54,7 @@ fun SelectedFileListItem(
                         modifier = Modifier.clickable {
                             goToParentAndScrollToItem(it)
                         },
-                        imageVector = if(it.isDir) Icons.Filled.Folder else Icons.AutoMirrored.Filled.InsertDriveFile,
+                        imageVector = if(it.isDir) Icons.Outlined.Folder else Icons.AutoMirrored.Outlined.InsertDriveFile,
                         contentDescription = if(it.isDir) stringResource(R.string.folder) else stringResource(R.string.file)
                     )
 
