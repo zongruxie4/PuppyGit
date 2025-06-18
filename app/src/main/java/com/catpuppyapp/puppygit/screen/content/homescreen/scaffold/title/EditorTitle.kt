@@ -14,9 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import com.catpuppyapp.puppygit.compose.FilterTextField
@@ -30,9 +32,12 @@ import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClickRequest
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
+import com.catpuppyapp.puppygit.settings.util.EditorSettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.FsUtils
+import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.onOffText
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
@@ -40,6 +45,7 @@ import kotlinx.coroutines.runBlocking
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditorTitle(
+    disableSoftKb: MutableState<Boolean>,
     recentFileListIsEmpty:Boolean,
     recentFileListFilterModeOn:Boolean,
     recentListFilterKeyword: CustomStateSaveable<TextFieldValue>,
@@ -96,12 +102,20 @@ fun EditorTitle(
                             defaultTitleDoubleClickRequest(editorPageRequestFromParent)
                         }
                     },
-                    onLongClick = {
-                        if(isPreviewModeOn.not()) {
+                    onLongClick = if(isPreviewModeOn.not()) ({
 //                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            editorPageRequestFromParent.value = PageRequest.goToLine
-                        }
-                    }
+
+//                        // go to line
+//                            editorPageRequestFromParent.value = PageRequest.goToLine
+
+                        // switch disable/enable software keyboard
+                        val newValue = disableSoftKb.value.not()
+                        EditorSettingsUtil.updateDisableSoftKb(newValue, disableSoftKb)
+                        // because value represent disable when it's true, so, need a `not()` call to know on/off
+                        Msg.requireShow(activityContext.getString(R.string.software_keyboard)+": ${onOffText(newValue.not())}")
+
+                    }) else null
+
                 ) {  //onClick
                         //显示仓库开头的相对路径
     //                    Msg.requireShowLongDuration(filePath)
@@ -133,6 +147,13 @@ fun EditorTitle(
                             SmallIcon(
                                 imageVector = Icons.Outlined.Difference,
                                 contentDescription = stringResource(R.string.patch_mode),
+                            )
+                        }
+
+                        if(disableSoftKb.value) {
+                            SmallIcon(
+                                imageVector = ImageVector.vectorResource(R.drawable.outline_keyboard_off_24),
+                                contentDescription = stringResource(R.string.software_keyboard)+": ${onOffText(disableSoftKb.value.not())}",
                             )
                         }
 

@@ -1004,6 +1004,7 @@ fun HomeScreen(
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Editor) {
                             EditorTitle(
+                                disableSoftKb = editorDisableSoftKb,
                                 recentFileListIsEmpty = editorRecentFileList.value.isEmpty(),
                                 recentFileListFilterModeOn = editorFilterRecentListOn.value,
                                 recentListFilterKeyword = editorFilterRecentListKeyword,

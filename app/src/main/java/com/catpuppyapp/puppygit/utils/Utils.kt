@@ -1310,3 +1310,5 @@ fun parseLineAndColumn(str:String) = try {
     // parse int failed, then go first line
     LineNumParseResult()
 }
+
+fun onOffText(enabled:Boolean) = if(enabled) "ON" else "OFF";
