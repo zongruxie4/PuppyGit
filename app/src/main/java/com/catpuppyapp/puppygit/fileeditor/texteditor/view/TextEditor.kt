@@ -944,7 +944,7 @@ fun TextEditor(
 //    val softKbIsVisible = UIHelper.isSoftkeyboardVisible().let { remember(it) { derivedStateOf { it } } }
 
     CompositionLocalProvider(
-//        LocalTextInputService provides (if(allowKeyboard.value && !readOnlyMode) LocalTextInputService.current else null),  //为null可阻止弹出键盘
+//        LocalTextInputService provides (if(allowKeyboard.value && !readOnlyMode) LocalTextInputService.current else null),  //为null可阻止弹出键盘(compose 1.7.0之后已无效)
         LocalTextSelectionColors provides (if(!needShowCursorHandle.value) customTextSelectionColors_hideCursorHandle else if(inDarkTheme) customTextSelectionColors_darkMode else customTextSelectionColors),
     ) {
 
