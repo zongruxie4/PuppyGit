@@ -391,6 +391,11 @@ fun FileEditor(
                         ignoreFocusOnce.value = softKbVisibleWhenLeavingEditor.value.not() && SharedState.editor_softKeyboardIsVisible.value.not();
                         softKbVisibleWhenLeavingEditor.value = false
 
+                        // for hide the software keyboard
+                        if(ignoreFocusOnce.value && disableSoftKb.value.not()) {
+                            textEditorState.value = textEditorState.value.copy(focusingLineIdx = null)
+                        }
+
                         MyLog.d(TAG, "FileEditor#DisposableEffect#onDispose: called, ignoreFocusOnce=${ignoreFocusOnce.value}")
 
                     }
@@ -414,22 +419,27 @@ fun FileEditor(
                         ignoreFocusOnce.value = it.not()  // if invisible, then ignore once popup soft keyboard
                     }
 
+                    if(ignoreFocusOnce.value && disableSoftKb.value.not()) {
+                        // this not work for ON_RESUME, will still restore software keyboard, dunno why
+                        textEditorState.value = textEditorState.value.copy(focusingLineIdx = null)
+                    }
+
                     MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_PAUSE: called, ignoreFocusOnce=${ignoreFocusOnce.value}")
 
                 }
 
-                LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-                    if(isOnPause.value) {
-                        ignoreFocusOnce.value = softKbVisibleWhenLeavingEditor.value.not()
-                        // if invisible, then ignore once popup soft keyboard
-//                        if(ignoreFocusOnce.value) {
-//                            requestFromParent.value = PageRequest.hideKeyboardForAWhile
-//                        }
-                    }
-
-                    MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_RESUME: called, softKbVisibleWhenLeavingEditor.value.not()=${softKbVisibleWhenLeavingEditor.value.not()}")
-
-                }
+//                LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+//                    if(isOnPause.value) {
+//                        ignoreFocusOnce.value = softKbVisibleWhenLeavingEditor.value.not()
+//                        // if invisible, then ignore once popup soft keyboard
+////                        if(ignoreFocusOnce.value) {
+////                            requestFromParent.value = PageRequest.hideKeyboardForAWhile
+////                        }
+//                    }
+//
+//                    MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_RESUME: called, softKbVisibleWhenLeavingEditor.value.not()=${softKbVisibleWhenLeavingEditor.value.not()}")
+//
+//                }
                 // shit code end
 
 

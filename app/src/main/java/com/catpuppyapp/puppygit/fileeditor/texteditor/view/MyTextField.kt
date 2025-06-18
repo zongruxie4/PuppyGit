@@ -31,7 +31,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.DisableSoftKeyboard
-import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.bug_Editor_WrongUpdateEditColumnIdx_Fixed
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -43,8 +42,6 @@ private const val TAG = "MyTextField"
 
 @Composable
 internal fun MyTextField(
-    requestFromParent: MutableState<String>,
-    ignoreFocusOnce: MutableState<Boolean>,
     scrollIfInvisible:()->Unit,
     disableSoftKb:Boolean,
     readOnly:Boolean,
@@ -103,7 +100,12 @@ internal fun MyTextField(
                 if (currentTextField == it) return@BasicTextField
 
                 // scroll if invisible
-                scrollIfInvisible()
+                if(currentTextField.selection.start != it.selection.start
+                    || currentTextField.selection.end != it.selection.end
+                    || currentTextField.text != it.text
+                ) {
+                    scrollIfInvisible()
+                }
 
                 if (it.text.contains('\n')) onContainNewLine(it) else onUpdateText(it)
             },
@@ -129,7 +131,7 @@ internal fun MyTextField(
                     val value = textFieldState.value
                     val selection = currentTextField.selection
 
-                    if(onPreviewDelKeyEvent(event, selection) { onDeleteNewLine() }){
+                    if (onPreviewDelKeyEvent(event, selection) { onDeleteNewLine() }) {
                         return@onPreviewKeyEvent true
                     }
 
@@ -156,15 +158,10 @@ internal fun MyTextField(
 
 
 
-    if(focusThisLine) {
-        LaunchedEffect(Unit) {
-            runCatching {
-                if(ignoreFocusOnce.value) {
-                    ignoreFocusOnce.value = false
-                    requestFromParent.value = PageRequest.hideKeyboardForAWhile
-                }else {
-                    focusRequester.requestFocus()
-                }
+    LaunchedEffect(Unit) {
+        runCatching {
+            if(focusThisLine) {
+                focusRequester.requestFocus()
             }
         }
     }
