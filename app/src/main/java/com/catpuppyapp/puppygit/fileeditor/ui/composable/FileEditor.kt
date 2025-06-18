@@ -11,12 +11,10 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
@@ -92,7 +90,6 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.paddingLineNumber
 import com.catpuppyapp.puppygit.utils.replaceStringResList
-import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import kotlinx.coroutines.runBlocking
 import me.saket.swipe.SwipeAction
@@ -104,6 +101,8 @@ private const val TAG = "FileEditor"
 @Composable
 fun FileEditor(
     stateKeyTag:String,
+
+    disableSoftKb: MutableState<Boolean>,
 
     updateLastCursorAtColumn:(Int)->Unit,
     getLastCursorAtColumnValue:()->Int,
@@ -445,7 +444,7 @@ fun FileEditor(
                 TextEditor(
                     stateKeyTag = stateKeyTag,
 
-
+                    disableSoftKb = disableSoftKb,
                     updateLastCursorAtColumn = updateLastCursorAtColumn,
                     getLastCursorAtColumnValue = getLastCursorAtColumnValue,
 

@@ -1186,5 +1186,6 @@
     <string name="graph">Grafiği</string>
     <string name="commit_msg_template">Commit Mesajı Şablonu</string>
     <string name="leave_empty_to_use_global_settings">Genel ayarları kullanmak için boş bırakın</string>
+    <string name="software_keyboard">Yazılım Klavyesi</string>
 
 </resources>

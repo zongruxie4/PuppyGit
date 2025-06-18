@@ -1258,5 +1258,6 @@
     <string name="graph">图示</string>
     <string name="commit_msg_template">提交信息模板</string>
     <string name="leave_empty_to_use_global_settings">留空以使用全局设置</string>
+    <string name="software_keyboard">软键盘</string>
 
 </resources>

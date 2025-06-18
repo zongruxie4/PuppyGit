@@ -382,6 +382,8 @@ fun HomeScreen(
     val filesFilterListState = rememberLazyListState()
     val repoFilterListState = rememberLazyListState()
 
+    val editorDisableSoftKb = rememberSaveable { mutableStateOf(settingsSnapshot.value.editor.disableSoftwareKeyboard) }
+
     val editorRecentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<FileDetail>() }
     val editorSelectedRecentFileList = mutableCustomStateListOf(stateKeyTag, "editorSelectedRecentFileList") { listOf<FileDetail>() }
     val editorRecentFileListSelectionMode = rememberSaveable { mutableStateOf(false) }
@@ -1155,6 +1157,7 @@ fun HomeScreen(
                                 )
                             }else {
                                 EditorPageActions(
+                                    disableSoftKb = editorDisableSoftKb,
                                     initPreviewMode = editorInitPreviewMode,
                                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
                                     previewNavStack = editorPreviewNavStack.value,
@@ -1440,6 +1443,7 @@ fun HomeScreen(
 //                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
                     stateKeyTag = stateKeyTag,
 
+                    disableSoftKb = editorDisableSoftKb,
                     recentFileList = editorRecentFileList,
                     selectedRecentFileList = editorSelectedRecentFileList,
                     recentFileListSelectionMode = editorRecentFileListSelectionMode,

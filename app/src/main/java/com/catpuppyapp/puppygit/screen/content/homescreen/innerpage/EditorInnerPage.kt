@@ -120,6 +120,8 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 fun EditorInnerPage(
     stateKeyTag:String,
 
+    disableSoftKb: MutableState<Boolean>,
+
     recentFileList: CustomStateListSaveable<FileDetail>,
     selectedRecentFileList: CustomStateListSaveable<FileDetail>,
     recentFileListSelectionMode: MutableState<Boolean>,
@@ -1565,6 +1567,7 @@ fun EditorInnerPage(
         FileEditor(
             stateKeyTag = stateKeyTag,
 
+            disableSoftKb = disableSoftKb,
             updateLastCursorAtColumn = updateLastCursorAtColumn,
             getLastCursorAtColumnValue = getLastCursorAtColumnValue,
 

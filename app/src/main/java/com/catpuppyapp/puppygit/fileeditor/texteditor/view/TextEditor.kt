@@ -163,7 +163,7 @@ private val customTextSelectionColors_hideCursorHandle = MyStyleKt.TextSelection
 fun TextEditor(
     stateKeyTag:String,
 
-
+    disableSoftKb: MutableState<Boolean>,
     updateLastCursorAtColumn:(Int)->Unit,
     getLastCursorAtColumnValue:()->Int,
 
@@ -253,9 +253,6 @@ fun TextEditor(
     val lastEditedLineIndexState  = rememberSaveable { mutableIntStateOf(lastEditedPos.lineIndex) }
     val lastEditedColumnIndexState = rememberSaveable { mutableIntStateOf(lastEditedPos.columnIndex) }
 
-    //此值为假或readOnly为真则不显示键盘
-    //没找到合适的方法手动启用，因此默认启用，暂时没更改的场景
-    val disableSoftKb = rememberSaveable { mutableStateOf(settings.editor.disableSoftwareKeyboard) }
 
     val expectConflictStrDto = rememberSaveable(settings.editor.conflictStartStr, settings.editor.conflictSplitStr, settings.editor.conflictEndStr) {
         mutableStateOf(

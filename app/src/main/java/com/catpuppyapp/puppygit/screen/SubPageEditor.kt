@@ -180,6 +180,9 @@ fun SubPageEditor(
 
     val editorPreviewFileDto = mutableCustomStateOf(stateKeyTag, "editorPreviewFileDto") { FileSimpleDto() }
 
+    val editorDisableSoftKb = rememberSaveable { mutableStateOf(settings.editor.disableSoftwareKeyboard) }
+
+
     val editorRecentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<FileDetail>() }
     val editorSelectedRecentFileList = mutableCustomStateListOf(stateKeyTag, "editorSelectedRecentFileList") { listOf<FileDetail>() }
     val editorRecentFileListSelectionMode = rememberSaveable { mutableStateOf(false) }
@@ -391,6 +394,7 @@ fun SubPageEditor(
                             )
                         }else  {
                             EditorPageActions(
+                                disableSoftKb = editorDisableSoftKb,
                                 requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
                                 initPreviewMode = editorInitPreviewMode,
                                 previewNavStack = editorPreviewNavStack.value,
@@ -476,6 +480,7 @@ fun SubPageEditor(
 //            stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
             stateKeyTag = stateKeyTag,
 
+            disableSoftKb = editorDisableSoftKb,
             recentFileList = editorRecentFileList,
             selectedRecentFileList = editorSelectedRecentFileList,
             recentFileListSelectionMode = editorRecentFileListSelectionMode,
