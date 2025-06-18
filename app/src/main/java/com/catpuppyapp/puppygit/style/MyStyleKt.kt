@@ -351,12 +351,17 @@ object MyStyleKt{
          * when use this, be careful to make text in top bar colorful,
          *  if the color closer with this, will difficult to distinguish
          */
+        @OptIn(ExperimentalMaterial3Api::class)
+        @Composable
+//        // note: this maybe cause colors too closer to difficult to distinguish when dynamic color on
+        fun getColors() = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        )
+
 //        @OptIn(ExperimentalMaterial3Api::class)
 //        @Composable
-//        // this maybe cause colors too closer to difficult to distinguish, so deprecated
-//        fun getColors() = TopAppBarDefaults.topAppBarColors(
-//            containerColor = MaterialTheme.colorScheme.primaryContainer,
-//        )
+//        fun getColors() = getColorsSimple()
+
 
         /**
          * simple color , good for show colorful text in the top bar
@@ -364,10 +369,6 @@ object MyStyleKt{
         @OptIn(ExperimentalMaterial3Api::class)
         @Composable
         fun getColorsSimple() = TopAppBarDefaults.topAppBarColors()
-
-        @OptIn(ExperimentalMaterial3Api::class)
-        @Composable
-        fun getColors() = getColorsSimple()
 
     }
 

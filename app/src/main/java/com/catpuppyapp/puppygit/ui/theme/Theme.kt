@@ -59,15 +59,15 @@ object Theme {
 }
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+//    primary = Purple80,
+//    secondary = PurpleGrey80,
+//    tertiary = Pink80
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+//    primary = Purple40,
+//    secondary = PurpleGrey40,
+//    tertiary = Pink40
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -83,8 +83,8 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun PuppyGitAndroidTheme(
     theme:String,
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Dynamic color is available on Android 12+, but maybe will cause app color weird, e.g. difficult to distinguish
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val darkTheme = if(theme == Theme.auto.toString()) isSystemInDarkTheme() else (theme == Theme.dark.toString())
