@@ -248,7 +248,7 @@ fun TextEditor(
 
     //此值为假或readOnly为真则不显示键盘
     //没找到合适的方法手动启用，因此默认启用，暂时没更改的场景
-    val allowKeyboard = rememberSaveable { mutableStateOf(true) }
+    val disableSoftKb = rememberSaveable { mutableStateOf(true) }
 
     val expectConflictStrDto = rememberSaveable(settings.editor.conflictStartStr, settings.editor.conflictSplitStr, settings.editor.conflictEndStr) {
         mutableStateOf(
@@ -386,7 +386,13 @@ fun TextEditor(
     //上级页面发来的request，请求执行某些操作
     if(requestFromParent.value==PageRequest.hideKeyboardForAWhile) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            keyboardController?.hideWhenTimeout()
+//            keyboardController?.hideWhenTimeout()
+//            doJobThenOffLoading(
+//                loadingOn = { allowKeyboard.value = false },
+//                loadingOff = { allowKeyboard.value = true },
+//            ) {
+//                delay(300)
+//            }
         }
     }
 
@@ -1109,6 +1115,7 @@ fun TextEditor(
                                 .then(modifier)
                         ) {
                             MyTextField(
+                                disableSoftKb = disableSoftKb.value || readOnlyMode,
                                 //搜索模式已经没必要聚焦了，因为不需要光标定位行了，直接高亮关键字了，而且搜索模式会把focusingLineIdx设为null以避免聚焦行弹出键盘误判内容已改变从而触发重组导致高亮关键字功能失效
 //                                    focusThisLine = if(textEditorState.isContentEdited.value) index == textEditorState.focusingLineIdx else false,
                                 //仅当搜索模式，或者内容发生变化（比如换行）时光标才会自动聚焦，否则不聚焦，这样是为了避免切换页面再回来自动弹出键盘
@@ -1122,7 +1129,7 @@ fun TextEditor(
                                 lastEditedColumnIndexState=lastEditedColumnIndexState,
                                 needShowCursorHandle = needShowCursorHandle,
                                 textFieldState = textFieldState,
-                                enabled = !textEditorState.isMultipleSelectionMode && !readOnlyMode,
+                                enabled = !textEditorState.isMultipleSelectionMode,
                                 fontSize = fontSize.intValue,
                                 fontColor = fontColor,
 //                                    bgColor = bgColor,
