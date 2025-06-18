@@ -21,6 +21,19 @@ object DevFeature {
 
     // dev settings items: start
 
+    // dynamic color scheme
+    val dynamicColorsScheme = object : DevItem<Boolean>(text = "Dynamic Color Scheme", state = mutableStateOf(false), desc="May cause colors difficult to distinguish") {
+        override fun update(newValue: Boolean, context: Context?) {
+            //更新状态变量，使用的时候就不用查配置文件了
+            state.value = newValue
+
+            //写入配置文件
+            SettingsUtil.update {
+                it.devSettings.dynamicColorsScheme = newValue
+            }
+        }
+    }
+
     // single diff
     val singleDiff = object : DevItem<Boolean>(text = "Single Diff", state = mutableStateOf(false), desc="Enable for better performance") {
         override fun update(newValue: Boolean, context: Context?) {
@@ -108,6 +121,7 @@ object DevFeature {
 
     // dev menu items
     val settingsItemList = listOf(
+        dynamicColorsScheme,
         singleDiff,
         treatNoWordMatchAsNoMatchedForDiff,
         degradeMatchByWordsToMatchByCharsIfNonMatched,

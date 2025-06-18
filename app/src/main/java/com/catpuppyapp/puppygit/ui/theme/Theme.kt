@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.play.pro.findActivity
 
@@ -84,7 +85,7 @@ private val LightColorScheme = lightColorScheme(
 fun PuppyGitAndroidTheme(
     theme:String,
     // Dynamic color is available on Android 12+, but maybe will cause app color weird, e.g. difficult to distinguish
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = DevFeature.dynamicColorsScheme.state.value,
     content: @Composable () -> Unit
 ) {
     val darkTheme = if(theme == Theme.auto.toString()) isSystemInDarkTheme() else (theme == Theme.dark.toString())
