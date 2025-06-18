@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.DisableSoftKeyboard
+import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.bug_Editor_WrongUpdateEditColumnIdx_Fixed
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -42,6 +43,8 @@ private const val TAG = "MyTextField"
 
 @Composable
 internal fun MyTextField(
+    requestFromParent: MutableState<String>,
+    ignoreFocusOnce: MutableState<Boolean>,
     scrollIfInvisible:()->Unit,
     disableSoftKb:Boolean,
     readOnly:Boolean,
@@ -156,7 +159,12 @@ internal fun MyTextField(
     if(focusThisLine) {
         LaunchedEffect(Unit) {
             runCatching {
-                focusRequester.requestFocus()
+                if(ignoreFocusOnce.value) {
+                    ignoreFocusOnce.value = false
+                    requestFromParent.value = PageRequest.hideKeyboardForAWhile
+                }else {
+                    focusRequester.requestFocus()
+                }
             }
         }
     }

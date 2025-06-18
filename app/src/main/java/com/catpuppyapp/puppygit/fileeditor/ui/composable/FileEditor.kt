@@ -396,14 +396,14 @@ fun FileEditor(
                     }
                 }
 
-                LaunchedEffect(Unit) {
-                    if(isOnPause.value.not()) {
-                        if(ignoreFocusOnce.value) {
-                            ignoreFocusOnce.value = false
-                            requestFromParent.value = PageRequest.hideKeyboardForAWhile
-                        }
-                    }
-                }
+//                LaunchedEffect(Unit) {
+//                    if(isOnPause.value.not()) {
+//                        if(ignoreFocusOnce.value) {
+//                            ignoreFocusOnce.value = false
+//                            requestFromParent.value = PageRequest.hideKeyboardForAWhile
+//                        }
+//                    }
+//                }
 
                 LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
                     isOnPause.value = true
@@ -420,10 +420,11 @@ fun FileEditor(
 
                 LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
                     if(isOnPause.value) {
+                        ignoreFocusOnce.value = softKbVisibleWhenLeavingEditor.value.not()
                         // if invisible, then ignore once popup soft keyboard
-                        if(softKbVisibleWhenLeavingEditor.value.not()) {
-                            requestFromParent.value = PageRequest.hideKeyboardForAWhile
-                        }
+//                        if(ignoreFocusOnce.value) {
+//                            requestFromParent.value = PageRequest.hideKeyboardForAWhile
+//                        }
                     }
 
                     MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_RESUME: called, softKbVisibleWhenLeavingEditor.value.not()=${softKbVisibleWhenLeavingEditor.value.not()}")

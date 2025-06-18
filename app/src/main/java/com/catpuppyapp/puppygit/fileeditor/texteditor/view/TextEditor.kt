@@ -1118,6 +1118,8 @@ fun TextEditor(
                                 .then(modifier)
                         ) {
                             MyTextField(
+                                requestFromParent = requestFromParent,
+                                ignoreFocusOnce = ignoreFocusOnce,
                                 scrollIfInvisible = {
                                     scrollIfIndexInvisible(index)
                                 },
