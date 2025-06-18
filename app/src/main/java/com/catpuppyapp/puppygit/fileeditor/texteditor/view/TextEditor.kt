@@ -89,7 +89,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
-import com.catpuppyapp.puppygit.utils.hideWhenTimeout
+import com.catpuppyapp.puppygit.utils.hideForAWhile
 import com.catpuppyapp.puppygit.utils.parseLineAndColumn
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
@@ -390,7 +390,7 @@ fun TextEditor(
     //上级页面发来的request，请求执行某些操作
     if(requestFromParent.value==PageRequest.hideKeyboardForAWhile) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            keyboardController?.hideWhenTimeout()
+            keyboardController?.hideForAWhile()
 
             // not work as expected, if timeout, will show soft keyboard immediately but expect show soft keyboard after user tap screen
 //            doJobThenOffLoading(
