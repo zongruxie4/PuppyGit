@@ -31,6 +31,7 @@ import com.catpuppyapp.puppygit.compose.AppIcon
 import com.catpuppyapp.puppygit.compose.AppIconMonoChrome
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -154,14 +155,16 @@ fun AboutInnerPage(
 
         }
 
-        Column(modifier = Modifier.padding(10.dp)
+        MySelectionContainer {
+            Column(
+                modifier = Modifier.padding(10.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = stringResource(id = R.string.app_name), fontWeight = FontWeight.ExtraBold)
 
-            ,
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = stringResource(id = R.string.app_name), fontWeight = FontWeight.ExtraBold)
-            Text(text ="$versionName ($versionCode)", fontSize = 12.sp)
+                Text(text = "$versionName ($versionCode)", fontSize = 12.sp)
+            }
         }
 
         Row(
@@ -341,8 +344,10 @@ fun AboutInnerPage(
 
 @Composable
 private fun TitleRow(title:String) {
-    Row (modifier = Modifier.padding(10.dp)){
-        Text(text = title, fontWeight = FontWeight.Bold)
+    MySelectionContainer {
+        Row (modifier = Modifier.padding(10.dp)){
+            Text(text = title, fontWeight = FontWeight.Bold)
+        }
     }
 }
 
