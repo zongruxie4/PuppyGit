@@ -3,11 +3,11 @@
 
 ---
 1.1.2.8v104 - 20250618:
-- minor bug fix
+- fix: colors difficult to distinguish in some cases
 
 
 
-- 小bug修正
+- 修复某些情况颜色难以区分
 
 
 ---

@@ -1,1 +1,1 @@
-- minor bug fix
+- fix: colors difficult to distinguish in some cases
