@@ -3,11 +3,11 @@
 
 ---
 1.1.2.8v104 - 20250618:
-- fix: colors difficult to distinguish in some cases
+- fix: colors difficult to distinguish in some cases (issue: #66, thx RokeJulianLockhart)
 
 
 
-- 修复某些情况颜色难以区分
+- 修复某些情况颜色难以区分 (issue: #66, thx RokeJulianLockhart)
 
 
 ---
