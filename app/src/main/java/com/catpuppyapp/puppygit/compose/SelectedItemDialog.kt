@@ -156,6 +156,10 @@ fun <T> SelectedItemDialog3(
     text:@Composable RowScope.(T) -> Unit,
     textFormatterForCopy:(T)->String,
 
+    // more customizable
+    useBoxTextCompose:Boolean = false,
+    boxText:@Composable BoxScope.(T) -> Unit = {},
+
     //清空条目列表
     clearAll:()->Unit,
 
@@ -172,12 +176,16 @@ fun <T> SelectedItemDialog3(
         selectedItems = selectedItems,
         title = title,
         text = {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(start = 5.dp, end = trailingIconSize).align(Alignment.CenterStart).horizontalScroll(rememberScrollState()),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                MySelectionContainer {
-                    text(it)
+            if(useBoxTextCompose) {
+                boxText(it)
+            }else {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(start = 5.dp, end = trailingIconSize).align(Alignment.CenterStart).horizontalScroll(rememberScrollState()),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    MySelectionContainer {
+                        text(it)
+                    }
                 }
             }
         },
