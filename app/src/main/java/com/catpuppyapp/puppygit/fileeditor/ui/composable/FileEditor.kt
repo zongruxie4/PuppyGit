@@ -384,8 +384,13 @@ fun FileEditor(
                 val isOnPause = remember { mutableStateOf(false) }
 
                 // for hide the software keyboard
-                // this not work for ON_RESUME, will still restore software keyboard, dunno why
-                val createIgnoreFocusTextEditorStateIfNeed = {
+                val createIgnoreFocusTextEditorStateIfNeed = label@{
+                    // this will not work for ON_PAUSE, even set focus index to null, will still restore software keyboard,
+                    //   so, just return at here
+                    if(isOnPause.value) {
+                        return@label
+                    }
+
                     // if software keyboard disabled, no need lose focus, else try lose focus for avoid unexpected software keyboard popup
                     if(ignoreFocusOnce.value && disableSoftKb.value.not()) {
                         textEditorState.value = textEditorState.value.copy(focusingLineIdx = null)
