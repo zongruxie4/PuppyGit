@@ -46,6 +46,7 @@ import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.settings.util.EditorSettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.Msg
@@ -551,11 +552,7 @@ fun EditorPageActions(
                 onClick = {
                     closeMenu()
 
-                    val newValue = disableSoftKb.value.not()
-                    disableSoftKb.value = newValue
-                    SettingsUtil.update {
-                        it.editor.disableSoftwareKeyboard = newValue
-                    }
+                    EditorSettingsUtil.updateDisableSoftKb(disableSoftKb.value.not(), disableSoftKb)
                 }
 
             )
