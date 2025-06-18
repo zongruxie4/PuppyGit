@@ -146,6 +146,7 @@ import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getFilePathUnderParent
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getRangeForRenameFile
+import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.getViewAndSortForPath
@@ -2415,13 +2416,16 @@ fun FilesInnerPage(
         }
     }
 
+
+    val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false) }
+
     val goToParentAndScrollToItem = { item: FileItemDto ->
+        showSelectedItemsShortDetailsDialog.value = false
         changeStateTriggerRefreshPage(needRefreshFilesPage, StateRequestType.goToParentAndScrollToItem, item.fullPath)
     }
 
-    val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
 //    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
-    val showSelectedItemsShortDetailsDialogForImportMode = rememberSaveable { mutableStateOf(false)}
+    val showSelectedItemsShortDetailsDialogForImportMode = rememberSaveable { mutableStateOf(false) }
 //    val selectedItemsShortDetailsStrForImportMode = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
         SelectedFileListItem(
@@ -3207,6 +3211,14 @@ fun FilesInnerPage(
     LaunchedEffect(needRefreshFilesPage.value) {
         //如果只有协程的话，其实try catch没意义，协程内部不会往外抛异常；若没协程，trycatch有意义，不然若发生异常会抛到外部导致app崩溃
         try {
+            val (requestType, requestData) = getRequestDataByState<String?>(needRefreshFilesPage.value)
+            if(requestType == StateRequestType.goToParentAndScrollToItem && requestData != null) {
+                File(requestData).canonicalFile.parent?.let {
+                    updateCurrentPath(it)
+                }
+            }
+
+
             //只有当目录改变时(需要刷新页面)，才需要执行initFilesPage，选择文件之类的操作不需要执行此操作
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
@@ -3243,6 +3255,19 @@ fun FilesInnerPage(
                         keepFilterResultOnce.value = false
                     }else {
                         triggerReFilter(filterResultNeedRefresh)
+                    }
+
+                    if(requestType == StateRequestType.goToParentAndScrollToItem && requestData != null) {
+                        // quit filter mode
+                        filesPageSimpleFilterOn.value = false
+                        resetFilesSearchVars()
+
+                        // scroll to item
+                        val targetIndex = currentPathFileList.value.toList().indexOfFirst { it.fullPath == requestData}
+                        if(targetIndex >= 0) {
+                            // -2 is offset to make item not very top
+                            UIHelper.scrollToItem(scope, curListState.value, targetIndex - 2)
+                        }
                     }
 
                 }catch (e:Exception) {
