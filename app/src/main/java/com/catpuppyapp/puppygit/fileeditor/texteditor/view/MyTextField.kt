@@ -77,6 +77,7 @@ internal fun MyTextField(
     DisableSoftKeyboard(disableSoftKb) {
         BasicTextField(
             value = textFieldState.value,
+            readOnly = disableSoftKb,
             enabled = enabled,
             onValueChange = {
 //            println("start:${it.selection.start}, end:${it.selection.end}")  //test2024081116726433
