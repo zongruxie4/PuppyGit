@@ -390,7 +390,11 @@ fun TextEditor(
     //上级页面发来的request，请求执行某些操作
     if(requestFromParent.value==PageRequest.hideKeyboardForAWhile) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            keyboardController?.hideForAWhile()
+            // if disable, will hide soft kb, so no need to hide it
+//            if(disableSoftKb.value.not()) {
+//                  // it may cause app crash by null input command
+//                keyboardController?.hideForAWhile()
+//            }
 
             // not work as expected, if timeout, will show soft keyboard immediately but expect show soft keyboard after user tap screen
 //            doJobThenOffLoading(
