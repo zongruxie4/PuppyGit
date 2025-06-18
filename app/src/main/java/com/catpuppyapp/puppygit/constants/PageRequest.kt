@@ -24,6 +24,7 @@ object PageRequest {
 //    const val goToBranch ="goToBranch"  //goToBranch#branchName，#后面是要goto的分支名
 
 
+    const val hideKeyboardForAWhile = "hideKeyboardForAWhile"
     const val reloadRecentFileList = "reloadRecentFileList"
     const val reloadIfChanged = "reloadIfChanged"
     const val editor_RequireRefreshPreviewPage = "editor_RequireRefreshPreviewPage"

@@ -42,8 +42,6 @@ private const val TAG = "MyTextField"
 
 @Composable
 internal fun MyTextField(
-    hideSoftKeyboardForAWhile: ()->Unit,
-    ignoreFocusOnce: MutableState<Boolean>,
     focusThisLine:Boolean,
     textFieldState: TextFieldState,
     enabled: Boolean,
@@ -141,17 +139,9 @@ internal fun MyTextField(
 
 
     if(focusThisLine) {
-        LaunchedEffect(ignoreFocusOnce.value) {
+        LaunchedEffect(Unit) {
             runCatching {
-                if(ignoreFocusOnce.value) {
-                    ignoreFocusOnce.value = false
-                    // focus, but don't show the soft keyboard
-                    hideSoftKeyboardForAWhile()
-
-                    MyLog.d(TAG, "TextEditor#MyTextField: ignore focus once")
-                }else {
-                    focusRequester.requestFocus()
-                }
+                focusRequester.requestFocus()
             }
         }
     }

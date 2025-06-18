@@ -384,6 +384,12 @@ fun TextEditor(
 //    val clipboardManager = LocalClipboardManager.current
 
     //上级页面发来的request，请求执行某些操作
+    if(requestFromParent.value==PageRequest.hideKeyboardForAWhile) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            keyboardController?.hideWhenTimeout()
+        }
+    }
+
     if(requestFromParent.value==PageRequest.editorQuitSelectionMode) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
@@ -937,12 +943,6 @@ fun TextEditor(
     // this can't immediately got keyboard hide or shown, so disabled
 //    val softKbIsVisible = UIHelper.isSoftkeyboardVisible().let { remember(it) { derivedStateOf { it } } }
 
-    val hideSoftKeyboardForAWhile = {
-//        keyboardController?.hideForAWhile()
-        keyboardController?.hideWhenTimeout()
-        Unit
-    }
-
     CompositionLocalProvider(
 //        LocalTextInputService provides (if(allowKeyboard.value && !readOnlyMode) LocalTextInputService.current else null),  //为null可阻止弹出键盘
         LocalTextSelectionColors provides (if(!needShowCursorHandle.value) customTextSelectionColors_hideCursorHandle else if(inDarkTheme) customTextSelectionColors_darkMode else customTextSelectionColors),
@@ -1109,8 +1109,6 @@ fun TextEditor(
                                 .then(modifier)
                         ) {
                             MyTextField(
-                                hideSoftKeyboardForAWhile = hideSoftKeyboardForAWhile,
-                                ignoreFocusOnce = ignoreFocusOnce,
                                 //搜索模式已经没必要聚焦了，因为不需要光标定位行了，直接高亮关键字了，而且搜索模式会把focusingLineIdx设为null以避免聚焦行弹出键盘误判内容已改变从而触发重组导致高亮关键字功能失效
 //                                    focusThisLine = if(textEditorState.isContentEdited.value) index == textEditorState.focusingLineIdx else false,
                                 //仅当搜索模式，或者内容发生变化（比如换行）时光标才会自动聚焦，否则不聚焦，这样是为了避免切换页面再回来自动弹出键盘
@@ -1392,7 +1390,7 @@ fun TextEditor(
                             )
 
 
-                            hideSoftKeyboardForAWhile()
+                            requestFromParent.value = PageRequest.hideKeyboardForAWhile
 
                         }
                     }
