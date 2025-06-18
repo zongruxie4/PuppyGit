@@ -92,7 +92,6 @@ import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.hideWhenTimeout
 import com.catpuppyapp.puppygit.utils.parseLineAndColumn
 import com.catpuppyapp.puppygit.utils.replaceStringResList
-import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import io.ktor.util.collections.ConcurrentMap
@@ -248,7 +247,7 @@ fun TextEditor(
 
     //此值为假或readOnly为真则不显示键盘
     //没找到合适的方法手动启用，因此默认启用，暂时没更改的场景
-    val disableSoftKb = rememberSaveable { mutableStateOf(false) }
+    val disableSoftKb = rememberSaveable { mutableStateOf(settings.editor.disableSoftwareKeyboard) }
 
     val expectConflictStrDto = rememberSaveable(settings.editor.conflictStartStr, settings.editor.conflictSplitStr, settings.editor.conflictEndStr) {
         mutableStateOf(
