@@ -1,5 +1,15 @@
 
 
+
+---
+1.1.2.8v104 - 20250618:
+- minor bug fix
+
+
+
+- 小bug修正
+
+
 ---
 1.1.2.7v103 - 20250606:
 - fix: sometimes commit item not update after reset
