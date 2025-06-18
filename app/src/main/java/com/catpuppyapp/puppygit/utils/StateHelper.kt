@@ -38,6 +38,11 @@ enum class StateRequestType {
      * 此request type携带的data为跳转所需的数据
      */
     jumpAfterImport,
+
+    /**
+     * go to parent dir of a full path and scroll to let it visible
+     */
+    goToParentAndScrollToItem,
 }
 
 //改变值触发执行刷新页面的代码

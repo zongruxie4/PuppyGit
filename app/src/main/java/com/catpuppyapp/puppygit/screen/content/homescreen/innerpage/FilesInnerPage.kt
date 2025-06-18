@@ -128,6 +128,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.RegexUtil
+import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.cache.Cache
@@ -2415,7 +2416,7 @@ fun FilesInnerPage(
     }
 
     val goToParentAndScrollToItem = { item: FileItemDto ->
-
+        changeStateTriggerRefreshPage(needRefreshFilesPage, StateRequestType.goToParentAndScrollToItem, item.fullPath)
     }
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
