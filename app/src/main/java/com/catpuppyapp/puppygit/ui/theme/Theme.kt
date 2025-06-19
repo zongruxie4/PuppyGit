@@ -21,8 +21,11 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.play.pro.findActivity
+import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.pref.PrefMan
 import com.catpuppyapp.puppygit.utils.pref.PrefUtil
+
+private const val TAG = "Theme"
 
 object Theme {
     val Orange = Color(0xFFFF5722)
@@ -185,12 +188,25 @@ fun PuppyGitAndroidTheme(
 @Composable
 private fun getDynamicColor(inDarkTheme: Boolean, context: Context): ColorScheme {
     return (if(inDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)).let {
-        // default primary color maybe will cause difficult to distinguish, so use secondary color instead of it
-        it.copy(
-            primary = it.secondary,
-            primaryContainer = it.secondaryContainer,
-            onPrimary = it.onSecondary,
-            onPrimaryContainer = it.onSecondaryContainer
-        )
+        if(isNeutral(it.primary)) {
+            MyLog.d(TAG, "Neutral (gray) color scheme detected, will use secondary replaced primary colors")
+
+            // default primary color of neutral color scheme(gray)
+            //   maybe will cause difficult to distinguish,
+            //   so use secondary color instead of it
+            it.copy(
+                primary = it.secondary,
+                primaryContainer = it.secondaryContainer,
+                onPrimary = it.onSecondary,
+                onPrimaryContainer = it.onSecondaryContainer
+            )
+        }else {
+            MyLog.d(TAG, "Not Neutral (gray) color scheme, will use default primary colors")
+
+            it
+        }
     }
 }
+
+// rgb same = gray = Neutral color scheme
+fun isNeutral(primaryColor:Color) = primaryColor.red == primaryColor.green && primaryColor.red == primaryColor.blue;
