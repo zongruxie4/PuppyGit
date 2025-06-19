@@ -368,8 +368,10 @@ object MyStyleKt{
          */
         @OptIn(ExperimentalMaterial3Api::class)
         @Composable
-//        fun getColorsSimple() = TopAppBarDefaults.topAppBarColors()
-        fun getColorsSimple() = getColors()
+        fun getColorsSimple() = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
+//        fun getColorsSimple() = getColors()
 
     }
 
