@@ -188,7 +188,7 @@ fun PuppyGitAndroidTheme(
 @Composable
 private fun getDynamicColor(inDarkTheme: Boolean, context: Context): ColorScheme {
     return (if(inDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)).let {
-        if(isNeutral(it.primary)) {
+        if(isNeutralColorScheme(it)) {
             MyLog.d(TAG, "Neutral (gray) color scheme detected, will use secondary replaced primary colors")
 
             // default primary color of neutral color scheme(gray)
@@ -209,4 +209,4 @@ private fun getDynamicColor(inDarkTheme: Boolean, context: Context): ColorScheme
 }
 
 // rgb same = gray = Neutral color scheme
-fun isNeutral(primaryColor:Color) = primaryColor.red == primaryColor.green && primaryColor.red == primaryColor.blue;
+fun isNeutralColorScheme(colorScheme: ColorScheme) = colorScheme.primary.let { it.red == it.green && it.red == it.blue }
