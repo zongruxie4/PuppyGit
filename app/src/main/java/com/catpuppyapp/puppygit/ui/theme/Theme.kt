@@ -87,7 +87,7 @@ private val LightColorScheme = lightColorScheme(
 fun PuppyGitAndroidTheme(
     theme:String,
     // Dynamic color is available on Android 12+, but maybe will cause app color weird, e.g. difficult to distinguish
-    dynamicColor: Boolean = DevFeature.dynamicColorsScheme.state.value,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val darkTheme = if(theme == Theme.auto.toString()) isSystemInDarkTheme() else (theme == Theme.dark.toString())
