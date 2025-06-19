@@ -895,6 +895,22 @@ fun SettingsInnerPage(
 
 
         SettingsContent(onClick = {
+            Theme.updateDynamicColor(activityContext, !Theme.dynamicColor.value)
+        }) {
+            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                Text(stringResource(R.string.dynamic_color_scheme), fontSize = itemFontSize)
+            }
+
+
+            Switch(
+                checked = Theme.dynamicColor.value,
+                onCheckedChange = null
+            )
+        }
+
+
+
+        SettingsContent(onClick = {
             //获取新值
             val newValue = !devModeOn.value
 

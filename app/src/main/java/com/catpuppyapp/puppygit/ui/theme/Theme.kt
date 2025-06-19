@@ -70,6 +70,10 @@ object Theme {
 
     fun getALegalThemeValue(themeValue:Int) = if(themeList.contains(themeValue)) themeValue else defaultThemeValue;
 
+    fun updateDynamicColor(context:Context, newValue:Boolean) {
+        dynamicColor.value = newValue
+        PrefUtil.setDynamicColorsScheme(context, newValue)
+    }
 
 
     fun getThemeTextByCode(themeCode:Int?, appContext: Context):String {

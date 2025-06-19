@@ -1281,5 +1281,6 @@
     <string name="commit_msg_template">Шаблон сообщения коммита</string>
     <string name="leave_empty_to_use_global_settings">Оставьте пустым, чтобы использовать глобальные настройки</string>
     <string name="software_keyboard">Программная клавиатура</string>
+    <string name="dynamic_color_scheme">Динамическая цветовая схема</string>
 
 </resources>
