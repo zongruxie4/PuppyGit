@@ -11,15 +11,18 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.play.pro.findActivity
+import com.catpuppyapp.puppygit.utils.pref.PrefMan
+import com.catpuppyapp.puppygit.utils.pref.PrefUtil
 
 object Theme {
     val Orange = Color(0xFFFF5722)
@@ -45,6 +48,29 @@ object Theme {
         light,  // light
         dark,  // dark
     )
+
+    /**
+     * 存储当前Activity的主题的状态变量，弄状态变量是为了实现切换主题后不需要重启即可生效
+     */
+    var theme:MutableState<Int> = mutableStateOf(defaultThemeValue)
+
+    const val defaultDynamicColorsValue = true
+    val dynamicColor = mutableStateOf(defaultDynamicColorsValue)
+
+    fun init(themeValue: Int, dynamicColorEnabled: Boolean) {
+        theme.value = getALegalThemeValue(themeValue)
+        dynamicColor.value = dynamicColorEnabled
+    }
+
+    fun updateThemeValue(context: Context, newValue:Int) {
+        val themeValue = getALegalThemeValue(newValue)
+        theme.value = themeValue
+        PrefMan.set(context, PrefMan.Key.theme, ""+themeValue)
+    }
+
+    fun getALegalThemeValue(themeValue:Int) = if(themeList.contains(themeValue)) themeValue else defaultThemeValue;
+
+
 
     fun getThemeTextByCode(themeCode:Int?, appContext: Context):String {
         if(themeCode == auto) {
@@ -84,13 +110,24 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
+fun InitContent(context: Context, content: @Composable ()->Unit) {
+    Theme.init(
+        themeValue = PrefMan.getInt(context, PrefMan.Key.theme, Theme.defaultThemeValue),
+        dynamicColorEnabled = PrefUtil.getDynamicColorsScheme(context),
+    )
+    PuppyGitAndroidTheme {
+        content()
+    }
+}
+
+@Composable
 fun PuppyGitAndroidTheme(
-    theme:String,
+    theme:Int = Theme.theme.value,
     // Dynamic color is available on Android 12+, but maybe will cause app color weird, e.g. difficult to distinguish
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = Theme.dynamicColor.value,
     content: @Composable () -> Unit
 ) {
-    val darkTheme = if(theme == Theme.auto.toString()) isSystemInDarkTheme() else (theme == Theme.dark.toString())
+    val darkTheme = if(theme == Theme.auto) isSystemInDarkTheme() else (theme == Theme.dark)
 
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {

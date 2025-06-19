@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.utils.pref
 
 import android.content.Context
+import com.catpuppyapp.puppygit.ui.theme.Theme
 
 object PrefUtil {
     private const val trueStr = "1"
@@ -45,5 +46,13 @@ object PrefUtil {
         return getBoolean(context, PrefMan.Key.showRandomLaunchingText, false)
     }
 
+
+    fun setDynamicColorsScheme(context: Context, enable:Boolean) {
+        setBoolean(context, PrefMan.Key.dynamicColorsScheme, enable)
+    }
+
+    fun getDynamicColorsScheme(context: Context): Boolean {
+        return getBoolean(context, PrefMan.Key.dynamicColorsScheme, Theme.defaultDynamicColorsValue)
+    }
 
 }

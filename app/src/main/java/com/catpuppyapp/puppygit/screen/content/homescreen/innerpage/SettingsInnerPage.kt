@@ -820,11 +820,7 @@ fun SettingsInnerPage(
                     menuItemOnClick = { _, value ->
                         selectedTheme.intValue = value
 
-                        if(value != PrefMan.getInt(activityContext, PrefMan.Key.theme, Theme.defaultThemeValue)) {
-                            val valueStr = ""+value
-                            PrefMan.set(activityContext, PrefMan.Key.theme, valueStr)
-                            AppModel.theme?.value = valueStr
-                        }
+                        Theme.updateThemeValue(activityContext, value)
                     }
                 )
             }

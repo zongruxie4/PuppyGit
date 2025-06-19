@@ -35,14 +35,12 @@ import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.reportBugsLink
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
-import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.ui.theme.InitContent
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
-import com.catpuppyapp.puppygit.utils.pref.PrefMan
 import com.catpuppyapp.puppygit.utils.showToast
 
 
@@ -66,12 +64,7 @@ class CrashActivity : ComponentActivity() {
 
 
         setContent {
-            //这页面只使用主题，不更新主题，所以不需要创建state变量
-            val theme = ""+PrefMan.getInt(applicationContext, PrefMan.Key.theme, Theme.defaultThemeValue);
-
-            PuppyGitAndroidTheme(
-                theme = theme,
-            ) {
+            InitContent(applicationContext) {
                 MainCompose(activity = this, appContext = applicationContext, errMsg) {
                     finish()
                 }

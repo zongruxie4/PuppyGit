@@ -189,10 +189,7 @@ object AppModel {
     private lateinit var logDir: File
     private lateinit var submoduleDotGitBackupDir: File
 
-    /**
-     * 存储当前Activity的主题的状态变量，弄状态变量是为了实现切换主题后不需要重启即可生效
-     */
-    var theme:MutableState<String>? = null
+
 
     //外部不应该直接获取此文件，此文件应通过DebugModeManager的setOn/Off方法维护
 //    private lateinit var debugModeFlagFile:File

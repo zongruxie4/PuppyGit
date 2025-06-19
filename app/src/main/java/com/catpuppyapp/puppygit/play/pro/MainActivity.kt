@@ -44,8 +44,7 @@ import com.catpuppyapp.puppygit.screen.shared.IntentHandler
 import com.catpuppyapp.puppygit.screen.shared.MainActivityLifeCycle
 import com.catpuppyapp.puppygit.screen.shared.setByPredicate
 import com.catpuppyapp.puppygit.screen.shared.setMainActivityLifeCycle
-import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
-import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.ui.theme.InitContent
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ContextUtil
@@ -54,7 +53,6 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.RndText
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import com.catpuppyapp.puppygit.utils.pref.PrefMan
 import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -169,13 +167,8 @@ class MainActivity : ComponentActivity() {
 
 
         setContent {
-            val theme = rememberSaveable { mutableStateOf(""+PrefMan.getInt(applicationContext, PrefMan.Key.theme, Theme.defaultThemeValue)) }
-            AppModel.theme = theme
-            PuppyGitAndroidTheme(
-                theme = theme.value,
-            ) {
+            InitContent(applicationContext) {
                 MainCompose()
-                //                Greeting(baseContext)
             }
         }
 

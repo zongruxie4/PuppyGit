@@ -61,7 +61,15 @@ object PrefMan {
         /**
          * 启动app时显示随机加载文本, 0 disable, 1 enable, default 0
          */
-        const val  showRandomLaunchingText = "showRandomLaunchingText"
+        const val showRandomLaunchingText = "showRandomLaunchingText"
+
+        /**
+         *
+         * enabled to follow system color scheme, 0 disable, 1 enable, default 1
+         * note: enable may cause colors difficult to distinguish.
+         * see: https://github.com/catpuppyapp/PuppyGit/issues/66
+         */
+        const val dynamicColorsScheme = "dynamicColorsScheme"
 
     }
 
