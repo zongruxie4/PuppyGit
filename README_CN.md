@@ -4,7 +4,6 @@
 # 小狗Git
 小狗Git 是一个安卓Git客户端，免费开源无广告
 
-### 小狗Git是有史以来第1个支持提交历史记录图形化的安卓git客户端
 
 ## 作者
 小狗Git由catpuppyapp的Bandeapart1964倾情奉献

@@ -6,7 +6,6 @@
 # PuppyGit
 PuppyGit is A Git Client for Android, Open Source and No Ads and Free to use
 
-### PuppyGit is the first android git client which support graph view of commits history
 
 ## Author
 PuppyGit made by Bandeapart1964 of catpuppyapp
