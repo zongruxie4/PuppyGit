@@ -27,6 +27,12 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 private const val TAG = "SetPageSizeDialog"
 
+
+private const val invalidPageSize = -1
+private const val minPageSize = 1  // make sure it bigger than `invalidPageSize`
+
+fun isInvalidPageSize(size:Int) = size < minPageSize
+
 @Composable
 fun SetPageSizeDialog(
     pageSizeBuf: CustomStateSaveable<TextFieldValue>,
@@ -38,13 +44,6 @@ fun SetPageSizeDialog(
 
     val activityContext = LocalContext.current
     val scope = rememberCoroutineScope()
-
-    val invalidPageSize = -1
-    val minPageSize = 1  // make sure it bigger than `invalidPageSize`
-
-    val isInvalidPageSize = { ps:Int ->
-        ps < minPageSize
-    }
 
     val focusRequester = remember { FocusRequester() }
 
