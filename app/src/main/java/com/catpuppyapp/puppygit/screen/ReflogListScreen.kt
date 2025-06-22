@@ -15,6 +15,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -44,6 +45,7 @@ import com.catpuppyapp.puppygit.compose.ReflogItem
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.SimpleTitleDropDownMenu
+import com.catpuppyapp.puppygit.compose.getDefaultCheckoutOption
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
@@ -220,6 +222,7 @@ fun ReflogListScreen(
     }
 
     val branchNameForCheckout = rememberSaveable { mutableStateOf("") }
+    val checkoutSelectedOption = rememberSaveable{ mutableIntStateOf(getDefaultCheckoutOption(false)) }
 
     if(showCheckoutDialog.value) {
         val id = (if(checkoutNew.value) curLongClickItem.value.idNew else curLongClickItem.value.idOld) ?: Cons.git_AllZeroOid
@@ -232,6 +235,8 @@ fun ReflogListScreen(
             val shortOidStr = Libgit2Helper.getShortOidStrByFull(fullOidStr)
 
             CheckoutDialog(
+                checkoutSelectedOption = checkoutSelectedOption,
+
                 showCheckoutDialog=showCheckoutDialog,
                 branchName = branchNameForCheckout,
                 from = CheckoutDialogFrom.OTHER,

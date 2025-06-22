@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -61,6 +62,7 @@ import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.TagFetchPushDialog
 import com.catpuppyapp.puppygit.compose.TagItem
+import com.catpuppyapp.puppygit.compose.getDefaultCheckoutOption
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.git.TagDto
@@ -344,11 +346,14 @@ fun TagListScreen(
     }
 
     val branchNameForCheckout = rememberSaveable { mutableStateOf("") }
+    val checkoutSelectedOption = rememberSaveable{ mutableIntStateOf(getDefaultCheckoutOption(false)) }
 
     if(showCheckoutDialog.value) {
         val item = selectedItemList.value.first()
 
         CheckoutDialog(
+            checkoutSelectedOption = checkoutSelectedOption,
+
             showCheckoutDialog=showCheckoutDialog,
             branchName = branchNameForCheckout,
             from = CheckoutDialogFrom.OTHER,

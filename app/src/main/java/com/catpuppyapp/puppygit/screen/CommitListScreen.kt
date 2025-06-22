@@ -97,6 +97,8 @@ import com.catpuppyapp.puppygit.compose.SetPageSizeDialog
 import com.catpuppyapp.puppygit.compose.SimpleCheckBox
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
+import com.catpuppyapp.puppygit.compose.getDefaultCheckoutOption
+import com.catpuppyapp.puppygit.compose.invalidCheckoutOption
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.cherrypickTestPassed
@@ -1135,9 +1137,11 @@ fun CommitListScreen(
     }
 
     val branchNameForCheckout = rememberSaveable { mutableStateOf("") }
+    val checkoutSelectedOption = rememberSaveable{ mutableIntStateOf(getDefaultCheckoutOption(false)) }
 
     if(showCheckoutDialog.value) {
         CheckoutDialog(
+            checkoutSelectedOption = checkoutSelectedOption,
             showCheckoutDialog=showCheckoutDialog,
             branchName = branchNameForCheckout,
             from = CheckoutDialogFrom.OTHER,

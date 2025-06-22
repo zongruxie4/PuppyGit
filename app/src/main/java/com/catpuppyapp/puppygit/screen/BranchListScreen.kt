@@ -77,6 +77,9 @@ import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
+import com.catpuppyapp.puppygit.compose.checkoutOptionJustCheckoutForLocalBranch
+import com.catpuppyapp.puppygit.compose.getDefaultCheckoutOption
+import com.catpuppyapp.puppygit.compose.invalidCheckoutOption
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
@@ -418,6 +421,9 @@ fun BranchListScreen(
     val remotePrefixMaybe = rememberSaveable { mutableStateOf("") }
     val isCheckoutRemoteBranch = rememberSaveable { mutableStateOf(false) }
     val checkoutLocalBranch = rememberSaveable { mutableStateOf(false) }
+    // will update when init checkout dialog
+    val checkoutSelectedOption = rememberSaveable{ mutableIntStateOf(invalidCheckoutOption) }
+
     if(showCheckoutBranchDialog.value) {
         //注意：这种写法，如果curObjInPage.value被重新赋值，本代码块将会被重复调用！不过实际不会有问题，因为显示弹窗时无法再长按条目进而无法改变本对象。
         // 另外如果在onOk里取对象也会有此问题，假如显示弹窗后对象被改变，那视图会更新，变成新对象的值，onOk最终执行时取出的对象自然也会和“最初”弹窗显示的不一致 (onOk取出的和“现在”视图显示的对象是一致的，都是修改后的值，“最初”的值已被覆盖)，
@@ -426,16 +432,18 @@ fun BranchListScreen(
         val item = curObjInPage.value
 
         CheckoutDialog(
-            showCheckoutDialog=showCheckoutBranchDialog,
+            checkoutSelectedOption = checkoutSelectedOption,
+
+            showCheckoutDialog = showCheckoutBranchDialog,
             branchName = branchNameForCheckout,
             remoteBranchShortNameMaybe = initUpstreamForCheckoutRemoteBranch.value,
             remotePrefixMaybe = remotePrefixMaybe.value,
             isCheckoutRemoteBranch = isCheckoutRemoteBranch.value,
             from = CheckoutDialogFrom.BRANCH_LIST,
-            showJustCheckout=checkoutLocalBranch.value,
+            showJustCheckout = checkoutLocalBranch.value,
             expectCheckoutType = if(checkoutLocalBranch.value) Cons.checkoutType_checkoutRefThenUpdateHead else Cons.checkoutType_checkoutRefThenDetachHead,
             shortName = item.shortName,
-            fullName=item.fullName,
+            fullName = item.fullName,
             curRepo = curRepo.value,
             curCommitOid = item.oidStr,
             curCommitShortOid = item.shortOidStr,
@@ -1610,7 +1618,15 @@ fun BranchListScreen(
                     ){
                         val curObjInPage = curObjInPage.value
                         doJobThenOffLoading {
-                            checkoutLocalBranch.value = curObjInPage.type==Branch.BranchType.LOCAL
+                            val isCheckLocalBranch = curObjInPage.type == Branch.BranchType.LOCAL
+                            checkoutLocalBranch.value = isCheckLocalBranch
+                            val showJustCheckout = isCheckLocalBranch
+                            if(checkoutSelectedOption.intValue == invalidCheckoutOption
+                                // just checkout unavailable but selected it, need reset to other option
+                                || (showJustCheckout.not() && checkoutSelectedOption.intValue == checkoutOptionJustCheckoutForLocalBranch)
+                            ) {
+                                checkoutSelectedOption.intValue = getDefaultCheckoutOption(showJustCheckout)
+                            }
 
                             val isCheckoutRemote = curObjInPage.type == Branch.BranchType.REMOTE
                             isCheckoutRemoteBranch.value =  isCheckoutRemote

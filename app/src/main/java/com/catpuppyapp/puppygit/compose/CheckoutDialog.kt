@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -40,9 +40,22 @@ import com.github.git24j.core.Repository
 
 private const val TAG = "CheckoutDialog"
 
+// 对应option text索引
+private const val checkoutOptionDontUpdateHead = 0
+private const val checkoutOptionDetachHead = 1
+private const val checkoutOptionCreateBranch = 2
+const val checkoutOptionJustCheckoutForLocalBranch = 3
+
+private const val maxCheckoutSelectedOptionIndex = checkoutOptionJustCheckoutForLocalBranch
+
+const val invalidCheckoutOption = -1
+
+
+fun getDefaultCheckoutOption(showJustCheckout: Boolean) =  if(showJustCheckout) checkoutOptionJustCheckoutForLocalBranch else checkoutOptionCreateBranch
 
 @Composable
 fun CheckoutDialog(
+    checkoutSelectedOption: MutableIntState,
     branchName: MutableState<String>,
     // this may will be remote branch short name without remote prefix when check out any remote branch
     remoteBranchShortNameMaybe:String = "",
@@ -73,21 +86,15 @@ fun CheckoutDialog(
 
     val activityContext = LocalContext.current
 
-    val checkoutOptionDontUpdateHead = 0
-    val checkoutOptionDetachHead = 1
-    val checkoutOptionCreateBranch = 2
-    val checkoutOptionJustCheckoutForLocalBranch = 3
-    val checkoutOptionDefault = if(showJustCheckout) checkoutOptionJustCheckoutForLocalBranch else checkoutOptionCreateBranch  //默认选中创建分支，detach head如果没reflog，有可能丢数据
     val checkoutRemoteOptions = listOf(
-        activityContext.getString(R.string.dont_update_head),
+        stringResource(R.string.dont_update_head),
 //        activityContext.getString(R.string.detach_head),
         Cons.gitDetachHeadStr,  //这个感觉不翻译好一些
-        activityContext.getString(R.string.new_branch) + "(" + activityContext.getString(R.string.recommend) + ")",
+        stringResource(R.string.new_branch),
         stringResource(R.string.just_checkout)
     )
 
 
-    val checkoutSelectedOption = rememberSaveable{ mutableIntStateOf(checkoutOptionDefault) }
     val checkoutUserInputCommitHash = rememberSaveable { mutableStateOf("") }
     val forceCheckout = rememberSaveable { mutableStateOf(false) }
     val dontCheckout = rememberSaveable { mutableStateOf(false) }
@@ -102,6 +109,10 @@ fun CheckoutDialog(
 
         //请求checkout to hash但没填hash，返回假
         if(requireUserInputCommitHash && checkoutUserInputCommitHash.value.isBlank()) {
+            return@getCheckoutOkBtnEnabled false
+        }
+
+        if(checkoutSelectedOption.intValue.let { it < 0 || it > maxCheckoutSelectedOptionIndex }) {
             return@getCheckoutOkBtnEnabled false
         }
 
