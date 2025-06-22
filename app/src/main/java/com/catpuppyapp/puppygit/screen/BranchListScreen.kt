@@ -1938,7 +1938,7 @@ fun BranchListScreen(
                             fullOid = it.oidStr,
                             shortBranchName = it.shortName,
                             isHEAD = it.isCurrent,
-                            from = CommitListFrom.BRANCH_LIST,
+                            from = CommitListFrom.BRANCH,
                         )
                     }
 

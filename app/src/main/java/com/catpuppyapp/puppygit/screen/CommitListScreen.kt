@@ -1095,7 +1095,7 @@ fun CommitListScreen(
 
             // tag name same but create still succeed, it means force create tag checked, need refresh full list
             val tagNameIfFromTagList = shortBranchName
-            if(from == CommitListFrom.TAG_LIST && nameOfNewTag.value == tagNameIfFromTagList) {
+            if(from == CommitListFrom.TAG && nameOfNewTag.value == tagNameIfFromTagList) {
                 fullyRefresh()
             }else {
                 // force checked, need remove old tag if exists
@@ -1164,7 +1164,7 @@ fun CommitListScreen(
             loadingOff = loadingOff,
             onlyUpdateCurItem = from != CommitListFrom.FOLLOW_HEAD,
             headChangedCallback = {
-                if(from == CommitListFrom.BRANCH_LIST) {
+                if(from == CommitListFrom.BRANCH) {
                     isHEAD.value = false
 
                     // update repo info only, dont reload the commit list

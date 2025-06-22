@@ -162,7 +162,7 @@ fun fromTagToCommitHistory(fullOid:String, shortName:String, repoId:String){
         fullOid = fullOid,
         shortBranchName = shortName,
         isHEAD = false,
-        from = CommitListFrom.TAG_LIST,
+        from = CommitListFrom.TAG,
     )
 }
 
