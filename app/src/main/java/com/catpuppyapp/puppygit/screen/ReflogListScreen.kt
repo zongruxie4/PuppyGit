@@ -278,7 +278,7 @@ fun ReflogListScreen(
                 closeDialog=closeResetDialog,
                 repoFullPath = curRepo.value.fullSavePath,
                 repoId=curRepo.value.id,
-                refreshPage = { oldHeadCommitOid, isDetached ->
+                refreshPage = { _, _, _ ->
                     changeStateTriggerRefreshPage(needRefresh)
                 }
             )

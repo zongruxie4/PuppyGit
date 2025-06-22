@@ -1188,9 +1188,8 @@ fun CommitListScreen(
             closeDialog=closeResetDialog,
             repoFullPath = curRepo.value.fullSavePath,
             repoId=curRepo.value.id,
-            refreshPage = { oldHeadCommitOid, isDetached ->
+            refreshPage = { oldHeadCommitOid, isDetached, resetTargetCommitOid ->
                 val curRepo = curRepo.value
-                val curCommit = curCommit.value
 
                 //顺便更新下仓库的detached状态，因为若从分支条目进来，不怎么常刷新页面，所以仓库状态可能过时
                 curRepo.isDetached = boolToDbInt(isDetached)
@@ -1198,7 +1197,7 @@ fun CommitListScreen(
                 //如果从仓库卡片点击提交号进入 或 从分支列表点击分支条目进入但点的是当前HEAD指向的分支，则刷新页面，重载列表
                 if(!useFullOid || isHEAD) {  // from repoCard tap commit hash in this page or from branch list tap branch of HEAD, will in this if block
                     //从分支页面进这个页面，不会强制重刷列表，但如果当前显示的分支是仓库的当前分支(被HEAD指向)，那如果reset hard 成功，就得更新下提交列表，于是，就通过更新fullOid来重设当前页面的起始hash
-                    fullOid.value = curCommit.oidStr  // only make sense when come this page from branch list page with condition `useFullOid==true && isCurrent==true`,update it for show latest commit list of current branch of repo when hard reset success.
+                    fullOid.value = resetTargetCommitOid  // only make sense when come this page from branch list page with condition `useFullOid==true && isCurrent==true`,update it for show latest commit list of current branch of repo when hard reset success.
                     fullyRefresh()
                 }else if(!isDetached) {  //useFullOid==true && isCurrent==false, from branch list page tap a branch item which is not pointed by HEAD(isCurrent==false), will in this block
 
@@ -1220,7 +1219,7 @@ fun CommitListScreen(
                     // update target of reset to make it's branch list contains current branch
                     runCatching {
                         refreshCommitByPredicate(curRepo) {
-                            it.oidStr == curCommit.oidStr
+                            it.oidStr == resetTargetCommitOid
                         }
                     }
 

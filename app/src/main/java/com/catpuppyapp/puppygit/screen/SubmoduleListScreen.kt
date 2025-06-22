@@ -529,7 +529,7 @@ fun SubmoduleListScreen(
 
             repoFullPath = curRepo.value.fullSavePath,  // no use at here
             repoId=repoId,  // no use at here
-            refreshPage = {_,_-> },  // no use at here
+            refreshPage = {_, _, _-> },  // no use at here
 
             onOk = { resetType->
                 closeResetDialog()

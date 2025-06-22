@@ -32,7 +32,7 @@ fun ResetDialog(
     repoId:String,
     closeDialog: () -> Unit,
     onOk:((resetType:Reset.ResetT)->Unit)? =null,  // here only passing reset type, the target hash can get from `fullOidOrBranchOrTag`, it's passed by caller, so caller can get it, no need passing at here
-    refreshPage: (oldHeadCommitOid:String, isDetached:Boolean)->Unit,  //入参为Hard Reset之前HEAD指向的commit id和仓库是否detached。这个detached在这只是顺手判断，commitList页面要用到这个参数，但那个页面的curRepo若是从分支页面进入，则很少更新，所以，在这顺便更新下detached状态以尽量确保那个对象能持有准确的状态
+    refreshPage: (oldHeadCommitOid:String, isDetached:Boolean, resetTargetCommitOid:String)->Unit,  //入参为Hard Reset之前HEAD指向的commit id和仓库是否detached。这个detached在这只是顺手判断，commitList页面要用到这个参数，但那个页面的curRepo若是从分支页面进入，则很少更新，所以，在这顺便更新下detached状态以尽量确保那个对象能持有准确的状态
 ) {
 
     val activityContext = LocalContext.current
@@ -135,15 +135,16 @@ fun ResetDialog(
                                 }
 
                                 val commit = commitRet.data!!
+                                val resetTargetCommitOid = commit.id().toString()
 
-                                val ret = Libgit2Helper.resetToRevspec(repo, commit.id().toString(), type)
+                                val ret = Libgit2Helper.resetToRevspec(repo, resetTargetCommitOid, type)
                                 if (ret.hasError()) {
                                     Msg.requireShowLongDuration(ret.msg)
                                     createAndInsertError(repoId, "Reset $type err: "+ret.msg)
                                 } else {
                                     val oldHeadCommitOid = oldHead?.id()?.toString() ?: ""
                                     //如果操作成功，刷新页面
-                                    refreshPage(oldHeadCommitOid, repo.headDetached())
+                                    refreshPage(oldHeadCommitOid, repo.headDetached(), resetTargetCommitOid)
 
                                     Msg.requireShow(activityContext.getString(R.string.reset_success))
                                 }

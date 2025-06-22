@@ -1047,7 +1047,7 @@ fun BranchListScreen(
             closeDialog=closeResetDialog,
             repoFullPath = curRepo.value.fullSavePath,
             repoId=curRepo.value.id,
-            refreshPage = {_, _ ->
+            refreshPage = {_, _, _ ->
                 changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload)
             }
         )
