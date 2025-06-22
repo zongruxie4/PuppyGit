@@ -6353,7 +6353,7 @@ object Libgit2Helper {
                 dotGitDir.deleteRecursively()
             }
         } else {
-            MyLog.d(TAG, "remove .git file err: .git file doesn't exists or doesn't include a valid path")
+            MyLog.d(TAG, "remove '.git' file err: '.git' file doesn't exist or doesn't include a valid path")
         }
 
         // delete workdir (note: must delete this after delete .git folder, because this will delete .git file, if order change, it will can't find .git folder, then .git folder will keep
@@ -6557,7 +6557,7 @@ object Libgit2Helper {
             SubmoduleDotGitFileMan.restoreDotGitFileForSubmodule(repoFullPathNoSlashSuffix, submodulePath)
 
 
-            //clone failed and repo doesn't existed on disk
+            //clone failed and repo doesn't exist on disk
             if(subRepo==null) {
                 MyLog.e(TAG, "#cloneSubmodules: clone submodule '$name' for '${File(repoFullPathNoSlashSuffix).name}' err")
                 return@forEach

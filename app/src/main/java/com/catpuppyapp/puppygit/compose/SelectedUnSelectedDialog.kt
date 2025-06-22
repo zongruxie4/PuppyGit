@@ -118,7 +118,7 @@ fun <T> SelectedUnSelectedList(
                     }else {
                         filteredSelectedList.forEachBetter {
                             item {
-                                MySelectionContainer {
+                                Column {
                                     selectedItemFormatter(it)
                                 }
                             }
@@ -138,7 +138,7 @@ fun <T> SelectedUnSelectedList(
                     }else {
                         filteredUnselectedList.forEachBetter {
                             item {
-                                MySelectionContainer {
+                                Column {
                                     unselectedItemFormatter(it)
                                 }
                             }
