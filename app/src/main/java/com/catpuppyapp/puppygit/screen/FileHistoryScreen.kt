@@ -166,7 +166,7 @@ fun FileHistoryScreen(
 
     //page size for load more
     val pageSize = rememberSaveable{ mutableStateOf(settings.fileHistoryPageSize) }
-    val rememberPageSize = rememberSaveable { mutableStateOf(false) }
+    val rememberPageSize = rememberSaveable { mutableStateOf(true) }
 
     val nextCommitOid = mutableCustomStateOf<Oid>(
         keyTag = stateKeyTag,
@@ -581,6 +581,7 @@ fun FileHistoryScreen(
     if(showSetPageSizeDialog.value) {
         SetPageSizeDialog(
             pageSizeBuf = pageSizeForDialog,
+            pageSize = pageSize,
             rememberPageSize = rememberPageSize,
             trueCommitHistoryFalseFileHistory = false,
             closeDialog = {showSetPageSizeDialog.value=false}

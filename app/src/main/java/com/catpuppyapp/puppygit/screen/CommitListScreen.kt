@@ -428,7 +428,7 @@ fun CommitListScreen(
 
     //page size for load more
     val pageSize = rememberSaveable{ mutableStateOf(settings.commitHistoryPageSize) }
-    val rememberPageSize = rememberSaveable { mutableStateOf(false) }
+    val rememberPageSize = rememberSaveable { mutableStateOf(true) }
 
     val nextCommitOid = mutableCustomStateOf<Oid>(
         keyTag = stateKeyTag,
@@ -1676,6 +1676,7 @@ fun CommitListScreen(
     if(showSetPageSizeDialog.value) {
         SetPageSizeDialog(
             pageSizeBuf = pageSizeForDialog,
+            pageSize = pageSize,
             rememberPageSize = rememberPageSize,
             trueCommitHistoryFalseFileHistory = true,
             closeDialog = {showSetPageSizeDialog.value=false}

@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -29,12 +30,15 @@ private const val TAG = "SetPageSizeDialog"
 @Composable
 fun SetPageSizeDialog(
     pageSizeBuf: CustomStateSaveable<TextFieldValue>,
+    pageSize: MutableState<Int>,
     rememberPageSize: MutableState<Boolean>,
     trueCommitHistoryFalseFileHistory: Boolean,
     closeDialog:()->Unit,
 ) {
 
     val activityContext = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     val invalidPageSize = -1
     val minPageSize = 1  // make sure it bigger than `invalidPageSize`
 
@@ -82,7 +86,8 @@ fun SetPageSizeDialog(
             }
 
             if(!isInvalidPageSize(newPageSize)) {
-                pageSizeBuf.value = TextFieldValue(newPageSize.toString())
+                pageSize.value = newPageSize
+//                pageSizeBuf.value = TextFieldValue(newPageSize.toString())
 
                 if(rememberPageSize.value) {
                     SettingsUtil.update {
@@ -100,5 +105,5 @@ fun SetPageSizeDialog(
         }
     }
 
-    LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
+    Focuser(focusRequester, scope)
 }
