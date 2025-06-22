@@ -5,7 +5,9 @@ enum class CommitListFrom(val code: String) {
 
     // from repos or changelist, need follow head changes
     FOLLOW_HEAD("2"),
-    OTHER("3");
+    OTHER("3"),
+    TAG_LIST("4"),
+    ;
 
     companion object {
         fun fromCode(code: String): CommitListFrom? {

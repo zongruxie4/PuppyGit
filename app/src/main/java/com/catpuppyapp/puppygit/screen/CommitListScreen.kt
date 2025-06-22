@@ -1091,27 +1091,35 @@ fun CommitListScreen(
                 return@success
             }
 
-            // force checked, need remove old tag if exists
-            if(overwriteIfNameExistOfNewTag.value) {
-                // update old commit which pointed by tag
-                try {
-                    refreshCommitByPredicate(curRepo.value) {
-                        it.tagShortNameList.contains(nameOfNewTag.value)
-                    }
-                }catch (e: Exception) {
-                    //记不记没啥意义
-//                    MyLog.d(TAG, "remove tag from commit err")
-                }
-            }
+            fullOid.value = newTagOidStr
 
-            // update commit to let it add new tag to its tag list,
-            // the target commit is pointed by new tag (this commit is long pressed target by user)
-            runCatching {
-                refreshCommitByPredicate(curRepo.value) {
-                    it.oidStr == newTagOidStr
+            // tag name same but create still succeed, it means force create tag checked, need refresh full list
+            val tagNameIfFromTagList = shortBranchName
+            if(from == CommitListFrom.TAG_LIST && nameOfNewTag.value == tagNameIfFromTagList) {
+                fullyRefresh()
+            }else {
+                // force checked, need remove old tag if exists
+                if(overwriteIfNameExistOfNewTag.value) {
+                    // update old commit which pointed by tag
+                    try {
+                        refreshCommitByPredicate(curRepo.value) {
+                            it.tagShortNameList.contains(nameOfNewTag.value)
+                        }
+                    }catch (e: Exception) {
+                        //记不记没啥意义
+//                    MyLog.d(TAG, "remove tag from commit err")
+                    }
                 }
+
+                // update commit to let it add new tag to its tag list,
+                // the target commit is pointed by new tag (this commit is long pressed target by user)
+                runCatching {
+                    refreshCommitByPredicate(curRepo.value) {
+                        it.oidStr == newTagOidStr
+                    }
+                }
+                //创建tag后没必要刷新整个页面，更新对应commit即可
             }
-              //创建tag后没必要刷新整个页面，更新对应commit即可
         }
     }
 
