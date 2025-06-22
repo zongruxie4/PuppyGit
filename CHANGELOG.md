@@ -2,6 +2,14 @@
 
 
 ---
+1.1.2.9v105 - 20250623:
+- fix: reset and checkout err
+
+
+
+- 修复重置和检出错误
+
+---
 1.1.2.8v104 - 20250618:
 - fix: colors difficult to distinguish in some cases (issue: #66, thx RokeJulianLockhart)
 
