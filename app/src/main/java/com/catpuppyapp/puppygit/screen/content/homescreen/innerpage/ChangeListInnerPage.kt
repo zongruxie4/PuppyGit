@@ -3026,7 +3026,6 @@ fun ChangeListInnerPage(
                                             repoId = curRepo.id,
                                             fullOid = "",  //这里不需要传分支名，会通过HEAD解析当前分支
                                             shortBranchName = "",
-                                            useFullOid = false,
                                             isHEAD = true
                                         )
                                     }

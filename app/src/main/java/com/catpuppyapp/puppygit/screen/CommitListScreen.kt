@@ -172,7 +172,6 @@ fun CommitListScreen(
 
 
 
-    useFullOid:Boolean,
 //    isCurrent:Boolean, // HEAD是否指向当前分支
 
     /*
@@ -1148,7 +1147,7 @@ fun CommitListScreen(
             requireUserInputCommitHash = requireUserInputCommitHash.value,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
-            onlyUpdateCurItem = useFullOid,
+            onlyUpdateCurItem = !isHEAD,
             updateCurItem = {curItemIdx, fullOid, forceCreateBranch, branchName->
                 // remove branch from commit list if force created checked
                 if(forceCreateBranch) {
@@ -1194,18 +1193,16 @@ fun CommitListScreen(
                 //顺便更新下仓库的detached状态，因为若从分支条目进来，不怎么常刷新页面，所以仓库状态可能过时
                 curRepo.isDetached = boolToDbInt(isDetached)
 
-                //如果从仓库卡片点击提交号进入 或 从分支列表点击分支条目进入但点的是当前HEAD指向的分支，则刷新页面，重载列表
-                if(!useFullOid || isHEAD) {  // from repoCard tap commit hash in this page or from branch list tap branch of HEAD, will in this if block
-                    //从分支页面进这个页面，不会强制重刷列表，但如果当前显示的分支是仓库的当前分支(被HEAD指向)，那如果reset hard 成功，就得更新下提交列表，于是，就通过更新fullOid来重设当前页面的起始hash
-                    fullOid.value = resetTargetCommitOid  // only make sense when come this page from branch list page with condition `useFullOid==true && isCurrent==true`,update it for show latest commit list of current branch of repo when hard reset success.
+                // maybe not use, but update is ok
+                fullOid.value = resetTargetCommitOid
+
+                // if is HEAD, after reset, need fully refresh whole list;
+                //  else only need update branch list when repo not under detached HEAD
+                if(isHEAD) {
                     fullyRefresh()
-                }else if(!isDetached) {  //useFullOid==true && isCurrent==false, from branch list page tap a branch item which is not pointed by HEAD(isCurrent==false), will in this block
-
-                    //需要更新两个提交：一个是当前hard reset的目标提交，需要更新信息以使其显示刚才HEAD关联的分支名；一个是HEAD在reset之前指向的提交，需更新以使其删除HEAD当前关联的分支名。
-                    //执行到这，代表在分支页面点击分支条目进入提交列表，然后长按某个commit执行了reset，这时，如果当前非detached HEAD，则当前HEAD指向的分支会指向当前提交，所以应当更新当前选中的提交信息以显示新指向它的分支
-                    //遍历当前列表，若包含上个提交号，则更新其信息（目的是为了移除HEAD之前指向的分支的首个提交上的分支名，现在那个分支头已经被Hard Reset到新分支上了，不应再在旧提交上显示)
-                    //如果当前非detached，遍历commits条目，把当前分支从旧commit的分支列表移除；if is detached, Hard Reset will not update any branch, so need not update commit info
-
+                }else if(!isDetached) {
+                    // if is not detached, update old and target commit to let them show branch list correctly;
+                    //  if is detached, no branch need update, because, detached HEAD, you know
 
                     // update commit which contains cur branch to remove branch from it's branch list
                     runCatching {
@@ -1216,7 +1213,7 @@ fun CommitListScreen(
                         }
                     }
 
-                    // update target of reset to make it's branch list contains current branch
+                    // update reset target to make it's branch list contains current branch
                     runCatching {
                         refreshCommitByPredicate(curRepo) {
                             it.oidStr == resetTargetCommitOid
@@ -1704,7 +1701,7 @@ fun CommitListScreen(
                             },
                         )
                     }else{
-                        val repoAndBranchText = if(useFullOid) branchShortNameOrShortHashByFullOidForShowOnTitle.value else repoOnBranchOrDetachedHash.value
+                        val repoAndBranchText = if(isHEAD) repoOnBranchOrDetachedHash.value else branchShortNameOrShortHashByFullOidForShowOnTitle.value
                         Column(
                             modifier = Modifier.combinedClickable(
                                 onDoubleClick = {
@@ -2445,7 +2442,7 @@ fun CommitListScreen(
 //            val isDetached = dbIntToBool(repoFromDb.isDetached)
 
                 Repository.open(repoFullPath).use { repo ->
-                    headOidOfThisScreen.value = if(!useFullOid) {  // resolve head
+                    headOidOfThisScreen.value = if(isHEAD) {  // resolve head
                         val head = Libgit2Helper.resolveHEAD(repo)
                         if (head == null) {
                             MyLog.w(TAG, "#LaunchedEffect: head is null! repoId=$repoId}")

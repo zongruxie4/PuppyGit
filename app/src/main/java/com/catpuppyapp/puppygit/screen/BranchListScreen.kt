@@ -1922,7 +1922,6 @@ fun BranchListScreen(
                             repoId = repoId,
                             fullOid = it.oidStr,
                             shortBranchName = it.shortName,
-                            useFullOid = true,
                             isHEAD = it.isCurrent
                         )
                     }

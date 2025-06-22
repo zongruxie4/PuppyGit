@@ -98,13 +98,12 @@ fun AppScreenNavigator() {
             Profile(navController, backStackEntry.arguments?.getString("userId"))
             }
          */
-        composable(Cons.nav_CommitListScreen + "/{repoId}/{useFullOid}/{isHEAD}/{fullOidCacheKey}/{shortBranchNameCacheKey}") {
+        composable(Cons.nav_CommitListScreen + "/{repoId}/{isHEAD}/{fullOidCacheKey}/{shortBranchNameCacheKey}") {
             val fullOidCacheKey = it.arguments?.getString("fullOidCacheKey") ?: ""
             val shortBranchNameCacheKey = it.arguments?.getString("shortBranchNameCacheKey") ?: ""
 
             CommitListScreen(
                 repoId = it.arguments?.getString("repoId")?:"",
-                useFullOid = it.arguments?.getString("useFullOid") != "0",  //非0就为真
                 isHEAD = it.arguments?.getString("isHEAD") != "0",
                 fullOidCacheKey = fullOidCacheKey,
                 shortBranchNameCacheKey = shortBranchNameCacheKey,
