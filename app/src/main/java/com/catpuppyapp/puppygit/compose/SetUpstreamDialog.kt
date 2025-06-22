@@ -93,7 +93,11 @@ fun SetUpstreamDialog(
                     Text(text = stringResource(R.string.set_upstream_for_branch)+":")
                 }
                 MySelectionContainer {
-                    Row(modifier = Modifier.fillMaxWidth(),
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
+                        ,
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text(text = curBranchShortName,
@@ -105,7 +109,7 @@ fun SetUpstreamDialog(
 //                Row(modifier = Modifier.padding(10.dp)) {
 //                    Text(text = stringResource(R.string.set_upstream_text))
 //                }
-                Row(modifier = Modifier.padding(10.dp)) {
+                DefaultPaddingRow {
                     Text(text = stringResource(R.string.select_a_remote)+":")
                 }
                 //下拉列表，弹窗显示这个会崩溃，日后不崩溃了再启用
@@ -120,8 +124,10 @@ fun SetUpstreamDialog(
 
                 }
 
-                Row(modifier = Modifier.padding(5.dp)) {
+                Spacer(Modifier.height(20.dp))
 
+                DefaultPaddingRow {
+                    Text(stringResource(R.string.upstream_branch_name)+":")
                 }
                 TextField(
                     modifier = Modifier
@@ -135,39 +141,11 @@ fun SetUpstreamDialog(
                     onValueChange = {
                         upstreamBranchShortName.value = it
                     },
-                    label = {
-                        Text(stringResource(R.string.set_upstream_branch_name))
-                    },
-                    placeholder = {
-                        Text(stringResource(R.string.upstream_branch_name))
-                    }
                 )
 
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(MyStyleKt.CheckoutBox.height)
-                        .toggleable(
-                            enabled = true,
-                            value = upstreamBranchShortNameSameWithLocal.value,
-                            onValueChange = {
-                                upstreamBranchShortNameSameWithLocal.value = !upstreamBranchShortNameSameWithLocal.value
-                            },
-                            role = Role.Checkbox
-                        )
-                        .padding(horizontal = MyStyleKt.defaultHorizontalPadding),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = upstreamBranchShortNameSameWithLocal.value,
-                        onCheckedChange = null // null recommended for accessibility with screenreaders
-                    )
-                    Text(
-                        text = stringResource(R.string.same_with_local),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 16.dp),
-                    )
-                }
+                Spacer(Modifier.height(10.dp))
+                MyCheckBox(stringResource(R.string.same_with_local), upstreamBranchShortNameSameWithLocal)
+
 
             }
 
