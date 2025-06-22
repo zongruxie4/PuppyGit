@@ -72,14 +72,10 @@ fun CheckoutDialog(
     requireUserInputCommitHash:Boolean, //是否请求用户输入hash，若请求显示输入框。（ps 其实当初应该设计为显示输入框，且输入框默认值为fullOid的值就行了
     loadingOn:(String)->Unit,
     loadingOff:()->Unit,
-    onlyUpdateCurItem:Boolean = false,  //在操作完成后，若此值为true仅执行updateCurItem，否则执行refreshPage。（ps：创建分支或tag后，只需要更新当前条目，不用刷新整个页面，刷新页面会重置列表，所以不要轻易刷新
-    updateCurItem:(curItemIdx:Int, fullOid:String, forceCreateBranch:Boolean, branchName:String) -> Unit =  {_, _, _, _ -> },  // curItemIdx代表需要更新的条目在列表中的索引; fullOid用来重新查询commit信息
     headChangedCallback:() -> Unit = {},
-    refreshPage:()->Unit,  //刷新页面，若不需要刷新可传空
-    curCommitIndex:Int,  //当前条目索引，若不需要调用updateCurItem更新当前item或期望通过findCurItemIdxInList查找索引，此值可传-1
+    refreshPage:(maybeNeedNotFullyRefresh:Boolean, fullOid:String, forceCreateBranch:Boolean, branchName:String) -> Unit,  //刷新页面，若不需要刷新可传空
     expectCheckoutType:Int,  //期望的checkout类型，不一定会采用，但可确定调用checkout的是谁，是远程分支还是本地分支还是别的
     showJustCheckout:Boolean= false,  //参数原名：`checkoutLocalBranch`。 作用：显示一个just checkout选项并默认选中，一般只有checkout本地分支时才需要设此值为true
-    findCurItemIdxInList:(oid:String)->Int,  //实现一个函数从list找到当前条目id，然后把id传给updateCurItem函数更新条目，若不需要更新列表条目，可返回-1
 ) {
 
     val repoId = curRepo.id
@@ -340,11 +336,11 @@ fun CheckoutDialog(
         val curCommitOidOrRefName = if(useUserInputHash) checkoutUserInputCommitHash else if(expectCheckoutType==Cons.checkoutType_checkoutCommitThenDetachHead) curCommitOid else fullName
         val curCommitShortOidOrShortRefName = if(useUserInputHash) checkoutUserInputCommitHash else if(expectCheckoutType==Cons.checkoutType_checkoutCommitThenDetachHead) curCommitShortOid else shortName
         val localBranchWillCreate = branchName.value
-        val repoFullPath = curRepo.fullSavePath
+//        val repoFullPath = curRepo.fullSavePath
 //                val curRepoId = curRepo.id  //这个和页面的repoId参数一样，所以直接用那个就行
-        val curCommitIndex = if(useUserInputHash || curCommitIndex<0) -1 else curCommitIndex  //用于在checkout长按选择的当前提交失败时更新当前提交信息，如果checkout为分支，其实分两个步骤，一个创建分支，一个checkout分支，若1成功，2失败，则checkout返回失败，但这时当前提交已经改变，至少分支列表会多出刚才创建的那个分支，所以需要重新获取commit信息。如果是用户输入提交号checkout，则无需更新提交条目，此值应设为一个无效索引值，例如-1（当然，用户可能手动输入提交号，而那个提交号显示在列表中，这时其实需要更新那个提交条目的信息，但是无法预判用户会输入什么，而且不更新也问题不大，所以忽略）
+//        val curCommitIndex = if(useUserInputHash || curCommitIndex<0) -1 else curCommitIndex  //用于在checkout长按选择的当前提交失败时更新当前提交信息，如果checkout为分支，其实分两个步骤，一个创建分支，一个checkout分支，若1成功，2失败，则checkout返回失败，但这时当前提交已经改变，至少分支列表会多出刚才创建的那个分支，所以需要重新获取commit信息。如果是用户输入提交号checkout，则无需更新提交条目，此值应设为一个无效索引值，例如-1（当然，用户可能手动输入提交号，而那个提交号显示在列表中，这时其实需要更新那个提交条目的信息，但是无法预判用户会输入什么，而且不更新也问题不大，所以忽略）
 
-        val repoName = curRepo.repoName
+//        val repoName = curRepo.repoName
 
         //detach head和创建新分支都需要更新head，前者HEAD指向提交，后者指向新创建的分支。但如果是不更新head，则不会更新head，只会checkout文件到worktree
         //ps：把需要不需要更新head的条件列出来然后取反比较简单
@@ -375,7 +371,7 @@ fun CheckoutDialog(
 
 
         //后来添加了创建分支但不checkout，这种情况也仅需更新当前条目不用刷新完整页面，设置一下，不过目前（20240822）仅commitlist页面需要刷新单条目，分支和tag页面checkout完后都是直接刷新整个页面
-        val onlyUpdateCurItem = onlyUpdateCurItem || (checkoutSelectedOption.intValue == checkoutOptionCreateBranch && dontCheckout && from != CheckoutDialogFrom.BRANCH_LIST)
+//        val onlyUpdateCurItem = onlyUpdateCurItem || (checkoutSelectedOption.intValue == checkoutOptionCreateBranch && dontCheckout && from != CheckoutDialogFrom.BRANCH_LIST)
 
         //执行checkout
         doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.checking_out)) {
@@ -457,28 +453,13 @@ fun CheckoutDialog(
                             }
                         }
 
-                        // if come from branch list page, need update commit info for new branch. if come from repoCard need not do it at here, because will refresh page(reload all commits) in that case :)
-                        if(onlyUpdateCurItem) {
-                            //从分支页面点击条目进入的，不需要刷新页面，如果创建分支成功，提交关联的分支列表会变化，这时把当前提交条目更新下即可
-                            val commitIndexNeedUpdate = if(curCommitIndex == -1) {  //userUserInputHash为true 或 直接传来的就是无效值，则此值会为-1
-                                //在列表找下当前创建的分支关联的提交hash，如果能找到，就更新下，找不到说明没加载，用户根本看不到，不用管
-                                findCurItemIdxInList(curCommitOidOrRefName)  //目前仅提交页面需更新，因为可能基于提交新建分支之类的，分支和tag页面不用更新，另外：分支和tag页面若需更新应根据完整引用名查找而不是hash，因为hash在分支和tag页面有可能重复
-                            } else {  //用户长按条目选择的checkout，这种情况直接把索引传进来即可，不需要再使用fulloid去查列表
-                                curCommitIndex
-                            }
 
-                            //把新创建的分支关联的commit条目更新一下，因为上面需要多显示一个新分支
-                            // note: need not validate index at here, it will validate when into updateCurCommitInfo, if index invalid, nothing to do
-                            updateCurItem(commitIndexNeedUpdate, branchHeadFullHash, overwriteIfBranchExist.value, localBranchWillCreate)
-                        }
 
                         Msg.requireShow(activityContext.getString(R.string.create_branch_success))
 
                         if(dontCheckout) {
-                            //如果不需要checkout，在这就能返回了，返回前检查下是否需要刷新页面（ps：如果是仅更新当前条目，创建分支后的代码已经处理，这里不用判断）
-                            if(!onlyUpdateCurItem) {  //从仓库卡片点击提交号进入的，操作成功直接刷新页面即可
-                                refreshPage()
-                            }
+                            val maybeNeedNotFullyRefresh = true
+                            refreshPage(maybeNeedNotFullyRefresh, branchHeadFullHash, overwriteIfBranchExist.value, localBranchWillCreate)
 
                             return@doJobThenOffLoading
                         }
@@ -523,8 +504,11 @@ fun CheckoutDialog(
                 }
 
                 //checkout成功强制刷新页面，失败的话，在上面就返回了，所以不会刷新页面
-                if(!onlyUpdateCurItem && checkoutSelectedOption.intValue != checkoutOptionDontUpdateHead) {  //从仓库卡片点击提交号进入的，操作成功直接刷新页面即可
-                    refreshPage()
+                if(checkoutSelectedOption.intValue != checkoutOptionDontUpdateHead) {  //从仓库卡片点击提交号进入的，操作成功直接刷新页面即可
+                    val maybeNeedNotFullyRefresh = false
+
+                    val headOidStr = Repository.open(curRepo.fullSavePath).use { repo -> Libgit2Helper.resolveHEAD(repo)?.id()?.toString()?:"" }
+                    refreshPage(maybeNeedNotFullyRefresh, headOidStr, overwriteIfBranchExist.value, localBranchWillCreate)
                 }
 
 //                    requireShowToast(appContext.getString(R.string.checkout_success))  // doCheckoutBranch里已经显示了成功通知了
@@ -537,18 +521,9 @@ fun CheckoutDialog(
                 // 会感觉这滚动有点莫名其妙，想再找之前的commit也不好找。
 
                 //checkout如果失败，重新获取一下当前checkout的提交号的信息，因为有可能checkout时有可能某个阶段失败，但提交已经被改变，例如：创建分支成功，但后续的checkout失败，这时候其实这个提交已经有关联的分支了
-                try {
-                    val commitIndexNeedUpdate = if(curCommitIndex == -1) {
-                        //在列表找下当前创建的分支关联的提交hash，如果能找到，就更新下，找不到说明没加载，用户根本看不到，不用管
-                        findCurItemIdxInList(curCommitOidOrRefName)  //目前仅提交页面需更新，因为可能基于提交新建分支之类的，分支和tag页面不用更新，另外：分支和tag页面若需更新应根据完整引用名查找而不是hash，因为hash在分支和tag页面有可能重复
-                    } else {  //用户长按条目选择的checkout，这种情况直接把索引传进来即可，不需要再使用fulloid去查列表
-                        curCommitIndex
-                    }
+                val maybeNeedNotFullyRefresh = true
+                refreshPage(maybeNeedNotFullyRefresh, curCommitOidOrRefName, overwriteIfBranchExist.value, localBranchWillCreate)
 
-                    updateCurItem(commitIndexNeedUpdate, curCommitOidOrRefName, overwriteIfBranchExist.value, localBranchWillCreate)
-                } catch (e: Exception) {
-                    MyLog.w(TAG, "err: try update item info failed when checkout, err=" + e.localizedMessage)
-                }
 
                 //显示通知
                 Msg.requireShowLongDuration("err: " + e.localizedMessage)

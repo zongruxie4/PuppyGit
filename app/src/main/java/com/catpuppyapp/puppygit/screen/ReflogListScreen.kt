@@ -249,11 +249,9 @@ fun ReflogListScreen(
                 requireUserInputCommitHash = requireUserInputCommitHash.value,
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
-                curCommitIndex = -1,
-                findCurItemIdxInList = { fullOid->  //无需更新当前条目
-                    -1
-                }
+                refreshPage = { _, _, _, _, ->
+                    changeStateTriggerRefreshPage(needRefresh)
+                },
             )
         }
 

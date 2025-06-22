@@ -367,16 +367,12 @@ fun TagListScreen(
             requireUserInputCommitHash = false,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
-            refreshPage = {
+            refreshPage = { _, _, _, _, ->
                //更新当前仓库信息即可，目的是在title显示出最新的分支或提交信息
                 doJobThenOffLoading job@{
                     curRepo.value = AppModel.dbContainer.repoRepository.getById(repoId) ?: return@job
                 }
             },
-            curCommitIndex = invalidCurItemIndex,  //不需要更新条目，自然不需要有效索引
-            findCurItemIdxInList = { fullOid->
-                invalidCurItemIndex  //无效id，不需要更新条目
-            }
         )
     }
     //checkout end

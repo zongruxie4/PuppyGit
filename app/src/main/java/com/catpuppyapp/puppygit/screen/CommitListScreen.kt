@@ -1162,7 +1162,6 @@ fun CommitListScreen(
             requireUserInputCommitHash = requireUserInputCommitHash.value,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
-            onlyUpdateCurItem = from != CommitListFrom.FOLLOW_HEAD,
             headChangedCallback = {
                 if(from == CommitListFrom.BRANCH) {
                     isHEAD.value = false
@@ -1172,28 +1171,29 @@ fun CommitListScreen(
                     changeStateTriggerRefreshPage(needRefresh)
                 }
             },
-            updateCurItem = {curItemIdx, fullOid, forceCreateBranch, branchName->
-                // remove branch from commit list if force created checked
-                if(forceCreateBranch) {
-                    runCatching {
-                        refreshCommitByPredicate(curRepo.value) {
-                            it.branchShortNameList.contains(branchName)
+            refreshPage = { maybeNeedNotFullyRefresh:Boolean, fullOid:String, forceCreateBranch:Boolean, branchName:String ->
+                if(from != CommitListFrom.FOLLOW_HEAD && maybeNeedNotFullyRefresh) {
+                    // remove branch from commit list if force created checked
+                    if(forceCreateBranch) {
+                        runCatching {
+                            refreshCommitByPredicate(curRepo.value) {
+                                it.branchShortNameList.contains(branchName)
+                            }
                         }
                     }
-                }
 
-                // update target branch which created branch
-                runCatching {
-                    refreshCommitByPredicate(curRepo.value) {
-                        it.oidStr == fullOid
+                    // update target branch which created branch
+                    if(fullOid.isNotBlank()) {
+                        runCatching {
+                            refreshCommitByPredicate(curRepo.value) {
+                                it.oidStr == fullOid
+                            }
+                        }
                     }
+                }else {
+                    fullyRefresh()
                 }
             },
-            refreshPage = { fullyRefresh() },
-            curCommitIndex = if(enableFilterState.value) -1 else curCommitIndex.intValue,  //若开了filter模式，则一律在原始列表重新查找条目索引（传无效索引-1即可触发查找），不然可能会更新错条目
-            findCurItemIdxInList = { fullOid->
-                list.value.toList().indexOfFirst { it.oidStr == fullOid }
-            }
         )
     }
 

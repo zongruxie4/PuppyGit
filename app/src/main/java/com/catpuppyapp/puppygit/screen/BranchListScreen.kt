@@ -450,13 +450,9 @@ fun BranchListScreen(
             requireUserInputCommitHash = false,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
-            refreshPage = {
+            refreshPage = { _, _, _, _, ->
                 changeStateTriggerRefreshPage(needRefresh)
             },
-            curCommitIndex = -1,  //不需要更新条目，自然不需要有效索引
-            findCurItemIdxInList = { fullOid->
-                -1  //无效id，不需要更新条目
-            }
         )
     }
 
