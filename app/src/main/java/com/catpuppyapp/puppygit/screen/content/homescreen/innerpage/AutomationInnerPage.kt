@@ -321,9 +321,9 @@ fun AutomationInnerPage(
                 RepoNameAndIdItem(
                     settings = settingsState.value,
                     selected = true,
-                    packageNameForSelectReposDialog.value,
-                    clickedRepo,
-                    trailIconSize * 2 + splitSpacerWidth
+                    appPackageName = packageNameForSelectReposDialog.value,
+                    repoEntity = clickedRepo,
+                    trailIconWidth = trailIconSize * 2 + splitSpacerWidth
                 ) { containerModifier ->
                     Row(
                         modifier = containerModifier
@@ -382,9 +382,9 @@ fun AutomationInnerPage(
                 RepoNameAndIdItem(
                     settings = settingsState.value,
                     selected = false,
-                    packageNameForSelectReposDialog.value,
-                    clickedRepo,
-                    trailIconSize
+                    appPackageName = packageNameForSelectReposDialog.value,
+                    repoEntity = clickedRepo,
+                    trailIconWidth = trailIconSize
                 ) { containerModifier ->
 
                     Row(
