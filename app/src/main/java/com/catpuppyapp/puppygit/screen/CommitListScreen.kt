@@ -98,7 +98,6 @@ import com.catpuppyapp.puppygit.compose.SimpleCheckBox
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.compose.getDefaultCheckoutOption
-import com.catpuppyapp.puppygit.compose.invalidCheckoutOption
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.cherrypickTestPassed
@@ -1676,7 +1675,7 @@ fun CommitListScreen(
 
     if(showSetPageSizeDialog.value) {
         SetPageSizeDialog(
-            pageSize = pageSizeForDialog,
+            pageSizeBuf = pageSizeForDialog,
             rememberPageSize = rememberPageSize,
             trueCommitHistoryFalseFileHistory = true,
             closeDialog = {showSetPageSizeDialog.value=false}

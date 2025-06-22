@@ -28,7 +28,7 @@ private const val TAG = "SetPageSizeDialog"
 
 @Composable
 fun SetPageSizeDialog(
-    pageSize: CustomStateSaveable<TextFieldValue>,
+    pageSizeBuf: CustomStateSaveable<TextFieldValue>,
     rememberPageSize: MutableState<Boolean>,
     trueCommitHistoryFalseFileHistory: Boolean,
     closeDialog:()->Unit,
@@ -54,10 +54,10 @@ fun SetPageSizeDialog(
 
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
 
-                    value = pageSize.value,
+                    value = pageSizeBuf.value,
                     singleLine = true,
                     onValueChange = {
-                        pageSize.value = it
+                        pageSizeBuf.value = it
                     },
                     label = {
                         Text(stringResource(R.string.page_size))
@@ -75,14 +75,14 @@ fun SetPageSizeDialog(
 
         try {
             val newPageSize = try {
-                pageSize.value.text.trim().toInt()
+                pageSizeBuf.value.text.trim().toInt()
             }catch (_:Exception) {
                 Msg.requireShow(activityContext.getString(R.string.invalid_number))
                 invalidPageSize
             }
 
             if(!isInvalidPageSize(newPageSize)) {
-                pageSize.value = TextFieldValue(newPageSize.toString())
+                pageSizeBuf.value = TextFieldValue(newPageSize.toString())
 
                 if(rememberPageSize.value) {
                     SettingsUtil.update {

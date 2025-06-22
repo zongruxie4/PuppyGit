@@ -580,7 +580,7 @@ fun FileHistoryScreen(
 
     if(showSetPageSizeDialog.value) {
         SetPageSizeDialog(
-            pageSize = pageSizeForDialog,
+            pageSizeBuf = pageSizeForDialog,
             rememberPageSize = rememberPageSize,
             trueCommitHistoryFalseFileHistory = false,
             closeDialog = {showSetPageSizeDialog.value=false}
