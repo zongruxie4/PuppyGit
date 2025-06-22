@@ -124,7 +124,10 @@ fun SetUpstreamDialog(
 
                 }
                 TextField(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
+                    ,
 
                     enabled = !upstreamBranchShortNameSameWithLocal.value,
                     value = upstreamBranchShortName.value,
