@@ -224,11 +224,11 @@ class PuppyHunkAndLines {
                     val roughMatchCnt = CmpUtil.roughlyMatch(puppyLine.getContentNoLineBreak(), line.getContentNoLineBreak(), targetRoughlyMatchedCount)
                     // these two strings matched more chars than the old two lines,
                     //  so, unlink old lines and link new lines
-                    if((roughMatchCnt > line.roughlyMatchedCount && roughMatchCnt > maxRoughMatchCnt)
+                    if((roughMatchCnt > maxRoughMatchCnt && roughMatchCnt > line.roughlyMatchedCount)
 
-                        // both lines never linked any other lines, link it first, then will unlink if have better matched target
-                        // 两个行都没关联任何行，先关联下，后面如果有更合适的再解除关联
-                        || (line.compareTargetLineKey.isBlank() && puppyLine.compareTargetLineKey.isBlank())
+                        // current line never linked any other lines, link it first, then will unlink if have better matched target
+                        // 当前遍历到的行没关联任何行，先关联下，后面如果有更合适的再解除关联
+                        || (maxMatchedLine == null && line.compareTargetLineKey.isBlank())
                     ) {
                         maxMatchedLine = line
                         maxRoughMatchCnt = roughMatchCnt
