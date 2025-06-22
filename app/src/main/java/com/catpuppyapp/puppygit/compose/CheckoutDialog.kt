@@ -73,7 +73,7 @@ fun CheckoutDialog(
     loadingOn:(String)->Unit,
     loadingOff:()->Unit,
     headChangedCallback:() -> Unit = {},
-    refreshPage:(maybeNeedNotFullyRefresh:Boolean, fullOid:String, forceCreateBranch:Boolean, branchName:String) -> Unit,  //刷新页面，若不需要刷新可传空
+    refreshPage:(checkout:Boolean, targetOid:String, forceCreateBranch:Boolean, branchName:String) -> Unit,  //刷新页面，若不需要刷新可传空
     expectCheckoutType:Int,  //期望的checkout类型，不一定会采用，但可确定调用checkout的是谁，是远程分支还是本地分支还是别的
     showJustCheckout:Boolean= false,  //参数原名：`checkoutLocalBranch`。 作用：显示一个just checkout选项并默认选中，一般只有checkout本地分支时才需要设此值为true
 ) {
@@ -458,8 +458,7 @@ fun CheckoutDialog(
                         Msg.requireShow(activityContext.getString(R.string.create_branch_success))
 
                         if(dontCheckout) {
-                            val maybeNeedNotFullyRefresh = true
-                            refreshPage(maybeNeedNotFullyRefresh, branchHeadFullHash, overwriteIfBranchExist.value, localBranchWillCreate)
+                            refreshPage(false, branchHeadFullHash, overwriteIfBranchExist.value, localBranchWillCreate)
 
                             return@doJobThenOffLoading
                         }
@@ -505,10 +504,8 @@ fun CheckoutDialog(
 
                 //checkout成功强制刷新页面，失败的话，在上面就返回了，所以不会刷新页面
                 if(checkoutSelectedOption.intValue != checkoutOptionDontUpdateHead) {  //从仓库卡片点击提交号进入的，操作成功直接刷新页面即可
-                    val maybeNeedNotFullyRefresh = false
-
                     val headOidStr = Repository.open(curRepo.fullSavePath).use { repo -> Libgit2Helper.resolveHEAD(repo)?.id()?.toString()?:"" }
-                    refreshPage(maybeNeedNotFullyRefresh, headOidStr, overwriteIfBranchExist.value, localBranchWillCreate)
+                    refreshPage(true, headOidStr, overwriteIfBranchExist.value, localBranchWillCreate)
                 }
 
 //                    requireShowToast(appContext.getString(R.string.checkout_success))  // doCheckoutBranch里已经显示了成功通知了
@@ -521,8 +518,7 @@ fun CheckoutDialog(
                 // 会感觉这滚动有点莫名其妙，想再找之前的commit也不好找。
 
                 //checkout如果失败，重新获取一下当前checkout的提交号的信息，因为有可能checkout时有可能某个阶段失败，但提交已经被改变，例如：创建分支成功，但后续的checkout失败，这时候其实这个提交已经有关联的分支了
-                val maybeNeedNotFullyRefresh = true
-                refreshPage(maybeNeedNotFullyRefresh, curCommitOidOrRefName, overwriteIfBranchExist.value, localBranchWillCreate)
+                refreshPage(false, curCommitOidOrRefName, overwriteIfBranchExist.value, localBranchWillCreate)
 
 
                 //显示通知

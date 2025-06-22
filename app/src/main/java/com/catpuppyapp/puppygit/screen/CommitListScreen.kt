@@ -1170,10 +1170,15 @@ fun CommitListScreen(
                     changeStateTriggerRefreshPage(needRefresh)
                 }
             },
-            refreshPage = { maybeNeedNotFullyRefresh:Boolean, fullOid:String, forceCreateBranch:Boolean, branchName:String ->
-                MyLog.d(TAG, "CommitListScreen#CheckoutDialog#refreshPage(): maybeNeedNotFullyRefresh=$maybeNeedNotFullyRefresh, fullOid=$fullOid, forceCreateBranch=$forceCreateBranch, branchName=$branchName")
+            refreshPage = { checkout:Boolean, targetOid:String, forceCreateBranch:Boolean, branchName:String ->
+                MyLog.d(TAG, "CommitListScreen#CheckoutDialog#refreshPage(): checkout=$checkout, targetOid=$targetOid, forceCreateBranch=$forceCreateBranch, branchName=$branchName")
 
-                if(from != CommitListFrom.FOLLOW_HEAD || maybeNeedNotFullyRefresh) {
+                val targetMaybeIsHash = Libgit2Helper.maybeIsHash(targetOid)
+                if(targetMaybeIsHash) {
+                    fullOid.value = targetOid
+                }
+
+                if((from != CommitListFrom.FOLLOW_HEAD || !checkout) && (forceCreateBranch.not() || branchName != shortBranchName)) {
                     // remove branch from commit list if force created checked
                     if(forceCreateBranch) {
                         runCatching {
@@ -1184,10 +1189,10 @@ fun CommitListScreen(
                     }
 
                     // update target branch which created branch
-                    if(fullOid.isNotBlank()) {
+                    if(targetMaybeIsHash) {
                         runCatching {
                             refreshCommitByPredicate(curRepo.value) {
-                                it.oidStr == fullOid
+                                it.oidStr == targetOid
                             }
                         }
                     }
