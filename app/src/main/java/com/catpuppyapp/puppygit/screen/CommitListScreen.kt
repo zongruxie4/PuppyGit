@@ -1172,7 +1172,9 @@ fun CommitListScreen(
                 }
             },
             refreshPage = { maybeNeedNotFullyRefresh:Boolean, fullOid:String, forceCreateBranch:Boolean, branchName:String ->
-                if(from != CommitListFrom.FOLLOW_HEAD && maybeNeedNotFullyRefresh) {
+                MyLog.d(TAG, "CommitListScreen#CheckoutDialog#refreshPage(): maybeNeedNotFullyRefresh=$maybeNeedNotFullyRefresh, fullOid=$fullOid, forceCreateBranch=$forceCreateBranch, branchName=$branchName")
+
+                if(from != CommitListFrom.FOLLOW_HEAD || maybeNeedNotFullyRefresh) {
                     // remove branch from commit list if force created checked
                     if(forceCreateBranch) {
                         runCatching {
