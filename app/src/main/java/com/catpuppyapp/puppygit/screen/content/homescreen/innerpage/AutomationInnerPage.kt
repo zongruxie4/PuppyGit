@@ -73,6 +73,7 @@ import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.appendSecondsUnit
 import com.catpuppyapp.puppygit.utils.cache.Cache
@@ -151,33 +152,43 @@ fun AutomationInnerPage(
         packageNameForSelectReposDialog.value = packageName
         appNameForSelectReposDialog.value = appName
 
-        doJobThenOffLoading {
-            selectedRepoListLoading.value = true
+        doJobThenOffLoading(
+            loadingOn = { selectedRepoListLoading.value = true },
+            loadingOff = { selectedRepoListLoading.value = false }
+        ) {
+            try {
+                val packageNameLinkedRepos = AutomationUtil.getRepoIds(SettingsUtil.getSettingsSnapshot().automation, packageName)
+                val removedNonExistsPackageNameLinkedRepos = packageNameLinkedRepos.toMutableList()
+                val repos = AppModel.dbContainer.repoRepository.getAll(updateRepoInfo = false).toMutableList()
+                val selectedRepos = mutableListOf<RepoEntity>()
 
-            val packageNameLinkedRepos = AutomationUtil.getRepoIds(SettingsUtil.getSettingsSnapshot().automation, packageName)
-            val repos = AppModel.dbContainer.repoRepository.getAll(updateRepoInfo = false)
-            selectedRepoList.value.clear()
-            unselectedRepoList.value.clear()
-            val selectedRepoIdList = mutableListOf<String>()
-            repos.forEachBetter {
-                if(packageNameLinkedRepos.contains(it.id)) {
-                    selectedRepoList.value.add(it)
-                    selectedRepoIdList.add(it.id)
-                }else {
-                    unselectedRepoList.value.add(it)
+                packageNameLinkedRepos.forEachBetter { savedId ->
+                    val foundRepo = repos.find { it.id == savedId }
+                    if(foundRepo != null) {
+                        selectedRepos.add(foundRepo)
+                        // remove selected, then the rest of repos will only left unselected repos
+                        repos.removeIf { it.id == savedId }
+                    }else {
+                        // remove repo which doesn't exist anymore
+                        removedNonExistsPackageNameLinkedRepos.remove(savedId)
+                    }
                 }
+
+                selectedRepoList.value.clear()
+                selectedRepoList.value.addAll(selectedRepos)
+                unselectedRepoList.value.clear()
+                unselectedRepoList.value.addAll(repos)
+
+                //善后操作
+                // update config, remove nonexistent repos
+                SettingsUtil.update { s ->
+                    s.automation.packageNameAndRepoIdsMap.set(packageName, removedNonExistsPackageNameLinkedRepos)
+                }
+
+            }catch (e: Exception) {
+                Msg.requireShowLongDuration("load repos err: ${e.localizedMessage}")
+                MyLog.e(TAG, "Automation#initSelectReposDialog: load repos err: ${e.stackTraceToString()}")
             }
-
-            //可以把仓库列表显示给用户了
-            selectedRepoListLoading.value = false
-
-
-            //善后操作
-            // update config, remove nonexistent repos
-            SettingsUtil.update { s ->
-                s.automation.packageNameAndRepoIdsMap.set(packageName, selectedRepoIdList)
-            }
-
         }
 
         showSelectReposDialog.value = true
@@ -361,7 +372,9 @@ fun AutomationInnerPage(
                                         it.put(
                                             packageNameForSelectReposDialog.value,
                                             //按仓库名排序，然后把id存上
-                                            selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
+//                                            selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
+                                            // keep added order
+                                            selectedRepoList.value.map { it.id }
                                         )
                                     }
 
@@ -407,7 +420,8 @@ fun AutomationInnerPage(
                                     it.automation.packageNameAndRepoIdsMap.let {
                                         it.put(
                                             packageNameForSelectReposDialog.value,
-                                            selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
+//                                            selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
+                                            selectedRepoList.value.map { it.id }
                                         )
                                     }
                                 }
