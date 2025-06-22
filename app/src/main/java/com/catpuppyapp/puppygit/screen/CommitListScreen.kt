@@ -2467,7 +2467,7 @@ fun CommitListScreen(
                     }else {  // resolve branch to commit
 //                    val ref = Libgit2Helper.resolveRefByName(repo, fullOid.value, trueUseDwimFalseUseLookup = true)  // useDwim for get direct ref, which is point to a valid commit
                         val commit = Libgit2Helper.resolveCommitByHash(repo, fullOid.value)
-                        val commitOid = commit?.id() ?: throw RuntimeException("resolve commit err!")
+                        val commitOid = commit?.id() ?: throw RuntimeException("CommitListScreen#LaunchedEffect: resolve commit err!, fullOid='${fullOid.value}'")
                         //注：虽然这个变量名是分支短名和短hash名blabala，但实际上，如果通过分支条目进入，只会有短分支名，不会有短提交号，短提交号是之前考虑欠佳即使分支条目点进来的提交历史也一checkout就刷新页面更新标题而残留下的东西
                         branchShortNameOrShortHashByFullOidForShowOnTitle.value = Libgit2Helper.getBranchNameOfRepoName(repoName, branchShortNameOrShortHashByFullOid.value)
 
