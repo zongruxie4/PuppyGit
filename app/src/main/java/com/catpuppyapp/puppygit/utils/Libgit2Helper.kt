@@ -4973,11 +4973,19 @@ object Libgit2Helper {
     }
 
     //ps: 长hash用来checkout；短hash用来记到数据库(不过现在每次查数据库的仓库信息后都会从git仓库更新hash，所以这个字段实际已废弃)
-    suspend fun doCheckoutBranchThenUpdateDb(repo:Repository, repoId:String, shortBranchNameOrShortHash:String,
-                                             fullBranchNameOrFullHash:String, upstreamBranchShortNameParam:String, checkoutType:Int,
-                                             force:Boolean=false, updateHead:Boolean=true
-//                                                 errCallback: (String)->Unit = Msg.requireShow,
-//                                                 successCallback:()->Unit
+    suspend fun doCheckoutBranchThenUpdateDb(
+        repo:Repository,
+        repoId:String,
+        shortBranchNameOrShortHash:String,
+
+        fullBranchNameOrFullHash:String,
+        upstreamBranchShortNameParam:String,
+        checkoutType:Int,
+
+        force:Boolean=false,
+        updateHead:Boolean=true
+//        errCallback: (String)->Unit = Msg.requireShow,
+//        successCallback:()->Unit
     ):Ret<Oid?> {
 
         val checkoutRet = if(checkoutType==Cons.checkoutType_checkoutRefThenUpdateHead) { //checkout本地分支

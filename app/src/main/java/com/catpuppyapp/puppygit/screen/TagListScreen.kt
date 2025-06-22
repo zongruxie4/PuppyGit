@@ -362,8 +362,6 @@ fun TagListScreen(
             requireUserInputCommitHash = false,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
-            onlyUpdateCurItem = false,
-            updateCurItem = {_, _, _, _ -> },  //不需要更新当前条目
             refreshPage = {
                //更新当前仓库信息即可，目的是在title显示出最新的分支或提交信息
                 doJobThenOffLoading job@{

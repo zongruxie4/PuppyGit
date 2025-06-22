@@ -112,6 +112,7 @@ import com.catpuppyapp.puppygit.screen.functions.goToStashPage
 import com.catpuppyapp.puppygit.screen.functions.naviToFileHistoryByRelativePath
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
+import com.catpuppyapp.puppygit.screen.shared.CommitListFrom
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -3026,7 +3027,8 @@ fun ChangeListInnerPage(
                                             repoId = curRepo.id,
                                             fullOid = "",  //这里不需要传分支名，会通过HEAD解析当前分支
                                             shortBranchName = "",
-                                            isHEAD = true
+                                            isHEAD = true,
+                                            from = CommitListFrom.FOLLOW_HEAD,
                                         )
                                     }
 

@@ -17,6 +17,7 @@ import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.git.DiffableItem
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.CommitListFrom
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
@@ -161,6 +162,7 @@ fun fromTagToCommitHistory(fullOid:String, shortName:String, repoId:String){
         fullOid = fullOid,
         shortBranchName = shortName,
         isHEAD = false,
+        from = CommitListFrom.OTHER,
     )
 }
 
@@ -418,13 +420,13 @@ fun goToTreeToTreeChangeList(title:String, repoId: String, commit1:String, commi
     }
 }
 
-fun goToCommitListScreen(repoId: String, fullOid:String, shortBranchName:String, isHEAD:Boolean) {
+fun goToCommitListScreen(repoId: String, fullOid:String, from: CommitListFrom, shortBranchName:String, isHEAD:Boolean) {
     doJobWithMainContext {
         val fullOidCacheKey = NaviCache.setThenReturnKey(fullOid)
         val shortBranchNameCacheKey = NaviCache.setThenReturnKey(shortBranchName)
 
         //注：如果fullOidKey传null，会变成字符串 "null"，然后查不出东西，返回空字符串，与其在导航组件取值时做处理，不如直接传空字符串，不做处理其实也行，只要“null“作为cache key取不出东西就行，但要是不做处理万一字符串"null"作为cache key能查出东西，就歇菜了，总之，走正常流程取得有效cache key，cache value传空字符串，即可
-        AppModel.navController.navigate(Cons.nav_CommitListScreen + "/" + repoId + "/" + (if(isHEAD) "1" else "0") +"/"+fullOidCacheKey+"/"+shortBranchNameCacheKey)
+        AppModel.navController.navigate(Cons.nav_CommitListScreen + "/" + repoId + "/" + (if(isHEAD) "1" else "0")+"/"+ from.code +"/"+fullOidCacheKey+"/"+shortBranchNameCacheKey)
     }
 }
 

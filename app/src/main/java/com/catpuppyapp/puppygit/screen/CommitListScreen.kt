@@ -120,6 +120,7 @@ import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
+import com.catpuppyapp.puppygit.screen.shared.CommitListFrom
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -172,6 +173,7 @@ fun CommitListScreen(
 
 
 
+    from: CommitListFrom,
 //    isCurrent:Boolean, // HEAD是否指向当前分支
 
     /*
@@ -206,8 +208,9 @@ fun CommitListScreen(
     // softkeyboard show/hidden relate end
 
 
-
-
+    // mayeb will update after checkout, so sate tu mutable state
+    val isHEAD = rememberSaveable { mutableStateOf(isHEAD) }
+    val onlyUpdateRepoInfoOnce = rememberSaveable { mutableStateOf(false) }
 
 
 
@@ -1147,7 +1150,16 @@ fun CommitListScreen(
             requireUserInputCommitHash = requireUserInputCommitHash.value,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
-            onlyUpdateCurItem = !isHEAD,
+            onlyUpdateCurItem = from != CommitListFrom.FOLLOW_HEAD,
+            headChangedCallback = {
+                if(from == CommitListFrom.BRANCH_LIST) {
+                    isHEAD.value = false
+
+                    // update repo info only, dont reload the commit list
+                    onlyUpdateRepoInfoOnce.value = true
+                    changeStateTriggerRefreshPage(needRefresh)
+                }
+            },
             updateCurItem = {curItemIdx, fullOid, forceCreateBranch, branchName->
                 // remove branch from commit list if force created checked
                 if(forceCreateBranch) {
@@ -1198,7 +1210,7 @@ fun CommitListScreen(
 
                 // if is HEAD, after reset, need fully refresh whole list;
                 //  else only need update branch list when repo not under detached HEAD
-                if(isHEAD) {
+                if(isHEAD.value) {
                     fullyRefresh()
                 }else if(!isDetached) {
                     // if is not detached, update old and target commit to let them show branch list correctly;
@@ -1701,7 +1713,7 @@ fun CommitListScreen(
                             },
                         )
                     }else{
-                        val repoAndBranchText = if(isHEAD) repoOnBranchOrDetachedHash.value else branchShortNameOrShortHashByFullOidForShowOnTitle.value
+                        val repoAndBranchText = if(isHEAD.value) repoOnBranchOrDetachedHash.value else branchShortNameOrShortHashByFullOidForShowOnTitle.value
                         Column(
                             modifier = Modifier.combinedClickable(
                                 onDoubleClick = {
@@ -1994,7 +2006,7 @@ fun CommitListScreen(
                             }
                         }
 
-                        if(isHEAD) {
+                        if(isHEAD.value) {
                             BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.squash)) {
                                 val targetCommitFullOid = curCommit.value.oidStr
                                 val targetCommitShortOid = curCommit.value.shortOidStr
@@ -2004,7 +2016,7 @@ fun CommitListScreen(
                                         val ret = Libgit2Helper.squashCommitsCheckBeforeShowDialog(
                                             repo = repo,
                                             targetFullOidStr = targetCommitFullOid,
-                                            isShowingCommitListForHEAD = isHEAD
+                                            isShowingCommitListForHEAD = isHEAD.value
                                         )
 
                                         if(ret.hasError()) {
@@ -2426,7 +2438,7 @@ fun CommitListScreen(
             val (requestType, data) = getRequestDataByState<Any?>(needRefresh.value)
             val forceReload = (requestType == StateRequestType.forceReload)
 
-            if(forceReload || curRepo.value.id.isBlank() || headOidOfThisScreen.value.isNullOrEmptyOrZero) {
+            if(forceReload || curRepo.value.id.isBlank() || headOidOfThisScreen.value.isNullOrEmptyOrZero || onlyUpdateRepoInfoOnce.value) {
                 //从db查数据
                 val repoDb = AppModel.dbContainer.repoRepository
                 val repoFromDb = repoDb.getById(repoId)
@@ -2442,7 +2454,7 @@ fun CommitListScreen(
 //            val isDetached = dbIntToBool(repoFromDb.isDetached)
 
                 Repository.open(repoFullPath).use { repo ->
-                    headOidOfThisScreen.value = if(isHEAD) {  // resolve head
+                    headOidOfThisScreen.value = if(isHEAD.value) {  // resolve head
                         val head = Libgit2Helper.resolveHEAD(repo)
                         if (head == null) {
                             MyLog.w(TAG, "#LaunchedEffect: head is null! repoId=$repoId}")
@@ -2450,14 +2462,13 @@ fun CommitListScreen(
                         }
                         val headOid = head.peel(GitObject.Type.COMMIT)?.id()
                         if (headOid == null || headOid.isNullOrEmptyOrZero) {
-                            MyLog.w(
-                                TAG,
-                                "#LaunchedEffect: head oid is null or invalid! repoId=$repoId}, headOid=${headOid.toString()}"
-                            )
+                            MyLog.w(TAG, "#LaunchedEffect: head oid is null or invalid! repoId=${repoId}, headOid=${headOid.toString()}")
                             return@job
                         }
 
                         repoOnBranchOrDetachedHash.value = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(repoFromDb)
+
+                        fullOid.value = headOid.toString()
 
                         headOid
                     }else {  // resolve branch to commit
@@ -2478,12 +2489,16 @@ fun CommitListScreen(
 
             }
 
-            // do first load
-            val firstLoad = true
-            val loadToEnd = false
+            if(onlyUpdateRepoInfoOnce.value) {
+                onlyUpdateRepoInfoOnce.value = false
+            }else {
+                // do first load
+                val firstLoad = true
+                val loadToEnd = false
 
-            //传repoFullPath是用来打开git仓库的
-            doLoadMore(curRepo.value.fullSavePath, headOidOfThisScreen.value, firstLoad, forceReload, loadToEnd)
+                //传repoFullPath是用来打开git仓库的
+                doLoadMore(curRepo.value.fullSavePath, headOidOfThisScreen.value, firstLoad, forceReload, loadToEnd)
+            }
         }
     }
 

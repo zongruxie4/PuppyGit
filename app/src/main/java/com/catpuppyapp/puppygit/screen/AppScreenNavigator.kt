@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
+import com.catpuppyapp.puppygit.screen.shared.CommitListFrom
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.IntentHandler
@@ -98,7 +99,7 @@ fun AppScreenNavigator() {
             Profile(navController, backStackEntry.arguments?.getString("userId"))
             }
          */
-        composable(Cons.nav_CommitListScreen + "/{repoId}/{isHEAD}/{fullOidCacheKey}/{shortBranchNameCacheKey}") {
+        composable(Cons.nav_CommitListScreen + "/{repoId}/{isHEAD}/{from}/{fullOidCacheKey}/{shortBranchNameCacheKey}") {
             val fullOidCacheKey = it.arguments?.getString("fullOidCacheKey") ?: ""
             val shortBranchNameCacheKey = it.arguments?.getString("shortBranchNameCacheKey") ?: ""
 
@@ -107,6 +108,7 @@ fun AppScreenNavigator() {
                 isHEAD = it.arguments?.getString("isHEAD") != "0",
                 fullOidCacheKey = fullOidCacheKey,
                 shortBranchNameCacheKey = shortBranchNameCacheKey,
+                from = CommitListFrom.fromCode(it.arguments?.getString("from")!!)!!,
                 naviUp = {
                     navController.navigateUp()
 

@@ -97,6 +97,7 @@ import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToCommitListScreen
 import com.catpuppyapp.puppygit.screen.functions.goToTreeToTreeChangeList
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
+import com.catpuppyapp.puppygit.screen.shared.CommitListFrom
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -441,8 +442,6 @@ fun BranchListScreen(
             requireUserInputCommitHash = false,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
-            onlyUpdateCurItem = false,
-            updateCurItem = {_, _, _, _ -> },  //不需要更新当前条目
             refreshPage = {
                 changeStateTriggerRefreshPage(needRefresh)
             },
@@ -1922,7 +1921,8 @@ fun BranchListScreen(
                             repoId = repoId,
                             fullOid = it.oidStr,
                             shortBranchName = it.shortName,
-                            isHEAD = it.isCurrent
+                            isHEAD = it.isCurrent,
+                            from = CommitListFrom.BRANCH_LIST,
                         )
                     }
 

@@ -59,8 +59,9 @@ fun CheckoutDialog(
     requireUserInputCommitHash:Boolean, //是否请求用户输入hash，若请求显示输入框。（ps 其实当初应该设计为显示输入框，且输入框默认值为fullOid的值就行了
     loadingOn:(String)->Unit,
     loadingOff:()->Unit,
-    onlyUpdateCurItem:Boolean,  //在操作完成后，若此值为true仅执行updateCurItem，否则执行refreshPage。（ps：创建分支或tag后，只需要更新当前条目，不用刷新整个页面，刷新页面会重置列表，所以不要轻易刷新
-    updateCurItem:(curItemIdx:Int, fullOid:String, forceCreateBranch:Boolean, branchName:String) -> Unit,  // curItemIdx代表需要更新的条目在列表中的索引; fullOid用来重新查询commit信息
+    onlyUpdateCurItem:Boolean = false,  //在操作完成后，若此值为true仅执行updateCurItem，否则执行refreshPage。（ps：创建分支或tag后，只需要更新当前条目，不用刷新整个页面，刷新页面会重置列表，所以不要轻易刷新
+    updateCurItem:(curItemIdx:Int, fullOid:String, forceCreateBranch:Boolean, branchName:String) -> Unit =  {_, _, _, _ -> },  // curItemIdx代表需要更新的条目在列表中的索引; fullOid用来重新查询commit信息
+    headChangedCallback:() -> Unit = {},
     refreshPage:()->Unit,  //刷新页面，若不需要刷新可传空
     curCommitIndex:Int,  //当前条目索引，若不需要调用updateCurItem更新当前item或期望通过findCurItemIdxInList查找索引，此值可传-1
     expectCheckoutType:Int,  //期望的checkout类型，不一定会采用，但可确定调用checkout的是谁，是远程分支还是本地分支还是别的
@@ -348,8 +349,22 @@ fun CheckoutDialog(
         //如果使用用户输入，一律解析成commit hash处理，但checkout类型不一定是checkoutCommitThenDetachHead，因为有可能用户输入hash同时选择创建分支
         val checkoutType = if (checkoutSelectedOption.intValue == checkoutOptionCreateBranch || checkoutSelectedOption.intValue == checkoutOptionJustCheckoutForLocalBranch) Cons.checkoutType_checkoutRefThenUpdateHead else if(checkoutSelectedOption.intValue==checkoutOptionDetachHead && expectCheckoutType!=Cons.checkoutType_checkoutCommitThenDetachHead) Cons.checkoutType_checkoutRefThenDetachHead else expectCheckoutType
 
+
+
+//        条件:
+//        don't update head，不需要刷新页面
+//
+//        detached head 仅当来自repo list才刷新页面，把来自branch list时的is head更新成假
+//
+//        new branch and 不要检出，仅刷新目标hash关联的提交
+//        new branch and checked overwrite if exist，刷新旧包含分支的提交和新的目标提交
+//        new branch且不勾选不要检出，如果来自branch list，把is head更新为假
+
+        val headWillChange = checkoutSelectedOption.intValue.let { it == checkoutOptionDetachHead || (it == checkoutOptionCreateBranch && !dontCheckout) }
+
+
         //后来添加了创建分支但不checkout，这种情况也仅需更新当前条目不用刷新完整页面，设置一下，不过目前（20240822）仅commitlist页面需要刷新单条目，分支和tag页面checkout完后都是直接刷新整个页面
-        val onlyUpdateCurItem = onlyUpdateCurItem || (checkoutSelectedOption.intValue == checkoutOptionCreateBranch && dontCheckout && from!=CheckoutDialogFrom.BRANCH_LIST)
+        val onlyUpdateCurItem = onlyUpdateCurItem || (checkoutSelectedOption.intValue == checkoutOptionCreateBranch && dontCheckout && from != CheckoutDialogFrom.BRANCH_LIST)
 
         //执行checkout
         doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.checking_out)) {
@@ -394,9 +409,7 @@ fun CheckoutDialog(
                         Msg.requireShow(activityContext.getString(R.string.checkout_success))
                     }else {  //checkout失败
                         val checkoutErrMsg = activityContext.getString(R.string.checkout_error)+": "+checkoutRet.msg
-                        Msg.requireShowLongDuration(checkoutErrMsg)
-                        createAndInsertError(repoId, checkoutErrMsg)
-                        return@doJobThenOffLoading
+                        throw RuntimeException(checkoutErrMsg)
                     }
 
                     // checkout create branch
@@ -470,15 +483,11 @@ fun CheckoutDialog(
                             Msg.requireShow(activityContext.getString(R.string.checkout_success))
                         }else {  //checkout失败
                             val checkoutErrMsg = activityContext.getString(R.string.checkout_error)+": "+checkoutRet.msg
-                            Msg.requireShowLongDuration(checkoutErrMsg)
-                            createAndInsertError(repoId, checkoutErrMsg)
-                            return@doJobThenOffLoading
+                            throw RuntimeException(checkoutErrMsg)
                         }
                     }else {  //创建分支失败
                         val createBranchErrMsg = activityContext.getString(R.string.create_branch_err)+": "+createBranchRet.msg
-                        Msg.requireShowLongDuration(createBranchErrMsg)
-                        createAndInsertError(repoId, createBranchErrMsg)
-                        return@doJobThenOffLoading
+                        throw RuntimeException(createBranchErrMsg)
                     }
 
                 }else if(checkoutSelectedOption.intValue == checkoutOptionJustCheckoutForLocalBranch){
@@ -494,14 +503,16 @@ fun CheckoutDialog(
                         Msg.requireShow(activityContext.getString(R.string.checkout_success))
                     }else {  //checkout失败
                         val checkoutErrMsg = activityContext.getString(R.string.checkout_error)+": "+checkoutRet.msg
-                        Msg.requireShowLongDuration(checkoutErrMsg)
-                        createAndInsertError(repoId, checkoutErrMsg)
-                        return@doJobThenOffLoading
+                        throw RuntimeException(checkoutErrMsg)
                     }
                 }
 
+                if(headWillChange) {
+                    headChangedCallback()
+                }
+
                 //checkout成功强制刷新页面，失败的话，在上面就返回了，所以不会刷新页面
-                if(!onlyUpdateCurItem) {  //从仓库卡片点击提交号进入的，操作成功直接刷新页面即可
+                if(!onlyUpdateCurItem && checkoutSelectedOption.intValue != checkoutOptionDontUpdateHead) {  //从仓库卡片点击提交号进入的，操作成功直接刷新页面即可
                     refreshPage()
                 }
 

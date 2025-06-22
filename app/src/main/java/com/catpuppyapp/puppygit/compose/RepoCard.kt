@@ -56,6 +56,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.goToCloneScreen
 import com.catpuppyapp.puppygit.screen.functions.goToCommitListScreen
 import com.catpuppyapp.puppygit.screen.functions.goToErrScreen
+import com.catpuppyapp.puppygit.screen.shared.CommitListFrom
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -345,7 +346,9 @@ fun RepoCard(
                                         repoId = repoDto.id,
                                         fullOid = "",  //这里不需要传分支名，会通过HEAD解析当前分支
                                         shortBranchName = "",
-                                        isHEAD = true
+                                        isHEAD = true,
+                                        from = CommitListFrom.FOLLOW_HEAD,
+
                                     )
                                 },
                                 fontWeight = defaultFontWeight

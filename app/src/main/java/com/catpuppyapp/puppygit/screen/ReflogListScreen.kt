@@ -244,8 +244,6 @@ fun ReflogListScreen(
                 requireUserInputCommitHash = requireUserInputCommitHash.value,
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                onlyUpdateCurItem = false,  //设为false，将会执行refreshPage刷新页面
-                updateCurItem = {_, _, _, _ -> },
                 refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
                 curCommitIndex = -1,
                 findCurItemIdxInList = { fullOid->  //无需更新当前条目
