@@ -1161,14 +1161,21 @@ fun CommitListScreen(
             requireUserInputCommitHash = requireUserInputCommitHash.value,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
-            headChangedCallback = {
+            headChangedCallback = j@{
                 if(from == CommitListFrom.BRANCH) {
-                    isHEAD.value = false
+                    isHEAD.value = Repository.open(curRepo.value.fullSavePath).use { repo ->
+                        Libgit2Helper.resolveHEAD(repo)?.shorthand() == shortBranchName
+                    }
 
-                    // update repo info only, dont reload the commit list
-                    onlyUpdateRepoInfoOnce.value = true
-                    changeStateTriggerRefreshPage(needRefresh)
+                    // current branch was not HEAD, but now it is
+                    if(isHEAD.value) {
+                        fullyRefresh()
+                        return@j
+                    }
                 }
+
+                onlyUpdateRepoInfoOnce.value = true
+                changeStateTriggerRefreshPage(needRefresh)
             },
             refreshPage = { checkout:Boolean, targetOid:String, forceCreateBranch:Boolean, branchName:String ->
                 MyLog.d(TAG, "CommitListScreen#CheckoutDialog#refreshPage(): checkout=$checkout, targetOid=$targetOid, forceCreateBranch=$forceCreateBranch, branchName=$branchName")
