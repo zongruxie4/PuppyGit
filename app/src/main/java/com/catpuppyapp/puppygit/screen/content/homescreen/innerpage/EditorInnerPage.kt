@@ -103,7 +103,6 @@ import com.catpuppyapp.puppygit.utils.isFileSizeOverLimit
 import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
-import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
@@ -652,21 +651,31 @@ fun EditorInnerPage(
         }
     }
 
-    val showOpenAsDialog = rememberSaveable { mutableStateOf(false)}
-    val readOnlyForOpenAsDialog = rememberSaveable { mutableStateOf(false)}
-    val openAsDialogFilePath = rememberSaveable { mutableStateOf("")}
-    val fileName = remember{ derivedStateOf { getFileNameFromCanonicalPath(openAsDialogFilePath.value) }}
+    val showOpenAsDialog = rememberSaveable { mutableStateOf(false) }
+    val readOnlyForOpenAsDialog = rememberSaveable { mutableStateOf(false) }
+    val openAsDialogFilePath = rememberSaveable { mutableStateOf("") }
+    // `derivedStateOf` can auto capture state values, so, don't have to pass the `key` explicitly actually, but pass is ok as well
+    val fileName = remember(openAsDialogFilePath.value) { derivedStateOf { getFileNameFromCanonicalPath(openAsDialogFilePath.value) } }
+    val showReloadDialogForOpenAs = rememberSaveable { mutableStateOf(false) }
 //    val showOpenInEditor = StateUtil.getRememberSaveableState(initValue = false)
+    fun initOpenAsDialog(filePath:String, showReloadDialog:Boolean = true) {
+        showReloadDialogForOpenAs.value = showReloadDialog
+        openAsDialogFilePath.value = filePath
+        showOpenAsDialog.value = true
+    }
+
     if(showOpenAsDialog.value) {
         OpenAsDialog(readOnly = readOnlyForOpenAsDialog, fileName = fileName.value, filePath = openAsDialogFilePath.value,
             openSuccessCallback = {
-                //x 废弃，废案，万一用户就想保留陈旧内容呢？还是询问用户吧) 如果成功请求外部打开文件，把文件就绪设为假，下次返回就会重新加载文件，避免显示陈旧内容
-                //如果请求外部打开成功，不管用户有无选择app（想实现成选择才询问是否重新加载，但无法判断）都询问是否重载文件
-                showBackFromExternalAppAskReloadDialog.value=true  // 显示询问是否重载的弹窗
+                if(showReloadDialogForOpenAs.value) {
+                    //x 废弃，废案，万一用户就想保留陈旧内容呢？还是询问用户吧) 如果成功请求外部打开文件，把文件就绪设为假，下次返回就会重新加载文件，避免显示陈旧内容
+                    //如果请求外部打开成功，不管用户有无选择app（想实现成选择才询问是否重新加载，但无法判断）都询问是否重载文件
+                    showBackFromExternalAppAskReloadDialog.value = true  // 显示询问是否重载的弹窗
+                }
             }
         ) {
             //onClose
-            showOpenAsDialog.value=false
+            showOpenAsDialog.value = false
         }
     }
 
@@ -965,9 +974,8 @@ fun EditorInnerPage(
 
                     //请求外部程序打开文件
 //                    readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(editorPageShowingFilePath.value)
-                    openAsDialogFilePath.value = editorPageShowingFilePath.value.toFuckSafFile(activityContext).canonicalPath
-                    showOpenAsDialog.value=true
 
+                    initOpenAsDialog(editorPageShowingFilePath.value.toFuckSafFile(activityContext).canonicalPath)
                 }
 
             }else{
@@ -1392,11 +1400,13 @@ fun EditorInnerPage(
             val iconList = listOf(
                 Icons.Filled.Delete,
                 Icons.Filled.DocumentScanner,  // show in files
+                Icons.AutoMirrored.Filled.OpenInNew, // open as
                 Icons.Filled.SelectAll,
             )
             val iconTextList = listOf(
                 stringResource(R.string.delete),
                 stringResource(R.string.show_in_files),
+                stringResource(R.string.open_as),
                 stringResource(R.string.select_all),
             )
             val iconOnClickList = listOf(
@@ -1406,6 +1416,11 @@ fun EditorInnerPage(
 
                 showInFiles@{
                     selectedRecentFileList.value.firstOrNull()?.let { showInFiles(it.file.path) }
+                    Unit
+                },
+
+                openAs@{
+                    selectedRecentFileList.value.firstOrNull()?.let { initOpenAsDialog(it.file.path.ioPath, showReloadDialog = false) }
                     Unit
                 },
 
@@ -1425,6 +1440,7 @@ fun EditorInnerPage(
             val iconEnableList = listOf(
                 delete@{ true },
                 showInFiles@{ isSubPageMode.not() && selectedRecentFileList.value.size == 1 },
+                openAs@{ selectedRecentFileList.value.size == 1 },
                 selectAll@{ true },
             )
 
@@ -1504,7 +1520,7 @@ fun EditorInnerPage(
                         enabled = true,
                         iconModifier = iconModifier,
                         tooltipText = stringResource(R.string.open_as),
-                        icon =  Icons.AutoMirrored.Filled.OpenInNew,
+                        icon = Icons.AutoMirrored.Filled.OpenInNew,
                         iconContentDesc = stringResource(id = R.string.open_as),
                     ) {
                         //点击用外部程序打开文件
