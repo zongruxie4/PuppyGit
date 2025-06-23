@@ -8,11 +8,15 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -98,3 +102,49 @@ fun CardButton(
     }
 
 }
+
+
+@Composable
+fun TwoLineTextCardButton(
+    enabled: Boolean,
+    textPair: Pair<String, String>,
+    headIcon: ImageVector,
+    headIconWidth: Dp,
+    headIconDesc:String,
+    onClick: () -> Unit
+) {
+    CardButton(
+        enabled = enabled,
+        content = {
+            val color = if(enabled) Color.Unspecified else UIHelper.getDisableTextColor()
+            val iconColor = if(enabled) LocalContentColor.current else color
+
+            TwoLineTextsAndIcons(
+                text1 = textPair.first,
+                text2 = textPair.second,
+                text1Color = color,
+                text2Color = color,
+                headIconWidth = headIconWidth,
+                headIcons = { containerModifier ->
+                    Row(
+                        modifier = containerModifier,
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
+                    ) {
+
+                        SizeIcon(
+                            size = headIconWidth,
+                            imageVector = headIcon,
+                            contentDescription = headIconDesc,
+                            tint = iconColor
+                        )
+
+                    }
+                }
+            )
+        },
+    ) {
+        onClick()
+    }
+}
+

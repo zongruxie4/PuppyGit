@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -21,18 +20,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -60,11 +54,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BarContainer
-import com.catpuppyapp.puppygit.compose.CardButton
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
@@ -86,8 +78,7 @@ import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SelectionRow
 import com.catpuppyapp.puppygit.compose.SingleLineCardButton
-import com.catpuppyapp.puppygit.compose.SizeIcon
-import com.catpuppyapp.puppygit.compose.TwoLineTextsAndIcons
+import com.catpuppyapp.puppygit.compose.TwoLineTextCardButton
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -2860,38 +2851,12 @@ private fun NaviButton(
                 }
 
                 //切换上个下个条目按钮
-                CardButton(
+                TwoLineTextCardButton(
                     enabled = hasPrevious,
-                    content = {
-                        val textPair = if(hasPrevious) getItemTextByIdx(previousIndex) else noneText
-                        val color = if(hasPrevious) Color.Unspecified else UIHelper.getDisableTextColor()
-                        val iconColor = if(hasPrevious) LocalContentColor.current else color
-
-                        TwoLineTextsAndIcons(
-                            text1 = textPair.first,
-                            text2 = textPair.second,
-                            text1Color = color,
-                            text2Color = color,
-                            headIconWidth = headIconWidth,
-                            headIcons = { containerModifier ->
-                                Row(
-                                    modifier = containerModifier,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-
-                                    SizeIcon(
-                                        size = headIconWidth,
-                                        imageVector = Icons.Filled.ArrowDropUp,
-                                        contentDescription = "Previous",
-                                        tint = iconColor
-
-                                    )
-
-                                }
-                            }
-                        )
-                    }
+                    textPair = if(hasPrevious) getItemTextByIdx(previousIndex) else noneText,
+                    headIcon = Icons.Filled.ArrowDropUp,
+                    headIconWidth = headIconWidth,
+                    headIconDesc = "Previous",
                 ) {
                     val item = diffableItemList[previousIndex]
                     lastClickedItemKey.value = item.getItemKey()
@@ -2900,73 +2865,22 @@ private fun NaviButton(
 
                 Spacer(Modifier.height(10.dp))
 
-                CardButton(
+                TwoLineTextCardButton(
                     enabled = false,
-                    content = {
-                        //当前条目
-                        val textPair = getItemTextByIdx(curItemIndex.intValue)
-                        val color = UIHelper.getDisableTextColor()
-                        val iconColor = color
-
-                        TwoLineTextsAndIcons(
-                            text1 = textPair.first,
-                            text2 = textPair.second,
-                            text1Color = color,
-                            text2Color = color,
-                            headIconWidth = headIconWidth,
-                            headIcons = { containerModifier ->
-                                Row(
-                                    modifier = containerModifier,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-
-                                    SizeIcon(
-                                        size = headIconWidth,
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowRight,
-                                        contentDescription = "Current",
-                                        tint = iconColor
-                                    )
-
-                                }
-                            }
-                        )
-                    }
+                    textPair = getItemTextByIdx(curItemIndex.intValue),
+                    headIcon = Icons.AutoMirrored.Filled.ArrowRight,
+                    headIconWidth = headIconWidth,
+                    headIconDesc = "Current",
                 ) {}
 
                 Spacer(Modifier.height(10.dp))
 
-                CardButton(
+                TwoLineTextCardButton(
                     enabled = hasNext,
-                    content = {
-                        val textPair = if(hasNext) getItemTextByIdx(nextIndex) else noneText
-                        val color = if(hasNext) Color.Unspecified else UIHelper.getDisableTextColor()
-                        val iconColor = if(hasNext) LocalContentColor.current else color
-
-                        TwoLineTextsAndIcons(
-                            text1 = textPair.first,
-                            text2 = textPair.second,
-                            text1Color = color,
-                            text2Color = color,
-                            headIconWidth = headIconWidth,
-                            headIcons = { containerModifier ->
-                                Row(
-                                    modifier = containerModifier,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-
-                                    SizeIcon(
-                                        size = headIconWidth,
-                                        imageVector = Icons.Filled.ArrowDropDown,
-                                        contentDescription = "Next",
-                                        tint = iconColor
-                                    )
-
-                                }
-                            }
-                        )
-                    },
+                    textPair = if(hasNext) getItemTextByIdx(nextIndex) else noneText,
+                    headIcon = Icons.Filled.ArrowDropDown,
+                    headIconWidth = headIconWidth,
+                    headIconDesc = "Next",
                 ) {
                     val item = diffableItemList[nextIndex]
                     lastClickedItemKey.value = item.getItemKey()
