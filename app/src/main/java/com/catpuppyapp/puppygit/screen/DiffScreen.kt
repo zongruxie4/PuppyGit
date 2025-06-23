@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -20,12 +21,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -57,6 +64,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BarContainer
+import com.catpuppyapp.puppygit.compose.CardButton
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
@@ -78,6 +86,8 @@ import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SelectionRow
 import com.catpuppyapp.puppygit.compose.SingleLineCardButton
+import com.catpuppyapp.puppygit.compose.SizeIcon
+import com.catpuppyapp.puppygit.compose.TwoLineTextsAndIcons
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -944,9 +954,7 @@ fun DiffScreen(
         oidForRestoreDialog.value = targetCommitOid
         msgForRestoreDialog.value = try {
             Repository.open(curRepo.value.fullSavePath).use { repo ->
-                Libgit2Helper.resolveCommitByHash(repo, targetCommitOid)?.message()?.let {
-                    Libgit2Helper.zipOneLineMsg(it)
-                } ?: ""
+                Libgit2Helper.getCommitMsgOneLine(repo, targetCommitOid)
             }
         }catch (e: Exception) {
             MyLog.d(TAG, "initRestoreDialog err: ${e.stackTraceToString()}")
@@ -2652,6 +2660,8 @@ private fun getBackHandler(
 }
 
 
+private val headIconWidth = MyStyleKt.trailIconSize
+
 @Composable
 private fun NaviButton(
     isMultiMode: Boolean,
@@ -2679,10 +2689,16 @@ private fun NaviButton(
     val hasPrevious = previousIndex >= 0 && previousIndex < size
     val hasNext = nextIndex >= 0 && nextIndex < size
 
-    val noneText = stringResource(R.string.none)
+    val noneText = Pair(stringResource(R.string.none), "")
 
-    val getItemTextByIdx:(Int)->String = { idx:Int ->
-        diffableItemList.getOrNull(idx)?.let { if(isFileHistoryTreeToLocalOrTree) it.shortCommitId else it.fileName } ?: noneText
+    fun getItemTextByIdx(idx:Int):Pair<String, String> {
+        return diffableItemList.getOrNull(idx)?.let {
+            if(isFileHistoryTreeToLocalOrTree) {
+                Pair(it.shortCommitId, it.oneLineCommitMsgOfCommitOid())
+            } else {
+                Pair(it.fileName, "")
+            }
+        } ?: noneText
     }
 
     Column(
@@ -2844,11 +2860,38 @@ private fun NaviButton(
                 }
 
                 //切换上个下个条目按钮
-                SingleLineCardButton(
-                    text = replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
-                        getItemTextByIdx(previousIndex)
-                    } else noneText)),
-                    enabled = hasPrevious
+                CardButton(
+                    enabled = hasPrevious,
+                    content = {
+                        val textPair = if(hasPrevious) getItemTextByIdx(previousIndex) else noneText
+                        val color = if(hasPrevious) Color.Unspecified else UIHelper.getDisableTextColor()
+                        val iconColor = if(hasPrevious) LocalContentColor.current else color
+
+                        TwoLineTextsAndIcons(
+                            text1 = textPair.first,
+                            text2 = textPair.second,
+                            text1Color = color,
+                            text2Color = color,
+                            headIconWidth = headIconWidth,
+                            headIcons = { containerModifier ->
+                                Row(
+                                    modifier = containerModifier,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+
+                                    SizeIcon(
+                                        size = headIconWidth,
+                                        imageVector = Icons.Filled.ArrowDropUp,
+                                        contentDescription = "Previous",
+                                        tint = iconColor
+
+                                    )
+
+                                }
+                            }
+                        )
+                    }
                 ) {
                     val item = diffableItemList[previousIndex]
                     lastClickedItemKey.value = item.getItemKey()
@@ -2858,21 +2901,68 @@ private fun NaviButton(
                 Spacer(Modifier.height(10.dp))
 
                 //当前条目
-                Text(
-                    text = getItemTextByIdx(curItemIndex.intValue),
-//                fontWeight = FontWeight.Light,  //默认卡片字体细的，当前条目粗的更好看，不然都是细的，难看
-                    overflow = TextOverflow.Ellipsis,
-                    softWrap = false,
-                    modifier = Modifier.padding(horizontal = 50.dp)
+                val textPair = getItemTextByIdx(curItemIndex.intValue)
+                val color = Color.Unspecified
+                val iconColor = LocalContentColor.current
+
+                TwoLineTextsAndIcons(
+                    text1 = textPair.first,
+                    text2 = textPair.second,
+                    text1Color = color,
+                    text2Color = color,
+                    modifier = Modifier.padding(horizontal = 50.dp),
+                    headIconWidth = headIconWidth,
+                    headIcons = { containerModifier ->
+                        Row(
+                            modifier = containerModifier,
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.End
+                        ) {
+
+                            SizeIcon(
+                                size = headIconWidth,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                                contentDescription = "Current",
+                                tint = iconColor
+                            )
+
+                        }
+                    }
                 )
 
                 Spacer(Modifier.height(10.dp))
 
-                SingleLineCardButton(
-                    text = replaceStringResList(stringResource(R.string.next_filename), listOf(if(hasNext) {
-                        getItemTextByIdx(nextIndex)
-                    } else noneText)),
-                    enabled = hasNext
+                CardButton(
+                    enabled = hasNext,
+                    content = {
+                        val textPair = if(hasNext) getItemTextByIdx(nextIndex) else noneText
+                        val color = if(hasNext) Color.Unspecified else UIHelper.getDisableTextColor()
+                        val iconColor = if(hasNext) LocalContentColor.current else color
+
+                        TwoLineTextsAndIcons(
+                            text1 = textPair.first,
+                            text2 = textPair.second,
+                            text1Color = color,
+                            text2Color = color,
+                            headIconWidth = headIconWidth,
+                            headIcons = { containerModifier ->
+                                Row(
+                                    modifier = containerModifier,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+
+                                    SizeIcon(
+                                        size = headIconWidth,
+                                        imageVector = Icons.Filled.ArrowDropDown,
+                                        contentDescription = "Next",
+                                        tint = iconColor
+                                    )
+
+                                }
+                            }
+                        )
+                    },
                 ) {
                     val item = diffableItemList[nextIndex]
                     lastClickedItemKey.value = item.getItemKey()

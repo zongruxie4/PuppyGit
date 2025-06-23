@@ -138,16 +138,14 @@ object MyStyleKt{
     }
 
     object IconColor {
-        val enable = Color(0xFF0F479B)
-        val disable = Color.LightGray
+        val disable = Color(0xFFB2B2B2)
         val disable_DarkTheme = Color(0xFF505050)
-        val normal = Color(0xFF5F5F5F)
     }
 
     object TextColor {
         val enable = Color.Unspecified
-        val disable = Color.LightGray
-        val disable_DarkTheme = Color(0xFF505050)
+        val disable = IconColor.disable
+        val disable_DarkTheme = IconColor.disable_DarkTheme
 
         private val highlighting_green_light =Color(0xFF04880D)
         private val highlighting_green_dark =Color(0xFF1FAB26)

@@ -7722,4 +7722,9 @@ object Libgit2Helper {
      */
     fun genRepoNameSuffixForSubmodule(parentRepoName:String) = "_of_$parentRepoName";
 
+    fun getCommitMsgOneLine(repo: Repository, targetCommitOid:String):String {
+        return Libgit2Helper.resolveCommitByHash(repo, targetCommitOid)?.message()?.let {
+            Libgit2Helper.zipOneLineMsg(it)
+        } ?: ""
+    }
 }

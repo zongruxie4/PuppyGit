@@ -11,6 +11,8 @@ import androidx.compose.ui.text.withStyle
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.ItemKey
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.github.git24j.core.Repository
 import kotlinx.coroutines.channels.Channel
 import java.io.File
 
@@ -160,5 +162,18 @@ data class DiffableItem(
             //当前文件的父路径，以/结尾，无文件名，若文件在仓库根目录则为/
             withStyle(style = SpanStyle(color = colorOfChangeType)) { append(fileParentPathOfRelativePath) }
         }
+    }
+
+    // file history item commit msg
+    private var cachedOneLineCommitMsg:String? = null
+    fun oneLineCommitMsgOfCommitOid():String {
+        return (cachedOneLineCommitMsg ?: (try {
+            Repository.open(repoWorkDirPath).use { repo ->
+                Libgit2Helper.getCommitMsgOneLine(repo, commitId)
+            }
+        }catch (e: Exception) {
+            e.printStackTrace()
+            ""
+        }).let { cachedOneLineCommitMsg = it; it })
     }
 }

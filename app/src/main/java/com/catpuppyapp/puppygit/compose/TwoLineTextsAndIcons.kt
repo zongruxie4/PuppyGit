@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -26,7 +27,10 @@ private fun getHorizontalPaddingForIcons(headIconIsNull: Boolean, trailIconIsNul
 @Composable
 fun TwoLineTextsAndIcons(
     text1:String,
-    text2:String,
+    text2:String = "",
+    modifier: Modifier = Modifier,
+    text1Color: Color = Color.Unspecified,
+    text2Color: Color = Color.Unspecified,
     headIconWidth: Dp = 0.dp,
     headIcons:  (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
     trailIconWidth: Dp = 0.dp,
@@ -36,7 +40,7 @@ fun TwoLineTextsAndIcons(
     val trailIconIsNull = trailIcons == null
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .padding(5.dp)
             .padding(getHorizontalPaddingForIcons(headIconIsNull, trailIconIsNull))
             .fillMaxWidth()
@@ -59,14 +63,14 @@ fun TwoLineTextsAndIcons(
             SelectionRow(
                 Modifier.horizontalScroll(rememberScrollState())
             ) {
-                Text(text = text1, fontSize = MyStyleKt.Title.firstLineFontSizeSmall, fontWeight = FontWeight.Bold)
+                Text(text = text1, fontSize = MyStyleKt.Title.firstLineFontSizeSmall, fontWeight = FontWeight.Bold, color = text1Color)
             }
 
             if(text2.isNotEmpty()) {
                 SelectionRow(
                     Modifier.horizontalScroll(rememberScrollState())
                 ) {
-                    Text(text = text2, fontSize = MyStyleKt.Title.secondLineFontSize, fontWeight = FontWeight.Light)
+                    Text(text = text2, fontSize = MyStyleKt.Title.secondLineFontSize, fontWeight = FontWeight.Light, color = text2Color)
                 }
             }
         }
