@@ -1118,6 +1118,9 @@ fun DiffScreen(
 
     // newItem和newItemIndex都是要切换的文件的，不是当前文件的
     //newItem 可通过 newItemIndex 在 diffableList获得，这里传只是方便使用
+    // the `oldItem` shouldn't get from diffablelist at here,
+    //   because when call `switchItem` the list maybe updated (if did stage/revert/unstage to item),
+    //   so the `oldItem` should get before update the list then pass to this method
     val switchItem = { oldItem:DiffableItem?, newItem:DiffableItem, newItemIndex:Int, isToNext:Boolean ->
         doJobThenOffLoading j@{
             // send close signal to old channel to abort loading
@@ -1132,6 +1135,7 @@ fun DiffScreen(
                     val leftOidStr = if(isToNext) {
                         diffableItemList.value.getOrNull(newItemIndex + 1)?.commitId
                     } else {
+                        // when reache here, oldItem should never be null
                         oldItem?.commitId
                     }
 
@@ -2745,7 +2749,9 @@ private fun NaviButton(
             val doActThenSwitchItem:suspend (targetIndex:Int, targetItem: DiffableItem?, act:suspend ()->Unit)->Unit = { targetIndex, targetItem, act ->
                 act()
 
-                // because act will comsume current item, so next index need -1 at here, if got valid index, means still has next, then switch to it, else switch to previous
+                // because `act` was comsumed current item and removed it form the list,
+                //   so next index need -1 at here, if got valid index, means still has next,
+                //   then switch to it, else switch to previous
                 val nextOrPreviousIndex = if(hasNext) (nextIndex - 1) else previousIndex
                 if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {  // still has next or previous, switch to it
                     //切换条目
