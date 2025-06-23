@@ -235,6 +235,10 @@ fun DiffScreen(
     val needRefresh = rememberSaveable { mutableStateOf("DiffScreen_refresh_init_value_4kc9") }
     val listState = rememberLazyListState()
 
+    val goToTop = {
+        UIHelper.scrollToItem(scope, listState, 0)
+    }
+
     //避免高强度并发赋值导致报错，虽然一般没事，但墨菲定律，你懂的
     val diffableListLock = mutableCustomBoxOf<Mutex>(stateKeyTag, "diffableListLock", Mutex()).value
 
@@ -2316,7 +2320,8 @@ fun DiffScreen(
                                 pageRequest = pageRequest,
                                 stageItem = stageItem,
                                 initRevertDialog = initRevertDialog,
-                                initUnstageDialog = initUnstageDialog
+                                initUnstageDialog = initUnstageDialog,
+                                goToTop = goToTop,
                             )
 
                         }
@@ -2343,7 +2348,7 @@ fun DiffScreen(
 
         //切换条目后回到列表顶部
         if(requestType == StateRequestType.requireGoToTop) {
-            UIHelper.scrollToItem(scope, listState, 0)
+            goToTop()
         }
 
         //如果想只加载指定条目，可设置条目到sub列表，否则加载全部条目
@@ -2694,6 +2699,7 @@ private fun NaviButton(
     initUnstageDialog:(items:List<StatusTypeEntrySaver>, callback:suspend ()->Unit)->Unit,
     naviUp:()->Unit,
     switchItem: (oldItem: DiffableItem?, newItem:DiffableItem, newItemIndex: Int, isToNext:Boolean) -> Unit,
+    goToTop:()->Unit,
 ) {
     val isFileHistoryTreeToLocalOrTree = fromTo == Cons.gitDiffFileHistoryFromTreeToLocal || fromTo == Cons.gitDiffFileHistoryFromTreeToPrev
     val size = diffableItemList.size
@@ -2895,12 +2901,14 @@ private fun NaviButton(
 
                 // button for show current item info, but cant click
                 TwoLineTextCardButton(
-                    enabled = false,
+                    enabled = true,
                     textPair = getItemTextByIdx(curItemIndex.intValue),
                     headIcon = Icons.AutoMirrored.Filled.ArrowRight,
                     headIconWidth = headIconWidth,
                     headIconDesc = "Current",
-                ) {}
+                ) {
+                    goToTop()
+                }
 
                 Spacer(Modifier.height(10.dp))
 
