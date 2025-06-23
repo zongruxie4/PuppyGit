@@ -26,7 +26,12 @@ data class DiffableItem(
     val repoWorkDirPath:String="",
     val fileName:String="",
     val fullPath:String="",
-    val fileParentPathOfRelativePath:String="",  //文件在仓库下的相对路径的父路径，例如 abc/123.txt，文件名是123.txt，父路径是abc/
+
+    //文件在仓库下的相对路径的父路径，例如 abc/123.txt，文件名是123.txt，父路径是abc/，如果是文件在仓库根目录，返回/而不是空字符串
+    // parent path of file's relative path, e.g. abc/123.txt, file name is '123.txt',
+    // parent path is 'abc/', if file at root path of repository workdir,
+    // will return '/', rather than empty string
+    val fileParentPathOfRelativePath:String="",
 
     val itemType:Int = Cons.gitItemTypeFile,
 

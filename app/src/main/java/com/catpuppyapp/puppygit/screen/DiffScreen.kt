@@ -2696,7 +2696,7 @@ private fun NaviButton(
             if(isFileHistoryTreeToLocalOrTree) {
                 Pair(it.shortCommitId, it.oneLineCommitMsgOfCommitOid())
             } else {
-                Pair(it.fileName, "")
+                Pair(it.fileName, it.fileParentPathOfRelativePath)
             }
         } ?: noneText
     }
@@ -2900,35 +2900,39 @@ private fun NaviButton(
 
                 Spacer(Modifier.height(10.dp))
 
-                //当前条目
-                val textPair = getItemTextByIdx(curItemIndex.intValue)
-                val color = Color.Unspecified
-                val iconColor = LocalContentColor.current
+                CardButton(
+                    enabled = false,
+                    content = {
+                        //当前条目
+                        val textPair = getItemTextByIdx(curItemIndex.intValue)
+                        val color = UIHelper.getDisableTextColor()
+                        val iconColor = color
 
-                TwoLineTextsAndIcons(
-                    text1 = textPair.first,
-                    text2 = textPair.second,
-                    text1Color = color,
-                    text2Color = color,
-                    modifier = Modifier.padding(horizontal = 50.dp),
-                    headIconWidth = headIconWidth,
-                    headIcons = { containerModifier ->
-                        Row(
-                            modifier = containerModifier,
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.End
-                        ) {
+                        TwoLineTextsAndIcons(
+                            text1 = textPair.first,
+                            text2 = textPair.second,
+                            text1Color = color,
+                            text2Color = color,
+                            headIconWidth = headIconWidth,
+                            headIcons = { containerModifier ->
+                                Row(
+                                    modifier = containerModifier,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.End
+                                ) {
 
-                            SizeIcon(
-                                size = headIconWidth,
-                                imageVector = Icons.AutoMirrored.Filled.ArrowRight,
-                                contentDescription = "Current",
-                                tint = iconColor
-                            )
+                                    SizeIcon(
+                                        size = headIconWidth,
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                                        contentDescription = "Current",
+                                        tint = iconColor
+                                    )
 
-                        }
+                                }
+                            }
+                        )
                     }
-                )
+                ) {}
 
                 Spacer(Modifier.height(10.dp))
 
