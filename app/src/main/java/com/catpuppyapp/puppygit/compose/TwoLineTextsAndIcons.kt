@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -20,26 +21,37 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 
 private val minHeight = 40.dp
 
+private fun getHorizontalPaddingForIcons(headIconIsNull: Boolean, trailIconIsNull: Boolean) = PaddingValues(start = if(headIconIsNull) 0.dp else 5.dp, end = if(trailIconIsNull) 0.dp else 5.dp)
+
 @Composable
 fun TwoLineTextsAndIcons(
     text1:String,
     text2:String,
-    trailIconWidth: Dp,
-    trailIcons: @Composable BoxScope.(containerModifier: Modifier) -> Unit
+    headIconWidth: Dp = 0.dp,
+    headIcons:  (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
+    trailIconWidth: Dp = 0.dp,
+    trailIcons: (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
 ) {
+    val headIconIsNull = headIcons == null
+    val trailIconIsNull = trailIcons == null
+
     Box(
         modifier = Modifier
             .padding(5.dp)
-            .padding(end = 5.dp)
+            .padding(getHorizontalPaddingForIcons(headIconIsNull, trailIconIsNull))
             .fillMaxWidth()
             .heightIn(min = minHeight)
         ,
     ) {
+        if(!headIconIsNull) {
+            headIcons(Modifier.align(Alignment.CenterStart))
+        }
+
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(end = 5.dp)
-                .padding(end = trailIconWidth)
+                .padding(getHorizontalPaddingForIcons(headIconIsNull, trailIconIsNull))
+                .padding(start = headIconWidth, end = trailIconWidth)
 //                .fillMaxWidth()  // no need fill max width
             ,
             verticalArrangement = Arrangement.Center,
@@ -59,7 +71,9 @@ fun TwoLineTextsAndIcons(
             }
         }
 
-        trailIcons(Modifier.align(Alignment.CenterEnd))
+        if(!trailIconIsNull) {
+            trailIcons(Modifier.align(Alignment.CenterEnd))
+        }
 
     }
 }

@@ -39,39 +39,38 @@ fun SelectedFileListItem(
             TwoLineTextsAndIcons(
                 text1 = it.name,
                 text2 = it.fullPath,
-                trailIconWidth = trailIconSize * 2 + splitSpacerWidth
-            ) { containerModifier ->
-                Row(
-                    modifier = containerModifier
-                        .fillMaxWidth()
-                    ,
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End
-                ) {
+                trailIconWidth = trailIconSize * 2 + splitSpacerWidth,
+                trailIcons = { containerModifier ->
+                    Row(
+                        modifier = containerModifier
+                            .fillMaxWidth()
+                        ,
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
+                    ) {
 
-                    SizeIcon(
-                        size = trailIconSize,
-                        modifier = Modifier.clickable {
-                            goToParentAndScrollToItem(it)
-                        },
-                        imageVector = if(it.isDir) Icons.Outlined.Folder else Icons.AutoMirrored.Outlined.InsertDriveFile,
-                        contentDescription = if(it.isDir) stringResource(R.string.folder) else stringResource(R.string.file)
-                    )
+                        SizeIcon(
+                            size = trailIconSize,
+                            modifier = Modifier.clickable {
+                                goToParentAndScrollToItem(it)
+                            },
+                            imageVector = if(it.isDir) Icons.Outlined.Folder else Icons.AutoMirrored.Outlined.InsertDriveFile,
+                            contentDescription = if(it.isDir) stringResource(R.string.folder) else stringResource(R.string.file)
+                        )
 
-                    Spacer(modifier = Modifier.width(splitSpacerWidth))
+                        Spacer(modifier = Modifier.width(splitSpacerWidth))
 
-                    SizeIcon(
-                        size = trailIconSize,
-                        modifier = Modifier.clickable {
-                            removeItem(it)
-                        },
-                        imageVector = Icons.Filled.DeleteOutline,
-                        contentDescription = stringResource(R.string.delete)
-                    )
+                        SizeIcon(
+                            size = trailIconSize,
+                            modifier = Modifier.clickable {
+                                removeItem(it)
+                            },
+                            imageVector = Icons.Filled.DeleteOutline,
+                            contentDescription = stringResource(R.string.delete)
+                        )
+                    }
                 }
-
-
-            }
+            )
         },
         customTrailIcon = {},
         textFormatterForCopy = textFormatterForCopy,

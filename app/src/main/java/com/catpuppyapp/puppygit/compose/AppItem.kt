@@ -37,7 +37,12 @@ fun AppItem(
                 .padding(start = 5.dp)
         )
 
-        TwoLineTextsAndIcons(text1 = appInfo.appName, text2 = appInfo.packageName, trailIconWidth = trailIconWidth, trailIcons = trailIcons)
+        TwoLineTextsAndIcons(
+            text1 = appInfo.appName,
+            text2 = appInfo.packageName,
+            trailIconWidth = trailIconWidth,
+            trailIcons = trailIcons
+        )
 
     }
 
