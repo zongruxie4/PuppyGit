@@ -868,13 +868,13 @@ fun FileHistoryScreen(
 //                            relativePathList = listOf(fileRelativePath),
                                 diffableList = list.map { it.toDiffableItem() },
                                 repoId = repoId,
-                                fromTo = Cons.gitDiffFileHistoryFromTreeToTree,
+                                fromTo = Cons.gitDiffFileHistoryFromTreeToPrev,
                                 commit1OidStr = commit1,
                                 commit2OidStr = commit2,
                                 isDiffToLocal = false,
                                 curItemIndexAtDiffableList = indexAtDiffableList,
                                 localAtDiffRight = false,
-                                fromScreen = DiffFromScreen.FILE_HISTORY.code
+                                fromScreen = DiffFromScreen.FILE_HISTORY_TREE_TO_PREV.code
                             )
                         }
 
@@ -1025,7 +1025,7 @@ fun FileHistoryScreen(
                             isDiffToLocal = true,
                             curItemIndexAtDiffableList = idx,
                             localAtDiffRight = true,
-                            fromScreen = DiffFromScreen.FILE_HISTORY.code
+                            fromScreen = DiffFromScreen.FILE_HISTORY_TREE_TO_LOCAL.code
                         )
 
                     }

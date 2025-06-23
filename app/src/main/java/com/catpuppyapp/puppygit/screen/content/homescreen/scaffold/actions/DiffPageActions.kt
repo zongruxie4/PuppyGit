@@ -86,7 +86,7 @@ fun DiffPageActions(
 //
 //    }
 
-    if(fromTo == Cons.gitDiffFileHistoryFromTreeToTree || fromTo == Cons.gitDiffFileHistoryFromTreeToLocal) {
+    if(fromTo == Cons.gitDiffFileHistoryFromTreeToPrev || fromTo == Cons.gitDiffFileHistoryFromTreeToLocal) {
         LongPressAbleIconBtn(
             tooltipText = stringResource(R.string.restore),
             icon =  Icons.Filled.Restore,

@@ -124,6 +124,7 @@ import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
+import com.catpuppyapp.puppygit.utils.isGoodIndex
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomBoxOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -185,9 +186,9 @@ fun DiffScreen(
 //    val screenHeightPx = remember (configuration.screenHeightDp) { UIHelper.dpToPx(configuration.screenHeightDp, density) }
 
     val isFileHistoryTreeToLocal = fromTo == Cons.gitDiffFileHistoryFromTreeToLocal
-    val isFileHistoryTreeToTree = fromTo == Cons.gitDiffFileHistoryFromTreeToTree
+    val isFileHistoryTreeToPrev = fromTo == Cons.gitDiffFileHistoryFromTreeToPrev
 
-    val isFileHistory = isFileHistoryTreeToLocal || isFileHistoryTreeToTree;
+    val isFileHistory = isFileHistoryTreeToLocal || isFileHistoryTreeToPrev;
 
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -894,7 +895,7 @@ fun DiffScreen(
             sb.append(activityContext.getString(R.string.name)+": ").append(curItem.fileName).append(suffix)
 
 
-            if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
+            if(isFileHistoryTreeToLocal || isFileHistoryTreeToPrev) {
                 // if isFileHistoryTreeToLocal==true: curItemIndex is on FileHistory, which item got clicked , else curItemIndex is on FileHistory, which got long pressed
                 //如果为true，则是从file history页面点击条目进来的，这时是 curItemIndex对应的条目 to local，所以当前提交是左边的提交也就是treeOid1Str；
                 // 否则，是长按file history通过diff to prev进来的，这时，实际上是 prev to curItemIndex对应的条目，所以当前提交是右边的提交，即treeOid2Str
@@ -1117,15 +1118,32 @@ fun DiffScreen(
 
     // newItem和newItemIndex都是要切换的文件的，不是当前文件的
     //newItem 可通过 newItemIndex 在 diffableList获得，这里传只是方便使用
-    val switchItem = {oldItem:DiffableItem?, newItem:DiffableItem, newItemIndex:Int->
-        doJobThenOffLoading {
+    val switchItem = { oldItem:DiffableItem?, newItem:DiffableItem, newItemIndex:Int, isToNext:Boolean ->
+        doJobThenOffLoading j@{
             // send close signal to old channel to abort loading
             oldItem?.closeLoadChannel()
 
 
             // switch to new item
-            if(fromScreen == DiffFromScreen.FILE_HISTORY) {
-                treeOid1Str.value = newItem.commitId
+            if(DiffFromScreen.isFromFileHistory(fromScreen)) {
+                if(fromScreen == DiffFromScreen.FILE_HISTORY_TREE_TO_LOCAL) {
+                    treeOid1Str.value = newItem.commitId
+                }else {  // tree to prev
+                    val leftOidStr = if(isToNext) {
+                        diffableItemList.value.getOrNull(newItemIndex + 1)?.commitId
+                    } else {
+                        oldItem?.commitId
+                    }
+
+                    if(leftOidStr.isNullOrBlank()) {
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.plz_lode_more_then_try_again))
+                        return@j
+                    }
+
+                    treeOid1Str.value = leftOidStr
+                    treeOid2Str.value = newItem.commitId
+                }
+
             }
 
             curItemIndex.intValue = newItemIndex
@@ -2437,7 +2455,7 @@ fun DiffScreen(
                             //两hash一样，不可能有差异，返回空结果即可
                             // 设上必须的字段，若不设置，会误判没加载过diff内容而不显示添加删除了多少行
                             DiffItemSaver(relativePathUnderRepo = relativePath, fromTo = fromTo)
-                        } else if(fromTo == Cons.gitDiffFromTreeToTree || fromTo==Cons.gitDiffFileHistoryFromTreeToLocal || fromTo==Cons.gitDiffFileHistoryFromTreeToTree){  //从提交列表点击提交进入
+                        } else if(fromTo == Cons.gitDiffFromTreeToTree || fromTo == Cons.gitDiffFileHistoryFromTreeToLocal || fromTo == Cons.gitDiffFileHistoryFromTreeToPrev){  //从提交列表点击提交进入
                             val diffItemSaver = if(Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str) || Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid2Str)) {  // tree to work tree, oid1 or oid2 is local, both local will cause err
                                 val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str)
 
@@ -2671,14 +2689,15 @@ private fun NaviButton(
     initRevertDialog:(items:List<StatusTypeEntrySaver>, callback:suspend ()->Unit)->Unit,
     initUnstageDialog:(items:List<StatusTypeEntrySaver>, callback:suspend ()->Unit)->Unit,
     naviUp:()->Unit,
-    switchItem: (oldItem: DiffableItem?, newItem:DiffableItem, newItemIndex: Int) -> Unit,
+    switchItem: (oldItem: DiffableItem?, newItem:DiffableItem, newItemIndex: Int, isToNext:Boolean) -> Unit,
 ) {
-    val isFileHistoryTreeToLocalOrTree = fromTo==Cons.gitDiffFileHistoryFromTreeToLocal || fromTo==Cons.gitDiffFileHistoryFromTreeToTree
+    val isFileHistoryTreeToLocalOrTree = fromTo == Cons.gitDiffFileHistoryFromTreeToLocal || fromTo == Cons.gitDiffFileHistoryFromTreeToPrev
     val size = diffableItemList.size
     val previousIndex = curItemIndex.intValue - 1
     val nextIndex = curItemIndex.intValue + 1
     val hasPrevious = previousIndex >= 0 && previousIndex < size
-    val hasNext = nextIndex >= 0 && nextIndex < size
+    // diff to prev require next next item compare to next item, so need check next index plus 1 is good index or not
+    val hasNext = if(fromTo != Cons.gitDiffFileHistoryFromTreeToPrev) isGoodIndex(nextIndex, size) else isGoodIndex(nextIndex + 1, size);
 
     val noneText = Pair(stringResource(R.string.none), "")
 
@@ -2710,7 +2729,8 @@ private fun NaviButton(
         }
 
 
-        if(size>0 && fromTo != Cons.gitDiffFileHistoryFromTreeToTree) {
+//        if(size > 0 && fromTo != Cons.gitDiffFileHistoryFromTreeToTree) {
+        if(size > 0) {
             val getCurItem = {
                 val targetItem = diffableItemList.getOrNull(curItemIndex.intValue)
 
@@ -2725,12 +2745,13 @@ private fun NaviButton(
             val doActThenSwitchItem:suspend (targetIndex:Int, targetItem: DiffableItem?, act:suspend ()->Unit)->Unit = { targetIndex, targetItem, act ->
                 act()
 
+                // because act will comsume current item, so next index need -1 at here, if got valid index, means still has next, then switch to it, else switch to previous
                 val nextOrPreviousIndex = if(hasNext) (nextIndex - 1) else previousIndex
                 if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {  // still has next or previous, switch to it
                     //切换条目
                     val nextOrPrevious = diffableItemList[nextOrPreviousIndex]
                     lastClickedItemKey.value = nextOrPrevious.getItemKey()
-                    switchItem(targetItem, nextOrPrevious, nextOrPreviousIndex)
+                    switchItem(targetItem, nextOrPrevious, nextOrPreviousIndex, hasNext)
                 }
             }
 
@@ -2851,6 +2872,7 @@ private fun NaviButton(
                 }
 
                 //切换上个下个条目按钮
+                // button for switch to prev item
                 TwoLineTextCardButton(
                     enabled = hasPrevious,
                     textPair = if(hasPrevious) getItemTextByIdx(previousIndex) else noneText,
@@ -2860,11 +2882,12 @@ private fun NaviButton(
                 ) {
                     val item = diffableItemList[previousIndex]
                     lastClickedItemKey.value = item.getItemKey()
-                    switchItem(getCurItem(), item, previousIndex)
+                    switchItem(getCurItem(), item, previousIndex, false)
                 }
 
                 Spacer(Modifier.height(10.dp))
 
+                // button for show current item info, but cant click
                 TwoLineTextCardButton(
                     enabled = false,
                     textPair = getItemTextByIdx(curItemIndex.intValue),
@@ -2875,6 +2898,7 @@ private fun NaviButton(
 
                 Spacer(Modifier.height(10.dp))
 
+                // button for switch to next item
                 TwoLineTextCardButton(
                     enabled = hasNext,
                     textPair = if(hasNext) getItemTextByIdx(nextIndex) else noneText,
@@ -2884,7 +2908,7 @@ private fun NaviButton(
                 ) {
                     val item = diffableItemList[nextIndex]
                     lastClickedItemKey.value = item.getItemKey()
-                    switchItem(getCurItem(), item, nextIndex)
+                    switchItem(getCurItem(), item, nextIndex, true)
                 }
             }
         }

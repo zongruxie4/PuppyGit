@@ -311,14 +311,15 @@ object Cons {
     //        val gitDiffFromTreeToWorktree = "5"
     // git diff file history start
     val gitDiffFileHistoryFromTreeToLocal = "20"
-    val gitDiffFileHistoryFromTreeToTree = "21"
+    // target commit to it's previous reversion of file
+    val gitDiffFileHistoryFromTreeToPrev = "21"
 
     //必须得用平常的文件名不会包含的那种字符
     //        val separatorReplaceStr = "\\kn16K0_ivanrof\\"
 
 
     //在stringResource中的占位符，格式："ph_随机字符串_编号"，其中ph是placeholder的缩写，编号填数字即可，需要几个占位符，就填几个字符串，一般一个就够了，所以最常用的是编号1，即 `placeholderPrefixForStrRes+1` 的值
-    val placeholderPrefixForStrRes = "ph_a3f241dc_"
+    const val placeholderPrefixForStrRes = "ph_a3f241dc_"
     //        val placeholder1ForStringRes = placeholderPrefixForStrRes+1
     //        val placeholder2ForStringRes = placeholderPrefixForStrRes+2
     //        val placeholder3ForStringRes = placeholderPrefixForStrRes+3
