@@ -45,7 +45,7 @@ object CommitMsgTemplateUtil {
                 if(itemList.isNullOrEmpty()) {
                     ""
                 }else {
-                    genFileNames(StringBuilder(), itemList).toString()
+                    genFileNames(itemList)
                 }
             )
     }
@@ -53,11 +53,12 @@ object CommitMsgTemplateUtil {
     /**
      * @return the input param `out`
      */
-    fun genFileNames(out:StringBuilder, itemList:List<StatusTypeEntrySaver>, limitCharsLen:Int = 200): StringBuilder {
+    fun genFileNames(itemList:List<StatusTypeEntrySaver>, limitCharsLen:Int = 200): String {
         val split = ", "
         var count = 0;  //文件记数，用来计算超字符数长度限制后还有几个文件名没追加上
         val allFilesCount = itemList.size
 
+        val out = StringBuilder()
         for(item in itemList) {  //终止条件为：列表遍历完毕 或者 达到包含文件名的限制数目(上面的limit变量控制)
             out.append(item.fileName).append(split)
 
@@ -69,9 +70,6 @@ object CommitMsgTemplateUtil {
             }
         }
 
-        //移除最后的 “, ”，如果有的话
-        out.removeSuffix(split)
-
-        return out
+        return out.removeSuffix(split).toString()
     }
 }

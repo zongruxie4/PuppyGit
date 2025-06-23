@@ -2433,7 +2433,7 @@ object Libgit2Helper {
         val descriptions=StringBuilder(summary)
 
         // generate file names
-        CommitMsgTemplateUtil.genFileNames(descriptions, actuallyItemList)
+        descriptions.append(CommitMsgTemplateUtil.genFileNames(actuallyItemList))
 
         return Ret.createSuccess(descriptions.toString())
     }
