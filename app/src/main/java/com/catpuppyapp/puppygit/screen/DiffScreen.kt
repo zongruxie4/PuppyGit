@@ -927,19 +927,40 @@ fun DiffScreen(
 
         detailsString.value = sb.removeSuffix(suffix).toString()
 
-        showDetailsDialog.value=true
+        showDetailsDialog.value = true
     }
 
 
-    val showRestoreDialog = rememberSaveable { mutableStateOf(false)}
+    val showRestoreDialog = rememberSaveable { mutableStateOf(false) }
+    val oidForRestoreDialog = rememberSaveable { mutableStateOf("") }
+    val msgForRestoreDialog = rememberSaveable { mutableStateOf("") }
+    val initRestoreDialog = {
+        val targetCommitOid = if(isFileHistoryTreeToLocal){
+            treeOid1Str.value
+        }else { // isFileHistoryTreeToTree
+            treeOid2Str.value
+        }
+
+        oidForRestoreDialog.value = targetCommitOid
+        msgForRestoreDialog.value = try {
+            Repository.open(curRepo.value.fullSavePath).use { repo ->
+                Libgit2Helper.resolveCommitByHash(repo, targetCommitOid)?.message()?.let {
+                    Libgit2Helper.zipOneLineMsg(it)
+                } ?: ""
+            }
+        }catch (e: Exception) {
+            MyLog.d(TAG, "initRestoreDialog err: ${e.stackTraceToString()}")
+            ""
+        }
+
+        showRestoreDialog.value = true
+    }
+
+    // only show restore for file history
     if(showRestoreDialog.value) {
         FileHistoryRestoreDialog(
-            // only show restore for history
-            targetCommitOidStr = if(isFileHistoryTreeToLocal){
-                treeOid1Str.value
-            }else { // isFileHistoryTreeToTree
-                treeOid2Str.value
-            },
+            targetCommitOidStr = oidForRestoreDialog.value,
+            commitMsg = msgForRestoreDialog.value,
             showRestoreDialog = showRestoreDialog,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
@@ -1039,7 +1060,7 @@ fun DiffScreen(
 
     if(pageRequest.value == PageRequest.showRestoreDialog) {
         PageRequest.clearStateThenDoAct(pageRequest) {
-            showRestoreDialog.value = true
+            initRestoreDialog()
         }
     }
 

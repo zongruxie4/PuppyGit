@@ -1,10 +1,14 @@
 package com.catpuppyapp.puppygit.compose
 
 import android.content.Context
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -17,7 +21,8 @@ import com.github.git24j.core.Repository
 
 @Composable
 fun FileHistoryRestoreDialog(
-    targetCommitOidStr:String,
+    targetCommitOidStr: String,
+    commitMsg: String,
     showRestoreDialog: MutableState<Boolean>,
     loadingOn: (String) -> Unit,
     loadingOff: () -> Unit,
@@ -25,7 +30,7 @@ fun FileHistoryRestoreDialog(
     curRepo: CustomStateSaveable<RepoEntity>,
     fileRelativePath: String,
     repoId: String,
-    onSuccess:()->Unit = {}
+    onSuccess:() -> Unit = {}
 ) {
     ConfirmDialog2(
         title = stringResource(R.string.restore),
@@ -36,6 +41,11 @@ fun FileHistoryRestoreDialog(
                     Text(
                         replaceStringResList(stringResource(R.string.target_ph), listOf(targetCommitOidStr))
                     )
+
+                    if(commitMsg.isNotBlank()) {
+                        Spacer(Modifier.height(15.dp))
+                        Text(commitMsg)
+                    }
                 }
             }
         },

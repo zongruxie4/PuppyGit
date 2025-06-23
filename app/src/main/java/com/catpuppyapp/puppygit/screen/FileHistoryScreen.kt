@@ -140,6 +140,7 @@ fun FileHistoryScreen(
     val navController = AppModel.navController
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
+    val clipboardManager = LocalClipboardManager.current
 
     val loadChannel = remember { Channel<Int>() }
 
@@ -411,12 +412,12 @@ fun FileHistoryScreen(
         }
     }
 
-    val clipboardManager = LocalClipboardManager.current
 
-    val showRestoreDialog = rememberSaveable { mutableStateOf(false)}
+    val showRestoreDialog = rememberSaveable { mutableStateOf(false) }
     if(showRestoreDialog.value) {
         FileHistoryRestoreDialog(
             targetCommitOidStr = curObj.value.commitOidStr,
+            commitMsg = curObj.value.getCachedOneLineMsg(),
             showRestoreDialog = showRestoreDialog,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
