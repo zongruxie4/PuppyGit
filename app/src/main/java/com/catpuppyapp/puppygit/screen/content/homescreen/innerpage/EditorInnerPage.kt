@@ -1088,14 +1088,15 @@ fun EditorInnerPage(
 
     if(requestFromParent.value==PageRequest.showDetails) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            val editorFilePath = editorPageShowingFilePath.value
-            val currentFile = FuckSafFile(activityContext, if(isPreviewModeOn.value) FilePath(previewPath) else editorFilePath)
+            val editorPageShowingFilePath = editorPageShowingFilePath.value
+            val currentFile = FuckSafFile(activityContext, if(isPreviewModeOn.value) FilePath(previewPath) else editorPageShowingFilePath)
+            val isEditingFile = currentFile.path.ioPath == editorPageShowingFilePath.ioPath
 //            val fileReadable = currentFile.canRead()  // 注：saf的canRead()不准，所以弃用此判断
             val fileReadable = true
             val fileName = editorPageShowingFileName ?: currentFile.name
             val fileSize = if(fileReadable) getHumanReadableSizeStr(currentFile.length()) else 0
             //仅文件可读且当前预览或编辑的文件与当前编辑的文件相同时才显示行数和字数
-            val showLinesCharsCount = fileReadable && currentFile.path.ioPath == editorFilePath.ioPath
+            val showLinesCharsCount = isEditingFile && fileReadable
             val (charsCount, linesCount) = if(showLinesCharsCount) editorPageTextEditorState.value.getCharsAndLinesCount() else Pair(0, 0)
 //            val lastModifiedTimeStr = getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
             val lastModifiedTimeStr = if(fileReadable) getFormattedLastModifiedTimeOfFile(currentFile) else ""
@@ -1104,7 +1105,7 @@ fun EditorInnerPage(
             val sb = StringBuilder()
             val suffix = "\n\n"
             sb.append(activityContext.getString(R.string.file_name)+": "+fileName).append(suffix)
-            sb.append(activityContext.getString(R.string.path)+": "+ editorFilePath).append(suffix)
+            sb.append(activityContext.getString(R.string.path)+": "+ currentFile.path.ioPath).append(suffix)
 
             if(showLinesCharsCount) {
                 sb.append(activityContext.getString(R.string.chars)+": "+charsCount).append(suffix)
