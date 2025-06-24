@@ -806,22 +806,28 @@ fun getStrShorterThanLimitLength(src:String, limit:Int=12):String {
 }
 
 suspend fun createAndInsertError(repoId:String, errMsg: String) {
-    if(repoId.isBlank() || errMsg.isEmpty()) {
+    if(repoId.isBlank() || errMsg.isBlank()) {
         return
     }
+
+    // if repo doesn't exist, return
+    val repoDb = AppModel.dbContainer.repoRepository
+    if(repoDb.getById(repoId) == null) {
+        MyLog.e(TAG, "$TAG#createAndInsertError: not found repo which matched the repoId '$repoId', and the errMsg is: $errMsg")
+        return
+    }
+
+    //更新repo表相关字段
+    repoDb.setNewErrMsg(repoId, errMsg)
 
     val errDb = AppModel.dbContainer.errorRepository
     errDb.insert(
         ErrorEntity(
-            msg=errMsg,
+            msg = errMsg,
             repoId = repoId,
             date = getNowInSecFormatted()
         )
     )
-
-    //更新repo表相关字段
-    val repoDb = AppModel.dbContainer.repoRepository
-    repoDb.setNewErrMsg(repoId, errMsg)
 }
 
 //做3件事：1记录错误信息到日志文件 2显示错误信息 3保存错误信息到数据库

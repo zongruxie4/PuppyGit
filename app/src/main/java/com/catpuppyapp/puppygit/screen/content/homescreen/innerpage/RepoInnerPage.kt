@@ -2846,37 +2846,42 @@ private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList
         //这的状态直接更新到列表条目不会走 RepoStatusUtil 设置到Cache里，所以如果Cache里有其他状态，必然是其他任务设置的
         newRepo.tmpStatus = loadingText
 
-        //列表列表条目
+        //更新列表条目
         updateRepoListByIndexOrId(newRepo, idx, repoList, repoListSizeSnapshot)
     }
 
     doJobThenOffLoading {
-        Repository.open(item.fullSavePath).use { repo ->
-            MyLog.d(TAG, "#checkRepoGitStatus: checking git status for repo '${item.repoName}'")
+        try {
+            Repository.open(item.fullSavePath).use { repo ->
+                MyLog.d(TAG, "#checkRepoGitStatus: checking git status for repo '${item.repoName}'")
 
-            val needCommit = Libgit2Helper.hasUncommittedChanges(repo)
+                val needCommit = Libgit2Helper.hasUncommittedChanges(repo)
 
-            MyLog.d(TAG, "#checkRepoGitStatus: repoName=${item.repoName}, repoId=${item.id}, needCommit=$needCommit, pageChanged=${pageChanged()}")
+                MyLog.d(TAG, "#checkRepoGitStatus: repoName=${item.repoName}, repoId=${item.id}, needCommit=$needCommit, pageChanged=${pageChanged()}")
 
-            //如果页面没改变（没重新刷新） 且 仓库没有在执行其他操作（例如 pull），则 更新列表
-            if(pageChanged().not() && RepoStatusUtil.getRepoStatus(item.id).let{ it == null || it.isBlank() }) {
-                val newRepo = item.copyAllFields()
-                //操作已经执行完毕，清空需要执行的操作
-                newRepo.pendingTask = RepoPendingTask.NONE
+                //如果页面没改变（没重新刷新） 且 仓库没有在执行其他操作（例如 pull），则 更新列表
+                if(pageChanged().not() && RepoStatusUtil.getRepoStatus(item.id).let{ it == null || it.isBlank() }) {
+                    val newRepo = item.copyAllFields()
+                    //操作已经执行完毕，清空需要执行的操作
+                    newRepo.pendingTask = RepoPendingTask.NONE
 
-                //清空临时状态
-                if(needUpdateTmpStatus) {
-                    newRepo.tmpStatus = ""
+                    //清空临时状态
+                    if(needUpdateTmpStatus) {
+                        newRepo.tmpStatus = ""
+                    }
+
+                    //如果需要提交，则更新状态为需要提交；否则检查ahead和behind状态，可能是up to date也可能需要sync
+                    if(needCommit) {
+                        newRepo.workStatus = Cons.dbRepoWorkStatusNeedCommit
+                    }
+
+                    updateRepoListByIndexOrId(newRepo, idx, repoList, repoListSizeSnapshot)
                 }
 
-                //如果需要提交，则更新状态为需要提交；否则检查ahead和behind状态，可能是up to date也可能需要sync
-                if(needCommit) {
-                    newRepo.workStatus = Cons.dbRepoWorkStatusNeedCommit
-                }
-
-                updateRepoListByIndexOrId(newRepo, idx, repoList, repoListSizeSnapshot)
             }
-
+        }catch (e: Exception) {
+            createAndInsertError(item.id, "check repo changes err: ${e.localizedMessage}")
+            MyLog.e(TAG, "$TAG#$funName err: ${e.stackTraceToString()}")
         }
     }
 
