@@ -112,8 +112,8 @@ fun SetUpstreamDialog(
                 DefaultPaddingRow {
                     Text(text = stringResource(R.string.select_a_remote)+":")
                 }
-                //下拉列表，弹窗显示这个会崩溃，日后不崩溃了再启用
-            //SingleSelectList(optionsList = optionsList, selectedOption = selectedOption)
+
+                Spacer(Modifier.height(5.dp))
 
                 if(remoteList.isEmpty()){  //remotelist为空，显示提示，同时应禁用ok按钮
                     Text(text = stringResource(R.string.err_remote_list_is_empty),
@@ -129,6 +129,9 @@ fun SetUpstreamDialog(
                 DefaultPaddingRow {
                     Text(stringResource(R.string.upstream_branch_name)+":")
                 }
+
+                Spacer(Modifier.height(5.dp))
+
                 TextField(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -141,6 +144,9 @@ fun SetUpstreamDialog(
                     onValueChange = {
                         upstreamBranchShortName.value = it
                     },
+                    placeholder = {
+                        Text(stringResource(R.string.branch_name))
+                    }
                 )
 
                 Spacer(Modifier.height(10.dp))

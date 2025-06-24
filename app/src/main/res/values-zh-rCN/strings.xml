@@ -172,7 +172,7 @@
     <string name="you_can_leave_msg_empty_will_auto_gen_one">信息可留空，将自动生成</string>
     <string name="input_your_commit_message">输入提交信息</string>
     <string name="set_upstream_text">请为当前分支选择一个 \"远程仓库\" 并设置关联 \"分支\" 作为其上游</string>
-    <string name="set_upstream_for_branch">为分支设置上游</string>
+    <string name="set_upstream_for_branch">为以下分支设置上游</string>
     <string name="please_set_upstream_for_current_branch">请为当前分支设置上游!</string>
     <string name="set_upstream_title">设置上游</string>
     <string name="same_with_local_branch">和本地分支同名</string>
