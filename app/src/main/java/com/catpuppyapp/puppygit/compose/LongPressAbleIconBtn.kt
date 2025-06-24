@@ -19,11 +19,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -41,7 +40,7 @@ fun LongPressAbleIconBtn(
     isInDarkTheme:Boolean = Theme.inDarkTheme,
     haptic: HapticFeedback = LocalHapticFeedback.current,
     activityContext:Context =  LocalContext.current,
-    pressedCircleSize:Dp = 40.0.dp,
+    pressedCircleSize:Dp = MyStyleKt.defaultLongPressAbleIconBtnPressedCircleSize,
 
     //空白提示文字，代表不想显示提示文案
     onLongClick:(()->Unit)? = if(tooltipText.isEmpty()) null else ({

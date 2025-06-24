@@ -36,6 +36,8 @@ fun TwoLineTextsAndIcons(
     text2FontWeight: FontWeight? = FontWeight.Light,
     text1FontSize: TextUnit = MyStyleKt.Title.firstLineFontSizeSmall,
     text2FontSize: TextUnit = MyStyleKt.Title.secondLineFontSize,
+    text1Scrollable: Boolean = true,
+    text2Scrollable: Boolean = true,
     headIconWidth: Dp = 0.dp,
     headIcons:  (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
     trailIconWidth: Dp = 0.dp,
@@ -66,14 +68,14 @@ fun TwoLineTextsAndIcons(
             verticalArrangement = Arrangement.Center,
         ) {
             SelectionRow(
-                Modifier.horizontalScroll(rememberScrollState())
+                modifier = if(text1Scrollable) Modifier.horizontalScroll(rememberScrollState()) else Modifier
             ) {
                 Text(text = text1, fontSize = text1FontSize, fontWeight = text1FontWeight, color = text1Color)
             }
 
             if(text2.isNotEmpty()) {
                 SelectionRow(
-                    Modifier.horizontalScroll(rememberScrollState())
+                    modifier = if(text2Scrollable) Modifier.horizontalScroll(rememberScrollState()) else Modifier
                 ) {
                     Text(text = text2, fontSize = text2FontSize, fontWeight = text2FontWeight, color = text2Color)
                 }
@@ -95,6 +97,7 @@ fun OneLineTextsAndIcons(
     text1Color: Color = Color.Unspecified,
     text1FontWeight: FontWeight? = null,
     text1FontSize: TextUnit = MyStyleKt.Title.firstLineFontSizeSmall,
+    text1Scrollable: Boolean = true,
     headIconWidth: Dp = 0.dp,
     headIcons:  (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
     trailIconWidth: Dp = 0.dp,
@@ -106,6 +109,7 @@ fun OneLineTextsAndIcons(
         text1Color = text1Color,
         text1FontWeight = text1FontWeight,
         text1FontSize = text1FontSize,
+        text1Scrollable = text1Scrollable,
         headIconWidth = headIconWidth,
         headIcons = headIcons,
         trailIconWidth = trailIconWidth,
