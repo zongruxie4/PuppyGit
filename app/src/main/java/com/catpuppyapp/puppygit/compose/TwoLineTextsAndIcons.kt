@@ -42,6 +42,7 @@ fun TwoLineTextsAndIcons(
     text2FontSize: TextUnit = MyStyleKt.Title.secondLineFontSize,
     text1Scrollable: Boolean = true,
     text2Scrollable: Boolean = true,
+    basePadding: Dp = 5.dp,
     headIconWidth: Dp = 0.dp,
     headIcons:  (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
     trailIconWidth: Dp = 0.dp,
@@ -52,7 +53,7 @@ fun TwoLineTextsAndIcons(
 
     Box(
         modifier = modifier
-            .padding(5.dp)
+            .padding(basePadding)
             .padding(getHorizontalPaddingForIcons(headIconIsNull, trailIconIsNull))
             .fillMaxWidth()
             .heightIn(min = minHeight)
@@ -102,6 +103,7 @@ fun OneLineTextsAndIcons(
     text1FontWeight: FontWeight? = null,
     text1FontSize: TextUnit = MyStyleKt.Title.firstLineFontSizeSmall,
     text1Scrollable: Boolean = true,
+    basePadding: Dp = 0.dp,
     headIconWidth: Dp = 0.dp,
     headIcons:  (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
     trailIconWidth: Dp = 0.dp,
@@ -110,6 +112,7 @@ fun OneLineTextsAndIcons(
     TwoLineTextsAndIcons(
         text1 = text1,
         modifier = modifier,
+        basePadding = basePadding,
         text1Color = text1Color,
         text1FontWeight = text1FontWeight,
         text1FontSize = text1FontSize,
@@ -129,6 +132,7 @@ fun TwoLineSettingsItem(
     text2: String = "",
     text1FontSize: TextUnit,
     text2FontSize: TextUnit = MyStyleKt.Title.secondLineFontSize,
+    basePadding: Dp = 0.dp,
     trailIconWidth: Dp,
     trailIconOnClick: ()->Unit,
 ) {
@@ -137,6 +141,7 @@ fun TwoLineSettingsItem(
             text1 = text1,
             text1FontSize = text1FontSize,
             text1Scrollable = false,
+            basePadding = basePadding,
             trailIconWidth = trailIconWidth,
             trailIcons = { modifier ->
                 LongPressAbleIconBtn(
@@ -159,6 +164,7 @@ fun TwoLineSettingsItem(
             text2FontWeight = FontWeight.Light,
             text2Scrollable = false,
 
+            basePadding = basePadding,
             trailIconWidth = trailIconWidth,
             trailIcons = { modifier ->
                 LongPressAbleIconBtn(

@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -47,10 +45,8 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
-import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
-import com.catpuppyapp.puppygit.compose.OneLineTextsAndIcons
 import com.catpuppyapp.puppygit.compose.PasswordTextFiled
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
@@ -59,7 +55,7 @@ import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.compose.SpacerRow
-import com.catpuppyapp.puppygit.compose.TwoLineTextsAndIcons
+import com.catpuppyapp.puppygit.compose.TwoLineSettingsItem
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dev.DevItem
@@ -862,19 +858,12 @@ fun SettingsInnerPage(
         }
         SettingsContent {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSelector)) {
-                OneLineTextsAndIcons(
+                TwoLineSettingsItem(
                     text1 = stringResource(R.string.log_level),
                     text1FontSize = itemFontSize,
-                    text1Scrollable = false,
                     trailIconWidth = trailIconWidth,
-                    trailIcons = { modifier ->
-                        LongPressAbleIconBtn(
-                            modifier = modifier,
-                            tooltipText = stringResource(R.string.show_in_files),
-                            icon = Icons.Filled.Folder
-                        ) {
-                            goToFilesPage(AppModel.getOrCreateLogDir().canonicalPath)
-                        }
+                    trailIconOnClick = {
+                        goToFilesPage(AppModel.getOrCreateLogDir().canonicalPath)
                     }
                 )
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
@@ -1021,25 +1010,15 @@ fun SettingsInnerPage(
             EditCache.init(enableCache = newValue, cacheDir = AppModel.getOrCreateEditCacheDir(), keepInDays = settings.editor.editCacheKeepInDays)
         }) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                TwoLineTextsAndIcons(
+                TwoLineSettingsItem(
                     text1 = stringResource(R.string.edit_cache),
-                    text1FontWeight = null,
                     text1FontSize = itemFontSize,
-                    text1Scrollable = false,
                     text2 = replaceStringResList(stringResource(R.string.cache_your_input_into_editcache_dir_path), listOf("${Cons.defalutPuppyGitDataUnderAllReposDirName}/${Cons.defaultEditCacheDirName}")),
                     text2FontSize = itemDescFontSize,
-                    text2FontWeight = FontWeight.Light,
-                    text2Scrollable = false,
 
                     trailIconWidth = trailIconWidth,
-                    trailIcons = { modifier ->
-                        LongPressAbleIconBtn(
-                            modifier = modifier,
-                            tooltipText = stringResource(R.string.show_in_files),
-                            icon = Icons.Filled.Folder
-                        ) {
-                            goToFilesPage(AppModel.getOrCreateEditCacheDir().canonicalPath)
-                        }
+                    trailIconOnClick = {
+                        goToFilesPage(AppModel.getOrCreateEditCacheDir().canonicalPath)
                     }
                 )
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
@@ -1065,25 +1044,15 @@ fun SettingsInnerPage(
             }
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                TwoLineTextsAndIcons(
+                TwoLineSettingsItem(
                     text1 = stringResource(R.string.file_snapshot),
-                    text1FontWeight = null,
                     text1FontSize = itemFontSize,
-                    text1Scrollable = false,
                     text2 = stringResource(R.string.file_snapshot_desc),
                     text2FontSize = itemDescFontSize,
-                    text2FontWeight = FontWeight.Light,
-                    text2Scrollable = false,
 
                     trailIconWidth = trailIconWidth,
-                    trailIcons = { modifier ->
-                        LongPressAbleIconBtn(
-                            modifier = modifier,
-                            tooltipText = stringResource(R.string.show_in_files),
-                            icon = Icons.Filled.Folder
-                        ) {
-                            goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
-                        }
+                    trailIconOnClick = {
+                        goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
                     }
                 )
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
@@ -1108,25 +1077,15 @@ fun SettingsInnerPage(
             }
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                TwoLineTextsAndIcons(
+                TwoLineSettingsItem(
                     text1 = stringResource(R.string.content_snapshot),
-                    text1FontWeight = null,
                     text1FontSize = itemFontSize,
-                    text1Scrollable = false,
                     text2 = stringResource(R.string.content_snapshot_desc),
                     text2FontSize = itemDescFontSize,
-                    text2FontWeight = FontWeight.Light,
-                    text2Scrollable = false,
 
                     trailIconWidth = trailIconWidth,
-                    trailIcons = { modifier ->
-                        LongPressAbleIconBtn(
-                            modifier = modifier,
-                            tooltipText = stringResource(R.string.show_in_files),
-                            icon = Icons.Filled.Folder
-                        ) {
-                            goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
-                        }
+                    trailIconOnClick = {
+                        goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
                     }
                 )
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
@@ -1155,25 +1114,15 @@ fun SettingsInnerPage(
             }
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                TwoLineTextsAndIcons(
+                TwoLineSettingsItem(
                     text1 = stringResource(R.string.file_snapshot),
-                    text1FontWeight = null,
                     text1FontSize = itemFontSize,
-                    text1Scrollable = false,
                     text2 = stringResource(R.string.file_snapshot_desc),
                     text2FontSize = itemDescFontSize,
-                    text2FontWeight = FontWeight.Light,
-                    text2Scrollable = false,
 
                     trailIconWidth = trailIconWidth,
-                    trailIcons = { modifier ->
-                        LongPressAbleIconBtn(
-                            modifier = modifier,
-                            tooltipText = stringResource(R.string.show_in_files),
-                            icon = Icons.Filled.Folder
-                        ) {
-                            goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
-                        }
+                    trailIconOnClick = {
+                        goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
                     }
                 )
 
