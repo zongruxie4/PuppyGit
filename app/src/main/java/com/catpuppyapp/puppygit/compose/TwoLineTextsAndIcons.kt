@@ -31,6 +31,8 @@ fun TwoLineTextsAndIcons(
     modifier: Modifier = Modifier,
     text1Color: Color = Color.Unspecified,
     text2Color: Color = Color.Unspecified,
+    text1FontWeight: FontWeight? = FontWeight.Bold,
+    text2FontWeight: FontWeight? = FontWeight.Light,
     headIconWidth: Dp = 0.dp,
     headIcons:  (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
     trailIconWidth: Dp = 0.dp,
@@ -63,14 +65,14 @@ fun TwoLineTextsAndIcons(
             SelectionRow(
                 Modifier.horizontalScroll(rememberScrollState())
             ) {
-                Text(text = text1, fontSize = MyStyleKt.Title.firstLineFontSizeSmall, fontWeight = FontWeight.Bold, color = text1Color)
+                Text(text = text1, fontSize = MyStyleKt.Title.firstLineFontSizeSmall, fontWeight = text1FontWeight, color = text1Color)
             }
 
             if(text2.isNotEmpty()) {
                 SelectionRow(
                     Modifier.horizontalScroll(rememberScrollState())
                 ) {
-                    Text(text = text2, fontSize = MyStyleKt.Title.secondLineFontSize, fontWeight = FontWeight.Light, color = text2Color)
+                    Text(text = text2, fontSize = MyStyleKt.Title.secondLineFontSize, fontWeight = text2FontWeight, color = text2Color)
                 }
             }
         }
