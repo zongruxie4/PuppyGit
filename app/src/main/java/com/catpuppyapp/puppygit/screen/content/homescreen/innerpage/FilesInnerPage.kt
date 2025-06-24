@@ -1996,16 +1996,16 @@ fun FilesInnerPage(
                 ScrollableColumn {
                     MySelectionContainer {
                         CardButton(
-                            enabled = true,
+                            onClick = {
+                                chooseDirLauncher.launch(null)
+                            },
                             content = {
                                 Text(
                                     text = if(choosenSafUri.value == null) stringResource(R.string.select_path) else choosenSafUri.value.toString(),
                                     color = UIHelper.getCardButtonTextColor(enabled = true, inDarkTheme = inDarkTheme)
                                 )
                             },
-                        ) {
-                            chooseDirLauncher.launch(null)
-                        }
+                        )
                     }
 
                     Spacer(Modifier.height(20.dp))
@@ -2103,16 +2103,16 @@ fun FilesInnerPage(
                 ScrollableColumn {
                     MySelectionContainer {
                         CardButton(
-                            enabled = true,
+                            onClick = {
+                                chooseDirLauncher.launch(null)
+                            },
                             content = {
                                 Text(
                                     text = if(choosenSafUri.value == null) stringResource(R.string.select_path) else choosenSafUri.value.toString(),
                                     color = UIHelper.getCardButtonTextColor(enabled = true, inDarkTheme = inDarkTheme)
                                 )
                             },
-                        ) {
-                            chooseDirLauncher.launch(null)
-                        }
+                        )
                     }
 
                     Spacer(Modifier.height(20.dp))
@@ -2184,11 +2184,13 @@ fun FilesInnerPage(
 
                         MySelectionContainer {
                             CardButton(
+                                enabled = false,
                                 maxHeight = 500,
+                                onClick = {},
                                 content = {
                                     Text(safDiffResultStr.value)
-                                }
-                            ) {}
+                                },
+                            )
                         }
                     }
 

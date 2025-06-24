@@ -35,6 +35,7 @@ fun SingleLineCardButton(
     CardButton(
         modifier = modifier,
         enabled = enabled,
+        onClick = onClick,
         content = {
             Text(
                 text = text,
@@ -44,7 +45,6 @@ fun SingleLineCardButton(
                 color = UIHelper.getCardButtonTextColor(enabled, inDarkTheme)
             )
         },
-        onClick = onClick
     )
 }
 
@@ -55,8 +55,8 @@ fun CardButton(
     enabled: Boolean = true,
     minHeight:Int = 50,
     maxHeight:Int = 120,
+    onClick: () -> Unit,
     content:@Composable RowScope.()->Unit,
-    onClick: () -> Unit
 ) {
 
     val maxHeight = maxHeight.coerceAtLeast(minHeight)
@@ -115,6 +115,7 @@ fun TwoLineTextCardButton(
 ) {
     CardButton(
         enabled = enabled,
+        onClick = onClick,
         content = {
             val color = if(enabled) Color.Unspecified else UIHelper.getDisableTextColor()
             val iconColor = if(enabled) LocalContentColor.current else color
@@ -143,8 +144,6 @@ fun TwoLineTextCardButton(
                 }
             )
         },
-    ) {
-        onClick()
-    }
+    )
 }
 
