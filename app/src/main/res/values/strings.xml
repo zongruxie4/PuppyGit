@@ -335,7 +335,7 @@
     <string name="fetch_all_are_u_sure">Will fetch all remotes, are you sure?</string>
     <string name="error_msg">Error Msg</string>
     <string name="repo_path_invalid">Repo path is invalid!</string>
-    <string name="err_repo_is_invalid">Err:Repo is invalid!</string>
+    <string name="err_repo_is_invalid">Err: Repo is invalid!</string>
     <string name="name">Name</string>
     <string name="url">Url</string>
     <string name="set_url">Set Url</string>
