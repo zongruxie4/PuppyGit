@@ -18,6 +18,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -39,6 +42,9 @@ fun PasswordTextFiled(
     paddingValues:PaddingValues = PaddingValues(10.dp),
     keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+
+    // press keyboard enter callback
+    enterPressedCallback: (()->Unit)? = null,
 ) {
     TextField(
         enabled = enabled,
@@ -48,6 +54,19 @@ fun PasswordTextFiled(
             .then(
                 if(focusRequest != null) {
                     Modifier.focusRequester(focusRequest)
+                }else {
+                    Modifier
+                }
+            ).then(
+                if(enterPressedCallback != null) {
+                    Modifier.onPreviewKeyEvent { event ->
+                        if(event.key == Key.Enter) {
+                            enterPressedCallback()
+                            true
+                        }else {
+                            false
+                        }
+                    }
                 }else {
                     Modifier
                 }

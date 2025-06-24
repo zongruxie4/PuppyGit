@@ -117,6 +117,8 @@ fun RequireMasterPasswordScreen(
                 errMsg.value = e.localizedMessage ?: (activityContext.getString(R.string.wrong_password) + ", (err msg is null)")
             }
         }
+
+        Unit
     }
 
     Scaffold { contentPadding ->
@@ -154,7 +156,8 @@ fun RequireMasterPasswordScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Go),
                 keyboardActions = KeyboardActions(onGo = {
                     inputPassCallback()
-                })
+                }),
+                enterPressedCallback = inputPassCallback
             )
 
 

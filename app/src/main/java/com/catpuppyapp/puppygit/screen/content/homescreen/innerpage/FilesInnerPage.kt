@@ -58,6 +58,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -464,7 +468,16 @@ fun FilesInnerPage(
                         maxLines = MyStyleKt.defaultMultiLineTextFieldMaxLines,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .focusRequester(focusRequester),
+                            .focusRequester(focusRequester)
+                            .onPreviewKeyEvent { event ->
+                                if(event.key == Key.Enter) {
+                                    goToDialogOnOk()
+                                    true
+                                }else {
+                                    false
+                                }
+                            }
+                        ,
                         value = pathToGo.value,
 //                        singleLine = true,
                         onValueChange = {

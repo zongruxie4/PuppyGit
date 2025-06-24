@@ -18,6 +18,9 @@ import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -61,7 +64,17 @@ fun CreateFileOrFolderDialog(
         text = {
             ScrollableColumn {
                 TextField(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onPreviewKeyEvent { event ->
+                            if(event.key == Key.Enter) {
+                                doCreate()
+                                true
+                            }else {
+                                false
+                            }
+                        }
+                    ,
 
                     value = fileName.value,
                     singleLine = true,

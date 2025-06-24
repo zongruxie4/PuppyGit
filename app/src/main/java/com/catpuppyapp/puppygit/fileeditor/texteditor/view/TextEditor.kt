@@ -593,6 +593,11 @@ fun TextEditor(
     }
 
     if(showGoToLineDialog.value) {
+        val onOK = {
+            showGoToLineDialog.value = false
+            doGoToLine(goToLineValue.value.text)
+        }
+
         val focusRequester = remember { FocusRequester() }
 
         val firstLine = "1"
@@ -613,11 +618,18 @@ fun TextEditor(
                             .fillMaxWidth()
                             .padding(10.dp)
                             .focusRequester(focusRequester)
+                            .onPreviewKeyEvent { event ->
+                                if(event.key == Key.Enter) {
+                                    onOK()
+                                    true
+                                }else {
+                                    false
+                                }
+                            }
                         ,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Go),
                         keyboardActions = KeyboardActions(onGo = {
-                            showGoToLineDialog.value = false
-                            doGoToLine(goToLineValue.value.text)
+                            onOK()
                         }),
                         singleLine = true,
 
@@ -673,8 +685,7 @@ fun TextEditor(
             cancelBtnText = stringResource(id = R.string.cancel),
             onCancel = { showGoToLineDialog.value = false }
         ) {
-            showGoToLineDialog.value = false
-            doGoToLine(goToLineValue.value.text)
+            onOK()
         }
 
         LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }

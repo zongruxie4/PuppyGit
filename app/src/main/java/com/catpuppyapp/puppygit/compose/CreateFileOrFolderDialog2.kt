@@ -10,20 +10,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 @Composable
@@ -59,6 +60,21 @@ fun CreateFileOrFolderDialog2(
                     modifier = Modifier
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
+                        .onPreviewKeyEvent { event ->
+                            // ctrl + enter to create file
+                            // enter to create folder
+                            if(event.key == Key.Enter && event.isCtrlPressed) {
+                                val isDir = false
+                                doCreate(isDir)
+                                true
+                            }else if(event.key == Key.Enter && event.isCtrlPressed.not()) {
+                                val isDir = true
+                                doCreate(isDir)
+                                true
+                            }else {
+                                false
+                            }
+                        }
                     ,
 
                     value = fileName.value,
