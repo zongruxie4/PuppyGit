@@ -7,6 +7,7 @@ object StrCons {
     // language name
     // order by language code a-z
     const val langName_Arabic = "العربية"
+    const val langName_Bangla = "বাংলা"
     const val langName_English = "English"
     const val langName_Russian = "Русский"
     const val langName_ChineseSimplified = "中文(简体)"

@@ -3,3 +3,4 @@
 Russian by github user @triksterr, https://github.com/triksterr, issue: https://github.com/catpuppyapp/PuppyGit/issues/12
 Turkish, @mikropsoft, https://github.com/mikropsoft
 Arabic by https://github.com/Hussain96o
+Bangla by https://github.com/kamilhussen24

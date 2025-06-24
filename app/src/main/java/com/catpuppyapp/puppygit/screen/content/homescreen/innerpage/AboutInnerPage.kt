@@ -90,6 +90,7 @@ private val contributorList = listOf(
     Contributor(name = "mikropsoft", link = "https://github.com/mikropsoft", desc = "Turkish translator"),
     Contributor(name = "Hussain96o", link = "https://github.com/Hussain96o", desc = "Arabic translator"),
     Contributor(name = "sebastien46", link = "https://github.com/sebastien46", desc = "Monochrome app icon"),
+    Contributor(name = "kamilhussen24", link = "https://github.com/kamilhussen24", desc = "Bangla translator"),
 )
 
 @Composable

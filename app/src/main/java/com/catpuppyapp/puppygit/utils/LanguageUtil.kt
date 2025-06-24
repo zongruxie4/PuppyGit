@@ -17,6 +17,7 @@ object LanguageUtil {
 
         // order by a-z
         LangCode.ar,
+        LangCode.bn,
         LangCode.en,
         LangCode.ru,
         LangCode.tr,
@@ -60,6 +61,10 @@ object LanguageUtil {
         // order by a-z
         if(languageCode == LangCode.ar) {
             return StrCons.langName_Arabic
+        }
+
+        if(languageCode == LangCode.bn) {
+            return StrCons.langName_Bangla
         }
 
         if(languageCode == LangCode.en) {
