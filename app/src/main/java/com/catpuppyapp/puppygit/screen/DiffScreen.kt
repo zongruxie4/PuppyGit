@@ -19,11 +19,13 @@ import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -2888,7 +2890,7 @@ private fun NaviButton(
                 TwoLineTextCardButton(
                     enabled = hasPrevious,
                     textPair = if(hasPrevious) getItemTextByIdx(previousIndex) else noneText,
-                    headIcon = Icons.Filled.ArrowDropUp,
+                    headIcon = Icons.Filled.KeyboardArrowUp,
                     headIconWidth = headIconWidth,
                     headIconDesc = "Previous",
                 ) {
@@ -2903,7 +2905,7 @@ private fun NaviButton(
                 TwoLineTextCardButton(
                     enabled = true,
                     textPair = getItemTextByIdx(curItemIndex.intValue),
-                    headIcon = Icons.AutoMirrored.Filled.ArrowRight,
+                    headIcon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     headIconWidth = headIconWidth,
                     headIconDesc = "Current",
                 ) {
@@ -2916,7 +2918,7 @@ private fun NaviButton(
                 TwoLineTextCardButton(
                     enabled = hasNext,
                     textPair = if(hasNext) getItemTextByIdx(nextIndex) else noneText,
-                    headIcon = Icons.Filled.ArrowDropDown,
+                    headIcon = Icons.Filled.KeyboardArrowDown,
                     headIconWidth = headIconWidth,
                     headIconDesc = "Next",
                 ) {
