@@ -12,8 +12,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 
 
 @Composable
@@ -21,8 +21,8 @@ fun InLineIcon(
     icon: ImageVector,
     tooltipText: String,  //若为empty，不显示长按提示文本
     iconContentDesc: String? = tooltipText,
-    iconModifier: Modifier = Modifier.size(16.dp),
-    pressedCircleSize: Dp = 24.dp,
+    iconModifier: Modifier = Modifier.size(MyStyleKt.defaultInLineIconSize),
+    pressedCircleSize: Dp = MyStyleKt.defaultInLineIconsPressedCircleSize,
     enabled: Boolean = true,
     iconColor: Color = LocalContentColor.current,
     onClick: (() -> Unit)? = null

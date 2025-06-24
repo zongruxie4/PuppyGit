@@ -31,6 +31,9 @@ object MyStyleKt{
     val trailIconSize = 24.dp
     val trailIconSplitSpacerWidth = 20.dp
 
+    val defaultInLineIconSize = 16.dp
+    val defaultInLineIconsPressedCircleSize = 24.dp
+
 
     // 多行的 TextFiled 的默认最大行数（maxLines的值）
     const val defaultMultiLineTextFieldMaxLines = 6
