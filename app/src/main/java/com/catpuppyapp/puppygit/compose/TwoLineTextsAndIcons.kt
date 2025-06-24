@@ -83,3 +83,27 @@ fun TwoLineTextsAndIcons(
 
     }
 }
+
+
+@Composable
+fun OneLineTextsAndIcons(
+    text1:String,
+    modifier: Modifier = Modifier,
+    text1Color: Color = Color.Unspecified,
+    text1FontWeight: FontWeight? = null,
+    headIconWidth: Dp = 0.dp,
+    headIcons:  (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
+    trailIconWidth: Dp = 0.dp,
+    trailIcons: (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
+) {
+    TwoLineTextsAndIcons(
+        text1 = text1,
+        modifier = modifier,
+        text1Color = text1Color,
+        text1FontWeight = text1FontWeight,
+        headIconWidth = headIconWidth,
+        headIcons = headIcons,
+        trailIconWidth = trailIconWidth,
+        trailIcons = trailIcons,
+    )
+}
