@@ -1000,17 +1000,17 @@ fun EditorInnerPage(
         PageRequest.clearStateThenDoAct(requestFromParent) {
             runBlocking {
                 // user expect edit current previewing file
-                val previewing = previewNavStack.value.previewingPath  // or use page state `previewPath.value`, or `previewNavStack.getCurrent()`
-                previewNavStack.value.editingPath = previewing
+                val previewingPath = previewNavStack.value.previewingPath  // or use page state `previewPath.value`, or `previewNavStack.getCurrent()`
+                previewNavStack.value.editingPath = previewingPath
 
                 //若正在预览和正在编辑的文件不同则重载，否则仅退出预览模式即可
-                if(previewing != editorPageShowingFilePath.value.ioPath) {
-                    editorPageShowingFilePath.value = FilePath(previewing)
+                if(previewingPath != editorPageShowingFilePath.value.ioPath) {
                     keepPreviewNavStackOnce.value = true  //保留导航栈
-                    forceReloadFile()
-                }else {
-                    quitPreviewMode()
+                    forceReloadFilePath(FilePath(previewingPath))
                 }
+
+                quitPreviewMode()
+
             }
         }
     }
@@ -1648,7 +1648,7 @@ fun EditorInnerPage(
             // 未在Editor点击 open as，用外部程序打开，显示询问是否重载的弹窗，
             // 若显示此弹窗，用户可手动确认是否重载，所以没必要自动重载
             showBackFromExternalAppAskReloadDialog.value.not()
-
+            && isPreviewModeOn.value.not() // will try reload file when quit preview mode, so, don't need reload at here
             && editorPageShowingFilePath.value.isNotBlank()
             && isEdited.value.not()  // if edited, should not auto reload to avoid lost user changes
             && isSaving.value.not()  // not saving in progress
