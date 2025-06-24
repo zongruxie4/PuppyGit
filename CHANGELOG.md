@@ -2,20 +2,25 @@
 
 
 ---
-1.1.2.9v105 - 20250623:
-- fix: reset and checkout err
+1.1.2.9v105 - 20250624:
+- fix: reload item err after reset and checkout in commit history screen
+- fix: load resource failed when editor preview mode on
+- add new language Bangla (thx @kamilhussen24)
 
 
 
-- 修复重置和检出错误
+- 修复提交历史页面重置和检出后加载条目报错
+- 修复编辑器预览模式加载资源失败
+- 添加孟加拉语 (thx @kamilhussen24)
+
 
 ---
 1.1.2.8v104 - 20250618:
-- fix: colors difficult to distinguish in some cases (issue: #66, thx RokeJulianLockhart)
+- fix: colors difficult to distinguish in some cases (issue: #66, thx @RokeJulianLockhart)
 
 
 
-- 修复某些情况颜色难以区分 (issue: #66, thx RokeJulianLockhart)
+- 修复某些情况颜色难以区分 (issue: #66, thx @RokeJulianLockhart)
 
 
 ---
