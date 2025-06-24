@@ -10,15 +10,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
 private val minHeight = 40.dp
@@ -115,4 +119,56 @@ fun OneLineTextsAndIcons(
         trailIconWidth = trailIconWidth,
         trailIcons = trailIcons,
     )
+}
+
+
+
+@Composable
+fun TwoLineSettingsItem(
+    text1: String,
+    text2: String = "",
+    text1FontSize: TextUnit,
+    text2FontSize: TextUnit = MyStyleKt.Title.secondLineFontSize,
+    trailIconWidth: Dp,
+    trailIconOnClick: ()->Unit,
+) {
+    if(text2.isBlank()) {
+        OneLineTextsAndIcons(
+            text1 = text1,
+            text1FontSize = text1FontSize,
+            text1Scrollable = false,
+            trailIconWidth = trailIconWidth,
+            trailIcons = { modifier ->
+                LongPressAbleIconBtn(
+                    modifier = modifier,
+                    tooltipText = stringResource(R.string.show_in_files),
+                    icon = Icons.Filled.Folder
+                ) {
+                    trailIconOnClick()
+                }
+            }
+        )
+    }else {
+        TwoLineTextsAndIcons(
+            text1 = text1,
+            text1FontWeight = null,
+            text1FontSize = text1FontSize,
+            text1Scrollable = false,
+            text2 = text2,
+            text2FontSize = text2FontSize,
+            text2FontWeight = FontWeight.Light,
+            text2Scrollable = false,
+
+            trailIconWidth = trailIconWidth,
+            trailIcons = { modifier ->
+                LongPressAbleIconBtn(
+                    modifier = modifier,
+                    tooltipText = stringResource(R.string.show_in_files),
+                    icon = Icons.Filled.Folder
+                ) {
+                    trailIconOnClick()
+                }
+            }
+        )
+    }
 }
