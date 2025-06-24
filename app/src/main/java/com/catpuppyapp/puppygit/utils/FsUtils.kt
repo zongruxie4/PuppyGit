@@ -46,8 +46,8 @@ object FsUtils {
     /**
      * internal and external storage path prefix
      */
-    const val internalPathPrefix = "Internal://"
-    const val externalPathPrefix = "External://"
+    const val internalPathPrefix = "App://"
+    const val externalPathPrefix = "Ext://"
     // /data/data/packagename/
     const val innerPathPrefix = "Inner://"
 
