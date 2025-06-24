@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
@@ -33,6 +34,8 @@ fun TwoLineTextsAndIcons(
     text2Color: Color = Color.Unspecified,
     text1FontWeight: FontWeight? = FontWeight.Bold,
     text2FontWeight: FontWeight? = FontWeight.Light,
+    text1FontSize: TextUnit = MyStyleKt.Title.firstLineFontSizeSmall,
+    text2FontSize: TextUnit = MyStyleKt.Title.secondLineFontSize,
     headIconWidth: Dp = 0.dp,
     headIcons:  (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
     trailIconWidth: Dp = 0.dp,
@@ -65,14 +68,14 @@ fun TwoLineTextsAndIcons(
             SelectionRow(
                 Modifier.horizontalScroll(rememberScrollState())
             ) {
-                Text(text = text1, fontSize = MyStyleKt.Title.firstLineFontSizeSmall, fontWeight = text1FontWeight, color = text1Color)
+                Text(text = text1, fontSize = text1FontSize, fontWeight = text1FontWeight, color = text1Color)
             }
 
             if(text2.isNotEmpty()) {
                 SelectionRow(
                     Modifier.horizontalScroll(rememberScrollState())
                 ) {
-                    Text(text = text2, fontSize = MyStyleKt.Title.secondLineFontSize, fontWeight = text2FontWeight, color = text2Color)
+                    Text(text = text2, fontSize = text2FontSize, fontWeight = text2FontWeight, color = text2Color)
                 }
             }
         }
@@ -91,6 +94,7 @@ fun OneLineTextsAndIcons(
     modifier: Modifier = Modifier,
     text1Color: Color = Color.Unspecified,
     text1FontWeight: FontWeight? = null,
+    text1FontSize: TextUnit = MyStyleKt.Title.firstLineFontSizeSmall,
     headIconWidth: Dp = 0.dp,
     headIcons:  (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
     trailIconWidth: Dp = 0.dp,
@@ -101,6 +105,7 @@ fun OneLineTextsAndIcons(
         modifier = modifier,
         text1Color = text1Color,
         text1FontWeight = text1FontWeight,
+        text1FontSize = text1FontSize,
         headIconWidth = headIconWidth,
         headIcons = headIcons,
         trailIconWidth = trailIconWidth,
