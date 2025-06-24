@@ -631,20 +631,20 @@ fun FileEditor(
                     }
                     val iconList = listOf(
                         Icons.Filled.CleaningServices,  // clear line content
-                        Icons.Filled.ContentPaste,
                         Icons.AutoMirrored.Filled.KeyboardReturn,  // append a line
                         Icons.Filled.Delete,
                         Icons.Filled.ContentCut,
                         Icons.Filled.ContentCopy,
+                        Icons.Filled.ContentPaste,
                         Icons.Filled.SelectAll
                     )
                     val iconTextList = listOf(
                         stringResource(R.string.clear),
-                        stringResource(R.string.paste),
                         stringResource(R.string.append_a_line),
                         stringResource(R.string.delete),
                         stringResource(R.string.cut),
                         stringResource(R.string.copy),
+                        stringResource(R.string.paste),
                         stringResource(R.string.select_all),
                     )
                     val iconOnClickList = listOf(
@@ -657,26 +657,6 @@ fun FileEditor(
                             //不用确认，直接清空，若后悔可用undo撤销
                             doJobThenOffLoading {
                                 textEditorState.value.clearSelectedFields()
-                            }
-
-                            Unit
-                        },
-                        onPaste@{
-                            if (readOnlyMode) {
-                                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
-                                return@onPaste
-                            }
-
-                            val clipboardText = getClipboardText(clipboardManager)
-                            if(clipboardText == null) {
-                                Msg.requireShowLongDuration(activityContext.getString(R.string.clipboard_is_empty))
-                                return@onPaste
-                            }
-
-                            EditCache.writeToFile(clipboardText)
-
-                            doJobThenOffLoading {
-                                textEditorState.value.appendTextToLastSelectedLine(clipboardText)
                             }
 
                             Unit
@@ -730,6 +710,27 @@ fun FileEditor(
 //                            editableController.value.createCopiedState()
                         },
 
+                        onPaste@{
+                            if (readOnlyMode) {
+                                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
+                                return@onPaste
+                            }
+
+                            val clipboardText = getClipboardText(clipboardManager)
+                            if(clipboardText == null) {
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.clipboard_is_empty))
+                                return@onPaste
+                            }
+
+                            EditCache.writeToFile(clipboardText)
+
+                            doJobThenOffLoading {
+                                textEditorState.value.appendTextToLastSelectedLine(clipboardText)
+                            }
+
+                            Unit
+                        },
+
                         onSelectAll@{
                             doJobThenOffLoading {
                                 textEditorState.value.createSelectAllState()
@@ -745,11 +746,11 @@ fun FileEditor(
                     val iconEnableList = listOf(
                         onClear@{ hasLineSelectedAndNotReadOnly },  // clear
 //                        onPaste@{ hasLineSelectedAndNotReadOnly && clipboardManager.hasText() },  // paste，必须 "剪贴板非空 且 选中某行" 才启用
-                        onPaste@{ hasLineSelectedAndNotReadOnly },  // paste，只要 "选中某行" 就启用，执行时再检查剪贴板是否为空
                         onAppendALine@{ hasLineSelectedAndNotReadOnly },  // append a line
                         onDelete@{ hasLineSelectedAndNotReadOnly },  // delete
                         onCut@{ hasLineSelectedAndNotReadOnly },  // cut
                         onCopy@{ hasLineSelected },  // copy
+                        onPaste@{ hasLineSelectedAndNotReadOnly },  // paste，只要 "选中某行" 就启用，执行时再检查剪贴板是否为空
                         onSelectAll@{ true },  // select all
                     )
                     // BottomBar params block end
