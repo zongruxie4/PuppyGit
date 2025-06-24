@@ -61,24 +61,25 @@ fun MarkdownText(
 ) {
     val defaultColor: Color = LocalContentColor.current
     val context: Context = LocalContext.current
-    val markdownRender: Markwon =
-        remember {
-            MarkdownRender.create(
-                context,
-                imageLoader,
-                coilStore,
-                linkifyMask,
-                enableSoftBreakAddsNewLine,
-                syntaxHighlightColor,
-                syntaxHighlightTextColor,
-                headingBreakColor,
-                enableUnderlineForLink,
-                beforeSetMarkdown,
-                afterSetMarkdown,
-                onLinkClicked,
-                style
-            )
-        }
+
+    // this was remembered, if remember, must set dependencies params as key of remember,
+    //   else will not update variable correctly, e.g. when navi to other file which parent difference to current,
+    //   then the coilStore will not update, so, all relative path resource will not load correctly
+    val markdownRender: Markwon = MarkdownRender.create(
+        context,
+        imageLoader,
+        coilStore,
+        linkifyMask,
+        enableSoftBreakAddsNewLine,
+        syntaxHighlightColor,
+        syntaxHighlightTextColor,
+        headingBreakColor,
+        enableUnderlineForLink,
+        beforeSetMarkdown,
+        afterSetMarkdown,
+        onLinkClicked,
+        style
+    )
 
     val androidViewModifier = if (onClick != null) {
         Modifier
