@@ -59,6 +59,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.DepthTextField
 import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
@@ -355,7 +357,61 @@ fun CloneScreen(
         }
     }
 
+    val indexForDeleteStoragePathDialog = rememberSaveable { mutableStateOf(-1) }
+    val showDeleteStoragePathListDialog = rememberSaveable { mutableStateOf(false) }
+    val initDeleteStoragePathListDialog = { index:Int ->
+        indexForDeleteStoragePathDialog.value = index
+        showDeleteStoragePathListDialog.value = true
+    }
 
+    if(showDeleteStoragePathListDialog.value) {
+        val targetPath = storagePathList.value.getOrNull(indexForDeleteStoragePathDialog.value) ?: ""
+
+        val closeDialog = { showDeleteStoragePathListDialog.value = false }
+
+        val deleteStoragePath = { index:Int ->
+            storagePathList.value.removeAt(index)
+            val removedCurrent = index == storagePathSelectedIndex.intValue
+            val spForSave = StoragePathsMan.get()
+            if(removedCurrent) {
+                val newCurrentIndex = 0
+                storagePathSelectedIndex.intValue = newCurrentIndex
+                val newCurrent = storagePathList.value[newCurrentIndex]
+                storagePathSelectedPath.value = newCurrent
+                spForSave.storagePathLastSelected = newCurrent
+            }
+
+            spForSave.storagePaths.clear()
+            val list = storagePathList.value
+            val size = list.size
+            if(size>1) {
+                //index start from 1 for exclude internal storage
+                spForSave.storagePaths.addAll(list.subList(1, size))
+            }
+
+            StoragePathsMan.save(spForSave)
+        }
+
+        ConfirmDialog2(
+            title = stringResource(R.string.deleted),
+            requireShowTextCompose = true,
+            textCompose = {
+                CopyScrollableColumn {
+                    Text(targetPath)
+                }
+            },
+            okBtnText = stringResource(R.string.delete),
+            okTextColor = MyStyleKt.TextColor.danger(),
+            onCancel = closeDialog
+        ) {
+            closeDialog()
+
+            val targetIndex = indexForDeleteStoragePathDialog.value
+            doJobThenOffLoading {
+                deleteStoragePath(targetIndex)
+            }
+        }
+    }
 
     val showLoadingDialog = rememberSaveable { mutableStateOf(false)}
 
@@ -693,31 +749,11 @@ fun CloneScreen(
                     menuItemTrailIconEnable = {index, value->
                         index!=0
                     },
-                    menuItemTrailIconOnClick = {index, value->
-                        if(index==0) {
+                    menuItemTrailIconOnClick = { index, value ->
+                        if(index == 0) {
                             Msg.requireShow(activityContext.getString(R.string.cant_delete_internal_storage))
                         }else {
-                            storagePathList.value.removeAt(index)
-                            val removedCurrent = index == storagePathSelectedIndex.intValue
-                            val spForSave = StoragePathsMan.get()
-                            if(removedCurrent) {
-                                val newCurrentIndex = 0
-                                storagePathSelectedIndex.intValue = newCurrentIndex
-                                val newCurrent = storagePathList.value[newCurrentIndex]
-                                storagePathSelectedPath.value = newCurrent
-                                spForSave.storagePathLastSelected = newCurrent
-                            }
-
-                            spForSave.storagePaths.clear()
-                            val list = storagePathList.value
-                            val size = list.size
-                            if(size>1) {
-                                //index start from 1 for exclude internal storage
-                                spForSave.storagePaths.addAll(list.subList(1, size))
-                            }
-
-                            StoragePathsMan.save(spForSave)
-//                            }
+                            initDeleteStoragePathListDialog(index)
                         }
                     }
                 )
