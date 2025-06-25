@@ -1156,11 +1156,11 @@ fun CloneScreen(
                 repoFromDb.value = repo
 
                 //show back repo saved path
-                val path = repo.fullSavePath
-                val (selectedStoragePathIdx, selectedStoragePathItem) = findStoragePathItemByPath(path)
+                val storagePath = File(repo.fullSavePath).parent ?: ""
+                val (selectedStoragePathIdx, selectedStoragePathItem) = findStoragePathItemByPath(storagePath)
                 storagePathSelectedIndex.intValue = selectedStoragePathIdx
                 // if non-exists, it must not be the app's default internal storage path, so the type should be repos storage path
-                storagePathSelectedPath.value = selectedStoragePathItem ?: NameAndPath.genByPath(path, NameAndPathType.REPOS_STORAGE_PATH)
+                storagePathSelectedPath.value = selectedStoragePathItem ?: NameAndPath.genByPath(storagePath, NameAndPathType.REPOS_STORAGE_PATH)
 
                 //检查是否存在credential，如果存在，设置下相关状态变量
                 val credentialIdForClone = repo.credentialIdForClone
