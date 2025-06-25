@@ -78,6 +78,8 @@ import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.dev.shallowAndSingleBranchTestPassed
+import com.catpuppyapp.puppygit.dto.NameAndPath
+import com.catpuppyapp.puppygit.dto.NameAndPathType
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.screen.shared.SharedState
@@ -95,6 +97,8 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.filterAndMap
+import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getRepoNameFromGitUrl
 import com.catpuppyapp.puppygit.utils.isPathExists
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -262,18 +266,30 @@ fun CloneScreen(
     val getStoragePathList = {
         // internal storage at first( index 0 )
 //        val list = mutableListOf<String>(appContext.getString(R.string.internal_storage))
-        val list = mutableListOf<String>(allRepoParentDir.canonicalPath)
+        val list = mutableListOf<NameAndPath>(NameAndPath(activityContext.getString(R.string.internal_storage), allRepoParentDir.canonicalPath, NameAndPathType.APP_ACCESSIBLE_STORAGES))
 
         // add other paths if have
-        list.addAll(StoragePathsMan.get().storagePaths)
+        list.addAll(StoragePathsMan.get().storagePaths.map { NameAndPath(getFileNameFromCanonicalPath(it), it, NameAndPathType.REPOS_STORAGE_PATH) })
 
         list
     }
+
     val storagePathList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "storagePathList", initValue = getStoragePathList())
 
-    val storagePathSelectedPath = rememberSaveable { mutableStateOf(StoragePathsMan.get().storagePathLastSelected.ifBlank { storagePathList.value[0] })}
+    val storagePathSelectedPath = rememberSaveable { mutableStateOf(
+        StoragePathsMan.get().storagePathLastSelected.let { selectedPath ->
+            storagePathList.value.find { it.path == selectedPath } ?: NameAndPath()
+        }
+    )}
 
-    val storagePathSelectedIndex = rememberSaveable{mutableIntStateOf(storagePathList.value.toList().indexOf(storagePathSelectedPath.value))}
+    val storagePathSelectedIndex = rememberSaveable{ mutableIntStateOf(
+        try {
+            storagePathList.value.indexOfFirst { storagePathSelectedPath.value.path == it.path }.coerceAtLeast(0)
+        }catch (_: Exception) {
+            // 0 to select app internal repos storage path
+            0
+        }
+    )}
 
     val showAddStoragePathDialog = rememberSaveable { mutableStateOf(false)}
 
@@ -282,6 +298,16 @@ fun CloneScreen(
 //    val safPath = rememberSaveable { mutableStateOf("") }
 //    val nonSafPath = rememberSaveable { mutableStateOf("") }
 
+    val findStoragePathItemByPath = { path:String ->
+        var ret = Pair<Int, NameAndPath?>(-1, null)
+        for((idx, item) in storagePathList.value.withIndex()) {
+            if(item.path == path) {
+                ret = Pair(idx, item)
+                break
+            }
+        }
+        ret
+    }
 
     //vars of  storage select end
 
@@ -323,7 +349,7 @@ fun CloneScreen(
                     val newPath = newPathRet.data!!
 
                     if(File(newPath).isDirectory.not()) {
-                        throw RuntimeException("target path is not a dir: path=$newPath")
+                        throw RuntimeException(activityContext.getString(R.string.path_is_not_a_dir))
                     }
 
                     // reload the storage path list, else, if added path in the File Chooser, here will lost them
@@ -337,19 +363,23 @@ fun CloneScreen(
 
 
                     // add to list
-                    if(storagePathList.contains(newPath)) {
+                    val (indexOfStoragePath, existedStoragePath) = findStoragePathItemByPath(newPath)
+
+                    if(indexOfStoragePath != -1) {
                         // contains, only need update last selected
-                        storagePathSelectedPath.value = newPath
-                        storagePathSelectedIndex.intValue = storagePathList.indexOf(newPath)
+                        storagePathSelectedPath.value = existedStoragePath!!
+                        storagePathSelectedIndex.intValue = indexOfStoragePath
 
                         spForSave.storagePathLastSelected = newPath
-                    }else {
-                        // not contains, need add to config
-                        storagePathList.add(newPath)
+                    }else { // not contains, need add to config
+                        val newItem = NameAndPath.genByPath(newPath, NameAndPathType.REPOS_STORAGE_PATH)
+                        storagePathList.add(
+                            newItem
+                        )
                         val newItemIndex = storagePathList.size - 1
                         // select new added
                         storagePathSelectedIndex.intValue = newItemIndex
-                        storagePathSelectedPath.value = newPath
+                        storagePathSelectedPath.value = newItem
                         // update settings
 //                        SettingsUtil.update {
 //                            it.storagePaths.add(newPath)
@@ -362,7 +392,7 @@ fun CloneScreen(
 
                     StoragePathsMan.save(spForSave)
                 }catch (e: Exception) {
-                    Msg.requireShow("err: ${e.localizedMessage}")
+                    Msg.requireShowLongDuration("err: ${e.localizedMessage}")
                     MyLog.e(TAG, "add storage path at `$TAG` err: ${e.stackTraceToString()}")
                 }
             }
@@ -378,11 +408,16 @@ fun CloneScreen(
     }
 
     if(showDeleteStoragePathListDialog.value) {
-        val targetPath = storagePathList.value.getOrNull(indexForDeleteStoragePathDialog.value) ?: ""
+        val targetPath = storagePathList.value.getOrNull(indexForDeleteStoragePathDialog.value)?.path ?: ""
 
         val closeDialog = { showDeleteStoragePathListDialog.value = false }
 
-        val deleteStoragePath = { index:Int ->
+        val deleteStoragePath = j@{ index:Int ->
+            if(storagePathList.value.getOrNull(index)?.type != NameAndPathType.REPOS_STORAGE_PATH) {
+                Msg.requireShow("can't remove item")
+                return@j
+            }
+
             storagePathList.value.removeAt(index)
             val spForSave = StoragePathsMan.get()
             val removedCurrent = index == storagePathSelectedIndex.intValue
@@ -391,15 +426,13 @@ fun CloneScreen(
                 storagePathSelectedIndex.intValue = newCurrentIndex
                 val newCurrent = storagePathList.value[newCurrentIndex]
                 storagePathSelectedPath.value = newCurrent
-                spForSave.storagePathLastSelected = newCurrent
+                spForSave.storagePathLastSelected = newCurrent.path
             }
 
             spForSave.storagePaths.clear()
-            val list = storagePathList.value
-            // if only one, only left the default app inter storage, don't delete it
-            if(list.size > 1) {
-                //index start from 1 for exclude internal storage
-                spForSave.storagePaths.addAll(list.subList(1, list.size))
+            val list = storagePathList.value.filterAndMap({ it.type == NameAndPathType.REPOS_STORAGE_PATH }) { it.path }
+            if(list.isNotEmpty()) {
+                spForSave.storagePaths.addAll(list)
             }
 
             StoragePathsMan.save(spForSave)
@@ -462,7 +495,7 @@ fun CloneScreen(
 //                storagePathSelectedPath.value.removeSuffix(File.separator) + File.separator + repoNameText
 //            }
 
-            val fullSavePath = storagePathSelectedPath.value.removeSuffix(File.separator) + File.separator + repoNameText
+            val fullSavePath = File(storagePathSelectedPath.value.path, repoNameText).canonicalPath
 
             //如果不是编辑模式 或者 是编辑模式但用户输入的仓库名不是当前仓库已经保存的名字（用户修改了仓库名） 则 检查仓库名和文件夹是否已经存在
             //判断数据库是否已经存在相同名字的条目
@@ -743,18 +776,22 @@ fun CloneScreen(
                 SingleSelectList(
                     outterModifier = Modifier.fillMaxWidth(.9f),
                     dropDownMenuModifier = Modifier.fillMaxWidth(.9f),
-                    optionsList=storagePathList.value,
-                    selectedOptionIndex=storagePathSelectedIndex,
+                    optionsList = storagePathList.value,
+                    selectedOptionIndex = storagePathSelectedIndex,
                     selectedOptionValue = storagePathSelectedPath.value,
-                    menuItemFormatter = {_, value ->
-                        FsUtils.getPathWithInternalOrExternalPrefix(value?:"")
+                    menuItemFormatter = { _, value ->
+                        value?.name?:""
                     },
+                    menuItemFormatterLine2 = { _, value ->
+                        FsUtils.getPathWithInternalOrExternalPrefix(value?.path ?: "")
+                    },
+
                     menuItemOnClick = { index, value ->
                         storagePathSelectedIndex.intValue = index
                         storagePathSelectedPath.value = value
 
                         StoragePathsMan.update {
-                            it.storagePathLastSelected = value
+                            it.storagePathLastSelected = value.path
                         }
                     },
                     menuItemTrailIcon = Icons.Filled.DeleteOutline,
@@ -764,7 +801,7 @@ fun CloneScreen(
                     },
                     menuItemTrailIconOnClick = { index, value ->
                         if(index == 0) {
-                            Msg.requireShow(activityContext.getString(R.string.cant_delete_internal_storage))
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.cant_delete_internal_storage))
                         }else {
                             initDeleteStoragePathListDialog(index)
                         }
@@ -1120,8 +1157,10 @@ fun CloneScreen(
 
                 //show back repo saved path
                 val path = repo.fullSavePath
-                storagePathSelectedPath.value = File(path.substring(0, path.lastIndexOf(File.separator))).canonicalPath ?: storagePathList.value[0]
-                storagePathSelectedIndex.intValue = storagePathList.value.toList().indexOf(storagePathSelectedPath.value)
+                val (selectedStoragePathIdx, selectedStoragePathItem) = findStoragePathItemByPath(path)
+                storagePathSelectedIndex.intValue = selectedStoragePathIdx
+                // if non-exists, it must not be the app's default internal storage path, so the type should be repos storage path
+                storagePathSelectedPath.value = selectedStoragePathItem ?: NameAndPath.genByPath(path, NameAndPathType.REPOS_STORAGE_PATH)
 
                 //检查是否存在credential，如果存在，设置下相关状态变量
                 val credentialIdForClone = repo.credentialIdForClone

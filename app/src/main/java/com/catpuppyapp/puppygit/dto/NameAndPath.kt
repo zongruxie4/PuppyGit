@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.dto
 
 import android.content.Context
+import android.os.Parcelable
 import androidx.compose.runtime.mutableStateListOf
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.play.pro.R
@@ -10,13 +11,17 @@ import com.catpuppyapp.puppygit.utils.doActWithLockIfFree
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class NameAndPath(
     val name: String = "",
     val path: String = "",
     val type: NameAndPathType = NameAndPathType.APP_ACCESSIBLE_STORAGES,
-) {
+): Parcelable {
     companion object {
+        fun genByPath(path:String, type: NameAndPathType) = NameAndPath(name = getFileNameFromCanonicalPath(path), path, type);
+
         suspend fun getListForFilesManager(
             context:Context,
             list: MutableList<NameAndPath>,

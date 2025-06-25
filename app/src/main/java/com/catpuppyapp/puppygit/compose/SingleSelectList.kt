@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -58,6 +60,8 @@ fun<T> SingleSelectList(
     menuItemFormatter:(index:Int?, value:T?)->String = {index, value-> value?.toString() ?: ""},
     menuItemOnClick:(index:Int, value:T)->Unit = {index, value-> selectedOptionIndex?.intValue = index},
     menuItemSelected:(index:Int, value:T) -> Boolean = {index, value -> selectedOptionIndex?.intValue == index},
+
+    menuItemFormatterLine2:(index:Int?, value:T?)->String = {index, value-> ""},
 
     menuItemTrailIcon:ImageVector?=null,
     menuItemTrailIconDescription:String?=null,
@@ -93,6 +97,7 @@ fun<T> SingleSelectList(
 //        )
 
     ) {
+        val trailIconWidth = 20.dp
         //用box的好处是如果整体宽度过小，不会把右边的箭头顶没，但箭头会和文本内容重叠
         Box(
             modifier = Modifier
@@ -106,20 +111,33 @@ fun<T> SingleSelectList(
                 .fillMaxWidth()
             ,
         ) {
-            ScrollableRow (
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(.88f)
+                    .fillMaxWidth()
+                    .padding(end = trailIconWidth)
                     .align(Alignment.CenterStart)
                 ,
 
-                verticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.Center,
             ) {
-                Text(text = menuItemFormatter(selectedOptionIndex?.intValue, selectedOptionValue))
+                val index = selectedOptionIndex?.intValue
+                val value = selectedOptionValue
+                SelectionRow(Modifier.horizontalScroll(rememberScrollState())) {
+                    Text(text = menuItemFormatter(index, value))
+                }
+
+                menuItemFormatterLine2(index, value).let {
+                    if(it.isNotBlank()) {
+                        SelectionRow(Modifier.horizontalScroll(rememberScrollState())) {
+                            Text(text = it, fontSize = MyStyleKt.Title.secondLineFontSize, fontWeight = FontWeight.Light)
+                        }
+                    }
+                }
             }
 
             Row (
                 modifier = Modifier
-                    .width(20.dp)
+                    .width(trailIconWidth)
                     .align(Alignment.CenterEnd)
                 ,
 
@@ -166,6 +184,7 @@ fun<T> SingleSelectList(
                             text = {
                                 DropDownMenuItemText(
                                     text1 = menuItemFormatter(index, value),
+                                    text2 = menuItemFormatterLine2(index, value),
                                 )
                             },
                             onClick = {
