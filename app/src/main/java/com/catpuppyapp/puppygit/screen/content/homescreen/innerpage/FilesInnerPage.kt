@@ -655,6 +655,7 @@ fun FilesInnerPage(
             stringResource(R.string.copy_full_path),
             if(isFileChooser) "" else stringResource(R.string.copy_repo_relative_path),
             stringResource(R.string.details),
+            stringResource(R.string.delete),
         )
 
     //目录条目菜单没有open with
@@ -666,6 +667,7 @@ fun FilesInnerPage(
         if(isFileChooser) "" else stringResource(R.string.init_repo),
         stringResource(R.string.add_storage_path),
         stringResource(R.string.details),
+        stringResource(R.string.delete),
     )
 
 
@@ -802,7 +804,7 @@ fun FilesInnerPage(
     val addStoragePath = { newPath:String ->
         try {
             if(File(newPath).isDirectory.not()) {
-                throw RuntimeException("target path is not a dir: path=$newPath")
+                throw RuntimeException(activityContext.getString(R.string.path_is_not_a_dir))
             }
 
             // used to save path
@@ -817,10 +819,81 @@ fun FilesInnerPage(
 
             Msg.requireShow(activityContext.getString(R.string.success))
         }catch (e: Exception) {
-            Msg.requireShow("err: ${e.localizedMessage}")
+            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
             MyLog.e(TAG, "add storage path at `$TAG` err: ${e.stackTraceToString()}")
         }
     }
+
+
+    val showDelFileDialog = rememberSaveable { mutableStateOf(false) }
+    val allCountForDelDialog = rememberSaveable { mutableStateOf(0) }
+    val listForDeleteDialog = mutableCustomStateListOf(stateKeyTag, "listForDeleteDialog") { listOf<FileItemDto>() }
+//    val fileCountForDelDialog = rememberSaveable { mutableStateOf(0)}
+//    val folderCountForDelDialog = rememberSaveable { mutableStateOf(0)}
+    val initDelFileDialog = { list:List<FileItemDto> ->
+//        val list = selectedItems.value
+//        allCountForDelDialog.value = list.size
+//        folderCountForDelDialog.value = list.count { it.isDir }
+//        fileCountForDelDialog.value = allCountForDelDialog.value - folderCountForDelDialog.value
+
+        allCountForDelDialog.value = list.size
+        listForDeleteDialog.value.apply {
+            clear()
+            addAll(list)
+        }
+
+        showDelFileDialog.value=true
+    }
+    if(showDelFileDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(id = R.string.delete),
+            text = replaceStringResList(stringResource(R.string.n_items_will_be_deleted), listOf(""+allCountForDelDialog.value)),
+            okTextColor = MyStyleKt.TextColor.danger(),
+            onCancel = { showDelFileDialog.value = false }
+        ) {
+            //关闭弹窗
+            showDelFileDialog.value = false
+
+            //执行删除
+            doJobThenOffLoading (loadingOn = loadingOn, loadingOff = loadingOff) {
+                val targets = listForDeleteDialog.value.toList()
+
+                if(targets.isEmpty()) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.no_item_selected))
+                    return@doJobThenOffLoading  // 结束操作
+                }
+
+                // here better don't catch exception, if got err, throw and abort delete immediately
+                targets.forEachBetter {
+                    val file = File(it.fullPath)
+                    // 如果要删除的路径包含.git，记个警告log，但不阻止，用户非要删，我不管 （没必要警告，用户爱删就删，随便）
+//                    if(file.canonicalPath.contains(".git")) {
+//                        MyLog.w(TAG, "#DelFileDialog: may delete file under '.git' folder, fullPath will del is: '${file.canonicalPath}'")
+//                    }
+
+                    //不管是目录还是文件，直接梭哈
+                    file.deleteRecursively()
+                }
+
+
+                Msg.requireShow(activityContext.getString(R.string.success))
+                //退出选择模式并刷新目录
+                filesPageQuitSelectionMode()
+
+                if(enableFilterState.value) {  //filter模式刷新会重新递归查找，太重量级，直接更新下过滤结果即可
+                    val filterList = filterList.value
+                    targets.forEachBetter { filterList.remove(it) }
+                }else {
+                    //这里不刷新页面也和过滤模式一样更新下列表其实也行，
+                    // 但是，其实有可能用户会把当前所在目录给删掉，
+                    // 只要通过面包屑进行跳转再选中当前目录，再通过面包屑返回当前目录，再删除即可
+                    // 这种情况一般不会触发，没必要严格限制，确保这里刷新页面，这样如果触发上述情况，当前目录就会正确显示为不可读，若不刷新页面仅更新列表，就会错误显示已经不存在的条目
+                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+                }
+            }
+        }
+    }
+
 
 
     val renameFile = {item:FileItemDto ->
@@ -886,7 +959,12 @@ fun FilesInnerPage(
 
         details@{
             initDetailsDialog(listOf(it))
+        },
+
+        delete@{
+            initDelFileDialog(listOf(it))
         }
+
 //        export@{ item:FileItemDto ->
 //            val ret = FsUtils.getAppDirUnderPublicDocument()
 //            if(ret.hasError()) {
@@ -920,6 +998,10 @@ fun FilesInnerPage(
         },
         details@{
             initDetailsDialog(listOf(it))
+        },
+
+        delete@{
+            initDelFileDialog(listOf(it))
         }
     )
 
@@ -1825,69 +1907,6 @@ fun FilesInnerPage(
 
 
 
-    val showDelFileDialog = rememberSaveable { mutableStateOf(false)}
-    val allCountForDelDialog = rememberSaveable { mutableStateOf(0)}
-//    val fileCountForDelDialog = rememberSaveable { mutableStateOf(0)}
-//    val folderCountForDelDialog = rememberSaveable { mutableStateOf(0)}
-    val initDelFileDialog = {
-//        val list = selectedItems.value
-//        allCountForDelDialog.value = list.size
-//        folderCountForDelDialog.value = list.count { it.isDir }
-//        fileCountForDelDialog.value = allCountForDelDialog.value - folderCountForDelDialog.value
-
-        allCountForDelDialog.value = selectedItems.value.size
-
-        showDelFileDialog.value=true
-    }
-    if(showDelFileDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(id = R.string.delete),
-            text = replaceStringResList(stringResource(R.string.n_items_will_be_deleted), listOf(""+allCountForDelDialog.value)),
-            okTextColor = MyStyleKt.TextColor.danger(),
-            onCancel = { showDelFileDialog.value=false }
-        ) {
-            //关闭弹窗
-            showDelFileDialog.value=false
-            //执行删除
-            doJobThenOffLoading (loadingOn = loadingOn, loadingOff=loadingOff) {
-                val selectedItems = selectedItems.value.toList()
-
-                if(selectedItems.isEmpty()) {
-                    Msg.requireShow(activityContext.getString(R.string.no_item_selected))
-                    return@doJobThenOffLoading  // 结束操作
-                }
-
-                selectedItems.forEachBetter {
-                    val file = File(it.fullPath)
-                    // 如果要删除的路径包含.git，记个警告log，但不阻止，用户非要删，我不管 （没必要警告，用户爱删就删，随便）
-//                    if(file.canonicalPath.contains(".git")) {
-//                        MyLog.w(TAG, "#DelFileDialog: may delete file under '.git' folder, fullPath will del is: '${file.canonicalPath}'")
-//                    }
-
-                    //不管是目录还是文件，直接梭哈
-                    file.deleteRecursively()
-
-                }
-
-
-                Msg.requireShow(activityContext.getString(R.string.success))
-                //退出选择模式并刷新目录
-                filesPageQuitSelectionMode()
-
-                if(enableFilterState.value.not()) {
-                    //这里不刷新页面也和过滤模式一样更新下列表其实也行，
-                    // 但是，其实有可能用户会把当前所在目录给删掉，
-                    // 只要通过面包屑进行跳转再选中当前目录，再通过面包屑返回当前目录，再删除即可
-                    // 这种情况一般不会触发，没必要严格限制，确保这里刷新页面，这样如果触发上述情况，当前目录就会正确显示为不可读，若不刷新页面仅更新列表，就会错误显示已经不存在的条目
-                    changeStateTriggerRefreshPage(needRefreshFilesPage)
-                }else {  //filter模式刷新会重新递归查找，太重量级，直接更新下过滤结果即可
-                    val filterList = filterList.value
-                    selectedItems.forEachBetter { filterList.remove(it) }
-                }
-            }
-        }
-    }
-
     val showCopyOrMoveOrExportFileErrDialog = rememberSaveable { mutableStateOf(false) }
 //    val copyOrMoveOrExportFileErrList = mutableCustomStateListOf(stateKeyTag, "copyOrMoveOrExportFileErrList") { mutableListOf<PasteResult>() }
     val copyOrMoveOrExportFileErrMsg = rememberSaveable { mutableStateOf("") }
@@ -2622,7 +2641,7 @@ fun FilesInnerPage(
         } else {
             listOf<()->Unit>(
                 delete@{
-                    initDelFileDialog()
+                    initDelFileDialog(selectedItems.value)
                 },
                 move@{
                     setPasteModeThenShowPasteBar(pasteMode_Move)
