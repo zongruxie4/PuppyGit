@@ -305,6 +305,9 @@ fun CloneScreen(
             okBtnEnabled = storagePathForAdd.value.isNotBlank(),
             onCancel = { showAddStoragePathDialog.value = false },
         ) {
+            //关弹窗
+            showAddStoragePathDialog.value = false
+
             val storagePathForAdd = storagePathForAdd.value
 
             doJobThenOffLoading {
@@ -318,14 +321,20 @@ fun CloneScreen(
                 val newPath = newPathRet.data!!
 
 
-                // path is not blank
+                // reload the storage path list, else, if added path in the File Chooser, here will lost them
+                val latestList = getStoragePathList()
+                val storagePathList = storagePathList.value
+                storagePathList.clear()
+                storagePathList.addAll(latestList)
 
+                // used to save path
                 val spForSave = StoragePathsMan.get()
 
+
                 // add to list
-                if(!storagePathList.value.contains(newPath)) {
-                    storagePathList.value.add(newPath)
-                    val newItemIndex = storagePathList.value.size-1
+                if(!storagePathList.contains(newPath)) {
+                    storagePathList.add(newPath)
+                    val newItemIndex = storagePathList.size - 1
                     // select new added
                     storagePathSelectedIndex.intValue = newItemIndex
                     storagePathSelectedPath.value = newPath
@@ -339,19 +348,12 @@ fun CloneScreen(
                     spForSave.storagePathLastSelected = newPath
                 }else {  // contains, only need update last selected
                     storagePathSelectedPath.value = newPath
-                    storagePathSelectedIndex.intValue = storagePathList.value.indexOf(newPath)
-//                        SettingsUtil.update {
-//                            it.storagePathLastSelected = newPath
-//                        }
+                    storagePathSelectedIndex.intValue = storagePathList.indexOf(newPath)
+
                     spForSave.storagePathLastSelected = newPath
                 }
 
                 StoragePathsMan.save(spForSave)
-
-
-                //关弹窗
-                showAddStoragePathDialog.value = false
-
             }
 
         }
