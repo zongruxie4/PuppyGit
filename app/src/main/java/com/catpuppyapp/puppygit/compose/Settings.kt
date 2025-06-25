@@ -37,10 +37,9 @@ fun SettingsTitle(text:String){
 @Composable
 fun SettingsContent(onClick:(()->Unit)?=null, content:@Composable ()->Unit) {
     Row(
-        modifier = Modifier
+        modifier = (if (onClick != null) Modifier.clickable { onClick() } else Modifier)
             .fillMaxWidth()
             .defaultMinSize(minHeight = 60.dp)
-            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
             .padding(10.dp)
         ,
         verticalAlignment = Alignment.CenterVertically,
@@ -89,7 +88,7 @@ fun SettingsContentBox(
     onClick: (() -> Unit)? = null,
 ) {
     SettingsContent(onClick) {
-        Box {
+        Box(Modifier.fillMaxWidth()) {
             Column(modifier = leftModifier.align(Alignment.CenterStart)) {
                 left()
             }

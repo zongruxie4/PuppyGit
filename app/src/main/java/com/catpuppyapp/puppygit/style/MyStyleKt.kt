@@ -299,11 +299,11 @@ object MyStyleKt{
 
         // use base modifier instead of call this method
         private fun Modifier.switcherLeftItemPadding():Modifier {
-            return padding(end = switcherIconSize)
+            return padding(end = switcherIconSize + 5.dp)
         }
 
         private fun Modifier.selectorLeftItemPadding():Modifier {
-            return padding(end = selectorWidth)
+            return padding(end = selectorWidth + 5.dp)
         }
 
         val switcherLeftBaseModifier = Modifier.switcherLeftItemPadding().fillMaxWidth()

@@ -50,7 +50,9 @@ fun TwoLineTextsAndIcons(
 
     Box(
         modifier = modifier
+            // base margin
             .padding(basePadding)
+            // avoid icon too closer with screen border
             .padding(getHorizontalPaddingForIcons(headIconIsNull, trailIconIsNull))
             .fillMaxWidth()
             .heightIn(min = minHeight)
@@ -63,7 +65,9 @@ fun TwoLineTextsAndIcons(
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
+                // avoid text and icon too close
                 .padding(getHorizontalPaddingForIcons(headIconIsNull, trailIconIsNull))
+
                 .padding(start = headIconWidth, end = trailIconWidth)
 //                .fillMaxWidth()  // no need fill max width
             ,
