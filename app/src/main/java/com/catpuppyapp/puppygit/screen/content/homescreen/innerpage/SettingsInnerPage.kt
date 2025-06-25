@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -53,6 +54,8 @@ import com.catpuppyapp.puppygit.compose.PasswordTextFiled
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SettingsContent
+import com.catpuppyapp.puppygit.compose.SettingsContentSelector
+import com.catpuppyapp.puppygit.compose.SettingsContentSwitcher
 import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
@@ -65,6 +68,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.style.MyStyleKt.SettingsItem.selectorLeftItemPadding
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -796,11 +800,6 @@ fun SettingsInnerPage(
 
     val itemFontSize = MyStyleKt.SettingsItem.itemFontSize
     val itemDescFontSize = MyStyleKt.SettingsItem.itemDescFontSize
-    val switcherIconSize = MyStyleKt.SettingsItem.switcherIconSize
-    val selectorWidth = MyStyleKt.SettingsItem.selectorWidth
-
-    val itemLeftWidthForSwitcher = MyStyleKt.SettingsItem.itemLeftWidthForSwitcher
-    val itemLeftWidthForSelector = MyStyleKt.SettingsItem.itemLeftWidthForSelector
 
     val trailFolderIcon = Icons.Filled.Folder
     val trailFolderIconTooltipText = stringResource(R.string.show_in_files)
@@ -826,13 +825,11 @@ fun SettingsInnerPage(
     ) {
         SettingsTitle(stringResource(R.string.general))
 
-        SettingsContent {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSelector)) {
+        SettingsContentSelector(
+            left = {
                 Text(stringResource(R.string.theme), fontSize = itemFontSize)
-//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-            }
-
-            Column(modifier = Modifier.width(selectorWidth)) {
+            },
+            right = {
                 SingleSelectList(
                     optionsList = themeList,
                     selectedOptionIndex = null,
@@ -846,16 +843,15 @@ fun SettingsInnerPage(
                     }
                 )
             }
-        }
+        )
 
 
-        SettingsContent {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSelector)) {
+        SettingsContentSelector(
+            left = {
                 Text(stringResource(R.string.language), fontSize = itemFontSize)
                 Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-            }
-
-            Column(modifier = Modifier.width(selectorWidth)) {
+            },
+            right = {
                 SingleSelectList(
                     optionsList = languageList,
                     selectedOptionIndex = null,
@@ -875,9 +871,10 @@ fun SettingsInnerPage(
                     }
                 )
             }
-        }
-        SettingsContent {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSelector)) {
+        )
+
+        SettingsContentSelector(
+            left = {
                 TwoLineTrailingFolderItem(
                     text1 = stringResource(R.string.log_level),
                     text2 = "",
@@ -885,10 +882,8 @@ fun SettingsInnerPage(
                         goToFilesPage(AppModel.getOrCreateLogDir().canonicalPath)
                     }
                 )
-//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-            }
-
-            Column(modifier = Modifier.width(selectorWidth)) {
+            },
+            right = {
                 SingleSelectList(
                     optionsList = logLevelList,
                     selectedOptionIndex = null,
@@ -912,72 +907,72 @@ fun SettingsInnerPage(
                     }
                 )
             }
-        }
+        )
 
 
-        SettingsContent(onClick = {
-            Theme.updateDynamicColor(activityContext, !Theme.dynamicColor.value)
-        }) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+        SettingsContentSwitcher(
+            left = {
                 Text(stringResource(R.string.dynamic_color_scheme), fontSize = itemFontSize)
+            },
+            right = {
+                Switch(
+                    checked = Theme.dynamicColor.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                Theme.updateDynamicColor(activityContext, !Theme.dynamicColor.value)
             }
-
-
-            Switch(
-                checked = Theme.dynamicColor.value,
-                onCheckedChange = null
-            )
-        }
+        )
 
 
 
-        SettingsContent(onClick = {
-            //获取新值
-            val newValue = !devModeOn.value
-
-            //更新页面状态
-            devModeOn.value = newValue
-
-            //更新app内存中存储的状态
-            AppModel.devModeOn = newValue
-
-            //保存到配置文件
-            PrefUtil.setDevMode(activityContext, newValue)
-        }) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+        SettingsContentSwitcher(
+            left = {
                 Text(stringResource(R.string.dev_mode), fontSize = itemFontSize)
+            },
+            right = {
+                Switch(
+                    checked = devModeOn.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                //获取新值
+                val newValue = !devModeOn.value
+
+                //更新页面状态
+                devModeOn.value = newValue
+
+                //更新app内存中存储的状态
+                AppModel.devModeOn = newValue
+
+                //保存到配置文件
+                PrefUtil.setDevMode(activityContext, newValue)
             }
+        )
 
 
-            Switch(
-                checked = devModeOn.value,
-                onCheckedChange = null
-            )
-        }
-
-
-        SettingsContent(onClick = {
-            val newValue = !showNaviButtons.value
-
-            //save
-            showNaviButtons.value = newValue
-            SettingsUtil.update {
-                it.showNaviButtons = newValue
-            }
-        }) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+        SettingsContentSwitcher(
+            left = {
                 Text(stringResource(R.string.go_to_top_bottom_buttons), fontSize = itemFontSize)
-//                Text(stringResource(R.string.show_navi_buttons), fontSize = itemFontSize)
-//                Text(stringResource(R.string.go_to_top_bottom_buttons), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+            },
+            right = {
+                Switch(
+                    checked = showNaviButtons.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                val newValue = !showNaviButtons.value
+
+                //save
+                showNaviButtons.value = newValue
+                SettingsUtil.update {
+                    it.showNaviButtons = newValue
+                }
             }
-
-
-            Switch(
-                checked = showNaviButtons.value,
-                onCheckedChange = null
-            )
-        }
+        )
 
 
 
@@ -1016,19 +1011,8 @@ fun SettingsInnerPage(
             Text(stringResource(R.string.file_association), fontSize = itemFontSize)
         }
 
-        SettingsContent(onClick = {
-            val newValue = !enableEditCache.value
-
-            //save
-            enableEditCache.value = newValue
-            val settings = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
-                it.editor.editCacheEnable = newValue
-            }!!
-
-            //重新初始化EditCache
-            EditCache.init(enableCache = newValue, cacheDir = AppModel.getOrCreateEditCacheDir(), keepInDays = settings.editor.editCacheKeepInDays)
-        }) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+        SettingsContentSwitcher(
+            left = {
                 TwoLineTrailingFolderItem(
                     text1 = stringResource(R.string.edit_cache),
                     text2 = replaceStringResList(stringResource(R.string.cache_your_input_into_editcache_dir_path), listOf("${Cons.defalutPuppyGitDataUnderAllReposDirName}/${Cons.defaultEditCacheDirName}")),
@@ -1036,18 +1020,43 @@ fun SettingsInnerPage(
                         goToFilesPage(AppModel.getOrCreateEditCacheDir().canonicalPath)
                     }
                 )
-//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+            },
+            right = {
+                Switch(
+                    checked = enableEditCache.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                val newValue = !enableEditCache.value
+
+                //save
+                enableEditCache.value = newValue
+                val settings = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
+                    it.editor.editCacheEnable = newValue
+                }!!
+
+                //重新初始化EditCache
+                EditCache.init(enableCache = newValue, cacheDir = AppModel.getOrCreateEditCacheDir(), keepInDays = settings.editor.editCacheKeepInDays)
             }
+        )
 
-
-
-            Switch(
-                checked = enableEditCache.value,
-                onCheckedChange = null
-            )
-        }
-
-        SettingsContent(
+        SettingsContentSwitcher(
+            left = {
+                TwoLineTrailingFolderItem(
+                    text1 = stringResource(R.string.file_snapshot),
+                    text2 = stringResource(R.string.file_snapshot_desc),
+                    trailIconOnClick = {
+                        goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
+                    }
+                )
+            },
+            right = {
+                Switch(
+                    checked = enableSnapshot_File.value,
+                    onCheckedChange = null
+                )
+            },
             onClick = {
                 val newValue = !enableSnapshot_File.value
                 enableSnapshot_File.value = newValue
@@ -1057,26 +1066,25 @@ fun SettingsInnerPage(
 
                 SnapshotUtil.update_enableFileSnapshotForEditor(newValue)
             }
-        ) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+        )
+
+        SettingsContentSwitcher(
+            left = {
                 TwoLineTrailingFolderItem(
-                    text1 = stringResource(R.string.file_snapshot),
-                    text2 = stringResource(R.string.file_snapshot_desc),
+                    text1 = stringResource(R.string.content_snapshot),
+                    text2 = stringResource(R.string.content_snapshot_desc),
+
                     trailIconOnClick = {
                         goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
                     }
                 )
-//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-
-            }
-
-
-            Switch(
-                checked = enableSnapshot_File.value,
-                onCheckedChange = null
-            )
-        }
-        SettingsContent(
+            },
+            right = {
+                Switch(
+                    checked = enableSnapshot_Content.value,
+                    onCheckedChange = null
+                )
+            },
             onClick = {
                 val newValue = !enableSnapshot_Content.value
                 enableSnapshot_Content.value = newValue
@@ -1086,42 +1094,14 @@ fun SettingsInnerPage(
 
                 SnapshotUtil.update_enableContentSnapshotForEditor(newValue)
             }
-        ) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                TwoLineTrailingFolderItem(
-                    text1 = stringResource(R.string.content_snapshot),
-                    text2 = stringResource(R.string.content_snapshot_desc),
-
-                    trailIconOnClick = {
-                        goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
-                    }
-                )
-//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-
-            }
-
-
-            Switch(
-                checked = enableSnapshot_Content.value,
-                onCheckedChange = null
-            )
-        }
+        )
 
         // diff settings block start
 //
         SettingsTitle(stringResource(R.string.diff))
 
-        SettingsContent(
-            onClick = {
-                val newValue = !diff_CreateSnapShotForOriginFileBeforeSave.value
-                diff_CreateSnapShotForOriginFileBeforeSave.value = newValue
-                SettingsUtil.update {
-                    it.diff.createSnapShotForOriginFileBeforeSave = newValue
-                }
-                SnapshotUtil.update_enableFileSnapshotForDiff(newValue)
-            }
-        ) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+        SettingsContentSwitcher(
+            left = {
                 TwoLineTrailingFolderItem(
                     text1 = stringResource(R.string.file_snapshot),
                     text2 = stringResource(R.string.file_snapshot_desc),
@@ -1130,16 +1110,22 @@ fun SettingsInnerPage(
                         goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
                     }
                 )
-
-//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-
+            },
+            right = {
+                Switch(
+                    checked = diff_CreateSnapShotForOriginFileBeforeSave.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                val newValue = !diff_CreateSnapShotForOriginFileBeforeSave.value
+                diff_CreateSnapShotForOriginFileBeforeSave.value = newValue
+                SettingsUtil.update {
+                    it.diff.createSnapShotForOriginFileBeforeSave = newValue
+                }
+                SnapshotUtil.update_enableFileSnapshotForDiff(newValue)
             }
-
-            Switch(
-                checked = diff_CreateSnapShotForOriginFileBeforeSave.value,
-                onCheckedChange = null
-            )
-        }
+        )
 
 //
 //        SettingsContent(onClick = {
@@ -1172,7 +1158,19 @@ fun SettingsInnerPage(
 
         SettingsTitle(stringResource(R.string.ssh))
 
-        SettingsContent(
+        SettingsContentSwitcher(
+            left = {
+
+                Text(stringResource(R.string.allow_unknown_hosts), fontSize = itemFontSize)
+                //                Text("If enable, can connect host not in the 'known_hosts' file, else will reject, if you want to more safe, add trusted hosts info into the 'known_hosts' and disable this feature", fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                Text(stringResource(R.string.if_enable_will_allow_unknown_hosts_as_default_else_will_ask), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+            },
+            right = {
+                Switch(
+                    checked = allowUnknownHosts.value,
+                    onCheckedChange = null
+                )
+            },
             onClick = {
                 val newValue = !allowUnknownHosts.value
                 allowUnknownHosts.value = newValue
@@ -1180,20 +1178,7 @@ fun SettingsInnerPage(
                     it.sshSetting.allowUnknownHosts = newValue
                 }
             }
-        ) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.allow_unknown_hosts), fontSize = itemFontSize)
-//                Text("If enable, can connect host not in the 'known_hosts' file, else will reject, if you want to more safe, add trusted hosts info into the 'known_hosts' and disable this feature", fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-                Text(stringResource(R.string.if_enable_will_allow_unknown_hosts_as_default_else_will_ask), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-
-            }
-
-
-            Switch(
-                checked = allowUnknownHosts.value,
-                onCheckedChange = null
-            )
-        }
+        )
 //
 //        SettingsContent(onClick = {
 //            openFileWithInnerSubPageEditor(
@@ -1286,10 +1271,8 @@ fun SettingsInnerPage(
                 DevBooleanSettingsItem(
                     item = it,
                     context = activityContext,
-                    itemLeftWidthForSwitcher = itemLeftWidthForSwitcher,
                     itemFontSize = itemFontSize,
                     itemDescFontSize = itemDescFontSize,
-                    switcherIconSize = switcherIconSize,
                 )
             }
 
@@ -1334,19 +1317,11 @@ fun SettingsInnerPage(
 private fun DevBooleanSettingsItem(
     item: DevItem<Boolean>,
     context: Context,
-    itemLeftWidthForSwitcher: Float,
     itemFontSize: TextUnit,
     itemDescFontSize: TextUnit,
-    switcherIconSize: Dp,
 ) {
-    SettingsContent(
-        onClick = {
-            item.update(!item.state.value, context)
-        }
-    ) {
-        val itemEnabled = item.state.value
-
-        Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+    SettingsContentSwitcher(
+        left = {
             Text(item.text, fontSize = itemFontSize)
 
             // desc
@@ -1355,12 +1330,15 @@ private fun DevBooleanSettingsItem(
                     Text(it, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
                 }
             }
-
+        },
+        right = {
+            Switch(
+                checked = item.state.value,
+                onCheckedChange = null
+            )
+        },
+        onClick = {
+            item.update(!item.state.value, context)
         }
-
-        Switch(
-            checked = itemEnabled,
-            onCheckedChange = null
-        )
-    }
+    )
 }

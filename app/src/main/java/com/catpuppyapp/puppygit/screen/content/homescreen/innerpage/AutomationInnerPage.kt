@@ -57,6 +57,7 @@ import com.catpuppyapp.puppygit.compose.RepoNameAndIdItem
 import com.catpuppyapp.puppygit.compose.SelectedUnSelectedDialog
 import com.catpuppyapp.puppygit.compose.SelectionColumn
 import com.catpuppyapp.puppygit.compose.SettingsContent
+import com.catpuppyapp.puppygit.compose.SettingsContentSwitcher
 import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.compose.SizeIcon
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -566,11 +567,7 @@ fun AutomationInnerPage(
 
     val itemFontSize = MyStyleKt.SettingsItem.itemFontSize
     val itemDescFontSize = MyStyleKt.SettingsItem.itemDescFontSize
-    val switcherIconSize = MyStyleKt.SettingsItem.switcherIconSize
-//    val selectorWidth = MyStyleKt.SettingsItem.selectorWidth
 
-    val itemLeftWidthForSwitcher = MyStyleKt.SettingsItem.itemLeftWidthForSwitcher
-    val itemLeftWidthForSelector = MyStyleKt.SettingsItem.itemLeftWidthForSelector
 
     PullToRefreshBox(
         contentPadding = contentPadding,
@@ -588,47 +585,56 @@ fun AutomationInnerPage(
         ) {
 
             item {
-                SettingsContent(onClick = {
-                    //跳转到无障碍服务页面
-                    Msg.requireShowLongDuration(activityContext.getString(R.string.please_find_and_enable_disable_service_for_app))
+                SettingsContentSwitcher(
+                    left = {
+                        val runningStatus = runningStatus.value
 
-                    ActivityUtil.openAccessibilitySettings(activityContext)
-                }) {
-                    val runningStatus = runningStatus.value
-                    Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                         Text(stringResource(R.string.status), fontSize = itemFontSize)
-                        Text(UIHelper.getRunningStateText(activityContext, runningStatus), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = UIHelper.getRunningStateColor(runningStatus))
+                        Text(
+                            text = UIHelper.getRunningStateText(activityContext, runningStatus),
+                            fontSize = itemDescFontSize,
+                            fontWeight = FontWeight.Light,
+                            color = UIHelper.getRunningStateColor(runningStatus)
+                        )
+
+                    },
+                    right = {
+                        Switch(
+                            //此值有可能为null，所以用等于true来判断是否真为true
+                            checked = runningStatus.value == true,
+                            onCheckedChange = null
+                        )
+                    },
+                    onClick = {
+                        //跳转到无障碍服务页面
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.please_find_and_enable_disable_service_for_app))
+
+                        ActivityUtil.openAccessibilitySettings(activityContext)
                     }
-
-                    //此值有可能为null，所以用等于true来判断是否真为true
-                    val isRunning = runningStatus == true;
-
-                    Switch(
-                        checked = isRunning,
-                        onCheckedChange = null
-                    )
-                }
+                )
             }
 
             item {
-                SettingsContent(onClick = {
-                    val newValue = !progressNotify.value
-
-                    //save
-                    progressNotify.value = newValue
-                    SettingsUtil.update {
-                        it.automation.showNotifyWhenProgress = newValue
-                    }
-                }) {
-                    Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                SettingsContentSwitcher(
+                    left = {
                         Text(stringResource(R.string.progress_notification), fontSize = itemFontSize)
-                    }
+                    },
+                    right = {
+                        Switch(
+                            checked = progressNotify.value,
+                            onCheckedChange = null
+                        )
+                    },
+                    onClick = {
+                        val newValue = !progressNotify.value
 
-                    Switch(
-                        checked = progressNotify.value,
-                        onCheckedChange = null
-                    )
-                }
+                        //save
+                        progressNotify.value = newValue
+                        SettingsUtil.update {
+                            it.automation.showNotifyWhenProgress = newValue
+                        }
+                    }
+                )
 
 
             }

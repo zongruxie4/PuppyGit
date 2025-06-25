@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -44,6 +45,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.InLineCopyIcon
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.SettingsContent
+import com.catpuppyapp.puppygit.compose.SettingsContentSwitcher
 import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.compose.SpacerRow
@@ -402,11 +404,7 @@ fun ServiceInnerPage(
 
     val itemFontSize = MyStyleKt.SettingsItem.itemFontSize
     val itemDescFontSize = MyStyleKt.SettingsItem.itemDescFontSize
-    val switcherIconSize = MyStyleKt.SettingsItem.switcherIconSize
-//    val selectorWidth = MyStyleKt.SettingsItem.selectorWidth
 
-    val itemLeftWidthForSwitcher = MyStyleKt.SettingsItem.itemLeftWidthForSwitcher
-    val itemLeftWidthForSelector = MyStyleKt.SettingsItem.itemLeftWidthForSelector
 
 
     PullToRefreshBox(
@@ -418,40 +416,49 @@ fun ServiceInnerPage(
             modifier = Modifier
                 .baseVerticalScrollablePageModifier(contentPadding, listState)
         ) {
-            SettingsContent(onClick = {
-                val newValue = !runningStatus.value
-                if(newValue) {
-                    HttpService.start(AppModel.realAppContext)
-                }else {
-                    HttpService.stop(AppModel.realAppContext)
-                }
+            SettingsContentSwitcher(
+                left = {
+                    val runningStatus = runningStatus.value
 
-                //save
-                runningStatus.value = newValue
-            }) {
-                val runningStatus = runningStatus.value
-
-                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                     Text(stringResource(R.string.status), fontSize = itemFontSize)
-                    Text(UIHelper.getRunningStateText(activityContext, runningStatus), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = UIHelper.getRunningStateColor(runningStatus))
-                }
-
-                Switch(
-                    checked = runningStatus,
-                    onCheckedChange = null
-                )
-            }
-
-            SettingsContent(onClick = {
-                doJobThenOffLoading {
-                    val requestRet = isHttpServerOnline(host = listenHost.value, port = listenPort.value)
-                    if(requestRet.hasError()) {
-                        Msg.requireShow(requestRet.msg)
+                    Text(
+                        text = UIHelper.getRunningStateText(activityContext, runningStatus),
+                        fontSize = itemDescFontSize,
+                        fontWeight = FontWeight.Light,
+                        color = UIHelper.getRunningStateColor(runningStatus)
+                    )
+                },
+                right = {
+                    Switch(
+                        checked = runningStatus.value,
+                        onCheckedChange = null
+                    )
+                },
+                onClick = {
+                    val newValue = !runningStatus.value
+                    if(newValue) {
+                        HttpService.start(AppModel.realAppContext)
                     }else {
-                        Msg.requireShow(activityContext.getString(R.string.success))
+                        HttpService.stop(AppModel.realAppContext)
+                    }
+
+                    //save
+                    runningStatus.value = newValue
+                }
+            )
+
+            SettingsContent(
+                onClick = {
+                    doJobThenOffLoading {
+                        val requestRet = isHttpServerOnline(host = listenHost.value, port = listenPort.value)
+                        if(requestRet.hasError()) {
+                            Msg.requireShow(requestRet.msg)
+                        }else {
+                            Msg.requireShow(activityContext.getString(R.string.success))
+                        }
                     }
                 }
-            }) {
+            ) {
                 Column {
                     Text(stringResource(R.string.test), fontSize = itemFontSize)
                     Row(
@@ -533,71 +540,68 @@ fun ServiceInnerPage(
 
 
 
-            SettingsContent(onClick = {
-                val newValue = !launchOnAppStartup.value
-
-                //save
-                launchOnAppStartup.value = newValue
-                SettingsUtil.update {
-                    it.httpService.launchOnAppStartup = newValue
-                }
-            }) {
-                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+            SettingsContentSwitcher(
+                left = {
                     Text(stringResource(R.string.launch_on_app_startup), fontSize = itemFontSize)
-//                Text(stringResource(R.string.go_to_top_bottom_buttons), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+                },
+                right = {
+                    Switch(
+                        checked = launchOnAppStartup.value,
+                        onCheckedChange = null
+                    )
+                },
+                onClick = {
+                    val newValue = !launchOnAppStartup.value
+
+                    //save
+                    launchOnAppStartup.value = newValue
+                    SettingsUtil.update {
+                        it.httpService.launchOnAppStartup = newValue
+                    }
                 }
+            )
 
 
-                Switch(
-                    checked = launchOnAppStartup.value,
-                    onCheckedChange = null
-                )
-            }
-
-
-            SettingsContent(onClick = {
-                val newValue = !launchOnSystemStartUp.value
-
-                //save
-                launchOnSystemStartUp.value = newValue
-                HttpService.setLaunchOnSystemStartUp(activityContext, newValue)
-            }) {
-                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+            SettingsContentSwitcher(
+                left = {
                     Text(stringResource(R.string.launch_on_system_startup), fontSize = itemFontSize)
-//                Text(stringResource(R.string.go_to_top_bottom_buttons), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+                },
+                right = {
+                    Switch(
+                        checked = launchOnSystemStartUp.value,
+                        onCheckedChange = null
+                    )
+                },
+                onClick = {
+                    val newValue = !launchOnSystemStartUp.value
+
+                    //save
+                    launchOnSystemStartUp.value = newValue
+                    HttpService.setLaunchOnSystemStartUp(activityContext, newValue)
                 }
+            )
 
 
-                Switch(
-                    checked = launchOnSystemStartUp.value,
-                    onCheckedChange = null
-                )
-            }
-
-
-            SettingsContent(onClick = {
-                val newValue = !progressNotify.value
-
-                //save
-                progressNotify.value = newValue
-                SettingsUtil.update {
-                    it.httpService.showNotifyWhenProgress = newValue
-                }
-            }) {
-                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+            SettingsContentSwitcher(
+                left = {
                     Text(stringResource(R.string.progress_notification), fontSize = itemFontSize)
-                    //现在每次调用api都获取最新的settings，所以修改此项不再需要重启服务
-//                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+                },
+                right = {
+                    Switch(
+                        checked = progressNotify.value,
+                        onCheckedChange = null
+                    )
+                },
+                onClick = {
+                    val newValue = !progressNotify.value
+
+                    //save
+                    progressNotify.value = newValue
+                    SettingsUtil.update {
+                        it.httpService.showNotifyWhenProgress = newValue
+                    }
                 }
-
-
-                Switch(
-                    checked = progressNotify.value,
-                    onCheckedChange = null
-                )
-            }
+            )
 
 //
 //        SettingsContent(onClick = {

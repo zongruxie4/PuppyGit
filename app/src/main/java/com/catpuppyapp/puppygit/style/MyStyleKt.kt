@@ -1,8 +1,10 @@
 package com.catpuppyapp.puppygit.style
 
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButtonDefaults
@@ -18,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
+import com.catpuppyapp.puppygit.style.MyStyleKt.SettingsItem.switcherLeftItemPadding
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.fabBasePadding
@@ -294,8 +297,19 @@ object MyStyleKt{
         val switcherIconSize = 60.dp
         val selectorWidth = 160.dp
 
-        val itemLeftWidthForSwitcher = .8f
-        val itemLeftWidthForSelector = .6f
+
+        fun Modifier.switcherLeftItemPadding():Modifier {
+            return padding(end = switcherIconSize)
+        }
+
+        fun Modifier.selectorLeftItemPadding():Modifier {
+            return padding(end = selectorWidth)
+        }
+
+        val switcherLeftBaseModifier = Modifier.switcherLeftItemPadding().fillMaxWidth()
+        val switcherRightBaseModifier = Modifier.width(switcherIconSize)
+        val selectorLeftBaseModifier = Modifier.selectorLeftItemPadding().fillMaxWidth()
+        val selectorRightBaseModifier = Modifier.width(selectorWidth)
 
     }
 

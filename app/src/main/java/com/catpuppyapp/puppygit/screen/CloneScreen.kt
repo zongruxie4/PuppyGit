@@ -414,7 +414,7 @@ fun CloneScreen(
 
         val deleteStoragePath = j@{ index:Int ->
             if(storagePathList.value.getOrNull(index)?.type != NameAndPathType.REPOS_STORAGE_PATH) {
-                Msg.requireShow("can't remove item")
+                Msg.requireShowLongDuration("can't remove item")
                 return@j
             }
 
