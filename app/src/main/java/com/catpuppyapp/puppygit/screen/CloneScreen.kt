@@ -88,6 +88,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.boolToDbInt
 import com.catpuppyapp.puppygit.utils.cache.Cache
@@ -311,49 +312,59 @@ fun CloneScreen(
             val storagePathForAdd = storagePathForAdd.value
 
             doJobThenOffLoading {
-                val newPathRet = FsUtils.userInputPathToCanonical(storagePathForAdd)
+                try {
+                    val newPathRet = FsUtils.userInputPathToCanonical(storagePathForAdd)
 
-                if(newPathRet.hasError()) {
-                    Msg.requireShow(activityContext.getString(R.string.invalid_path))
-                    return@doJobThenOffLoading
-                }
-
-                val newPath = newPathRet.data!!
+                    if(newPathRet.hasError()) {
+                        throw RuntimeException(activityContext.getString(R.string.invalid_path))
+                    }
 
 
-                // reload the storage path list, else, if added path in the File Chooser, here will lost them
-                val latestList = getStoragePathList()
-                val storagePathList = storagePathList.value
-                storagePathList.clear()
-                storagePathList.addAll(latestList)
+                    val newPath = newPathRet.data!!
 
-                // used to save path
-                val spForSave = StoragePathsMan.get()
+                    if(File(newPath).isDirectory.not()) {
+                        throw RuntimeException("target path is not a dir: path=$newPath")
+                    }
+
+                    // reload the storage path list, else, if added path in the File Chooser, here will lost them
+                    val latestList = getStoragePathList()
+                    val storagePathList = storagePathList.value
+                    storagePathList.clear()
+                    storagePathList.addAll(latestList)
+
+                    // used to save path
+                    val spForSave = StoragePathsMan.get()
 
 
-                // add to list
-                if(!storagePathList.contains(newPath)) {
-                    storagePathList.add(newPath)
-                    val newItemIndex = storagePathList.size - 1
-                    // select new added
-                    storagePathSelectedIndex.intValue = newItemIndex
-                    storagePathSelectedPath.value = newPath
-                    // update settings
+                    // add to list
+                    if(storagePathList.contains(newPath)) {
+                        // contains, only need update last selected
+                        storagePathSelectedPath.value = newPath
+                        storagePathSelectedIndex.intValue = storagePathList.indexOf(newPath)
+
+                        spForSave.storagePathLastSelected = newPath
+                    }else {
+                        // not contains, need add to config
+                        storagePathList.add(newPath)
+                        val newItemIndex = storagePathList.size - 1
+                        // select new added
+                        storagePathSelectedIndex.intValue = newItemIndex
+                        storagePathSelectedPath.value = newPath
+                        // update settings
 //                        SettingsUtil.update {
 //                            it.storagePaths.add(newPath)
 //                            it.storagePathLastSelected = newPath
 //                        }
 
-                    spForSave.storagePaths.add(newPath)
-                    spForSave.storagePathLastSelected = newPath
-                }else {  // contains, only need update last selected
-                    storagePathSelectedPath.value = newPath
-                    storagePathSelectedIndex.intValue = storagePathList.indexOf(newPath)
+                        spForSave.storagePaths.add(newPath)
+                        spForSave.storagePathLastSelected = newPath
+                    }
 
-                    spForSave.storagePathLastSelected = newPath
+                    StoragePathsMan.save(spForSave)
+                }catch (e: Exception) {
+                    Msg.requireShow("err: ${e.localizedMessage}")
+                    MyLog.e(TAG, "add storage path at `$TAG` err: ${e.stackTraceToString()}")
                 }
-
-                StoragePathsMan.save(spForSave)
             }
 
         }

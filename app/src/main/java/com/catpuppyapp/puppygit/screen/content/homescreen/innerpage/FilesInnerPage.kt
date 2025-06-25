@@ -169,6 +169,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomBoxOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
 import com.catpuppyapp.puppygit.utils.trimLineBreak
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.Job
@@ -663,6 +664,7 @@ fun FilesInnerPage(
         if(isFileChooser) "" else stringResource(R.string.copy_repo_relative_path),
         if(isFileChooser) "" else stringResource(R.string.import_as_repo),
         if(isFileChooser) "" else stringResource(R.string.init_repo),
+        stringResource(R.string.add_storage_path),
         stringResource(R.string.details),
     )
 
@@ -797,6 +799,29 @@ fun FilesInnerPage(
     // init repo dialog variables block end
 
 
+    val addStoragePath = { newPath:String ->
+        try {
+            if(File(newPath).isDirectory.not()) {
+                throw RuntimeException("target path is not a dir: path=$newPath")
+            }
+
+            // used to save path
+            val spForSave = StoragePathsMan.get()
+            val currentList = spForSave.storagePaths
+
+            // save if not contains
+            if(!currentList.contains(newPath)) {
+                currentList.add(newPath)
+                StoragePathsMan.save(spForSave)
+            }
+
+            Msg.requireShow(activityContext.getString(R.string.success))
+        }catch (e: Exception) {
+            Msg.requireShow("err: ${e.localizedMessage}")
+            MyLog.e(TAG, "add storage path at `$TAG` err: ${e.stackTraceToString()}")
+        }
+    }
+
 
     val renameFile = {item:FileItemDto ->
         renameFileItemDto.value = item  // 旧item
@@ -889,6 +914,9 @@ fun FilesInnerPage(
         },
         initRepo@{
             initInitRepoDialog(listOf(it.fullPath))
+        },
+        addStoragePath@{
+            addStoragePath(it.fullPath)
         },
         details@{
             initDetailsDialog(listOf(it))
@@ -1479,6 +1507,15 @@ fun FilesInnerPage(
                                                 )
                                             }
 
+
+                                            DropdownMenuItem(
+                                                enabled = enableMenuItem,
+                                                text = { Text(stringResource(R.string.add_storage_path)) },
+                                                onClick = {
+                                                    breadCrumbDropDownMenuExpandState.value = false
+                                                    addStoragePath(it.fullPath)
+                                                }
+                                            )
 
                                             DropdownMenuItem(
                                                 enabled = enableMenuItem,
