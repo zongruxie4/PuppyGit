@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
-import com.catpuppyapp.puppygit.style.MyStyleKt.SettingsItem.switcherLeftItemPadding
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.fabBasePadding
@@ -298,11 +297,12 @@ object MyStyleKt{
         val selectorWidth = 160.dp
 
 
-        fun Modifier.switcherLeftItemPadding():Modifier {
+        // use base modifier instead of call this method
+        private fun Modifier.switcherLeftItemPadding():Modifier {
             return padding(end = switcherIconSize)
         }
 
-        fun Modifier.selectorLeftItemPadding():Modifier {
+        private fun Modifier.selectorLeftItemPadding():Modifier {
             return padding(end = selectorWidth)
         }
 

@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.utils.storagepaths
 
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.JsonUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -129,5 +130,10 @@ object StoragePathsMan {
     fun reset() {
         paths = StoragePaths()
         save(paths)
+    }
+
+    fun allowAddPath(path:String): Boolean {
+        // if is internal storage path, disallow to add
+        return path != FsUtils.getInternalStorageRootPathNoEndsWithSeparator()
     }
 }

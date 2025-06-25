@@ -812,7 +812,7 @@ fun FilesInnerPage(
             val currentList = spForSave.storagePaths
 
             // save if not contains and not equals to app internal storage path(this is default repos storage path, can't delete or add, it always at first item of the Storage Paths in the CloneScreen)
-            if(newPath != FsUtils.getInternalStorageRootPathNoEndsWithSeparator() && !currentList.contains(newPath)) {
+            if(StoragePathsMan.allowAddPath(newPath) && !currentList.contains(newPath)) {
                 currentList.add(newPath)
                 StoragePathsMan.save(spForSave)
             }

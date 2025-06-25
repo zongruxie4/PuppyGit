@@ -269,7 +269,7 @@ fun CloneScreen(
         val list = mutableListOf<NameAndPath>(NameAndPath(activityContext.getString(R.string.internal_storage), allRepoParentDir.canonicalPath, NameAndPathType.APP_ACCESSIBLE_STORAGES))
 
         // add other paths if have
-        list.addAll(StoragePathsMan.get().storagePaths.map { NameAndPath(getFileNameFromCanonicalPath(it), it, NameAndPathType.REPOS_STORAGE_PATH) })
+        list.addAll(StoragePathsMan.get().storagePaths.map { NameAndPath.genByPath(it, NameAndPathType.REPOS_STORAGE_PATH) })
 
         list
     }
@@ -352,6 +352,11 @@ fun CloneScreen(
                         throw RuntimeException(activityContext.getString(R.string.path_is_not_a_dir))
                     }
 
+                    // here don't need check this, because storage paths included internal storage, so add it just let it be selected, no bad effect
+//                    if(StoragePathsMan.allowAddPath(newPath).not()) {
+//                        throw RuntimeException("The path disallowed to add")
+//                    }
+
                     // reload the storage path list, else, if added path in the File Chooser, here will lost them
                     val latestList = getStoragePathList()
                     val storagePathList = storagePathList.value
@@ -365,27 +370,20 @@ fun CloneScreen(
                     // add to list
                     val (indexOfStoragePath, existedStoragePath) = findStoragePathItemByPath(newPath)
 
-                    if(indexOfStoragePath != -1) {
-                        // contains, only need update last selected
+                    if(indexOfStoragePath != -1) { // contains, only need update last selected
                         storagePathSelectedPath.value = existedStoragePath!!
                         storagePathSelectedIndex.intValue = indexOfStoragePath
 
                         spForSave.storagePathLastSelected = newPath
                     }else { // not contains, need add to config
                         val newItem = NameAndPath.genByPath(newPath, NameAndPathType.REPOS_STORAGE_PATH)
-                        storagePathList.add(
-                            newItem
-                        )
+                        storagePathList.add(newItem)
                         val newItemIndex = storagePathList.size - 1
                         // select new added
                         storagePathSelectedIndex.intValue = newItemIndex
                         storagePathSelectedPath.value = newItem
-                        // update settings
-//                        SettingsUtil.update {
-//                            it.storagePaths.add(newPath)
-//                            it.storagePathLastSelected = newPath
-//                        }
 
+                        // update settings
                         spForSave.storagePaths.add(newPath)
                         spForSave.storagePathLastSelected = newPath
                     }

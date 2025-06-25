@@ -68,8 +68,7 @@ data class NameAndPath(
 
                 // storage path
                 newList.addAll(StoragePathsMan.get().storagePaths.mapIndexed { idx, it ->
-                    NameAndPath(
-                        getFileNameFromCanonicalPath(it),
+                    genByPath(
                         it,
                         if(idx == 0) NameAndPathType.FIRST_REPOS_STORAGE_PATH else NameAndPathType.REPOS_STORAGE_PATH
                     )
