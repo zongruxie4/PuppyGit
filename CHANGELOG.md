@@ -2,6 +2,15 @@
 
 
 ---
+1.1.3.0v106 - 20250626:
+- Files title now can select storage paths
+
+
+
+- 文件管理器标题现在可选择存储路径
+
+
+---
 1.1.2.9v105 - 20250624:
 - fix: reload item err after reset and checkout in commit history screen
 - fix: load resource failed when editor preview mode on
