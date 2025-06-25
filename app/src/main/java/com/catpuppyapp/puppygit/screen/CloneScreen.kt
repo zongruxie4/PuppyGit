@@ -373,8 +373,8 @@ fun CloneScreen(
 
         val deleteStoragePath = { index:Int ->
             storagePathList.value.removeAt(index)
-            val removedCurrent = index == storagePathSelectedIndex.intValue
             val spForSave = StoragePathsMan.get()
+            val removedCurrent = index == storagePathSelectedIndex.intValue
             if(removedCurrent) {
                 val newCurrentIndex = 0
                 storagePathSelectedIndex.intValue = newCurrentIndex
@@ -385,10 +385,10 @@ fun CloneScreen(
 
             spForSave.storagePaths.clear()
             val list = storagePathList.value
-            val size = list.size
-            if(size>1) {
+            // if only one, only left the default app inter storage, don't delete it
+            if(list.size > 1) {
                 //index start from 1 for exclude internal storage
-                spForSave.storagePaths.addAll(list.subList(1, size))
+                spForSave.storagePaths.addAll(list.subList(1, list.size))
             }
 
             StoragePathsMan.save(spForSave)
