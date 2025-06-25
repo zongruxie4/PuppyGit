@@ -87,6 +87,8 @@ object UIHelper {
         }
     }
 
+    fun getTitleColor(enabled: Boolean, inDarkTheme: Boolean = Theme.inDarkTheme) = if(enabled) Color.Unspecified else getDisableBtnColor(inDarkTheme);
+
     fun getFontColor(inDarkTheme:Boolean=Theme.inDarkTheme): Color {
         return if(inDarkTheme) MyStyleKt.TextColor.darkThemeFontColor else MyStyleKt.TextColor.fontColor
     }

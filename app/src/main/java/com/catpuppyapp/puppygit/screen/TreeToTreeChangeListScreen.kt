@@ -314,8 +314,7 @@ fun TreeToTreeChangeListScreen(
                             isItemSelected = { it == commit1OidStrState.value },
                             menuItem = { it, selected ->
                                 DropDownMenuItemText(
-                                    text = Libgit2Helper.getShortOidStrByFull(it),
-                                    selected = selected
+                                    text1 = Libgit2Helper.getShortOidStrByFull(it),
                                 )
                             },
                             titleOnLongClick = { initInfoDialog() },

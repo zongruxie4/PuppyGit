@@ -66,9 +66,9 @@ fun ChangeListTitle(
 
     val inDarkTheme = Theme.inDarkTheme
 
-    val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false)}
+    val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
 
-    val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
+    val showTitleInfoDialog = rememberSaveable { mutableStateOf(false) }
     if(showTitleInfoDialog.value) {
         RepoInfoDialog(
             curRepo = changeListCurRepo.value,
@@ -95,13 +95,9 @@ fun ChangeListTitle(
         }
     }
 
-    val getTitleColor={
-            if(enableAction) {
+    val getTitleColor = {
 //                UIHelper.getChangeListTitleColor(repoState.intValue)
-                Color.Unspecified
-            } else {
-                UIHelper.getDisableBtnColor(inDarkTheme)
-            }
+        UIHelper.getTitleColor(enabled = enableAction)
     }
 
     if(repoList.value.isEmpty()) {
@@ -157,14 +153,11 @@ fun ChangeListTitle(
             isItemSelected = { it.id == changeListCurRepo.value.id },
             menuItem = { r, selected ->
                 DropDownMenuItemText(
-                    text = r.repoName,
-                    selected = selected,
+                    text1 = r.repoName,
 
                     //仓库状态若不是NONE，则显示 (其实等于 仓库状态等于null的仓库并不会显示在这里，查询的时候就过滤掉了，不过为了逻辑完整，还是保留null判断
-                    secondLineText = r.gitRepoState.let { if(it == null) stringResource(R.string.invalid) else if(it != Repository.StateT.NONE) it.toString() else "" },
+                    text2 = r.gitRepoState.let { if(it == null) stringResource(R.string.invalid) else if(it != Repository.StateT.NONE) it.toString() else "" },
 
-                    //仓库名一般不会太长，仅显示一行即可
-                    maxLines = 1,
                 )
             },
             titleOnLongClick = { showTitleInfoDialog.value = true },

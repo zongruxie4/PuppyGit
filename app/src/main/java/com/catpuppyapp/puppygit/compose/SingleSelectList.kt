@@ -165,11 +165,10 @@ fun<T> SingleSelectList(
                         DropdownMenuItem(
                             text = {
                                 DropDownMenuItemText(
-                                    text = menuItemFormatter(index, value),
-                                    selected = selected
+                                    text1 = menuItemFormatter(index, value),
                                 )
                             },
-                            onClick ={
+                            onClick = {
                                 expandDropdownMenu.value=false
 
                                 menuItemOnClick(index, value)

@@ -237,6 +237,7 @@ fun FileChooserScreen(
                 colors = MyStyleKt.TopBar.getColors(),
                 title = {
                     FilesTitle(
+                        stateKeyTag = stateKeyTag,
                         currentPath = filesGetCurrentPath,
                         goToPath = filesGoToPath,
                         allRepoParentDir = allRepoParentDir,

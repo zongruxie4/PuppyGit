@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.compose
 
+import android.graphics.drawable.Icon
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -42,7 +44,7 @@ fun TwoLineTextsAndIcons(
     text2FontSize: TextUnit = MyStyleKt.Title.secondLineFontSize,
     text1Scrollable: Boolean = true,
     text2Scrollable: Boolean = true,
-    basePadding: Dp = 5.dp,
+    basePadding: PaddingValues = PaddingValues(5.dp),
     headIconWidth: Dp = 0.dp,
     headIcons:  (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
     trailIconWidth: Dp = 0.dp,
@@ -103,7 +105,7 @@ fun OneLineTextsAndIcons(
     text1FontWeight: FontWeight? = null,
     text1FontSize: TextUnit = MyStyleKt.Title.firstLineFontSizeSmall,
     text1Scrollable: Boolean = true,
-    basePadding: Dp = 0.dp,
+    basePadding: PaddingValues = PaddingValues(0.dp),
     headIconWidth: Dp = 0.dp,
     headIcons:  (@Composable BoxScope.(containerModifier: Modifier) -> Unit)? = null,
     trailIconWidth: Dp = 0.dp,
@@ -130,27 +132,40 @@ fun OneLineTextsAndIcons(
 fun TwoLineSettingsItem(
     text1: String,
     text2: String = "",
-    text1FontSize: TextUnit,
+    text1FontSize: TextUnit = MyStyleKt.Title.firstLineFontSizeSmall,
     text2FontSize: TextUnit = MyStyleKt.Title.secondLineFontSize,
-    basePadding: Dp = 0.dp,
-    trailIconWidth: Dp,
-    trailIconOnClick: ()->Unit,
+    text1Scrollable: Boolean = false,
+    text2Scrollable: Boolean = false,
+    basePadding: PaddingValues = PaddingValues(0.dp),
+    trailIcon: ImageVector? = null,
+    trailIconTooltipText: String = "",
+    trailIconWidth: Dp = 0.dp,
+    trailIconOnClick: ()->Unit = {},
 ) {
+
+    @Composable
+    fun TrailIcon(modifier: Modifier) {
+        if(trailIcon != null) {
+            LongPressAbleIconBtn(
+                modifier = modifier,
+                icon = trailIcon,
+                tooltipText = trailIconTooltipText,
+            ) {
+                trailIconOnClick()
+            }
+        }
+    }
+
+
     if(text2.isBlank()) {
         OneLineTextsAndIcons(
             text1 = text1,
             text1FontSize = text1FontSize,
-            text1Scrollable = false,
+            text1Scrollable = text1Scrollable,
             basePadding = basePadding,
             trailIconWidth = trailIconWidth,
             trailIcons = { modifier ->
-                LongPressAbleIconBtn(
-                    modifier = modifier,
-                    tooltipText = stringResource(R.string.show_in_files),
-                    icon = Icons.Filled.Folder
-                ) {
-                    trailIconOnClick()
-                }
+                TrailIcon(modifier)
             }
         )
     }else {
@@ -158,22 +173,16 @@ fun TwoLineSettingsItem(
             text1 = text1,
             text1FontWeight = null,
             text1FontSize = text1FontSize,
-            text1Scrollable = false,
+            text1Scrollable = text1Scrollable,
             text2 = text2,
             text2FontSize = text2FontSize,
             text2FontWeight = FontWeight.Light,
-            text2Scrollable = false,
+            text2Scrollable = text2Scrollable,
 
             basePadding = basePadding,
             trailIconWidth = trailIconWidth,
             trailIcons = { modifier ->
-                LongPressAbleIconBtn(
-                    modifier = modifier,
-                    tooltipText = stringResource(R.string.show_in_files),
-                    icon = Icons.Filled.Folder
-                ) {
-                    trailIconOnClick()
-                }
+                TrailIcon(modifier)
             }
         )
     }

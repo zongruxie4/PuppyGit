@@ -73,8 +73,7 @@ fun <T> SimpleTitleDropDownMenu(
         isItemSelected = isItemSelected,
         menuItem = {it, selected ->
             DropDownMenuItemText(
-                text = menuItemFormatter(it),
-                selected = selected,
+                text1 = menuItemFormatter(it),
             )
         },
         titleOnLongClick = titleOnLongClick,

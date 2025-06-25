@@ -88,41 +88,41 @@ fun FilesPageActions(
                 expanded = dropDownMenuExpandState.value,
                 onDismissRequest = { dropDownMenuExpandState.value = false }
             ) {
-                DropdownMenuItem(
-                    enabled = enableMenuItem,
-                    text = { Text(stringResource(R.string.internal_storage)) },
-                    onClick = {
-                        requestFromParent.value = PageRequest.goToInternalStorage
-                        dropDownMenuExpandState.value = false
-                    }
-                )
-                DropdownMenuItem(
-                    enabled = enableMenuItem,
-                    text = { Text(stringResource(R.string.external_storage)) },
-                    onClick = {
-                        requestFromParent.value = PageRequest.goToExternalStorage
-                        dropDownMenuExpandState.value = false
-                    }
-                )
-                if(AppModel.devModeOn) {
-                    DropdownMenuItem(
-                        enabled = enableMenuItem,
-                        text = { Text(DevFeature.inner_data_storage) },
-                        onClick = {
-                            requestFromParent.value = PageRequest.goToInnerDataStorage
-                            dropDownMenuExpandState.value = false
-                        }
-                    )
-
-                    DropdownMenuItem(
-                        enabled = enableMenuItem,
-                        text = { Text(DevFeature.external_data_storage) },
-                        onClick = {
-                            requestFromParent.value = PageRequest.goToExternalDataStorage
-                            dropDownMenuExpandState.value = false
-                        }
-                    )
-                }
+//                DropdownMenuItem(
+//                    enabled = enableMenuItem,
+//                    text = { Text(stringResource(R.string.internal_storage)) },
+//                    onClick = {
+//                        requestFromParent.value = PageRequest.goToInternalStorage
+//                        dropDownMenuExpandState.value = false
+//                    }
+//                )
+//                DropdownMenuItem(
+//                    enabled = enableMenuItem,
+//                    text = { Text(stringResource(R.string.external_storage)) },
+//                    onClick = {
+//                        requestFromParent.value = PageRequest.goToExternalStorage
+//                        dropDownMenuExpandState.value = false
+//                    }
+//                )
+//                if(AppModel.devModeOn) {
+//                    DropdownMenuItem(
+//                        enabled = enableMenuItem,
+//                        text = { Text(DevFeature.inner_data_storage) },
+//                        onClick = {
+//                            requestFromParent.value = PageRequest.goToInnerDataStorage
+//                            dropDownMenuExpandState.value = false
+//                        }
+//                    )
+//
+//                    DropdownMenuItem(
+//                        enabled = enableMenuItem,
+//                        text = { Text(DevFeature.external_data_storage) },
+//                        onClick = {
+//                            requestFromParent.value = PageRequest.goToExternalDataStorage
+//                            dropDownMenuExpandState.value = false
+//                        }
+//                    )
+//                }
 
                 DropdownMenuItem(
                     enabled = enableMenuItem,

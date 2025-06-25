@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -800,6 +802,24 @@ fun SettingsInnerPage(
     val itemLeftWidthForSwitcher = MyStyleKt.SettingsItem.itemLeftWidthForSwitcher
     val itemLeftWidthForSelector = MyStyleKt.SettingsItem.itemLeftWidthForSelector
 
+    val trailFolderIcon = Icons.Filled.Folder
+    val trailFolderIconTooltipText = stringResource(R.string.show_in_files)
+
+    @Composable
+    fun TwoLineTrailingFolderItem(text1:String, text2:String, trailIconOnClick:()->Unit) {
+        TwoLineSettingsItem(
+            text1 = text1,
+            text1FontSize = itemFontSize,
+            text2 = text2,
+            text2FontSize = itemDescFontSize,
+
+            trailIcon = trailFolderIcon,
+            trailIconTooltipText = trailFolderIconTooltipText,
+            trailIconWidth = trailIconWidth,
+            trailIconOnClick = trailIconOnClick
+        )
+    }
+
     Column(
         modifier = Modifier
             .baseVerticalScrollablePageModifier(contentPadding, listState)
@@ -858,10 +878,9 @@ fun SettingsInnerPage(
         }
         SettingsContent {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSelector)) {
-                TwoLineSettingsItem(
+                TwoLineTrailingFolderItem(
                     text1 = stringResource(R.string.log_level),
-                    text1FontSize = itemFontSize,
-                    trailIconWidth = trailIconWidth,
+                    text2 = "",
                     trailIconOnClick = {
                         goToFilesPage(AppModel.getOrCreateLogDir().canonicalPath)
                     }
@@ -1010,13 +1029,9 @@ fun SettingsInnerPage(
             EditCache.init(enableCache = newValue, cacheDir = AppModel.getOrCreateEditCacheDir(), keepInDays = settings.editor.editCacheKeepInDays)
         }) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                TwoLineSettingsItem(
+                TwoLineTrailingFolderItem(
                     text1 = stringResource(R.string.edit_cache),
-                    text1FontSize = itemFontSize,
                     text2 = replaceStringResList(stringResource(R.string.cache_your_input_into_editcache_dir_path), listOf("${Cons.defalutPuppyGitDataUnderAllReposDirName}/${Cons.defaultEditCacheDirName}")),
-                    text2FontSize = itemDescFontSize,
-
-                    trailIconWidth = trailIconWidth,
                     trailIconOnClick = {
                         goToFilesPage(AppModel.getOrCreateEditCacheDir().canonicalPath)
                     }
@@ -1044,13 +1059,9 @@ fun SettingsInnerPage(
             }
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                TwoLineSettingsItem(
+                TwoLineTrailingFolderItem(
                     text1 = stringResource(R.string.file_snapshot),
-                    text1FontSize = itemFontSize,
                     text2 = stringResource(R.string.file_snapshot_desc),
-                    text2FontSize = itemDescFontSize,
-
-                    trailIconWidth = trailIconWidth,
                     trailIconOnClick = {
                         goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
                     }
@@ -1077,13 +1088,10 @@ fun SettingsInnerPage(
             }
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                TwoLineSettingsItem(
+                TwoLineTrailingFolderItem(
                     text1 = stringResource(R.string.content_snapshot),
-                    text1FontSize = itemFontSize,
                     text2 = stringResource(R.string.content_snapshot_desc),
-                    text2FontSize = itemDescFontSize,
 
-                    trailIconWidth = trailIconWidth,
                     trailIconOnClick = {
                         goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
                     }
@@ -1114,13 +1122,10 @@ fun SettingsInnerPage(
             }
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                TwoLineSettingsItem(
+                TwoLineTrailingFolderItem(
                     text1 = stringResource(R.string.file_snapshot),
-                    text1FontSize = itemFontSize,
                     text2 = stringResource(R.string.file_snapshot_desc),
-                    text2FontSize = itemDescFontSize,
 
-                    trailIconWidth = trailIconWidth,
                     trailIconOnClick = {
                         goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
                     }

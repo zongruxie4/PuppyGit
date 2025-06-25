@@ -987,6 +987,7 @@ fun HomeScreen(
                             }
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Files){
                             FilesTitle(
+                                stateKeyTag = stateKeyTag,
                                 currentPath = filesGetCurrentPath,
                                 goToPath = filesGoToPath,
                                 allRepoParentDir = allRepoParentDir,

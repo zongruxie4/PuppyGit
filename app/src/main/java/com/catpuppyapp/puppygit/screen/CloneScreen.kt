@@ -1031,7 +1031,7 @@ fun CloneScreen(
                             val curList = allCredentialList
                             for(item in curList.value.toList()) {
                                 DropdownMenuItem(
-                                    text = { DropDownMenuItemText(text = item.name, selected = item.id == selectedCredentialId.value) },
+                                    text = { DropDownMenuItemText(text1 = item.name) },
                                     onClick = {
                                         selectedCredentialId.value = item.id
                                         selectedCredentialName.value = item.name
@@ -1048,8 +1048,7 @@ fun CloneScreen(
 
                         //和下拉菜单已选中条目的样式统一
                         DropDownMenuItemText(
-                            text = selectedCredentialName.value,
-                            selected = true,
+                            text1 = selectedCredentialName.value,
                         )
                     }
                 }
