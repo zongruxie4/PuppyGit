@@ -124,7 +124,7 @@ class SimilarCompareImpl: SimilarCompare {
         requireBetterMatching: Boolean,
         treatNoWordMatchAsNoMatched:Boolean,
     ):IndexModifyResult {
-        val maybeIsAppendContent = maybeIsAppendContentCheck(add, del)
+        val isAppendContentMaybe = maybeIsAppendContent(add, del)
 
         val addWordSpacePair = getWordAndIndexList(add, requireBetterMatching)
         val delWordSpacePair = getWordAndIndexList(del, requireBetterMatching)
@@ -167,8 +167,8 @@ class SimilarCompareImpl: SimilarCompare {
         //   it will matched ", ghi", but if is prepend content and don't use reverse match,
         //   it will matched as "abc" and "def" and the ", " before the "ghi",
         //   rather than the ", " after the "abc"
-        val addSpaceIter = NoCopyIterator(srcList = addWordSpacePair.spaces as MutableList, isReversed = !maybeIsAppendContent)
-        val delSpaceIter = NoCopyIterator(srcList = delWordSpacePair.spaces as MutableList, isReversed = !maybeIsAppendContent)
+        val addSpaceIter = NoCopyIterator(srcList = addWordSpacePair.spaces as MutableList, isReversed = !isAppendContentMaybe)
+        val delSpaceIter = NoCopyIterator(srcList = delWordSpacePair.spaces as MutableList, isReversed = !isAppendContentMaybe)
 
         // match spaces by equals
         matched = doEqualsMatchWordsOrSpaces(addSpaceIter, delSpaceIter, addIndexResultList, delIndexResultList) || matched
@@ -215,7 +215,7 @@ class SimilarCompareImpl: SimilarCompare {
         )
     }
 
-    private fun <T:CharSequence> maybeIsAppendContentCheck(
+    private fun <T:CharSequence> maybeIsAppendContent(
         add: CompareParam<T>,
         del: CompareParam<T>,
         //此值越大，越难判定为append，越难判定为append则越大概率使用反转的iterator；
@@ -477,7 +477,7 @@ class SimilarCompareImpl: SimilarCompare {
         //若true，则启用连接相邻符号，低匹配率，低内存占用，高性能。
         //注意：连在一起的不一定是相同字符，例如："), "，是有可能存在的，因为它们全都是word separator
         //实际效果：实际上在内存和性能方面差别不大，主要差在匹配率，一般建议设为false（在ui上启用better matching即可）。
-        val concatNeighborNonWordChars = !requireBetterMatching;
+        val concatNeighborNonWordChars = !requireBetterMatching
 
         var wordMatching = false
         var spaceMatching = false
