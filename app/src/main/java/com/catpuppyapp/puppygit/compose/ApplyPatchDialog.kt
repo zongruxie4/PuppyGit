@@ -65,7 +65,8 @@ fun ApplyPatchDialog(
 
                     Spacer(modifier = Modifier.height(5.dp))
 
-                    SingleSelectList(optionsList = repoList,
+                    SingleSelectList(
+                        optionsList = repoList,
                         menuItemSelected = {idx, value -> value.id == selectedRepo.value.id},
                         menuItemOnClick = {idx, value -> selectedRepo.value = value},
                         menuItemFormatter = {idx, value -> value?.repoName ?: ""},

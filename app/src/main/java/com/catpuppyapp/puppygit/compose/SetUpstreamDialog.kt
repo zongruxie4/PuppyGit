@@ -115,7 +115,7 @@ fun SetUpstreamDialog(
 
                 Spacer(Modifier.height(5.dp))
 
-                if(remoteList.isEmpty()){  //remotelist为空，显示提示，同时应禁用ok按钮
+                if(remoteList.isEmpty()) {  //remoteList为空，显示提示，同时应禁用ok按钮
                     Text(text = stringResource(R.string.err_remote_list_is_empty),
                         color = MyStyleKt.TextColor.error())
                 }else{

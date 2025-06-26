@@ -49,7 +49,7 @@ fun<T> SingleSelectList(
 //    outterModifier: Modifier = Modifier.fillMaxWidth(),
 //    dropDownMenuModifier:Modifier=Modifier.fillMaxWidth(),
     outterModifier: Modifier = Modifier,
-    dropDownMenuModifier:Modifier=Modifier,
+    dropDownMenuModifier:Modifier = Modifier,
 
     basePadding: PaddingValues = PaddingValues(0.dp),
 
