@@ -3,21 +3,21 @@ package com.catpuppyapp.puppygit.utils.iterator
 /**
  * no copy, no tread safe iterator, but faster
  * 无拷贝，线程不安全的iterator，但是快
+ *
+ * @isReversed indicate the iteration order is reversed or not
  * @author Bandeapart1964 of catpuppyapp
  */
 open class NoCopyIterator<T>(
-    val srcList:MutableList<T>
+    val srcList:MutableList<T>,
+    val isReversed:Boolean = false,
 ):MutableIterator<T> {
 
-    /**
-     * indicate the iteration order is reversed or not
-     */
-    open val isReversed = false
+    private fun resetCurrentIndex() = if(isReversed) srcList.size - 1 else 0
 
-    protected open var currentIndex:Int = 0
+    protected open var currentIndex:Int = resetCurrentIndex()
 
     open fun reset(){
-        currentIndex = 0
+        currentIndex = resetCurrentIndex()
     }
 
     open fun srcIsEmpty():Boolean {
@@ -30,35 +30,13 @@ open class NoCopyIterator<T>(
     }
 
     override fun next(): T {
-        return srcList[currentIndex++]
+        return if(isReversed) srcList[currentIndex--] else srcList[currentIndex++]
     }
 
     override fun remove() {
-        srcList.removeAt(--currentIndex)
-    }
-}
-
-class ReverseNoCopyIterator<T>(
-    srcList:MutableList<T>
-): NoCopyIterator<T>(srcList) {
-
-    override val isReversed = true
-
-    override var currentIndex:Int = srcList.size - 1
-
-    override fun reset(){
-        currentIndex = srcList.size - 1
-    }
-
-    override fun srcIsEmpty():Boolean {
-        return srcList.isEmpty()
-    }
-
-    override fun next(): T {
-        return srcList[currentIndex--]
-    }
-
-    override fun remove() {
-        srcList.removeAt(++currentIndex)
+        //if reverse, shouldn't update current index,
+        //   because next element which expect to compare,
+        //   still at the `currentIndex`
+        if(isReversed) srcList.removeAt(currentIndex + 1) else srcList.removeAt(--currentIndex)
     }
 }

@@ -1,8 +1,8 @@
 package com.catpuppyapp.puppygit.utils.compare.param
 
 abstract class CompareParam<T: CharSequence>(
-    val chars:T,
-    val length:Int,
+    protected val chars:T,
+    protected val length:Int,
 ) {
     fun getLen(): Int {
         return length

@@ -1,13 +1,11 @@
 package com.catpuppyapp.puppygit.utils.compare
 
-import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.utils.compare.param.CompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.compare.search.Search
 import com.catpuppyapp.puppygit.utils.compare.search.SearchDirection
 import com.catpuppyapp.puppygit.utils.iterator.NoCopyIterator
-import com.catpuppyapp.puppygit.utils.iterator.ReverseNoCopyIterator
 
 
 // 这里不要把泛型写到class上，除非class里有字段是泛型的类型，否则还是写到函数上更好，这样可以用一个类实例处理不同类型的参数，若写类上，得为不同参数创建不同的类实例，麻烦。
@@ -120,12 +118,14 @@ class SimilarCompareImpl: SimilarCompare {
      * @param requireBetterMatching if true, will try index of for not-matched words
      * @param treatNoWordMatchAsNoMatched if true, will return no match when only spaces and punctuations matched ( haven't any non-space words matched )
      */
-    private fun<T:CharSequence> doMatchByWords(
+    private fun <T:CharSequence> doMatchByWords(
         add: CompareParam<T>,
         del: CompareParam<T>,
         requireBetterMatching: Boolean,
         treatNoWordMatchAsNoMatched:Boolean,
     ):IndexModifyResult {
+        val maybeIsAppendContent = maybeIsAppendContentCheck(add, del)
+
         val addWordSpacePair = getWordAndIndexList(add, requireBetterMatching)
         val delWordSpacePair = getWordAndIndexList(del, requireBetterMatching)
 
@@ -161,8 +161,14 @@ class SimilarCompareImpl: SimilarCompare {
         }
 
 
-        val addSpaceIter = ReverseNoCopyIterator(srcList = addWordSpacePair.spaces as MutableList)
-        val delSpaceIter = ReverseNoCopyIterator(srcList = delWordSpacePair.spaces as MutableList)
+        // use reversed order to compare punctuations when prepend content can be better,
+        //   have more chance to increase "neighbor" matched range,
+        //   e.g. if append content, have 2 strings: "abc, def" and "abc, def, ghi",
+        //   it will matched ", ghi", but if is prepend content and don't use reverse match,
+        //   it will matched as "abc" and "def" and the ", " before the "ghi",
+        //   rather than the ", " after the "abc"
+        val addSpaceIter = NoCopyIterator(srcList = addWordSpacePair.spaces as MutableList, isReversed = !maybeIsAppendContent)
+        val delSpaceIter = NoCopyIterator(srcList = delWordSpacePair.spaces as MutableList, isReversed = !maybeIsAppendContent)
 
         // match spaces by equals
         matched = doEqualsMatchWordsOrSpaces(addSpaceIter, delSpaceIter, addIndexResultList, delIndexResultList) || matched
@@ -207,6 +213,39 @@ class SimilarCompareImpl: SimilarCompare {
             add = addIndexResultList,
             del = delIndexResultList
         )
+    }
+
+    private fun <T:CharSequence> maybeIsAppendContentCheck(
+        add: CompareParam<T>,
+        del: CompareParam<T>,
+        //此值越大，越难判定为append，越难判定为append则越大概率使用反转的iterator；
+        //  反之，减小此值可增加使用正序iterator的概率
+        expectedAppendCount: Int = 4,
+    ): Boolean {
+        if(expectedAppendCount < 1) {
+            return true
+        }
+
+        if(add.getLen() < expectedAppendCount
+            || del.getLen() < expectedAppendCount
+        ) {
+            return false
+        }
+
+
+        // because prefix maybe have spaces indent, so reverser match is better
+        var addIndex = add.getLen() - 1
+        val lastCharOfDel = del.getChar(del.getLen() - 1)
+        var appendCount = 0
+        for (i in 1..expectedAppendCount) {
+            if(add.getChar(addIndex--) == lastCharOfDel) {
+                break
+            }
+
+            appendCount++
+        }
+
+        return appendCount >= expectedAppendCount
     }
 
     private fun addAllToIndexResultList(
