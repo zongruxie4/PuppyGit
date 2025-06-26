@@ -1,10 +1,8 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -52,21 +50,20 @@ fun CreateBranchDialog(
 ) {
     val activityContext = LocalContext.current
 
-    val repoId=curRepo.id
+    val repoId = curRepo.id
     //文案提示是“基于当前分支xxx（分支名）创建新分支(btw：如果想基于某个提交创建分支，可以去commit记录页面)”，以及强调“如果勾选checkout将立即检出分支，但如果有未提交数据，可能会丢失”
-    val createBranchBasedOn = stringResource(R.string.create_branch_based_on)
 //    val textUnderCheckout = stringResource(R.string.warn_please_commit_your_change_before_checkout_or_merge)
 
 
 
     val optHEAD = 0;
     val optCommit = 1;
-    val selectedOption = rememberSaveable{mutableIntStateOf(optHEAD)}
+    val selectedOption = rememberSaveable{ mutableIntStateOf(optHEAD) }
     val createMethodList = listOf(activityContext.getString(R.string.head), activityContext.getString(R.string.commit))
-    val userInputHash = rememberSaveable { mutableStateOf("")}
+    val userInputHash = rememberSaveable { mutableStateOf("") }
 
 
-    val overwriteIfExist = rememberSaveable { mutableStateOf(false)}
+    val overwriteIfExist = rememberSaveable { mutableStateOf(false) }
 
     //参数1，要创建的本地分支名；2是否基于HEAD创建分支，3如果不基于HEAD，提供一个引用名
     //只有在basedHead为假的时候，才会使用baseRefSpec
@@ -106,11 +103,12 @@ fun CreateBranchDialog(
         },
         text = {
             ScrollableColumn {
-                Row {
+                SelectionRow {
                     //Create branch based on: your_cur_branch_name
-                    Text(text = "$createBranchBasedOn: ")
-
+                    Text(text = stringResource(R.string.create_branch_based_on) + ":")
                 }
+
+                Spacer(Modifier.height(5.dp))
 
                 SingleSelection(
                     itemList = createMethodList,
@@ -155,14 +153,14 @@ fun CreateBranchDialog(
                     placeholder = {
                     }
                 )
-                Row(modifier = Modifier.padding(5.dp)) {
 
-                }
+                Spacer(modifier = Modifier.height(10.dp))
+
 
                 if(proFeatureEnabled(overwriteExistWhenCreateBranchTestPassed)) {
                     MyCheckBox(text = stringResource(R.string.overwrite_if_exist), value = overwriteIfExist)
                     if(overwriteIfExist.value) {
-                        Row {
+                        SelectionRow {
                             DefaultPaddingText(
                                 text = stringResource(R.string.will_overwrite_if_branch_already_exists),
                                 color = MyStyleKt.TextColor.danger(),
@@ -184,7 +182,7 @@ fun CreateBranchDialog(
 
                         //如果勾选了force checkout，警告没提交的内容可能会丢失
                         if(forceCheckout.value) {
-                            Row {
+                            SelectionRow {
                                 DefaultPaddingText(
                                     text = stringResource(R.string.warn_force_checkout_will_overwrite_uncommitted_changes),
                                     color = MyStyleKt.TextColor.danger()

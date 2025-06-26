@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -38,7 +37,7 @@ fun SetUpstreamDialog(
     selectedOption: MutableIntState,  //选中的remote在列表中的索引
     upstreamBranchShortName: MutableState<String>,
     upstreamBranchShortNameSameWithLocal: MutableState<Boolean>,
-    onOkText:String=stringResource(R.string.save),
+    onOkText:String = stringResource(R.string.save),
     loadingOn:(String)->Unit,
     loadingOff:()->Unit,
     curRepo:RepoEntity,
@@ -85,37 +84,38 @@ fun SetUpstreamDialog(
         },
         text = {
             ScrollableColumn {
-                Row {
+                SelectionRow {
                     Text(text = stringResource(R.string.set_upstream_for_branch)+":")
                 }
-                MySelectionContainer {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
-                        ,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(text = curBranchShortName,
-                            fontWeight = FontWeight.ExtraBold)
-                    }
+
+                SelectionRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
+                    ,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(text = curBranchShortName, fontWeight = FontWeight.ExtraBold)
                 }
+
                 Spacer(modifier = Modifier.height(15.dp))
                 //这个文案感觉没太大必要，不显示了，省点空间
 //                Row(modifier = Modifier.padding(10.dp)) {
 //                    Text(text = stringResource(R.string.set_upstream_text))
 //                }
-                Row {
+                SelectionRow {
                     Text(text = stringResource(R.string.select_a_remote)+":")
                 }
 
                 Spacer(Modifier.height(5.dp))
 
                 if(remoteList.isEmpty()) {  //remoteList为空，显示提示，同时应禁用ok按钮
-                    Text(
-                        text = stringResource(R.string.err_remote_list_is_empty),
-                        color = MyStyleKt.TextColor.error()
-                    )
+                    SelectionRow {
+                        Text(
+                            text = stringResource(R.string.err_remote_list_is_empty),
+                            color = MyStyleKt.TextColor.error()
+                        )
+                    }
                 }else{
                     SingleSelectList(
                         basePadding = { PaddingValues(0.dp) },
@@ -126,7 +126,7 @@ fun SetUpstreamDialog(
 
                 Spacer(Modifier.height(20.dp))
 
-                Row {
+                SelectionRow {
                     Text(stringResource(R.string.upstream_branch_name)+":")
                 }
 
