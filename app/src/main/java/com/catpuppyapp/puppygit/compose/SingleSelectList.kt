@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -51,7 +52,7 @@ fun<T> SingleSelectList(
     outterModifier: Modifier = Modifier,
     dropDownMenuModifier:Modifier = Modifier,
 
-    basePadding: PaddingValues = PaddingValues(0.dp),
+    basePadding: (defaultHorizontalPadding:Dp) -> PaddingValues = { defaultHorizontalPadding -> PaddingValues(horizontal = defaultHorizontalPadding) },
 
     optionsList:List<T>,   // empty list will show "null" and no item for select
     selectedOptionIndex:MutableIntState?,
@@ -80,8 +81,7 @@ fun<T> SingleSelectList(
     Surface (
         //0.9f 占父元素宽度的百分之90
         modifier = Modifier
-            .padding(basePadding)
-            .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
+            .padding(basePadding(MyStyleKt.defaultHorizontalPadding))
             .clickable {
                 expandDropdownMenu.value = !expandDropdownMenu.value
             }

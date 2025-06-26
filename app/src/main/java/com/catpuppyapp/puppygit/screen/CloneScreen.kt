@@ -785,7 +785,7 @@ fun CloneScreen(
 
                 SingleSelectList(
                     outterModifier = Modifier.align(Alignment.CenterStart),
-                    basePadding = PaddingValues(end = addIconSize + 5.dp),
+                    basePadding = { defaultHorizontalPadding -> PaddingValues(end = addIconSize + 5.dp + defaultHorizontalPadding, start = defaultHorizontalPadding) },
                     optionsList = storagePathList.value,
                     selectedOptionIndex = storagePathSelectedIndex,
                     selectedOptionValue = storagePathSelectedPath.value,

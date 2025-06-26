@@ -106,7 +106,7 @@ fun CreateBranchDialog(
         },
         text = {
             ScrollableColumn {
-                Row(modifier = Modifier.padding(10.dp)) {
+                Row {
                     //Create branch based on: your_cur_branch_name
                     Text(text = "$createBranchBasedOn: ")
 

@@ -1,15 +1,13 @@
 package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -17,11 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -89,7 +85,7 @@ fun SetUpstreamDialog(
         },
         text = {
             ScrollableColumn {
-                Row(modifier = Modifier.padding(10.dp)) {
+                Row {
                     Text(text = stringResource(R.string.set_upstream_for_branch)+":")
                 }
                 MySelectionContainer {
@@ -109,24 +105,28 @@ fun SetUpstreamDialog(
 //                Row(modifier = Modifier.padding(10.dp)) {
 //                    Text(text = stringResource(R.string.set_upstream_text))
 //                }
-                DefaultPaddingRow {
+                Row {
                     Text(text = stringResource(R.string.select_a_remote)+":")
                 }
 
                 Spacer(Modifier.height(5.dp))
 
                 if(remoteList.isEmpty()) {  //remoteList为空，显示提示，同时应禁用ok按钮
-                    Text(text = stringResource(R.string.err_remote_list_is_empty),
-                        color = MyStyleKt.TextColor.error())
+                    Text(
+                        text = stringResource(R.string.err_remote_list_is_empty),
+                        color = MyStyleKt.TextColor.error()
+                    )
                 }else{
-
-                    SingleSelectList(optionsList = remoteList, selectedOptionIndex = selectedOption)
-
+                    SingleSelectList(
+                        basePadding = { PaddingValues(0.dp) },
+                        optionsList = remoteList,
+                        selectedOptionIndex = selectedOption
+                    )
                 }
 
                 Spacer(Modifier.height(20.dp))
 
-                DefaultPaddingRow {
+                Row {
                     Text(stringResource(R.string.upstream_branch_name)+":")
                 }
 
@@ -135,7 +135,6 @@ fun SetUpstreamDialog(
                 TextField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
                     ,
 
                     enabled = !upstreamBranchShortNameSameWithLocal.value,
