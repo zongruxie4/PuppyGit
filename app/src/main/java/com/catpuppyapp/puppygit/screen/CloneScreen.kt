@@ -2,7 +2,9 @@ package com.catpuppyapp.puppygit.screen
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -98,7 +100,6 @@ import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.filterAndMap
-import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getRepoNameFromGitUrl
 import com.catpuppyapp.puppygit.utils.isPathExists
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -774,17 +775,17 @@ fun CloneScreen(
                 },
             )
 
-            Row(modifier = Modifier
-                .fillMaxWidth()
-//                .padding(10.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+//                    .padding(10.dp)
                 ,
-
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
             ) {
+                val addIconSize = MyStyleKt.defaultIconSizeSmaller
+
                 SingleSelectList(
-                    outterModifier = Modifier.fillMaxWidth(.9f),
-                    dropDownMenuModifier = Modifier.fillMaxWidth(.9f),
+                    outterModifier = Modifier.align(Alignment.CenterStart),
+                    basePadding = PaddingValues(end = addIconSize + 5.dp),
                     optionsList = storagePathList.value,
                     selectedOptionIndex = storagePathSelectedIndex,
                     selectedOptionValue = storagePathSelectedPath.value,
@@ -818,12 +819,13 @@ fun CloneScreen(
                 )
 
                 IconButton(
+                    modifier = Modifier.align(Alignment.CenterEnd),
                     onClick = { showAddStoragePathDialog.value = true }
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,
                         contentDescription = stringResource(R.string.add_storage_path),
-                        modifier = Modifier.size(MyStyleKt.defaultIconSizeSmaller)
+                        modifier = Modifier.size(addIconSize)
                     )
                 }
 

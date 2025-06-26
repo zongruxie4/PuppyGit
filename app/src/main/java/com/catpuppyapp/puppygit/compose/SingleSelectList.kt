@@ -6,6 +6,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,6 +51,8 @@ fun<T> SingleSelectList(
     outterModifier: Modifier = Modifier,
     dropDownMenuModifier:Modifier=Modifier,
 
+    basePadding: PaddingValues = PaddingValues(0.dp),
+
     optionsList:List<T>,   // empty list will show "null" and no item for select
     selectedOptionIndex:MutableIntState?,
     selectedOptionValue:T? = if(selectedOptionIndex!=null && isGoodIndexForList(selectedOptionIndex.intValue, optionsList)) optionsList[selectedOptionIndex.intValue] else null,
@@ -77,6 +80,7 @@ fun<T> SingleSelectList(
     Surface (
         //0.9f 占父元素宽度的百分之90
         modifier = Modifier
+            .padding(basePadding)
             .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
             .clickable {
                 expandDropdownMenu.value = !expandDropdownMenu.value
