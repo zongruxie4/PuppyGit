@@ -237,15 +237,15 @@ class SimilarCompareImpl: SimilarCompare {
         var addIndex = add.getLen() - 1
         val lastCharOfDel = del.getChar(del.getLen() - 1)
         var appendCount = 0
-        for (i in 1..expectedAppendCount) {
+        while(appendCount < expectedAppendCount) {
             if(add.getChar(addIndex--) == lastCharOfDel) {
-                break
+                return false
             }
 
             appendCount++
         }
 
-        return appendCount >= expectedAppendCount
+        return true
     }
 
     private fun addAllToIndexResultList(
