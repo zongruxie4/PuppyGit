@@ -437,7 +437,7 @@ fun CloneScreen(
         }
 
         ConfirmDialog2(
-            title = stringResource(R.string.deleted),
+            title = stringResource(R.string.delete),
             requireShowTextCompose = true,
             textCompose = {
                 CopyScrollableColumn {
