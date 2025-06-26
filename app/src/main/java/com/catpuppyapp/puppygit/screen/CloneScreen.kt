@@ -278,12 +278,13 @@ fun CloneScreen(
 
     val storagePathSelectedPath = rememberSaveable { mutableStateOf(
         StoragePathsMan.get().storagePathLastSelected.let { selectedPath ->
-            storagePathList.value.find { it.path == selectedPath } ?: NameAndPath()
+            storagePathList.value.find { it.path == selectedPath } ?: storagePathList.value.getOrNull(0) ?: NameAndPath()
         }
     )}
 
     val storagePathSelectedIndex = rememberSaveable{ mutableIntStateOf(
         try {
+            // if not found, just use fisrt item, it is must existed internal storage
             storagePathList.value.indexOfFirst { storagePathSelectedPath.value.path == it.path }.coerceAtLeast(0)
         }catch (_: Exception) {
             // 0 to select app internal repos storage path
@@ -330,7 +331,17 @@ fun CloneScreen(
             okBtnText = stringResource(R.string.ok),
             cancelBtnText = stringResource(R.string.cancel),
             okBtnEnabled = storagePathForAdd.value.isNotBlank(),
-            onCancel = { showAddStoragePathDialog.value = false },
+            onCancel = {
+                showAddStoragePathDialog.value = false
+
+                // even close, still need reload list, because users maybe add storage path in the FileChooser Screen
+                getStoragePathList().let { latestList ->
+                    storagePathList.value.apply {
+                        clear()
+                        addAll(latestList)
+                    }
+                }
+            },
         ) {
             //关弹窗
             showAddStoragePathDialog.value = false
