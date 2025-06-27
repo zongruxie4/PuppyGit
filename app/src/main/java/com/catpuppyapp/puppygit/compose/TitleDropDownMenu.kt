@@ -5,6 +5,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -30,6 +32,8 @@ import com.catpuppyapp.puppygit.utils.dropDownItemContainerColor
 @Composable
 fun <T> SimpleTitleDropDownMenu(
     dropDownMenuExpandState: MutableState<Boolean>,
+    dropDownMenuItemContentPadding: PaddingValues = MenuDefaults.DropdownMenuItemContentPadding,
+
     curSelectedItem:T,
     itemList: List<T>,
     isItemSelected:(T)->Boolean,
@@ -43,6 +47,7 @@ fun <T> SimpleTitleDropDownMenu(
 ) {
     TitleDropDownMenu(
         dropDownMenuExpandState = dropDownMenuExpandState,
+        dropDownMenuItemContentPadding = dropDownMenuItemContentPadding,
         curSelectedItem = curSelectedItem,
         itemList = itemList,
         titleClickEnabled = titleClickEnabled,
@@ -87,6 +92,8 @@ fun <T> SimpleTitleDropDownMenu(
 @Composable
 fun <T> TitleDropDownMenu(
     dropDownMenuExpandState: MutableState<Boolean>,
+    dropDownMenuItemContentPadding: PaddingValues = MenuDefaults.DropdownMenuItemContentPadding,
+
     curSelectedItem:T,
     itemList: List<T>,
 
@@ -176,6 +183,7 @@ fun <T> TitleDropDownMenu(
 
             //列出条目
             DropdownMenuItem(
+                contentPadding = dropDownMenuItemContentPadding,
                 modifier = Modifier
                     .dropDownItemContainerColor(selected)
                     .width(itemWidth)

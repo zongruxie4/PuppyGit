@@ -214,6 +214,7 @@ fun FilesTitle(
 
         TitleDropDownMenu(
             dropDownMenuExpandState = dropDownMenuExpandState,
+            dropDownMenuItemContentPadding = PaddingValues(0.dp),
             // never have any item be selected, it just need display the list
             curSelectedItem = NameAndPath(),
             itemList = storages.value.list,
