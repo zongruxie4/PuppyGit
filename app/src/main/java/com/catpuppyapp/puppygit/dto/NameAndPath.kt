@@ -20,7 +20,15 @@ data class NameAndPath(
     val type: NameAndPathType = NameAndPathType.APP_ACCESSIBLE_STORAGES,
 ): Parcelable {
     companion object {
-        fun genByPath(path:String, type: NameAndPathType) = NameAndPath(name = getFileNameFromCanonicalPath(path), path, type);
+        fun genByPath(path:String, type: NameAndPathType, context: Context): NameAndPath{
+            val name = if(type == NameAndPathType.REPOS_STORAGE_PATH || type == NameAndPathType.FIRST_REPOS_STORAGE_PATH) {
+                StoragePathsMan.getItemName(path, context)
+            }else {
+                getFileNameFromCanonicalPath(path)
+            }
+
+            return NameAndPath(name, path, type)
+        }
 
         suspend fun getListForFilesManager(
             context:Context,
@@ -70,7 +78,8 @@ data class NameAndPath(
                 newList.addAll(StoragePathsMan.get().storagePaths.mapIndexed { idx, it ->
                     genByPath(
                         it,
-                        if(idx == 0) NameAndPathType.FIRST_REPOS_STORAGE_PATH else NameAndPathType.REPOS_STORAGE_PATH
+                        if(idx == 0) NameAndPathType.FIRST_REPOS_STORAGE_PATH else NameAndPathType.REPOS_STORAGE_PATH,
+                        context
                     )
                 })
 

@@ -270,7 +270,7 @@ fun CloneScreen(
         val list = mutableListOf<NameAndPath>(NameAndPath(activityContext.getString(R.string.internal_storage), allRepoParentDir.canonicalPath, NameAndPathType.APP_ACCESSIBLE_STORAGES))
 
         // add other paths if have
-        list.addAll(StoragePathsMan.get().storagePaths.map { NameAndPath.genByPath(it, NameAndPathType.REPOS_STORAGE_PATH) })
+        list.addAll(StoragePathsMan.get().storagePaths.map { NameAndPath.genByPath(it, NameAndPathType.REPOS_STORAGE_PATH, activityContext) })
 
         list
     }
@@ -388,7 +388,7 @@ fun CloneScreen(
 
                         spForSave.storagePathLastSelected = newPath
                     }else { // not contains, need add to config
-                        val newItem = NameAndPath.genByPath(newPath, NameAndPathType.REPOS_STORAGE_PATH)
+                        val newItem = NameAndPath.genByPath(newPath, NameAndPathType.REPOS_STORAGE_PATH, activityContext)
                         storagePathList.add(newItem)
                         val newItemIndex = storagePathList.size - 1
                         // select new added
@@ -1171,7 +1171,7 @@ fun CloneScreen(
                 val (selectedStoragePathIdx, selectedStoragePathItem) = findStoragePathItemByPath(storagePath)
                 storagePathSelectedIndex.intValue = selectedStoragePathIdx
                 // if non-exists, it must not be the app's default internal storage path, so the type should be repos storage path
-                storagePathSelectedPath.value = selectedStoragePathItem ?: NameAndPath.genByPath(storagePath, NameAndPathType.REPOS_STORAGE_PATH)
+                storagePathSelectedPath.value = selectedStoragePathItem ?: NameAndPath.genByPath(storagePath, NameAndPathType.REPOS_STORAGE_PATH, activityContext)
 
                 //检查是否存在credential，如果存在，设置下相关状态变量
                 val credentialIdForClone = repo.credentialIdForClone

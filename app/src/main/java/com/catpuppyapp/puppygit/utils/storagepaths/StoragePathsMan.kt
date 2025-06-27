@@ -1,5 +1,7 @@
 package com.catpuppyapp.puppygit.utils.storagepaths
 
+import android.content.Context
+import com.catpuppyapp.puppygit.screen.functions.getFilesScreenTitle
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.JsonUtil
@@ -136,4 +138,7 @@ object StoragePathsMan {
         // if is internal storage path, disallow to add
         return path != FsUtils.getInternalStorageRootPathNoEndsWithSeparator()
     }
+
+    fun getItemName(path: String, context: Context) = getFilesScreenTitle(path, context)
+
 }
