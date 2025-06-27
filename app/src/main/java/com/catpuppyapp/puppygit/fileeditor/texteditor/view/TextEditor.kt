@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.fileeditor.texteditor.view
 
-import android.content.ClipData
 import android.os.Parcelable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
@@ -49,8 +48,6 @@ import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.platform.ClipEntry
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -63,7 +60,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.getSelectedText
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.AcceptButtons
 import com.catpuppyapp.puppygit.compose.ClickableText
@@ -96,7 +92,6 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
-import com.catpuppyapp.puppygit.utils.hideForAWhile
 import com.catpuppyapp.puppygit.utils.parseLineAndColumn
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
@@ -1132,44 +1127,41 @@ fun TextEditor(
                                         return@opke true
                                     }
 
-                                    if(keyEvent.isCtrlPressed && keyEvent.key == Key.C) {
+                                    val isCtrlAndC = keyEvent.isCtrlPressed && keyEvent.key == Key.C
+                                    val isCtrlAndX = keyEvent.isCtrlPressed && keyEvent.key == Key.X
+                                    if(isCtrlAndC || isCtrlAndX) {
                                         val (currentIndex, currentField) = textEditorState.getCurrentField()
                                         if(currentIndex != null && currentField != null && currentField.value.selection.collapsed) {
                                             clipboardManager.setText(AnnotatedString(currentField.value.text))
-                                            Msg.requireShow(activityContext.getString(R.string.copied))
+                                            Msg.requireShow(activityContext.getString(R.string.copied).let { if(isCtrlAndX) it.appendCutSuffix() else it })
 
-                                            // full select the line (deprecated by a bug: text will selected actually,
-                                            //   but doesn't show the selected background color, so users maybe will not
-                                            //   know text is selected, and the text of this line will fully replaced if
-                                            //   users typed anything, this behavior will make users confuse)
-//                                            val fullSelectedField = currentField.let {
-//                                                it.value.let { it.copy(selection = TextRange(0, it.text.length)) }
+//                                            if(ctrlAndC){
+//                                                // full select the line (deprecated by a bug: text will selected actually,
+//                                                //   but doesn't show the selected background color, so users maybe will not
+//                                                //   know text is selected, and the text of this line will fully replaced if
+//                                                //   users typed anything, this behavior will make users confuse)
+//                                                val fullSelectedField = currentField.let {
+//                                                    it.value.let { it.copy(selection = TextRange(0, it.text.length)) }
+//                                                }
+//                                                doJobThenOffLoading {
+//                                                    textEditorState.updateField(
+//                                                        currentIndex,
+//                                                        fullSelectedField
+//                                                    )
+//                                                }
 //                                            }
-//                                            doJobThenOffLoading {
-//                                                textEditorState.updateField(
-//                                                    currentIndex,
-//                                                    fullSelectedField
-//                                                )
-//                                            }
 
-                                            return@opke true
-                                        }
-                                    }
-
-                                    if(keyEvent.isCtrlPressed && keyEvent.key == Key.X) {
-                                        val (currentIndex, currentField) = textEditorState.getCurrentField()
-                                        if(currentIndex != null && currentField != null && currentField.value.selection.collapsed) {
-                                            clipboardManager.setText(AnnotatedString(currentField.value.text))
-                                            Msg.requireShow(activityContext.getString(R.string.copied).appendCutSuffix())
-
-                                            // delete the line
-                                            doJobThenOffLoading {
-                                                textEditorState.deleteLineByIndices(listOf(currentIndex))
+                                            if(isCtrlAndX) {
+                                                // delete the line
+                                                doJobThenOffLoading {
+                                                    textEditorState.deleteLineByIndices(listOf(currentIndex))
+                                                }
                                             }
 
                                             return@opke true
                                         }
                                     }
+
 
                                     return@opke false
                                 }

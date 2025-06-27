@@ -506,7 +506,7 @@ fun EditorInnerPage(
 
             //重载文件清undo stack，后来修改了下，在加载文件时根据路径是否变化决定是否reset undo stack，所以不需要在这清了
 //            undoStack.reset(editorPageShowingFilePath.value.ioPath)
-        }else {
+        }else { // check file change if is not require force reload
             val requireOpenFilePath = editorPageShowingFileDto.value.fullPath
             val newDto = FileSimpleDto.genByFile(FuckSafFile(activityContext, FilePath(requireOpenFilePath)))
             val oldDto = editorPageShowingFileDto.value
@@ -522,9 +522,9 @@ fun EditorInnerPage(
 
         //重新加载文件，需要弹窗确认“重新加载文件将丢失未保存的修改，确定？”，加载时需要有遮罩加载动画避免加载时用户操作
         //设置当前文件为请求打开的文件，然后走打开文件流程
-        isEdited.value=false
-        isSaving.value=false
-        editorPageShowingFileIsReady.value = false  //设置文件状态为未就绪，显示loading界面，好像有bug，TODO 需要测试能不能正常显示loading，整个大文件，测试一下
+        isEdited.value = false
+        isSaving.value = false
+        editorPageShowingFileIsReady.value = false  //设置文件状态为未就绪，以显示loading界面
 
 
         changeStateTriggerRefreshPage(needRefreshEditorPage)

@@ -38,5 +38,5 @@ fun SoftwareKeyboardController.hideForAWhile(timeoutInMillSec: Long = 200L) {
 //    }
 //}
 
-// used to indicate a copy is for a cut action
+// used to indicate a copy is called by a cut action
 fun String.appendCutSuffix() = "$this (CUT)"
