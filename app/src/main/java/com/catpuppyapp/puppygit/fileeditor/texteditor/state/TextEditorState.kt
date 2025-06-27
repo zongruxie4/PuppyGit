@@ -1196,7 +1196,12 @@ class TextEditorState private constructor(
 
     }
 
-    suspend fun deleteLineByIndices(indices:List<Int>, baseFields:List<TextFieldState>?) {
+    suspend fun deleteLineByIndices(
+        indices:List<Int>,
+
+        // null to use current fields
+        baseFields:List<TextFieldState>? = null
+    ) {
         if(indices.isEmpty()) {
             return
         }
@@ -1680,6 +1685,9 @@ class TextEditorState private constructor(
             return newFields
         }
     }
+
+    // return current index and filed, both are can be null
+    fun getCurrentField() = focusingLineIdx.let { Pair(it, it?.let { fields.getOrNull(it) }) }
 
 
     companion object {
