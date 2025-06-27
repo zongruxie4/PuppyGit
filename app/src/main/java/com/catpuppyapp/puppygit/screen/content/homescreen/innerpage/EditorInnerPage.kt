@@ -508,14 +508,19 @@ fun EditorInnerPage(
 //            undoStack.reset(editorPageShowingFilePath.value.ioPath)
         }else { // check file change if is not require force reload
             val requireOpenFilePath = editorPageShowingFileDto.value.fullPath
-            val newDto = FileSimpleDto.genByFile(FuckSafFile(activityContext, FilePath(requireOpenFilePath)))
-            val oldDto = editorPageShowingFileDto.value
 
-            if (newDto == oldDto) {
-                MyLog.d(TAG,"EditorInnerPage#reloadFile: file may not changed, skip reload, file path is '${requireOpenFilePath}'")
-                //文件可能没改变，放弃加载
-                editorPageShowingFileIsReady.value = true
-                return@r
+            try {
+                val newDto = FileSimpleDto.genByFile(FuckSafFile(activityContext, FilePath(requireOpenFilePath)))
+                val oldDto = editorPageShowingFileDto.value
+
+                if (newDto == oldDto) {
+                    MyLog.d(TAG,"EditorInnerPage#reloadFile(force=false): file may not changed, skip reload, file path is '${requireOpenFilePath}'")
+                    //文件可能没改变，放弃加载
+                    editorPageShowingFileIsReady.value = true
+                    return@r
+                }
+            }catch (e: Exception) {
+                MyLog.d(TAG,"EditorInnerPage#reloadFile(force=false): check file changes err, will reload file '${requireOpenFilePath}', err=${e.stackTraceToString()}")
             }
         }
 
