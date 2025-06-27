@@ -40,6 +40,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.compose.BottomBar
@@ -1376,9 +1377,11 @@ fun EditorInnerPage(
                     textCompose = {
                         ScrollableColumn {
                             SelectionRow {
-                                Text(stringResource(R.string.will_delete_selected_items_are_u_sure))
+                                Text(stringResource(R.string.will_delete_selected_items_are_u_sure), fontSize = 18.sp)
                             }
-                            Spacer(Modifier.height(10.dp))
+
+                            Spacer(Modifier.height(20.dp))
+
                             MyCheckBox(stringResource(R.string.del_files_on_disk), deleteFileOnDisk)
                         }
                     },
