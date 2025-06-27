@@ -2,6 +2,15 @@
 
 
 ---
+1.1.3.1v107 - 20250627:
+- make storage paths displayed name better
+
+
+
+- 优化存储路径显示的名称
+
+
+---
 1.1.3.0v106 - 20250626:
 - Files title now can select storage paths
 
