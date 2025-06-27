@@ -491,7 +491,7 @@ fun EditorInnerPage(
     }
 
     //强制重载，不检测修改时间
-    val reloadFile = { force:Boolean ->
+    val reloadFile = r@{ force:Boolean ->
 
         // reload没必要退出预览模式啊，要不你就检测下如果当前是预览模式就别reload edit模式的文件，
         // 要不就无视，直接加载，但没必要退出；反之，退出预览模式时会检查是否需要重载文件
@@ -499,20 +499,33 @@ fun EditorInnerPage(
 
 //        showReloadDialog.value=false
 
+        //非force有概率不会重载如果判断后认为文件没修改的话（根据大小和最后修改时间，不一定总是准）
+        if(force) {
+            //确保重载：清空文件路径，这样和showingFilePath对比就永远不会为真，也就会百分百重载文件
+            editorPageShowingFileDto.value.fullPath = ""
+
+            //重载文件清undo stack，后来修改了下，在加载文件时根据路径是否变化决定是否reset undo stack，所以不需要在这清了
+//            undoStack.reset(editorPageShowingFilePath.value.ioPath)
+        }else {
+            val requireOpenFilePath = editorPageShowingFileDto.value.fullPath
+            val newDto = FileSimpleDto.genByFile(FuckSafFile(activityContext, FilePath(requireOpenFilePath)))
+            val oldDto = editorPageShowingFileDto.value
+
+            if (newDto == oldDto) {
+                MyLog.d(TAG,"EditorInnerPage#reloadFile: file may not changed, skip reload, file path is '${requireOpenFilePath}'")
+                //文件可能没改变，放弃加载
+                editorPageShowingFileIsReady.value = true
+                return@r
+            }
+        }
+
+
         //重新加载文件，需要弹窗确认“重新加载文件将丢失未保存的修改，确定？”，加载时需要有遮罩加载动画避免加载时用户操作
         //设置当前文件为请求打开的文件，然后走打开文件流程
         isEdited.value=false
         isSaving.value=false
         editorPageShowingFileIsReady.value = false  //设置文件状态为未就绪，显示loading界面，好像有bug，TODO 需要测试能不能正常显示loading，整个大文件，测试一下
 
-        //非force有概率不会重载如果判断后认为文件没修改的话（根据大小和最后修改时间，不一定总是准）
-        if(force) {
-            //确保重载：清空文件路径，这样和showingFilePath对比就永远不会为真，也就会百分百重载文件
-            editorPageShowingFileDto.value.fullPath=""
-
-            //重载文件清undo stack，后来修改了下，在加载文件时根据路径是否变化决定是否reset undo stack，所以不需要在这清了
-//            undoStack.reset(editorPageShowingFilePath.value.ioPath)
-        }
 
         changeStateTriggerRefreshPage(needRefreshEditorPage)
     }
