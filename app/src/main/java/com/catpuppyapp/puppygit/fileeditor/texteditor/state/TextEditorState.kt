@@ -1214,6 +1214,36 @@ class TextEditorState private constructor(
                 }
             }
 
+            // update focusingLineIdx and create an empty line if need:
+            // if deleted all lines, add an empty line
+            // if was focusing a line, update focusing line index to ensure it still focusing a valid line
+            var focusingLineIdx = focusingLineIdx
+            if(newFields.isEmpty()) {
+                newFields.add(TextFieldState())
+
+                // if was null, no need update the focusing index
+                if(focusingLineIdx != null) {
+                    focusingLineIdx = 0
+                }
+            }else if(focusingLineIdx != null) {
+                val lastDeletedIndex = indices.lastOrNull()
+                val newLinesCoveredOldIndex = if (lastDeletedIndex != null && lastDeletedIndex < newFields.size) { // old index still valid
+                    focusingLineIdx = lastDeletedIndex
+                    true
+                }else {  // old index invalid, means was deleted the last line, so, now should move to new last line of file
+                    focusingLineIdx = newFields.lastIndex
+                    false
+                }
+
+                // make sure cursor at first column of line
+                newFields[focusingLineIdx] = newFields[focusingLineIdx].let {
+                    it.copy(
+                        // if new lines covered last deleted index, then move cursor to new line's first column, else move to last
+                        value = it.value.copy(selection = if(newLinesCoveredOldIndex) TextRange.Zero else TextRange(it.value.text.length))
+                    )
+                }
+            }
+
 
             isContentEdited?.value=true
             editorPageIsContentSnapshoted?.value= false
