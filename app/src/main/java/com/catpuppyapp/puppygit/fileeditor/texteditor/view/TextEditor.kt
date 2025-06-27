@@ -1133,7 +1133,9 @@ fun TextEditor(
                                         val (currentIndex, currentField) = textEditorState.getCurrentField()
                                         if(currentIndex != null && currentField != null && currentField.value.selection.collapsed) {
                                             clipboardManager.setText(AnnotatedString(currentField.value.text))
-                                            Msg.requireShow(activityContext.getString(R.string.copied).let { if(isCtrlAndX) it.appendCutSuffix() else it })
+
+                                            // if press ctrl + x continuously or just simple keep pressed, the toast msg will be a terrible noise, so better disable it
+//                                            Msg.requireShow(activityContext.getString(R.string.copied).let { if(isCtrlAndX) it.appendCutSuffix() else it })
 
 //                                            if(ctrlAndC){
 //                                                // full select the line (deprecated by a bug: text will selected actually,
