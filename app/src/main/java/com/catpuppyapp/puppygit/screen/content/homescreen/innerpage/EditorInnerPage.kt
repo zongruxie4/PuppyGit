@@ -1655,7 +1655,8 @@ fun EditorInnerPage(
         ) {
             MyLog.d(TAG, "file is changed by external, will reload it, $printFilePath")
 
-            val force = true
+            // set force to false to check last saved file info to avoid nonsense reload
+            val force = false
             reloadFile(force)
         }else {
             MyLog.d(TAG, "file is changed by external, but currently app was modified file also, so will not reload it, $printFilePath")
