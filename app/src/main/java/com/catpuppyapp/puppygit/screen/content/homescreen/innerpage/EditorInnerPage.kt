@@ -46,7 +46,6 @@ import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
-import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.FileChangeListener
 import com.catpuppyapp.puppygit.compose.FileChangeListenerState
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
@@ -60,6 +59,7 @@ import com.catpuppyapp.puppygit.compose.PageCenterIconButton
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
+import com.catpuppyapp.puppygit.compose.SelectionRow
 import com.catpuppyapp.puppygit.compose.rememberFileChangeListenerState
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
@@ -1375,7 +1375,7 @@ fun EditorInnerPage(
                     requireShowTextCompose = true,
                     textCompose = {
                         ScrollableColumn {
-                            DefaultPaddingRow {
+                            SelectionRow {
                                 Text(stringResource(R.string.will_delete_selected_items_are_u_sure))
                             }
                             Spacer(Modifier.height(10.dp))
@@ -1388,7 +1388,7 @@ fun EditorInnerPage(
                 ) {
                     showDeleteRecentFilesDialog.value = false
 
-                    Msg.requireShow(activityContext.getString(R.string.deleting))
+//                    Msg.requireShow(activityContext.getString(R.string.deleting))
 
                     val deleteFileOnDisk = deleteFileOnDisk.value
                     val targetList = selectedRecentFileList.value.toList()
@@ -1410,7 +1410,7 @@ fun EditorInnerPage(
                             }
                         }
 
-                        Msg.requireShow(activityContext.getString(R.string.done))
+                        Msg.requireShow(activityContext.getString(R.string.deleted))
                     }
                 }
 
