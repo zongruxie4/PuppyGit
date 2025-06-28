@@ -1922,7 +1922,7 @@ private suspend fun doInit(
 
 
             //如果文件不存在，抛异常，然后会显示错误信息给用户
-            if (!file.exists()) {
+            if(!file.isActuallyReadable()) {
                 //如果当前显示的内容不为空，为当前显示的内容创建个快照，然后抛异常
 //                val content = editorPageTextEditorState.value.getAllText()
 //                val content = null
@@ -1947,13 +1947,8 @@ private suspend fun doInit(
                     }
                 }
 
-                // due to the saf apis are unreliable, so need a simple test to check the file is actually exist or not
-                try {
-                    file.bufferedReader().use { it.read() }
-                }catch (_: Exception) {
-                    //抛异常
-                    throw RuntimeException(activityContext.getString(R.string.err_file_doesnt_exist_anymore))
-                }
+                //抛异常
+                throw RuntimeException(activityContext.getString(R.string.err_file_doesnt_exist_anymore))
             }
 
             //对于saf uri这个判断并不准确，所以，不判断了，直接获取io流，若target真的不是文件的话会报错
@@ -2002,7 +1997,8 @@ private suspend fun doInit(
 //                editorPageTextEditorState.value = TextEditorState.create(FsUtils.readLinesFromFile(requireOpenFilePath))
             //为新打开的文件创建全新的state
             editorPageTextEditorState.value = TextEditorState.create(
-                file = editorPageShowingFilePath.toFuckSafFile(activityContext),
+//                file = editorPageShowingFilePath.toFuckSafFile(activityContext),
+                file = file,
                 fieldsId = TextEditorState.newId(),
                 isContentEdited = isEdited,
                 editorPageIsContentSnapshoted = isContentSnapshoted,

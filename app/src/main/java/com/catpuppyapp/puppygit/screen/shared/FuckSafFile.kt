@@ -180,4 +180,16 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
             }
         }
     }
+
+
+    // due to the saf apis are unreliable, so need a simple test to check the file is actually readable and exist or not
+    fun isActuallyReadable(): Boolean {
+        return try {
+            bufferedReader().use { it.read() }
+            true
+        }catch(_: Exception) {
+            false
+        }
+    }
+
 }
