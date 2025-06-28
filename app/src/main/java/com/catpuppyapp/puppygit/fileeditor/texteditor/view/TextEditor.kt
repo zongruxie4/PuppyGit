@@ -101,6 +101,13 @@ import kotlinx.parcelize.Parcelize
 
 private const val TAG ="TextEditor"
 
+//line offset when click line number to go to editor, for make text not very top when jump to editor,
+// if line at the top of screen, looks terrible
+//跳转到editor时的行偏移量，尽量让目标行在不要太顶端的位置，不然看着不舒服，如果可以的话，
+// 在editor显示时的位置最好尽量和用户点行号的位置匹配，不过我没想到怎么实现，可能得记录点击位置，算偏移量，有点麻烦
+private const val lineNumOffsetForGoToEditor = -2
+
+
 @Parcelize
 class ExpectConflictStrDto(
     var conflictStartStr: String = "",
@@ -1418,15 +1425,18 @@ fun TextEditor(
 
                     //滚动一定要放到scope里执行，不然这个东西一滚动，整个LaunchedEffect代码块后面就不执行了
                     //如果goToLine大于0，把行号减1换成索引；否则跳转到上次退出前的第一可见行
+                    var targetFocusLineIndexWhenGoToLine = 0
                     UIHelper.scrollToItem(
                         coroutineScope = scope,
                         listState = listState,
                         index = if(useLastEditPos) {
                             lastEditedPos.firstVisibleLineIndex
                         } else if(goToLine == LineNum.EOF.LINE_NUM) {
-                            textEditorState.fields.size - 1
+                            targetFocusLineIndexWhenGoToLine = textEditorState.fields.size - 1
+                            targetFocusLineIndexWhenGoToLine + lineNumOffsetForGoToEditor
                         } else {
-                            goToLine - 1
+                            targetFocusLineIndexWhenGoToLine = goToLine - 1
+                            targetFocusLineIndexWhenGoToLine + lineNumOffsetForGoToEditor
                         }
                     )
 
@@ -1458,6 +1468,11 @@ fun TextEditor(
                             requestFromParent.value = PageRequest.hideKeyboardForAWhile
 
                         }
+                    }else {
+                        textEditorState.selectField(
+                            targetFocusLineIndexWhenGoToLine,
+                            option = SelectionOption.FIRST_POSITION,
+                        )
                     }
 
                     return@TextEditorLaunchedEffect
