@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -64,6 +65,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog2
+import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.InternalFileChooser
@@ -76,6 +78,7 @@ import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RepoCard
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
+import com.catpuppyapp.puppygit.compose.SelectionRow
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -881,9 +884,12 @@ fun RepoInnerPage(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Row {
+                    SelectionRow {
                         Text(text = stringResource(id = R.string.delete_repos)+":")
                     }
+
+                    Spacer(Modifier.height(10.dp))
+
                     MySelectionContainer {
                         Row(
                             modifier = Modifier
@@ -903,53 +909,30 @@ fun RepoInnerPage(
 
                     }
 
-                    Column {
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(MyStyleKt.CheckoutBox.height)
-                                .toggleable(
-                                    enabled = true,
-                                    value = requireDelFilesOnDisk.value,
-                                    onValueChange = {
-                                        requireDelFilesOnDisk.value = !requireDelFilesOnDisk.value
-                                    },
-                                    role = Role.Checkbox
-                                )
-                                .padding(horizontal = MyStyleKt.defaultHorizontalPadding),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                enabled = true,
-                                checked = requireDelFilesOnDisk.value,
-                                onCheckedChange = null // null recommended for accessibility with screenreaders
-                            )
-                            Text(
-                                text = stringResource(R.string.del_files_on_disk),
-                                style = MaterialTheme.typography.bodyLarge,
-                                //如果根据某些条件禁用这个勾选框，则用这行，把条件替换到enable里
-//                                color = if(enable) MyStyleKt.TextColor.enable else if(inDarkTheme) MyStyleKt.TextColor.disable_DarkTheme else MyStyleKt.TextColor.disable,
-                                //如果不需要禁用勾选框，则用这行，保持启用的颜色即可
-                                color = MyStyleKt.TextColor.enable,
+                    Spacer(Modifier.height(5.dp))
 
-                                modifier = Modifier.padding(start = 16.dp),
-                            )
-                        }
-                        if(requireDelFilesOnDisk.value) {
-                            Text(text = "("+stringResource(R.string.will_delete_repo_and_all_its_files_on_disk)+")",
-                                color = MyStyleKt.TextColor.danger()
-                            )
+                    MyCheckBox(stringResource(R.string.del_files_on_disk), requireDelFilesOnDisk)
+
+                    if(requireDelFilesOnDisk.value) {
+                        MySelectionContainer {
+                            DefaultPaddingRow {
+                                Text(
+                                    text = stringResource(R.string.will_delete_repo_and_all_its_files_on_disk),
+                                    color = MyStyleKt.TextColor.danger()
+                                )
+                            }
                         }
                     }
                 }
 
             },
             okBtnText = stringResource(R.string.delete),
-            okTextColor = MyStyleKt.TextColor.danger(),
-            onCancel = { showDelRepoDialog.value=false }
+            okTextColor = if(requireDelFilesOnDisk.value) MyStyleKt.TextColor.danger() else Color.Unspecified,
+            onCancel = { showDelRepoDialog.value = false }
         ) {
             //关闭弹窗
-            showDelRepoDialog.value=false
+            showDelRepoDialog.value = false
+
             val requireDelFilesOnDisk = requireDelFilesOnDisk.value
             val requireTransaction = true
 
@@ -1003,7 +986,7 @@ fun RepoInnerPage(
 
                 } catch (e: Exception) {
                     Msg.requireShowLongDuration(e.localizedMessage ?: "err")
-                    MyLog.e(TAG, "del repo '${curRepo?.repoName ?: "::curRepo is null::"}' in ReposPage err: ${e.stackTraceToString()}")
+                    MyLog.e(TAG, "del repo '${curRepo?.repoName}' in $TAG err: ${e.stackTraceToString()}")
                 } finally {
                     //请求刷新列表
                     changeStateTriggerRefreshPage(needRefreshRepoPage)
