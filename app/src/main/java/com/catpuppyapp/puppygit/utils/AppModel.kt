@@ -133,7 +133,7 @@ object AppModel {
     lateinit var homeTopBarScrollBehavior: TopAppBarScrollBehavior
 
     lateinit var allRepoParentDir: File  // this is internal storage, early version doesn't support clone repo to external path, so this name not indicate this path is internal path, but actually it is
-    lateinit var exitApp: ()->Unit
+    var exitApp: ()->Unit = {}
 
     /**
      * 路径：app实际使用的私有目录/files
@@ -377,10 +377,7 @@ object AppModel {
 
         //设置退出app的函数
         if(initActivity) {
-            AppModel.exitApp = {
-                //退出 Activity
-                exitApp()
-            }
+            updateExitApp(exitApp)
         }
 
         //debug mode相关变量
@@ -397,6 +394,12 @@ object AppModel {
             false
         }
 
+    }
+
+    fun updateExitApp(
+        exit:()->Unit
+    ) {
+        AppModel.exitApp = exit
     }
 
     /**

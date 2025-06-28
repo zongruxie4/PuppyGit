@@ -215,6 +215,8 @@ class MainActivity : ComponentActivity() {
         MyLog.d(TAG, "#onResume: called")
         super.onResume()
 
+        AppModel.updateExitApp { finish() }
+
         // compose 可通过对应的get方法获取到 Activity 的生命周期事件
         // 仅当 pause后才设置on resume以忽略on create时第一个 on resume事件从而避免 compose(例如EditorInnerPage)的 LaunchedEffect和生命周期函数被重复调用
         // 会重复调用是因为Activity on create时会创建compose，然后就会触发LaunchedEffect，同时还会触发compose生命周期on resume，而切换到后台再切换回来时，
