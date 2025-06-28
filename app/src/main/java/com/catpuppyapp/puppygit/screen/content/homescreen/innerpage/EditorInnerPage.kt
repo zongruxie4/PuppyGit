@@ -6,9 +6,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.material.icons.Icons
@@ -86,9 +84,6 @@ import com.catpuppyapp.puppygit.screen.shared.MainActivityLifeCycle
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.screen.shared.doActIfIsExpectLifeCycle
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.soraeditor.CodeEditor
-import com.catpuppyapp.puppygit.soraeditor.CodeEditorState
-import com.catpuppyapp.puppygit.soraeditor.rememberCodeEditorState
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
@@ -113,7 +108,6 @@ import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
-import io.github.rosemoe.sora.text.Content
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -833,7 +827,6 @@ fun EditorInnerPage(
 //        }
 //    }
 
-    val codeEditorState = if(soraEditorComposeTestPassed) rememberCodeEditorState() else null
 
 
     val loadingRecentFiles = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
@@ -1666,14 +1659,7 @@ fun EditorInnerPage(
         )
     }
 
-    if(soraEditorComposeTestPassed && isTimeShowEditor) {
-        CodeEditor(
-            modifier = Modifier
-                .padding(contentPadding)
-                .fillMaxSize(),
-            state = codeEditorState!!,
-        )
-    }
+
 
 
 
@@ -1764,7 +1750,6 @@ fun EditorInnerPage(
             try {
                 doActWithLockIfFree(loadLock, "EditorInnerPage#Init#${needRefreshEditorPage.value}#${editorPageShowingFilePath.value.ioPath}") {
                     doInit(
-                        codeEditorState = codeEditorState,
                         resetLastCursorAtColumn = resetLastCursorAtColumn,
                         requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
                         ignoreFocusOnce = ignoreFocusOnce,
@@ -1830,7 +1815,6 @@ fun EditorInnerPage(
 }
 
 private suspend fun doInit(
-    codeEditorState: CodeEditorState?,
     resetLastCursorAtColumn: ()->Unit,
     requirePreviewScrollToEditorCurPos: MutableState<Boolean>,
     ignoreFocusOnce: MutableState<Boolean>,
@@ -2003,7 +1987,7 @@ private suspend fun doInit(
 //                editorPageTextEditorState.value = TextEditorState.create(FsUtils.readLinesFromFile(requireOpenFilePath))
             //为新打开的文件创建全新的state
             if(soraEditorComposeTestPassed) {
-                codeEditorState!!.content.value = Content(file.bufferedReader().use { it.readText() })
+//                codeEditorState!!.content.value = Content(file.bufferedReader().use { it.readText() })
             }else {
                 editorPageTextEditorState.value = TextEditorState.create(
 //                file = editorPageShowingFilePath.toFuckSafFile(activityContext),
