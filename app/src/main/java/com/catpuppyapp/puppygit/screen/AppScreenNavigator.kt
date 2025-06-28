@@ -238,7 +238,7 @@ fun AppScreenNavigator() {
                 initMergeMode = it.arguments?.getString("initMergeMode") == "1",  //传1开启mergeMode，否则关闭
                 initReadOnly = it.arguments?.getString("initReadOnly") == "1",  //传1开启read only，否则关闭
                 editorPageLastFilePath = editorPageLastFilePath,
-                filePathKey=filePathKey,
+                filePathKey = filePathKey,
                 naviUp = {
                     navController.navigateUp()
                     NaviCache.del(filePathKey)

@@ -59,9 +59,6 @@ fun EditorTitle(
     previewLastScrollPosition:MutableState<Int>,
     scope:CoroutineScope,
 
-    // 若指定文件名，将使用，否则解析路径取出文件名。
-    // 应用场景：用来在打开uri时指定文件名，因为uri不是/开头的规范路径，而且还可能有%2F之类的编码，不一定能通过拆分路径取出文件名，所以干脆让上级页面解析好了传过来即可。
-    editorPageShowingFileName: String?,
 
     editorPageShowingFilePath: MutableState<FilePath>,
     editorPageRequestFromParent:MutableState<String>,
@@ -69,7 +66,6 @@ fun EditorTitle(
     editorSearchKeyword: CustomStateSaveable<TextFieldValue>,
     editorPageMergeMode:Boolean,
     readOnly:Boolean,
-    editorOpenFileErr:Boolean
 ) {
     val haptic = LocalHapticFeedback.current
     val activityContext = LocalContext.current
@@ -78,7 +74,11 @@ fun EditorTitle(
 
     // file opened
     if(editorPageShowingFilePath.value.isNotBlank()) {
-        val fileName = if(isPreviewModeOn && editorPageShowingFilePath.value.ioPath != previewingPath) FuckSafFile(activityContext, FilePath(previewingPath)).name else if(editorPageShowingFileName.isNullOrEmpty()) FuckSafFile(activityContext, editorPageShowingFilePath.value).name else editorPageShowingFileName
+        val fileName =  remember(isPreviewModeOn, previewingPath, editorPageShowingFilePath.value) {
+            FuckSafFile(activityContext, if(isPreviewModeOn) FilePath(previewingPath) else editorPageShowingFilePath.value).name
+        }
+
+
 //        val filePath = getFilePathStrBasedRepoDir(editorPageShowingFilePath.value, returnResultStartsWithSeparator = true)
 
         val filePathNoFileNameNoEndSlash = FsUtils.getPathWithInternalOrExternalPrefixAndRemoveFileNameAndEndSlash(

@@ -128,7 +128,6 @@ fun FileEditor(
     initPreviewMode:()->Unit,
 
     openDrawer:()->Unit,
-    editorPageShowingFileName:String?,
     requestFromParent:MutableState<String>,
     fileFullPath:FilePath,
     lastEditedPos:FileEditedPos,
@@ -472,7 +471,6 @@ fun FileEditor(
                     undoStack = undoStack,
                     curPreviewScrollState = curPreviewScrollState,
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
-                    editorPageShowingFileName = editorPageShowingFileName,
                     requestFromParent = requestFromParent,
                     fileFullPath = fileFullPath,
                     lastEditedPos = lastEditedPos,

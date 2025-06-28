@@ -61,6 +61,7 @@ import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.constants.SingleSendHandleMethod
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.dev.soraEditorComposeTestPassed
 import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
@@ -94,6 +95,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleT
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.functions.getFilesGoToPath
 import com.catpuppyapp.puppygit.screen.functions.getInitTextEditorState
+import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
@@ -506,8 +508,7 @@ fun HomeScreen(
 
 
 
-    val editorPageShowingFileName = rememberSaveable { mutableStateOf<String?>(null) }
-    val filesPageRequireImportFile = rememberSaveable { mutableStateOf( false)}
+    val filesPageRequireImportFile = rememberSaveable { mutableStateOf(false) }
     val intentConsumed = rememberSaveable { IntentHandler.intentConsumed }  //此变量用来确保导入模式只启动一次，避免以导入模式进入app后，进入子页面再返回再次以导入模式进入Files页面
     val filesPageRequireImportUriList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageRequireImportUriList", initValue = listOf<Uri>())
     val filesPageCurrentPathFileList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageCurrentPathFileList", initValue = listOf<FileItemDto>()) //路径字符串，用路径分隔符分隔后的list
@@ -626,22 +627,26 @@ fun HomeScreen(
 
     //给Files页面点击打开文件用的
     //第2个参数是期望值，只有当文件路径不属于app内置禁止edit的目录时才会使用那个值，否则强制开启readonly模式
-    val requireInnerEditorOpenFileWithFileName = r@{ fullPath:String, expectReadOnly:Boolean, fileName:String? ->
-//        if(soraEditorActivityTestPassed) {
-//            try {
-//                CodeEditorActivity.start(activityContext.findActivity()!!, fullPath, fileName?:"", 0)
-//                return@r
-//            }catch (e: Exception) {
-//                MyLog.e(TAG, "HomeScreen#requireInnerEditorOpenFileWithFileName: require open file in `CodeEditorActivity` err: ${e.stackTraceToString()}")
-//            }
-//        }
+    val requireInnerEditorOpenFileWithFileName = r@{ fullPath:String, expectReadOnly:Boolean ->
+        if(soraEditorComposeTestPassed) {
+            try {
+                openFileWithInnerSubPageEditor(
+                    context = activityContext,
+                    filePath = fullPath,
+                    mergeMode = false,
+                    readOnly = expectReadOnly
+                )
+
+                return@r
+            }catch (e: Exception) {
+                MyLog.e(TAG, "HomeScreen#requireInnerEditorOpenFileWithFileName: require open file in `CodeEditorActivity` err: ${e.stackTraceToString()}")
+            }
+        }
 
 
         //请求打开文件，先退出预览模式
         editorQuitPreviewMode()
 
-        //文件名后来加的，用来从外部打开content uri file uri那类路径时使用提取的文件名，不然content://开头的那种uri可能会拿到错误文件名
-        editorPageShowingFileName.value = fileName
 
         editorPageShowingFileIsReady.value=false
         editorPageShowingFilePath.value = FilePath(fullPath)
@@ -657,9 +662,7 @@ fun HomeScreen(
     }
 
     val requireInnerEditorOpenFile = { fullPath:String, expectReadOnly:Boolean ->
-        val fileName:String? = null
-        //传null会从文件路径解析文件名
-        requireInnerEditorOpenFileWithFileName(fullPath, expectReadOnly, fileName)
+        requireInnerEditorOpenFileWithFileName(fullPath, expectReadOnly)
     }
 
 
@@ -1026,14 +1029,12 @@ fun HomeScreen(
                                 isPreviewModeOn = editorIsPreviewModeOn.value,
                                 previewLastScrollPosition = editorPreviewLastScrollPosition,
                                 scope = scope,
-                                editorPageShowingFileName = editorPageShowingFileName.value,
                                 editorPageShowingFilePath = editorPageShowingFilePath,
                                 editorPageRequestFromParent = editorPageRequestFromParent,
                                 editorSearchMode = editorPageSearchMode.value,
                                 editorSearchKeyword = editorPageSearchKeyword,
                                 editorPageMergeMode = editorPageMergeMode.value,
                                 readOnly = editorReadOnlyMode.value,
-                                editorOpenFileErr = editorOpenFileErr.value
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
                             if(changeListPageFilterModeOn.value) {
@@ -1492,7 +1493,6 @@ fun HomeScreen(
                     quitPreviewMode = editorQuitPreviewMode,
                     initPreviewMode = editorInitPreviewMode,
 
-                    editorPageShowingFileName=editorPageShowingFileName.value,
                     contentPadding = contentPadding,
                     currentHomeScreen = currentHomeScreen,
 //                    editorPageRequireOpenFilePath=editorPageRequireOpenFilePath,
@@ -1819,8 +1819,7 @@ fun HomeScreen(
                                             val uriStr = uri.toString()
 
                                             val expectReadOnly = false
-                                            val fileName = null  //直接传null即可，会自动获取文件名，做了处理，兼容"content://"和"file://"
-                                            requireInnerEditorOpenFileWithFileName(uriStr, expectReadOnly, fileName)
+                                            requireInnerEditorOpenFileWithFileName(uriStr, expectReadOnly)
 
                                             return@doJobThenOffLoading
                                         }else if(howToDealWithSingleSend == SingleSendHandleMethod.IMPORT.code) {

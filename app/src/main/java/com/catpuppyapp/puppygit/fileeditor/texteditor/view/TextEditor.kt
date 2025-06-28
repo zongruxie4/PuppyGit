@@ -181,7 +181,6 @@ fun TextEditor(
     undoStack:UndoStack,
     curPreviewScrollState: ScrollState,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
-    editorPageShowingFileName:String?,
     requestFromParent:MutableState<String>,
     fileFullPath:FilePath,
     lastEditedPos: FileEditedPos,

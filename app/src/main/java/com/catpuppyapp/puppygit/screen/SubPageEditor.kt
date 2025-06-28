@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
-import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.SmallFab
 import com.catpuppyapp.puppygit.constants.Cons
@@ -322,14 +321,12 @@ fun SubPageEditor(
                         isPreviewModeOn = editorIsPreviewModeOn.value,
                         previewLastScrollPosition = editorPreviewLastScrollPosition,
                         scope = scope,
-                        editorPageShowingFileName = null,  //若打开 uri 此变量是文件名，但此页面不用来打开uri，所以也不需要指定uri关联的文件名
                         editorPageShowingFilePath = editorPageShowingFilePath,
                         editorPageRequestFromParent = editorPageRequestFromParent,
                         editorSearchMode = editorPageSearchMode.value,
                         editorSearchKeyword = editorPageSearchKeyword,
                         editorPageMergeMode = editorPageMergeMode.value,
                         readOnly = editorReadOnlyMode.value,
-                        editorOpenFileErr = editorOpenFileErr.value
                     )
 
                 },
@@ -340,7 +337,7 @@ fun SubPageEditor(
                     ) {
                         LongPressAbleIconBtn(
                             tooltipText = stringResource(R.string.close),
-                            icon =  Icons.Filled.Close,
+                            icon = Icons.Filled.Close,
                             iconContentDesc = stringResource(R.string.close),
                         ) {
                             if(editorIsPreviewModeOn.value) {
@@ -518,7 +515,6 @@ fun SubPageEditor(
             quitPreviewMode = editorQuitPreviewMode,
             initPreviewMode = editorInitPreviewMode,
 
-            editorPageShowingFileName = null,
             contentPadding = contentPadding,
 
             //editor作为子页面时其实不需要这个变量，只是调用的组件需要，又没默认值，所以姑且创建一个

@@ -160,7 +160,6 @@ fun EditorInnerPage(
     basePath:MutableState<String>,
     quitPreviewMode:()->Unit,
     initPreviewMode:()->Unit,
-    editorPageShowingFileName:String?,
     contentPadding: PaddingValues,
     currentHomeScreen: MutableIntState,
 //    editorPageRequireOpenFilePath:MutableState<String>,
@@ -1115,7 +1114,7 @@ fun EditorInnerPage(
             val isEditingFile = currentFile.path.ioPath == editorPageShowingFilePath.ioPath
 //            val fileReadable = currentFile.canRead()  // 注：saf的canRead()不准，所以弃用此判断
             val fileReadable = true
-            val fileName = editorPageShowingFileName ?: currentFile.name
+            val fileName = currentFile.name
             val fileSize = if(fileReadable) getHumanReadableSizeStr(currentFile.length()) else 0
             //仅文件可读且当前预览或编辑的文件与当前编辑的文件相同时才显示行数和字数
             val showLinesCharsCount = isEditingFile && fileReadable
@@ -1632,7 +1631,6 @@ fun EditorInnerPage(
             initPreviewMode = initPreviewMode,
 
             openDrawer = openDrawer,
-            editorPageShowingFileName = editorPageShowingFileName,
             requestFromParent = requestFromParent,
             fileFullPath = fileFullPath,
             lastEditedPos = fileEditedPos,
