@@ -160,11 +160,11 @@ fun TagFetchPushDialog(
             DialogTitle(title)
         },
         text = {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            ScrollableColumn {
                 val topLinePadding = PaddingValues(start = 10.dp, top = 5.dp, end = 10.dp, bottom = 15.dp)
 
                 if(requireDel) {
-                    Row(modifier = Modifier.padding(topLinePadding)) {
+                    SelectionRow(modifier = Modifier.padding(topLinePadding)) {
                         Text(text = stringResource(R.string.will_delete_selected_items_are_u_sure))
                     }
 
@@ -173,8 +173,9 @@ fun TagFetchPushDialog(
                         value = requireDelRemoteChecked
                     )
                 }else {  // fetch/push，显示默认不勾选force的覆盖提示
-                    Row(modifier = Modifier.padding(topLinePadding)) {
-                        Text(text = if(trueFetchFalsePush) stringResource(R.string.note_as_default_remote_will_not_override_local_tags)
+                    SelectionRow(modifier = Modifier.padding(topLinePadding)) {
+                        Text(
+                            text = if(trueFetchFalsePush) stringResource(R.string.note_as_default_remote_will_not_override_local_tags)
                                     else stringResource(R.string.note_as_default_local_will_override_remote_tags)
                             ,
                             fontWeight = FontWeight.ExtraBold
@@ -183,19 +184,21 @@ fun TagFetchPushDialog(
                 }
 
                 if(!requireDel || requireDelRemoteChecked.value) {
-                    Row(modifier = Modifier.padding(10.dp)) {
+                    SelectionRow(modifier = Modifier.padding(10.dp)) {
                         Text(text = stringResource(R.string.select_remotes) +":")
                     }
 
                     RemoteCheckBoxList(itemList = remoteList, selectedList = selectedRemoteList, remoteCheckedList)
 
                     if(showForce) {
-                        Row(modifier = Modifier.padding(10.dp)) {
+                        SelectionRow(modifier = Modifier.padding(10.dp)) {
                             Text(text = stringResource(R.string.options) +":")
                         }
+
                         MyCheckBox(text = stringResource(id = R.string.force), value = force)
+
                         if(force.value) {  //显示勾选force后的覆盖提示
-                            Row {
+                            SelectionRow {
                                 DefaultPaddingText(
                                     text = if(trueFetchFalsePush) stringResource(R.string.warn_remote_tag_override_local_tag)
                                             else stringResource(R.string.warn_local_tag_override_remote_tag)
