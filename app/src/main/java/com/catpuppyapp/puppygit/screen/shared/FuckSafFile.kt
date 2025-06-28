@@ -156,6 +156,10 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
     }
 
     fun createChangeListener(intervalInMillSec:Long, onChange:()->Unit):Job? {
+        if(path.ioPathType == PathType.INVALID) {
+            return null
+        }
+
         return doJobThenOffLoading {
             try {
                 var oldFileLen = length()

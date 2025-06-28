@@ -321,6 +321,7 @@ fun EditorInnerPage(
 
     }
 
+    val appPaused = rememberSaveable { mutableStateOf(false) }
     val fileChangeListenerState = rememberFileChangeListenerState()
 
 
@@ -1657,40 +1658,37 @@ fun EditorInnerPage(
             undoStack = undoStack,
             patchMode = editorPatchMode.value,
         )
-    }
 
 
+        if(appPaused.value.not()) {
+            FileChangeListener(
+                state = fileChangeListenerState,
+                context = activityContext,
+                path = editorPageShowingFilePath.value.ioPath,
+            ) {
+                val printFilePath = "filePath = '${editorPageShowingFilePath.value.ioPath}'"
 
+                if(
+                // 未在Editor点击 open as，用外部程序打开，显示询问是否重载的弹窗，
+                // 若显示此弹窗，用户可手动确认是否重载，所以没必要自动重载
+                    showBackFromExternalAppAskReloadDialog.value.not()
+                    && isPreviewModeOn.value.not() // will try reload file when quit preview mode, so, don't need reload at here
+                    && editorPageShowingFilePath.value.isNotBlank()
+                    && isEdited.value.not()  // if edited, should not auto reload to avoid lost user changes
+                    && isSaving.value.not()  // not saving in progress
+                ) {
+                    MyLog.d(TAG, "file is changed by external, will reload it, $printFilePath")
 
-
-
-    FileChangeListener(
-        state = fileChangeListenerState,
-        context = activityContext,
-        path = editorPageShowingFilePath.value.ioPath,
-    ) {
-        val printFilePath = "filePath = '${editorPageShowingFilePath.value.ioPath}'"
-
-        if(
-            // 未在Editor点击 open as，用外部程序打开，显示询问是否重载的弹窗，
-            // 若显示此弹窗，用户可手动确认是否重载，所以没必要自动重载
-            showBackFromExternalAppAskReloadDialog.value.not()
-            && isPreviewModeOn.value.not() // will try reload file when quit preview mode, so, don't need reload at here
-            && editorPageShowingFilePath.value.isNotBlank()
-            && isEdited.value.not()  // if edited, should not auto reload to avoid lost user changes
-            && isSaving.value.not()  // not saving in progress
-        ) {
-            MyLog.d(TAG, "file is changed by external, will reload it, $printFilePath")
-
-            // set force to false to check last saved file info to avoid nonsense reload
-            val force = false
-            reloadFile(force)
-        }else {
-            MyLog.d(TAG, "file is changed by external, but currently app was modified file also, so will not reload it, $printFilePath")
+                    // set force to false to check last saved file info to avoid nonsense reload
+                    val force = false
+                    reloadFile(force)
+                }else {
+                    MyLog.d(TAG, "file is changed by external, but currently app was modified file also, so will not reload it, $printFilePath")
+                }
+            }
         }
+
     }
-
-
 
 
 
@@ -1701,6 +1699,8 @@ fun EditorInnerPage(
     // 此组件的一定会触发；若此组件的被触发，Activity的不一定触发。而且，由于compose是基于Activity创建的，
     // 所以compose的on pause会先被调用，而Activity的之后才会调用，如果想要检测Activity的on_pause的话需要注意这一点。
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+        appPaused.value = true
+
         val requireShowMsgToUser = true
 
         val requireBackupContent = true
@@ -1726,6 +1726,8 @@ fun EditorInnerPage(
     //按Home切换到别的app再返回，检查如果当前文件已保存（已编辑为假），则重载
     //和on pause触发顺序相反，Activity的on resume事件先调用，之后才调用compose的，因为必须得先有Activity才能有compose，后者依赖前者，所以销毁的时候，先销毁后面的，恢复的时候，先恢复前面的。
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        appPaused.value = false
+
         //检查，如果 Activity 的on resume事件刚被触发，说明用户刚从后台把app调出来，这时调用软重载文件（会检测变化若判断很可能无变化则不重载）
         doActIfIsExpectLifeCycle(MainActivityLifeCycle.ON_RESUME) {
             //如果显示重载确认弹窗，则不自动重载；如果未显示重载确认弹窗且文件未编辑（换句话说：已成功保存），则自动重载
