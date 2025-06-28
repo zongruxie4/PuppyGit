@@ -6,6 +6,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
@@ -65,6 +66,7 @@ import com.catpuppyapp.puppygit.compose.rememberFileChangeListenerState
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.dev.soraEditorTestPassed
 import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -83,6 +85,8 @@ import com.catpuppyapp.puppygit.screen.shared.MainActivityLifeCycle
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.screen.shared.doActIfIsExpectLifeCycle
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.soraeditor.CodeEditor
+import com.catpuppyapp.puppygit.soraeditor.rememberCodeEditorState
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
@@ -1597,8 +1601,9 @@ fun EditorInnerPage(
     }
 
 
+    val isTimeShowEditor = !editorPageShowingFileHasErr.value && editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank()
     // file loaded (load file successfully)
-    if(!editorPageShowingFileHasErr.value && editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank()){
+    if(!soraEditorTestPassed && isTimeShowEditor) {
         val fileFullPath = editorPageShowingFilePath.value
         val fileEditedPos = FileOpenHistoryMan.get(fileFullPath.ioPath)
 
@@ -1655,7 +1660,16 @@ fun EditorInnerPage(
             patchMode = editorPatchMode.value,
         )
     }
-//    }
+
+    if(soraEditorTestPassed && isTimeShowEditor) {
+        CodeEditor(
+            modifier = Modifier
+                .fillMaxSize(),
+            state = rememberCodeEditorState()
+        )
+    }
+
+
 
 
     FileChangeListener(
