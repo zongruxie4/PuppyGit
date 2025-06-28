@@ -37,6 +37,7 @@ import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.SshUnknownHostDialog
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
+import com.catpuppyapp.puppygit.play.pro.base.BaseActivity
 import com.catpuppyapp.puppygit.screen.AppScreenNavigator
 import com.catpuppyapp.puppygit.screen.RequireMasterPasswordScreen
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan

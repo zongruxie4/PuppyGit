@@ -1,10 +1,11 @@
-package com.catpuppyapp.puppygit.play.pro
+package com.catpuppyapp.puppygit.play.pro.base
 
+
+import android.accessibilityservice.AccessibilityService
 import android.content.Context
-import android.service.quicksettings.TileService
 import com.catpuppyapp.puppygit.utils.ContextUtil
 
-open class BaseTileService : TileService() {
+abstract class BaseAccessibilityService : AccessibilityService() {
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))
     }

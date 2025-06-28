@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.play.pro
+package com.catpuppyapp.puppygit.play.pro.base
 
 import android.content.Context
 import android.content.res.Configuration

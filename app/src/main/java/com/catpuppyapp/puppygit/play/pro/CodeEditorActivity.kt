@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import com.catpuppyapp.puppygit.constants.IntentCons
+import com.catpuppyapp.puppygit.play.pro.base.BaseActivity
 import com.catpuppyapp.puppygit.utils.MyLog
 
 
