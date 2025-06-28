@@ -8,11 +8,14 @@ object IntentCons {
         const val startRepoId = "startRepoId"
         const val newState = "newState"
         const val errMsg = "errMsg"
+        const val fileName = "fileName"
+        const val lineNum = "lineNum"
     }
 
     object Action {
         val UPDATE_TILE = genActName("UPDATE_TILE")
         val SHOW_ERR_MSG = genActName("SHOW_ERR_MSG")
+        val OPEN_FILE = genActName("OPEN_FILE")
     }
 }
 

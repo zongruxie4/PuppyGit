@@ -151,6 +151,20 @@
 
         </activity>
 
+
+        <activity
+            android:name=".CodeEditorActivity"
+            android:exported="true"
+            android:label="CodeEditor"
+            android:theme="@style/Theme.PuppyGitAndroid"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
+
+        >
+
+
+        </activity>
+
 <!--            android:name="androidx.core.content.FileProvider"-->
         <provider
             android:name="com.catpuppyapp.puppygit.provider.MyFileProvider"
