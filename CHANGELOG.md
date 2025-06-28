@@ -3,11 +3,15 @@
 
 ---
 1.1.3.1v107 - 20250627:
-- make storage paths displayed name better
+- make storage paths displayed name better if path is external or internal path
+- try go to first conflict line when open file with merge mode
+- focus target line when go to Editor from DiffScreen by click line number
 
 
 
-- 优化存储路径显示的名称
+- 当路径是内部或外部存储时，优化存储路径条目名称
+- 以冲突模式打开编辑器时尝试跳转到第一个冲突行
+- 从Diff页面点击行号跳转到编辑器时，聚焦目标行
 
 
 ---

@@ -1,1 +1,3 @@
-- make storage paths displayed name better
+- make storage paths displayed name better if path is external or internal path
+- try go to first conflict line when open file with merge mode
+- focus target line when go to Editor from DiffScreen by click line number
