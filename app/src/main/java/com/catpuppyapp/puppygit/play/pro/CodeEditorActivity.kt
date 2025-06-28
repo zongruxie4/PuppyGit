@@ -64,7 +64,3 @@ class CodeEditorActivity : ComponentActivity() {
 
 }
 
-
-private fun getErrMsg(intent: Intent):String {
-    return intent.extras?.getString(CrashActivity.INTENT_EXTRA_KEY_ERR_MSG) ?: ""
-}
