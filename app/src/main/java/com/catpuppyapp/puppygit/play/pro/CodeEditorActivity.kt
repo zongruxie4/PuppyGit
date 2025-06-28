@@ -1,26 +1,20 @@
 package com.catpuppyapp.puppygit.play.pro
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import com.catpuppyapp.puppygit.constants.IntentCons
-import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 
 
 private const val TAG = "CodeEditorActivity"
 
 
-class CodeEditorActivity : ComponentActivity() {
+class CodeEditorActivity : BaseActivity() {
     companion object {
         val ACTION_OPEN_FILE = IntentCons.Action.OPEN_FILE
         const val INTENT_EXTRA_KEY_FILE_NAME = IntentCons.ExtrasKey.fileName
         const val INTENT_EXTRA_KEY_LINE_NUM = IntentCons.ExtrasKey.lineNum
-
 
 
         fun start(fromActivity: Activity, fileName:String, lineNum:Int) {
@@ -42,30 +36,8 @@ class CodeEditorActivity : ComponentActivity() {
 
         MyLog.d(TAG, "#onCreate called")
 
-
-
-
-
     }
 
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        AppModel.updateExitApp { finish() }
-    }
-
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        AppModel.handleActivityConfigurationChanged(newConfig)
-    }
 
 }
 

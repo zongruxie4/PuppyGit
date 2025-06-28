@@ -79,7 +79,7 @@ fun Context.findActivity(): Activity? = when (this) {
 //    return createConfigurationContext(config)
 //}
 
-class MainActivity : ComponentActivity() {
+class MainActivity : BaseActivity() {
 
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -174,16 +174,6 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        AppModel.destroyer()
-    }
-
     override fun onNewIntent(intent: Intent) {
         MyLog.d(TAG, "#onNewIntent() called")
         super.onNewIntent(intent)
@@ -214,8 +204,6 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         MyLog.d(TAG, "#onResume: called")
         super.onResume()
-
-        AppModel.updateExitApp { finish() }
 
         // compose 可通过对应的get方法获取到 Activity 的生命周期事件
         // 仅当 pause后才设置on resume以忽略on create时第一个 on resume事件从而避免 compose(例如EditorInnerPage)的 LaunchedEffect和生命周期函数被重复调用

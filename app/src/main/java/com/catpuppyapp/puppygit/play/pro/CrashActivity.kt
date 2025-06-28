@@ -3,9 +3,7 @@ package com.catpuppyapp.puppygit.play.pro
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -37,8 +35,6 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.reportBugsLi
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.InitContent
 import com.catpuppyapp.puppygit.utils.ActivityUtil
-import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.showToast
@@ -47,7 +43,7 @@ import com.catpuppyapp.puppygit.utils.showToast
 private const val TAG = "CrashActivity"
 
 
-class CrashActivity : ComponentActivity() {
+class CrashActivity : BaseActivity() {
     companion object {
         val ACTION_SHOW_ERR_MSG = IntentCons.Action.SHOW_ERR_MSG
         const val INTENT_EXTRA_KEY_ERR_MSG = IntentCons.ExtrasKey.errMsg
@@ -89,24 +85,6 @@ class CrashActivity : ComponentActivity() {
 
     }
 
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        AppModel.updateExitApp { finish() }
-    }
-
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        AppModel.handleActivityConfigurationChanged(newConfig)
-    }
 
 }
 
