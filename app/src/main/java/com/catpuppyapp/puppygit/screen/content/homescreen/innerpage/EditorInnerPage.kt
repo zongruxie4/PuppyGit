@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.material.icons.Icons
@@ -1664,6 +1665,7 @@ fun EditorInnerPage(
     if(soraEditorTestPassed && isTimeShowEditor) {
         CodeEditor(
             modifier = Modifier
+                .padding(contentPadding)
                 .fillMaxSize(),
             state = rememberCodeEditorState()
         )
