@@ -8,6 +8,8 @@ object IntentCons {
         const val startRepoId = "startRepoId"
         const val newState = "newState"
         const val errMsg = "errMsg"
+
+        const val filePath = "filePath"
         const val fileName = "fileName"
         const val lineNum = "lineNum"
     }

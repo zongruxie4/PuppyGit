@@ -62,13 +62,16 @@ import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.constants.SingleSendHandleMethod
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.dev.soraEditorActivityTestPassed
 import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
+import com.catpuppyapp.puppygit.play.pro.CodeEditorActivity
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.play.pro.findActivity
 import com.catpuppyapp.puppygit.screen.content.editor.FileDetailListActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.AboutInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.AutomationInnerPage
@@ -627,7 +630,17 @@ fun HomeScreen(
 
     //给Files页面点击打开文件用的
     //第2个参数是期望值，只有当文件路径不属于app内置禁止edit的目录时才会使用那个值，否则强制开启readonly模式
-    val requireInnerEditorOpenFileWithFileName = { fullPath:String, expectReadOnly:Boolean, fileName:String? ->
+    val requireInnerEditorOpenFileWithFileName = r@{ fullPath:String, expectReadOnly:Boolean, fileName:String? ->
+        if(soraEditorActivityTestPassed) {
+            try {
+                CodeEditorActivity.start(activityContext.findActivity()!!, fullPath, fileName?:"", 0)
+                return@r
+            }catch (e: Exception) {
+                MyLog.e(TAG, "HomeScreen#requireInnerEditorOpenFileWithFileName: require open file in `CodeEditorActivity` err: ${e.stackTraceToString()}")
+            }
+        }
+
+
         //请求打开文件，先退出预览模式
         editorQuitPreviewMode()
 

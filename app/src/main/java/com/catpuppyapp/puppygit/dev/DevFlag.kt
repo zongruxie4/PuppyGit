@@ -92,7 +92,7 @@ val editorEnableLineSelecteModeFromMenuTestPassed = true  //editor 从菜单开�
 val importRepoTestPassed = true
 
 const val soraEditorComposeTestPassed = false
-
+const val soraEditorActivityTestPassed = false
 
 /**
  * below is bug
