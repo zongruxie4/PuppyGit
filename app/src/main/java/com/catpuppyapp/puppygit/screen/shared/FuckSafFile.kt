@@ -20,9 +20,13 @@ import kotlin.coroutines.cancellation.CancellationException
 private const val TAG = "FuckSafFile"
 
 /**
- * fuck the saf api, saf should full-compatible with File api and support jni, else it just shit
+ * fuck the saf api, saf should full-compatible with File api and support jni, but it didn't, so it just shit!
  *
- * 如果只使用File，context可传null
+ * note: the saf api `canRead()` `isFile()` and maybe others, they are maybe return incorrect result!!
+ *   e.g. a file can read, but the `canRead()` may return false.
+ *
+ * @param context if only use File, no need the content uri, then can pass null to context
+ *
  */
 class FuckSafFile(val context: Context?, val path: FilePath) {
     companion object {

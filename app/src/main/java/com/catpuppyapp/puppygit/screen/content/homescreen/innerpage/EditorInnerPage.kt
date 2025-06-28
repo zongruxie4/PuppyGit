@@ -1947,8 +1947,13 @@ private suspend fun doInit(
                     }
                 }
 
-                //抛异常
-                throw RuntimeException(activityContext.getString(R.string.err_file_doesnt_exist_anymore))
+                // due to the saf apis are unreliable, so need a simple test to check the file is actually exist or not
+                try {
+                    file.bufferedReader().use { it.read() }
+                }catch (_: Exception) {
+                    //抛异常
+                    throw RuntimeException(activityContext.getString(R.string.err_file_doesnt_exist_anymore))
+                }
             }
 
             //对于saf uri这个判断并不准确，所以，不判断了，直接获取io流，若target真的不是文件的话会报错
