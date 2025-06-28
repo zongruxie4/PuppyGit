@@ -67,7 +67,7 @@ import com.catpuppyapp.puppygit.compose.rememberFileChangeListenerState
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
-import com.catpuppyapp.puppygit.dev.soraEditorTestPassed
+import com.catpuppyapp.puppygit.dev.soraEditorComposeTestPassed
 import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -833,7 +833,7 @@ fun EditorInnerPage(
 //        }
 //    }
 
-    val codeEditorState = rememberCodeEditorState()
+    val codeEditorState = if(soraEditorComposeTestPassed) rememberCodeEditorState() else null
 
 
     val loadingRecentFiles = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
@@ -1608,7 +1608,7 @@ fun EditorInnerPage(
 
     val isTimeShowEditor = !editorPageShowingFileHasErr.value && editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank()
     // file loaded (load file successfully)
-    if(!soraEditorTestPassed && isTimeShowEditor) {
+    if(!soraEditorComposeTestPassed && isTimeShowEditor) {
         val fileFullPath = editorPageShowingFilePath.value
         val fileEditedPos = FileOpenHistoryMan.get(fileFullPath.ioPath)
 
@@ -1666,12 +1666,12 @@ fun EditorInnerPage(
         )
     }
 
-    if(soraEditorTestPassed && isTimeShowEditor) {
+    if(soraEditorComposeTestPassed && isTimeShowEditor) {
         CodeEditor(
             modifier = Modifier
                 .padding(contentPadding)
                 .fillMaxSize(),
-            state = codeEditorState,
+            state = codeEditorState!!,
         )
     }
 
@@ -1830,7 +1830,7 @@ fun EditorInnerPage(
 }
 
 private suspend fun doInit(
-    codeEditorState: CodeEditorState,
+    codeEditorState: CodeEditorState?,
     resetLastCursorAtColumn: ()->Unit,
     requirePreviewScrollToEditorCurPos: MutableState<Boolean>,
     ignoreFocusOnce: MutableState<Boolean>,
@@ -2002,8 +2002,8 @@ private suspend fun doInit(
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))
 //                editorPageTextEditorState.value = TextEditorState.create(FsUtils.readLinesFromFile(requireOpenFilePath))
             //为新打开的文件创建全新的state
-            if(soraEditorTestPassed) {
-                codeEditorState.content.value = Content(file.bufferedReader().use { it.readText() })
+            if(soraEditorComposeTestPassed) {
+                codeEditorState!!.content.value = Content(file.bufferedReader().use { it.readText() })
             }else {
                 editorPageTextEditorState.value = TextEditorState.create(
 //                file = editorPageShowingFilePath.toFuckSafFile(activityContext),
