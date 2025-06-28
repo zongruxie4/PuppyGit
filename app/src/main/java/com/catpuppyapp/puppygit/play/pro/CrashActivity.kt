@@ -51,6 +51,22 @@ class CrashActivity : ComponentActivity() {
     companion object {
         val ACTION_SHOW_ERR_MSG = IntentCons.Action.SHOW_ERR_MSG
         const val INTENT_EXTRA_KEY_ERR_MSG = IntentCons.ExtrasKey.errMsg
+
+
+        fun start(fromActivity: Activity, errMsg:String) {
+            val intent = Intent(ACTION_SHOW_ERR_MSG).apply {
+                //携带错误信息
+                putExtra(INTENT_EXTRA_KEY_ERR_MSG, errMsg)
+                setClass(fromActivity, CrashActivity::class.java)
+            }
+
+            fromActivity.startActivity(intent)
+        }
+
+        private fun getErrMsg(intent: Intent):String {
+            return intent.extras?.getString(INTENT_EXTRA_KEY_ERR_MSG) ?: ""
+        }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -177,18 +193,4 @@ private fun MainCompose(activity: Activity, appContext: Context, errMsg: String,
         }
     }
 
-}
-
-fun startCrashActivity(fromActivity: Activity, errMsg:String) {
-    val intent = Intent(CrashActivity.ACTION_SHOW_ERR_MSG).apply {
-        //携带错误信息
-        putExtra(CrashActivity.INTENT_EXTRA_KEY_ERR_MSG, errMsg)
-        setClass(fromActivity, CrashActivity::class.java)
-    }
-
-    fromActivity.startActivity(intent)
-}
-
-private fun getErrMsg(intent: Intent):String {
-    return intent.extras?.getString(CrashActivity.INTENT_EXTRA_KEY_ERR_MSG) ?: ""
 }

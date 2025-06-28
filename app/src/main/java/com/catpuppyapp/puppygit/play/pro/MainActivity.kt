@@ -147,9 +147,9 @@ class MainActivity : ComponentActivity() {
 //                    ActivityUtil.restartActivityByIntent(this)
 
                     //启动crash activity显示错误信息
-                    startCrashActivity(this, errMsg)
+                    CrashActivity.start(this, errMsg)
 
-                    // 不重建Activity，直接退出
+                    // 不重建当前Activity，直接退出
                     finish()
 
                     // 如果想显示错误弹窗，参见文档 “下一步-20240120.txt” 中的："compose错误处理 compose出错弹窗实现 20240505"
