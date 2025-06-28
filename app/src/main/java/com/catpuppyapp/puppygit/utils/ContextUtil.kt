@@ -10,7 +10,7 @@ object ContextUtil {
         try {
             // check language
             val languageCode = LanguageUtil.getLangCode(newBase)
-            if(!LanguageUtil.isSupportedLanguage(languageCode)) {
+            if(LanguageUtil.isAuto(languageCode)) {
                 // here should run faster as possible, throw Exception is bad for running speed
 //               // throw RuntimeException("found unsupported lang in config, will try auto detect language")
 

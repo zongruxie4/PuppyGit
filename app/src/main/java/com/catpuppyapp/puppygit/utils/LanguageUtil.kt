@@ -28,7 +28,13 @@ object LanguageUtil {
 
 
     fun getLangCode(context: Context):String {
-        return PrefMan.get(context, key, "")
+        return PrefMan.get(context, key, "").let {
+            if(isAuto(it)) {
+                LangCode.auto
+            }else {
+                it
+            }
+        }
     }
 
     fun setLangCode(context: Context, langCode:String) {
@@ -36,26 +42,13 @@ object LanguageUtil {
     }
 
     fun isAuto(langCode: String):Boolean {
-        return langCode == LangCode.auto || langCode.isBlank()
-    }
-
-    /**
-     * return true if `langCode` is not auto detected(empty string) and is supported
-     */
-    fun isSupportedLanguage(langCode:String, treatAutoAsUnsupported:Boolean=true):Boolean {
-        // auto detected not represented any language, so return false
-        if(treatAutoAsUnsupported && isAuto(langCode)) {
-            return false
-        }
-
-        return languageCodeList.contains(langCode)
+        return langCode == LangCode.auto || langCode.isBlank() || !languageCodeList.contains(langCode)
     }
 
 
     fun getLanguageTextByCode(languageCode:String, context: Context):String {
-        if(languageCode.isBlank()) {
+        if(isAuto(languageCode)) {
             return context.getString(R.string.auto)
-//            return context.getString(R.string.follow_system)
         }
 
         // order by a-z
@@ -86,9 +79,10 @@ object LanguageUtil {
         // add other language here
 
 
-        // should never reach here, if user got unknown, just set to a supported language will resolved
-        MyLog.w(TAG, "#getLanguageTextByCode: unknown language code '$languageCode'")
-        return context.getString(R.string.unsupported)
+        // treat unsupported languages as auto
+        MyLog.d(TAG, "#getLanguageTextByCode: unknown language code '$languageCode', will use `auto`")
+
+        return context.getString(R.string.auto)
     }
 
     /**
