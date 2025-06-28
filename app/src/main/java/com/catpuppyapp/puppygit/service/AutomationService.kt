@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.service
 
-import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -11,13 +10,13 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.notification.AutomationNotify
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
+import com.catpuppyapp.puppygit.play.pro.BaseAccessibilityService
 import com.catpuppyapp.puppygit.receiver.ScreenOnOffReceiver
 import com.catpuppyapp.puppygit.server.bean.NotificationSender
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.settings.util.AutomationUtil
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.RepoActUtil
 import com.catpuppyapp.puppygit.utils.cache.AutoSrvCache
@@ -32,7 +31,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 
-class AutomationService: AccessibilityService() {
+class AutomationService: BaseAccessibilityService() {
     companion object {
         private const val TAG = "AutomationService"
 
@@ -149,10 +148,6 @@ class AutomationService: AccessibilityService() {
 
     }
 
-
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))
-    }
 
 
     private var screenOnOffReceiver:ScreenOnOffReceiver? = null

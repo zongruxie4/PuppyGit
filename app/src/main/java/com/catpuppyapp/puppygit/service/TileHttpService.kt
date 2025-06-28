@@ -7,10 +7,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.service.quicksettings.Tile
-import android.service.quicksettings.TileService
 import androidx.core.content.ContextCompat
 import com.catpuppyapp.puppygit.constants.IntentCons
-import com.catpuppyapp.puppygit.utils.ContextUtil
+import com.catpuppyapp.puppygit.play.pro.BaseTileService
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.receiverFlags
 
@@ -21,7 +20,7 @@ private const val TAG = "TileHttpService"
 // note: tile service haven't overwrite onCreate and execute `AppMode.init_` serial functions,
 //   but is ok, cause HttpService will do init when Tile service onClick triggered
 @TargetApi(Build.VERSION_CODES.N)  // tile support by android 24 and above
-class TileHttpService: TileService() {
+class TileHttpService: BaseTileService() {
     companion object {
         //加个包名，避免冲突
         val ACTION_UPDATE = IntentCons.Action.UPDATE_TILE
@@ -46,10 +45,6 @@ class TileHttpService: TileService() {
                 updateState(newState)
             }
         }
-    }
-
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))
     }
 
     // Called when the user adds your tile.
