@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ContextUtil
 
-open class BaseActivity : ComponentActivity() {
+open class BaseComposeActivity : ComponentActivity() {
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))

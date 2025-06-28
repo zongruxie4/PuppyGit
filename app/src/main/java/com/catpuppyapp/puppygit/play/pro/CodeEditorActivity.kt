@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import com.catpuppyapp.puppygit.constants.IntentCons
-import com.catpuppyapp.puppygit.play.pro.base.BaseActivity
+import com.catpuppyapp.puppygit.play.pro.base.BaseComposeActivity
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 
@@ -12,7 +12,7 @@ import com.catpuppyapp.puppygit.utils.MyLog
 private const val TAG = "CodeEditorActivity"
 
 
-class CodeEditorActivity : BaseActivity() {
+class CodeEditorActivity : BaseComposeActivity() {
     companion object {
         val ACTION_OPEN_FILE = IntentCons.Action.OPEN_FILE
         const val INTENT_EXTRA_KEY_FILE_PATH = IntentCons.ExtrasKey.filePath

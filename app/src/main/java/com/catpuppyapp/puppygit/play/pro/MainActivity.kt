@@ -8,7 +8,6 @@ import android.content.Intent.ACTION_MAIN
 import android.content.res.Configuration
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +36,7 @@ import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.SshUnknownHostDialog
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
-import com.catpuppyapp.puppygit.play.pro.base.BaseActivity
+import com.catpuppyapp.puppygit.play.pro.base.BaseComposeActivity
 import com.catpuppyapp.puppygit.screen.AppScreenNavigator
 import com.catpuppyapp.puppygit.screen.RequireMasterPasswordScreen
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
@@ -48,7 +47,6 @@ import com.catpuppyapp.puppygit.screen.shared.setMainActivityLifeCycle
 import com.catpuppyapp.puppygit.ui.theme.InitContent
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -80,7 +78,7 @@ fun Context.findActivity(): Activity? = when (this) {
 //    return createConfigurationContext(config)
 //}
 
-class MainActivity : BaseActivity() {
+class MainActivity : BaseComposeActivity() {
 
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
