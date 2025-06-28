@@ -87,7 +87,6 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PatchUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.appendCutSuffix
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
@@ -99,7 +98,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 
-private const val TAG ="TextEditor"
+private const val TAG = "TextEditor"
 
 //line offset when click line number to go to editor, for make text not very top when jump to editor,
 // if line at the top of screen, looks terrible
@@ -1416,7 +1415,36 @@ fun TextEditor(
                 //刚打开文件，定位到上次记录的行，这个滚动只在初始化时执行一次
                 if(lastScrollEvent==null && !isInitDone.value) {
                     //放到第一行是为了避免重入
-                    isInitDone.value=true
+                    isInitDone.value = true
+
+
+
+                    // if is merge mode, try init position to first conflict
+                    if(mergeMode) {
+                        val fields = textEditorState.fields
+                        // update cur conflict keyword, if cursor on conflict str line, if dont do this, UX bad, e.g. I clicked conflict splict line, then click prev conflict, expect is go conflict start line, but if last search is start line, this time will go to end line, anti-intuition
+                        // 如果光标在冲突开始、分割、结束行之一，更新搜索关键字，如果不这样做，会出现一些反直觉的bug：我点击了conflict split line，然后点上，期望是查找conflict start line，但如果上次搜索状态是start line，那这次就会去搜索end line，反直觉
+                        for(idx in fields.indices) {
+                            val value = fields.getOrNull(idx) ?: continue
+                            if(value.value.text.startsWith(settings.editor.conflictStartStr)) {
+                                // scroll
+                                UIHelper.scrollToItem(scope, listState, idx + lineNumOffsetForGoToEditor)
+                                // focus line
+                                textEditorState.selectField(
+                                    idx,
+                                    option = SelectionOption.FIRST_POSITION,
+                                )
+
+                                // finished
+                                return@TextEditorLaunchedEffect
+                            }
+                        }
+                    }
+
+
+                    // is merge mode, but not found conflict start str or not merge mode:
+                    //    need go to line or restore last edited position
+
 
                     //goToLine触发场景：预览diff，发现某行需要改，点击行号，就会直接定位到对应行了
                     //会用goToLine的值减1得到索引，所以0也不行
@@ -1467,7 +1495,7 @@ fun TextEditor(
                             requestFromParent.value = PageRequest.hideKeyboardForAWhile
 
                         }
-                    }else {
+                    }else {  // when go to line valid, focus target line
                         textEditorState.selectField(
                             targetFocusLineIndexWhenGoToLine,
                             option = SelectionOption.FIRST_POSITION,
