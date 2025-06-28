@@ -135,11 +135,15 @@ fun openFileWithInnerSubPageEditor(
     mergeMode:Boolean,
     readOnly:Boolean,
     goToLine:Int = LineNum.lastPosition,
-    onlyGoToWhenFileExists: Boolean = false
+    onlyGoToWhenFileExists: Boolean = false,
+    showMsgIfGoToCanceledByFileNonExist:Boolean = true,
 ) {
     doJobWithMainContext job@{
-        if(onlyGoToWhenFileExists && File(filePath).exists().not()) {
-            Msg.requireShowLongDuration(context.getString(R.string.file_doesnt_exist))
+        if(onlyGoToWhenFileExists && FilePath(filePath).toFuckSafFile(context).isActuallyReadable().not()) {
+            if(showMsgIfGoToCanceledByFileNonExist){
+                Msg.requireShowLongDuration(context.getString(R.string.file_doesnt_exist))
+            }
+
             return@job
         }
 

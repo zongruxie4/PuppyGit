@@ -395,9 +395,8 @@ fun DiffScreen(
             filePath = filePath,
             mergeMode = false,
             readOnly = false,
-            onlyGoToWhenFileExists = true
+            onlyGoToWhenFileExists = true,
         )
-
     }
 
 
