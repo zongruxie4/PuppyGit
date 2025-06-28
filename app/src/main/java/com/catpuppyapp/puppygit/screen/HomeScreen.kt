@@ -628,21 +628,6 @@ fun HomeScreen(
     //给Files页面点击打开文件用的
     //第2个参数是期望值，只有当文件路径不属于app内置禁止edit的目录时才会使用那个值，否则强制开启readonly模式
     val requireInnerEditorOpenFileWithFileName = r@{ fullPath:String, expectReadOnly:Boolean ->
-        if(soraEditorComposeTestPassed) {
-            try {
-                openFileWithInnerSubPageEditor(
-                    context = activityContext,
-                    filePath = fullPath,
-                    mergeMode = false,
-                    readOnly = expectReadOnly
-                )
-
-                return@r
-            }catch (e: Exception) {
-                MyLog.e(TAG, "HomeScreen#requireInnerEditorOpenFileWithFileName: require open file in `CodeEditorActivity` err: ${e.stackTraceToString()}")
-            }
-        }
-
 
         //请求打开文件，先退出预览模式
         editorQuitPreviewMode()
