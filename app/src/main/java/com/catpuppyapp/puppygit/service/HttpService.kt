@@ -1,38 +1,32 @@
 package com.catpuppyapp.puppygit.service
 
 import android.app.Notification
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
-import android.os.IBinder
 import com.catpuppyapp.puppygit.constants.Cons
-import com.catpuppyapp.puppygit.data.entity.RepoEntity
-import com.catpuppyapp.puppygit.dto.genConfigDto
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
+import com.catpuppyapp.puppygit.play.pro.BaseService
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.server.HttpServer
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.ContextUtil
-import com.catpuppyapp.puppygit.utils.JsonUtil
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.pref.PrefMan
 import com.catpuppyapp.puppygit.utils.copyTextToClipboard
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
+import com.catpuppyapp.puppygit.utils.pref.PrefMan
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.serializer
 
 
-class HttpService : Service() {
+class HttpService : BaseService() {
     companion object {
 
         private const val TAG = "HttpService"
@@ -117,15 +111,15 @@ class HttpService : Service() {
         }
 
 
-        fun getApiJson(repoEntity: RepoEntity, settings: AppSettings):String {
-            return JsonUtil.j2PrettyPrint.let {
-                it.encodeToString(
-                    it.serializersModule.serializer(),
-
-                    genConfigDto(repoEntity, settings)
-                )
-            }
-        }
+//        fun getApiJson(repoEntity: RepoEntity, settings: AppSettings):String {
+//            return JsonUtil.j2PrettyPrint.let {
+//                it.encodeToString(
+//                    it.serializersModule.serializer(),
+//
+//                    genConfigDto(repoEntity, settings)
+//                )
+//            }
+//        }
 
 
         //service启动Activity似乎需要弹窗权限，算了，点击通知启动也很方便
@@ -144,11 +138,6 @@ class HttpService : Service() {
 //        }
 
 
-    }
-
-
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))
     }
 
     override fun onCreate() {
@@ -208,9 +197,6 @@ class HttpService : Service() {
     }
 
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null // 不需要绑定
-    }
 
     override fun onDestroy() {
         super.onDestroy()
