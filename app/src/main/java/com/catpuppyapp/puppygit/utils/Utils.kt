@@ -1319,3 +1319,35 @@ fun parseLineAndColumn(str:String) = try {
 fun onOffText(enabled:Boolean) = if(enabled) "ON" else "OFF";
 
 fun tabToSpaces(spacesCount:Int) = if(spacesCount > 0) " ".repeat(spacesCount) else "\t"
+
+fun getNextIndentByCurrentStr(current:String?, aTabToNSpaces:Int):String {
+    if(current == null) {
+        return ""
+    }
+
+    val sb = StringBuilder()
+    for(i in current) {
+        if(i == ' ' || i == '\t') {
+            sb.append(i)
+        }else {
+            break
+        }
+    }
+
+    // append extras spaces for block start
+    if(current.trim().let {
+        it.endsWith("{")
+                || it.endsWith("(")
+                || it.endsWith("[")
+
+                // e.g. for yml
+                || it.endsWith(":")
+
+                // e.g. for html xml
+                || it.startsWith("<")
+    }) {
+        sb.append(tabToSpaces(aTabToNSpaces))
+    }
+
+    return sb.toString()
+}

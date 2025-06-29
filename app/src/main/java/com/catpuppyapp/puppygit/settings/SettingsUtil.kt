@@ -300,4 +300,6 @@ object SettingsUtil {
             File(settingsSaveDir.canonicalPath, settingsBakFileName).delete()
         }
     }
+
+    fun editorTabIndentCount() = appSettings.editor.tabIndentSpacesCount
 }

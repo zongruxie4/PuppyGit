@@ -12,6 +12,7 @@ import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.EditCache
 import com.catpuppyapp.puppygit.utils.FsUtils
@@ -22,6 +23,7 @@ import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.generateRandomString
+import com.catpuppyapp.puppygit.utils.getNextIndentByCurrentStr
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import com.catpuppyapp.puppygit.utils.isStartInclusiveEndExclusiveRangeValid
@@ -584,12 +586,32 @@ class TextEditorState private constructor(
                 return
             }
 
-            val textFiledStates = mutableListOf<TextFieldState>()
+            val currentFiled = fields.getOrNull(targetIndex)
+            if(currentFiled == null) {
+                return
+            }
 
+
+
+
+            //  if is append, need prepend indent of current line; if is replace, just add new content as-is
+            val autoIndentSpacesCount = if(trueAppendFalseReplace) {
+                getNextIndentByCurrentStr(currentFiled.value.text, SettingsUtil.editorTabIndentCount())
+            } else {
+                ""
+            }
 
             // 创建对象并更新 change type
             //changeType: 先全初始化为new，如果是replace，首行状态后面会和旧行比较来判断是修改还是新增还是没变
-            text.lines().forEachBetter { textFiledStates.add(TextFieldState(value = TextFieldValue(text = it), changeType = LineChangeType.NEW)) }
+            val textFiledStates = mutableListOf<TextFieldState>()
+            text.lines().forEachBetter {
+                textFiledStates.add(
+                    TextFieldState(
+                        value = TextFieldValue(text = autoIndentSpacesCount + it),
+                        changeType = LineChangeType.NEW
+                    )
+                )
+            }
 
 
 
@@ -1117,13 +1139,20 @@ class TextEditorState private constructor(
     }
 
     private fun splitTextsByNL(text: String): List<TextFieldValue> {
-        return text.lines().mapIndexed { index, text ->
-            if (index == 0) {  //第一行，光标在换行的位置
-                TextFieldValue(text, TextRange(text.length))
-            } else {  //后续行，光标在开头
-                TextFieldValue(text)
-            }
+        var autoIndentSpacesCount = ""
+        val ret = mutableListOf<TextFieldValue>()
+        for((index, text) in text.lines().withIndex()) {
+            ret.add(
+                if (index == 0) {  //第一行，光标在换行的位置
+                    autoIndentSpacesCount = getNextIndentByCurrentStr(text, SettingsUtil.editorTabIndentCount())
+                    TextFieldValue(text, TextRange(text.length))
+                } else {  //后续行，光标在开头
+                    TextFieldValue(autoIndentSpacesCount + text)
+                }
+            )
         }
+
+        return ret
     }
 
     /**
@@ -1876,7 +1905,7 @@ class TextEditorState private constructor(
             editorPageIsContentSnapshoted?.value = false
 
 
-            onChanged(newState, true, false)
+            onChanged(newState, true, true)
         }
     }
 
