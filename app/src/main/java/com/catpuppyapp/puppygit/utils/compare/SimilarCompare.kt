@@ -36,8 +36,8 @@ interface SimilarCompare {
     fun<T:CharSequence> doCompare(
         add: CompareParam<T>,
         del: CompareParam<T>,
-        emptyAsMatch: Boolean = false,
-        emptyAsModified: Boolean = true,
+        emptyAsMatch: Boolean = true,
+        emptyAsModified: Boolean = false,
         onlyLineSeparatorAsEmpty: Boolean = true,
         searchDirection: SearchDirection = SearchDirection.FORWARD_FIRST,
         requireBetterMatching: Boolean = false,

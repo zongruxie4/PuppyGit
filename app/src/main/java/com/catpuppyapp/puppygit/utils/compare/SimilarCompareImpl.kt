@@ -25,13 +25,6 @@ class SimilarCompareImpl: SimilarCompare {
         degradeToCharMatchingIfMatchByWordFailed:Boolean,
         treatNoWordMatchAsNoMatchedWhenMatchByWord:Boolean,
     ): IndexModifyResult {
-        // empty check
-        if(add.isEmpty() || del.isEmpty() || ((onlyLineSeparatorAsEmpty || ignoreEndOfNewLine) && (add.isOnlyLineSeparator() || del.isOnlyLineSeparator()))){ //其中一个为空或只有换行符，不比较，直接返回结果，当作无匹配
-            return IndexModifyResult(matched = emptyAsMatch, matchedByReverseSearch = false,
-                listOf(IndexStringPart(0, add.getLen(), emptyAsModified)),
-                listOf(IndexStringPart(0, del.getLen(), emptyAsModified)))
-        }
-
         //比较地址，完全一样
         if(add.identical(del)) {
             return IndexModifyResult(
@@ -54,6 +47,34 @@ class SimilarCompareImpl: SimilarCompare {
         }else {
             del
         }
+
+
+        // empty check
+        //两个都为空或只有换行符，不比较，直接返回结果，当作无匹配
+        // both are empty
+        if((addWillUse.isEmpty() && delWillUse.isEmpty())){
+            return IndexModifyResult(matched = emptyAsMatch, matchedByReverseSearch = false,
+                listOf(IndexStringPart(0, add.getLen(), emptyAsModified)),
+                listOf(IndexStringPart(0, del.getLen(), emptyAsModified)))
+        }else if(addWillUse.isEmpty() && delWillUse.isEmpty().not()) {
+            return IndexModifyResult(matched = true, matchedByReverseSearch = false,
+                listOf(IndexStringPart(0, add.getLen(), emptyAsModified)),
+                listOf(IndexStringPart(0, del.getLen(), true)))
+        }else if(addWillUse.isEmpty().not() && delWillUse.isEmpty()) {
+            return IndexModifyResult(matched = true, matchedByReverseSearch = false,
+                listOf(IndexStringPart(0, add.getLen(), true)),
+                listOf(IndexStringPart(0, del.getLen(), emptyAsModified)))
+        }
+
+
+
+        // when reached here, `add` 100% is not empty, `del` neither
+
+
+
+
+
+
 
         var result:IndexModifyResult? = null
 
