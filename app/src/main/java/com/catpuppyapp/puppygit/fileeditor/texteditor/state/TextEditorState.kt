@@ -1252,8 +1252,11 @@ class TextEditorState private constructor(
         // null to use current fields
         baseFields:List<TextFieldState>? = null,
 
-        // if deleteSelected, should be true, if is accept ours/theirs call this method, should be false, if not sure, use false is safe
-        trueClearAllSelectedIndicesFalseOnlyClearWhichDeleted:Boolean = false,
+        // if deleteSelected, should be true, if is accept ours/theirs call this method, should be false,
+        //   if not sure, use true is safe, will only deleted indices lines and clear selected indices;
+        //   if use false, may selected unexpected lines after deleted lines
+        // 删除内容可能导致索引移动，因此，建议设置此值为true，只要删除内容，就直接取消选中所有剩余的行，这样一般不会出错
+        trueClearAllSelectedIndicesFalseOnlyClearWhichDeleted:Boolean = true,
     ) {
         if(indices.isEmpty()) {
             return
@@ -1263,7 +1266,8 @@ class TextEditorState private constructor(
             val newFields = mutableListOf<TextFieldState>();
             (baseFields ?: fields).forEachIndexedBetter { index, field ->
                 if(!indices.contains(index)) {
-                    newFields.add(field)
+                    // set rest fields `isSelected` to false to avoid show wrong selected state
+                    newFields.add(field.copy(isSelected = false))
                 }
             }
 
