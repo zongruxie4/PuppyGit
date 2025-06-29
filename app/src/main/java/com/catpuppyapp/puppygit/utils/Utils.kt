@@ -1317,3 +1317,5 @@ fun parseLineAndColumn(str:String) = try {
 }
 
 fun onOffText(enabled:Boolean) = if(enabled) "ON" else "OFF";
+
+fun tabToSpaces(spacesCount:Int) = if(spacesCount > 0) " ".repeat(spacesCount) else "\t"

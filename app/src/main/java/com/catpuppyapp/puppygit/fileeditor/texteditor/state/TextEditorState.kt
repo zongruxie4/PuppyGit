@@ -19,21 +19,24 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import com.catpuppyapp.puppygit.utils.isStartInclusiveEndExclusiveRangeValid
+import com.catpuppyapp.puppygit.utils.tabToSpaces
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.OutputStream
-import java.security.InvalidParameterException
 
 
 private const val TAG = "TextEditorState"
 private const val lb = "\n"
+private const val tab = "\t"
+private const val spaceChar = ' '
 
 private fun targetIndexValidOrThrow(targetIndex:Int, listSize:Int) {
     if (targetIndex < 0 || targetIndex >= listSize) {
@@ -1719,6 +1722,89 @@ class TextEditorState private constructor(
     // return current index and filed, both are can be null
     fun getCurrentField() = focusingLineIdx.let { Pair(it, it?.let { fields.getOrNull(it) }) }
 
+    /**
+     * @return true means handled, false otherwise
+     */
+    fun handleTabIndent(tabIndentSpacesCount:Int, trueTabFalseShiftTab:Boolean):Boolean {
+        val (idx, f) = getCurrentField()
+        if(idx == null || f == null) {
+            return false
+        }
+
+
+        val handled =  try {
+            val fv = f.value
+
+            if(trueTabFalseShiftTab) {
+                val cursorAt = if(fv.selection.collapsed) fv.selection.start else fv.selection.min
+                val sb = StringBuilder(fv.text.substring(0, cursorAt))
+                val newText = sb.append(tabToSpaces(tabIndentSpacesCount)).append(fv.text.substring(cursorAt, fv.text.length)).toString()
+                val newSelection = if(fv.selection.collapsed) TextRange(cursorAt+tabIndentSpacesCount)
+                else TextRange(start = fv.selection.start + tabIndentSpacesCount, end = fv.selection.end + tabIndentSpacesCount)
+                doJobThenOffLoading {
+                    updateField(idx, f.value.copy(text = newText, selection = newSelection))
+                }
+                true
+            }else {
+                if(fv.text.isEmpty()) {
+                    true
+                }else {
+                    val (newText, removedCount) = if(fv.text.startsWith(tab)) {  // remove a tab
+                        Pair(fv.text.substring(1, fv.text.length), 1)
+                    }else {  // remove till non-space char
+                        if(tabIndentSpacesCount < 1) {  // a tab to 0 spaces, means nothing need to replace
+                            Pair(fv.text, 0)
+                        }else {
+                            var removed = 0
+                            for(i in fv.text) {
+                                if(i == spaceChar) {
+                                    if(++removed >= tabIndentSpacesCount) {
+                                        break
+                                    }
+                                }else {
+                                    break
+                                }
+                            }
+
+                            if(removed == 0) {
+                                Pair(fv.text, 0)
+                            }else {
+                                Pair(fv.text.substring(removed, fv.text.length), removed)
+                            }
+                        }
+                    }
+
+                    if(removedCount < 1) {
+                        false
+                    }else {
+                        val newSelection = if(fv.selection.collapsed) {
+                            TextRange((fv.selection.start - removedCount).coerceAtLeast(0))
+                        }else {
+                            TextRange(start = (fv.selection.start - removedCount).coerceAtLeast(0), end = (fv.selection.end - removedCount).coerceAtLeast(0))
+                        }
+
+                        doJobThenOffLoading {
+                            updateField(idx, f.value.copy(text = newText, selection = newSelection))
+                        }
+
+                        true
+                    }
+                }
+            }
+        }catch (e: Exception) {
+            MyLog.e(TAG, "$TAG#handleTabIndent err: replace ${if(trueTabFalseShiftTab) "TAB" else "SHIFT+TAB"} to indent spaces err: ${e.stackTraceToString()}")
+            false
+        }
+
+        // avoid press tab make text field loss focus
+        if(!handled) {
+            doJobThenOffLoading {
+                selectField(idx)
+            }
+        }
+
+        return true
+    }
 
     companion object {
         fun create(

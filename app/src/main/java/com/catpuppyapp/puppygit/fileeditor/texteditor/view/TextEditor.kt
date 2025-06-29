@@ -231,6 +231,7 @@ fun TextEditor(
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
     val conflictKeyword = remember(settings.editor.conflictStartStr) { mutableStateOf(settings.editor.conflictStartStr) }
+    val tabIndentSpacesCount = settings.editor.tabIndentSpacesCount
 
     val scrollIfIndexInvisible = { index:Int ->
         try {
@@ -1165,6 +1166,18 @@ fun TextEditor(
                                                 }
                                             }
 
+                                            return@opke true
+                                        }
+                                    }
+
+                                    if(keyEvent.key == Key.Tab && !keyEvent.isShiftPressed) {
+                                        if(textEditorState.handleTabIndent(tabIndentSpacesCount, trueTabFalseShiftTab = true)) {
+                                            return@opke true
+                                        }
+                                    }
+
+                                    if(keyEvent.key == Key.Tab && keyEvent.isShiftPressed) {
+                                        if(textEditorState.handleTabIndent(tabIndentSpacesCount, trueTabFalseShiftTab = false)) {
                                             return@opke true
                                         }
                                     }

@@ -65,4 +65,9 @@ data class Editor (
      * set true to disable software keyboard, due to I haven't a keyboard available for phone, so, this settings haven't tested
      */
     var disableSoftwareKeyboard: Boolean = false,
+
+    /**
+     * <=0 to use real tab '\t', else will replace tab to spaces
+     */
+    var tabIndentSpacesCount:Int = 4
 )
