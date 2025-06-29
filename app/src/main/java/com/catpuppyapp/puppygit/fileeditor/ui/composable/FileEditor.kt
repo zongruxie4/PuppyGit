@@ -48,6 +48,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -159,6 +166,7 @@ fun FileEditor(
     val density = LocalDensity.current
     val deviceConfiguration = AppModel.getCurActivityConfig()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
+    val tabIndentSpacesCount = settings.editor.tabIndentSpacesCount
 
     val scope = rememberCoroutineScope()
 
@@ -317,7 +325,200 @@ fun FileEditor(
     ) {
         val curPreviewScrollState = runBlocking { previewNavStack.value.getCurrentScrollState() }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if(isPreviewModeOn.value) {
+                        Modifier
+                    }else {
+                        Modifier
+                            // listen keyboard pressed for TextEditor
+                            // redo and undo shortcuts supports as default by BasicTextField,
+                            //  so here must use `onPreviewKeyEvent` rather than `onKeyEvent` to intercept the key events
+                            // see: https://developer.android.com/develop/ui/compose/touch-input/keyboard-input/commands
+                            .onPreviewKeyEvent opke@{ keyEvent ->
+                                val textEditorState = textEditorState.value
+                                val lastScrollEvent = editorLastScrollEvent
+
+
+                                // return true to stop key event propaganda
+                                if (keyEvent.type != KeyEventType.KeyDown) {
+                                    return@opke false
+                                }
+
+                                if (keyEvent.isCtrlPressed && keyEvent.key == Key.S) { // save
+                                    requestFromParent.value = PageRequest.requireSave
+                                    return@opke true
+                                }
+
+                                if (keyEvent.isCtrlPressed && keyEvent.key == Key.W) { // close
+                                    requestFromParent.value = PageRequest.requireClose
+                                    return@opke true
+                                }
+
+                                if ((keyEvent.isCtrlPressed && keyEvent.key == Key.Y)
+                                    || (keyEvent.isCtrlPressed && keyEvent.isShiftPressed && keyEvent.key == Key.Z)
+                                ) { // redo
+                                    requestFromParent.value = PageRequest.requestRedo
+                                    return@opke true
+                                }
+
+                                if (keyEvent.isShiftPressed.not() && keyEvent.isCtrlPressed && keyEvent.key == Key.Z) { // undo
+                                    requestFromParent.value = PageRequest.requestUndo
+                                    return@opke true
+                                }
+
+                                if (keyEvent.isCtrlPressed && keyEvent.key == Key.F) { // search
+                                    requestFromParent.value = PageRequest.requireSearch  //发请求，由TextEditor组件开启搜索模式
+                                    return@opke true
+                                }
+
+                                if (keyEvent.isCtrlPressed && keyEvent.key == Key.MoveHome) { // go to top of file
+                                    lastScrollEvent.value = ScrollEvent(0)
+
+                                    doJobThenOffLoading {
+                                        textEditorState.goToEndOrTopOfFile(goToTop = true)
+                                    }
+                                    return@opke true
+                                }
+
+                                if (keyEvent.isCtrlPressed && keyEvent.key == Key.MoveEnd) { // go to end of file
+                                    lastScrollEvent.value = ScrollEvent(textEditorState.fields.lastIndex.coerceAtLeast(0))
+
+                                    doJobThenOffLoading {
+                                        textEditorState.goToEndOrTopOfFile(goToTop = false)
+                                    }
+                                    return@opke true
+                                }
+
+                                val isCtrlAndC = keyEvent.isCtrlPressed && keyEvent.key == Key.C
+                                val isCtrlAndX = keyEvent.isCtrlPressed && keyEvent.key == Key.X
+                                if(isCtrlAndC || isCtrlAndX) {
+                                    if(textEditorState.isMultipleSelectionMode) {
+                                        clipboardManager.setText(AnnotatedString(textEditorState.getSelectedText()))
+                                        Msg.requireShow(
+                                            replaceStringResList(
+                                                activityContext.getString(R.string.n_lines_copied),
+                                                listOf(textEditorState.getSelectedCount().toString())
+                                            ).let { if(isCtrlAndX) it.appendCutSuffix() else it }
+                                        )
+
+                                        if(isCtrlAndX) {
+                                            doJobThenOffLoading {
+                                                textEditorState.deleteSelectedLines()
+                                            }
+                                        }
+
+                                        return@opke true
+                                    }else {
+                                        val (currentIndex, currentField) = textEditorState.getCurrentField()
+                                        // if not collapsed, will handle by text filed default
+                                        if(currentIndex != null && currentField != null && currentField.value.selection.collapsed) {
+                                            clipboardManager.setText(AnnotatedString(currentField.value.text))
+
+                                            // if press ctrl + x continuously or just simple keep pressed, the toast msg will be a terrible noise, so better disable it
+//                                            Msg.requireShow(activityContext.getString(R.string.copied).let { if(isCtrlAndX) it.appendCutSuffix() else it })
+
+//                                            if(ctrlAndC){
+//                                                // full select the line (deprecated by a bug: text will selected actually,
+//                                                //   but doesn't show the selected background color, so users maybe will not
+//                                                //   know text is selected, and the text of this line will fully replaced if
+//                                                //   users typed anything, this behavior will make users confuse)
+//                                                val fullSelectedField = currentField.let {
+//                                                    it.value.let { it.copy(selection = TextRange(0, it.text.length)) }
+//                                                }
+//                                                doJobThenOffLoading {
+//                                                    textEditorState.updateField(
+//                                                        currentIndex,
+//                                                        fullSelectedField
+//                                                    )
+//                                                }
+//                                            }
+
+                                            if(isCtrlAndX) {
+                                                // delete the line
+                                                doJobThenOffLoading {
+                                                    textEditorState.deleteLineByIndices(listOf(currentIndex))
+                                                }
+                                            }
+
+                                            return@opke true
+                                        }
+                                    }
+                                }
+
+                                if(textEditorState.isMultipleSelectionMode && keyEvent.isCtrlPressed && keyEvent.key == Key.A) {
+                                    doJobThenOffLoading {
+                                        textEditorState.createSelectAllState()
+                                    }
+
+                                    return@opke true
+                                }
+
+
+                                // multi selection and ctrl+v pressed
+                                if(textEditorState.isMultipleSelectionMode && textEditorState.selectedIndices.isNotEmpty() && keyEvent.isCtrlPressed && keyEvent.key == Key.V) {
+                                    val clipboardText = getClipboardText(clipboardManager)
+                                    if(clipboardText == null) {
+                                        Msg.requireShowLongDuration(activityContext.getString(R.string.clipboard_is_empty))
+                                    }else {
+                                        doJobThenOffLoading {
+                                            textEditorState.appendTextToLastSelectedLine(clipboardText)
+                                        }
+                                    }
+
+                                    return@opke true
+                                }
+
+                                // shift + tab
+                                if(keyEvent.key == Key.Tab && keyEvent.isShiftPressed) {
+                                    if(textEditorState.isMultipleSelectionMode) {
+                                        doJobThenOffLoading {
+                                            textEditorState.let { it.indentLines(settings.editor.tabIndentSpacesCount, it.selectedIndices, trueTabFalseShiftTab = false) }
+                                        }
+
+                                        return@opke true
+                                    }else {
+                                        val (idx, f) = textEditorState.getCurrentField()
+                                        if(idx != null && f != null) {
+                                            doJobThenOffLoading {
+                                                textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount, trueTabFalseShiftTab = false)
+                                            }
+
+                                            return@opke true
+                                        }
+
+                                    }
+                                }
+
+
+                                // tab
+                                if(keyEvent.key == Key.Tab && !keyEvent.isShiftPressed) {
+                                    if(textEditorState.isMultipleSelectionMode) {
+                                        doJobThenOffLoading {
+                                            textEditorState.let { it.indentLines(settings.editor.tabIndentSpacesCount, it.selectedIndices, trueTabFalseShiftTab = true) }
+                                        }
+
+                                        return@opke true
+                                    }else {
+                                        val (idx, f) = textEditorState.getCurrentField()
+                                        if(idx != null && f != null) {
+                                            doJobThenOffLoading {
+                                                textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount, trueTabFalseShiftTab = true)
+                                            }
+
+                                            return@opke true
+                                        }
+                                    }
+                                }
+
+
+                                return@opke false
+                            }
+                    }
+                )
+        ) {
             if(isPreviewModeOn.value) {
                 PullToRefreshBox(
                     contentPadding = contentPadding,
