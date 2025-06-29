@@ -4,12 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
@@ -157,11 +159,16 @@ fun BottomBar(
 
             }
 
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.End  //加这个为了让图标靠右边，使列表从最右往左排，和最左边的关闭按钮分开
-            ){
+            Box {
+                val offsetForMoreIcon = MyStyleKt.defaultLongPressAbleIconBtnPressedCircleSize
+
                 Row (
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .offset(x = if(visibleMoreIcon) -offsetForMoreIcon else 0.dp)
+                        .padding(start = if(visibleMoreIcon) offsetForMoreIcon else 0.dp)
+                        .horizontalScroll(rememberScrollState())
+                    ,
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     for((idx, text) in iconTextList.withIndex()) {
@@ -188,6 +195,9 @@ fun BottomBar(
                 if (visibleMoreIcon) {
                     //菜单得单独开一行，不然DropdownMenu就定位到外部菜单的最左边了，就偏离菜单图标了，单独开一行就可以定位到菜单图标那里，完美
                     Row(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                        ,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
 
