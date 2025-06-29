@@ -158,7 +158,8 @@ fun DiffRow (
 
 //    val useStringPartList = !stringPartList.isNullOrEmpty()
     // 如果为null或空 或者 所有元素都是modified，则不使用string part，否则使用
-    val useStringPartList = !(stringPartList.isNullOrEmpty() || (stringPartList.indexOfFirst { it.modified.not() } == -1))
+//    val useStringPartList = !(stringPartList.isNullOrEmpty() || (stringPartList.indexOfFirst { it.modified.not() } == -1))
+    val useStringPartList = !stringPartList.isNullOrEmpty()
 
 
 
@@ -653,7 +654,10 @@ fun DiffRow (
 
 
         val contentModifier = Modifier
-            .fillMaxWidth()
+            // if fill max width, will not be able to saw the spaces at the end, because the background will fill the whole line;
+            //   if not fill, color will difference, so you can see the boundary of added text
+            // 如果fill max width启用，将不能分辨末尾是否有空格，因为背景颜色会覆盖整行；若不fill则会有颜色差异，能看到添加内容的边界
+//            .fillMaxWidth()
             .padding(end = 5.dp)
 
             //首行加顶部padding，其余不加
