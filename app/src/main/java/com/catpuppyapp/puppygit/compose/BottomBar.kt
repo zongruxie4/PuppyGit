@@ -39,6 +39,10 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.UIHelper
 
 
+// more menu icon always pinned, not in this count
+// pinned icon can't scrollable, always at right of BottomBar
+private const val pinnedIconsCount = 1
+
 @Composable
 fun BottomBar(
     modifier: Modifier=Modifier,
@@ -99,25 +103,46 @@ fun BottomBar(
     }
     //结束：反转more菜单条目，如果设置了反转的话
 
+    val isIconHidden = { idx:Int ->
+        iconVisibleList.isNotEmpty() && !iconVisibleList[idx]()
+    }
 
-    Column(
+    // 获取最右边的可见条目，固定显示
+    val pinnedIconList = mutableListOf<Int>()
+    if(pinnedIconsCount > 0 && iconTextList.isNotEmpty()) {
+        for(idx in IntRange(0, iconTextList.size-1).reversed()) {
+            if(isIconHidden(idx)) {
+                continue
+            }
+
+            // index are reversed order, so prepend to head of list at here
+            pinnedIconList.add(0, idx)
+            if(pinnedIconList.size >= pinnedIconsCount) {
+                break
+            }
+        }
+    }
+
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .systemBarsPadding()
-            .then(modifier),
-        verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .then(modifier)
+        ,
     ) {
         Row(
             modifier = Modifier
+                .align(Alignment.BottomCenter)
                 //禁用对BottomBar本身的点击，不然会穿透而点击到被BottomBar覆盖的条目，
                 // 虽然禁用了对BottomBar本身的点击，不过Bar上按钮依然可以点击
-                .clickable(enabled = false) {
-
-                }
+                .clickable(enabled = false) {}
+                .background(color)
                 .fillMaxWidth()
                 .height(height)
-                .background(color),
+                .padding(horizontal = 5.dp)
+
+            ,
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -160,21 +185,28 @@ fun BottomBar(
             }
 
             Box {
-                val offsetForMoreIcon = MyStyleKt.defaultLongPressAbleIconBtnPressedCircleSize
+                val offsetForMoreIcon = MyStyleKt.defaultLongPressAbleIconBtnPressedCircleSize.value.let {
+                    pinnedIconList.size * it + (if(visibleMoreIcon) it else 0F)
+                }.coerceAtLeast(0f).dp
 
                 Row (
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .offset(x = if(visibleMoreIcon) -offsetForMoreIcon else 0.dp)
-                        .padding(start = if(visibleMoreIcon) offsetForMoreIcon else 0.dp)
+                        .offset(x = -offsetForMoreIcon)
+                        .padding(start = offsetForMoreIcon)
                         .horizontalScroll(rememberScrollState())
                     ,
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     for((idx, text) in iconTextList.withIndex()) {
+                        // pinned icons will show after scrollable icons
+                        if(pinnedIconList.contains(idx)) {
+                            break
+                        }
+
                         //显示逻辑：显示列表为空，一律显示，不为空，取出对应索引的值，为true则显示
                         //实现代码：如果显示列表不为空 且 显示对应条目为假，continue，不显示条目
-                        if(iconVisibleList.isNotEmpty() && !iconVisibleList[idx]()) {
+                        if(isIconHidden(idx)) {
                             continue
                         }
 
@@ -190,8 +222,35 @@ fun BottomBar(
                         )
                     }
                 }
-//                x 废弃，没必要，随列表滚动足矣）把more改成固定在右边不要随列表滚动怎么样？
-                //menu
+
+                // pinned icons
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                    ,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    for (idx in pinnedIconList) {
+                        //显示逻辑：显示列表为空，一律显示，不为空，取出对应索引的值，为true则显示
+                        //实现代码：如果显示列表不为空 且 显示对应条目为假，continue，不显示条目
+                        if(isIconHidden(idx)) {
+                            continue
+                        }
+
+                        LongPressAbleIconBtn(
+                            enabled = iconEnableList[idx](),
+                            tooltipText = iconTextList[idx],
+                            icon = iconList[idx],
+                            iconContentDesc = iconDescTextList[idx],
+                            onClick = {
+                                iconOnClickList[idx]()
+                            }
+                        )
+                    }
+                }
+
+
+                // more menu icon (3dots)
                 if (visibleMoreIcon) {
                     //菜单得单独开一行，不然DropdownMenu就定位到外部菜单的最左边了，就偏离菜单图标了，单独开一行就可以定位到菜单图标那里，完美
                     Row(
