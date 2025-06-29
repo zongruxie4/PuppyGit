@@ -21,6 +21,8 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.FormatIndentDecrease
+import androidx.compose.material.icons.automirrored.filled.FormatIndentIncrease
 import androidx.compose.material.icons.automirrored.filled.KeyboardReturn
 import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.ContentCopy
@@ -77,6 +79,7 @@ import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.FileEditedPos
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -155,6 +158,7 @@ fun FileEditor(
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
     val deviceConfiguration = AppModel.getCurActivityConfig()
+    val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
     val scope = rememberCoroutineScope()
 
@@ -630,6 +634,8 @@ fun FileEditor(
                     }
                     val iconList = listOf(
                         Icons.Filled.CleaningServices,  // clear line content
+                        Icons.AutoMirrored.Filled.FormatIndentDecrease,  // shift + tab
+                        Icons.AutoMirrored.Filled.FormatIndentIncrease,  // tab
                         Icons.AutoMirrored.Filled.KeyboardReturn,  // append a line
                         Icons.Filled.Delete,
                         Icons.Filled.ContentCut,
@@ -639,6 +645,8 @@ fun FileEditor(
                     )
                     val iconTextList = listOf(
                         stringResource(R.string.clear),
+                        "Shift + Tab",
+                        "Tab",
                         stringResource(R.string.append_a_line),
                         stringResource(R.string.delete),
                         stringResource(R.string.cut),
@@ -656,6 +664,20 @@ fun FileEditor(
                             //不用确认，直接清空，若后悔可用undo撤销
                             doJobThenOffLoading {
                                 textEditorState.value.clearSelectedFields()
+                            }
+
+                            Unit
+                        },
+                        onShiftTab@{
+                            doJobThenOffLoading {
+                                textEditorState.value.let { it.indentLines(settings.editor.tabIndentSpacesCount, it.selectedIndices, trueTabFalseShiftTab = false) }
+                            }
+
+                            Unit
+                        },
+                        onTab@{
+                            doJobThenOffLoading {
+                                textEditorState.value.let { it.indentLines(settings.editor.tabIndentSpacesCount, it.selectedIndices, trueTabFalseShiftTab = true) }
                             }
 
                             Unit
@@ -744,6 +766,8 @@ fun FileEditor(
                     val hasLineSelectedAndNotReadOnly = hasLineSelected && readOnlyMode.not()
                     val iconEnableList = listOf(
                         onClear@{ hasLineSelectedAndNotReadOnly },  // clear
+                        onShiftTab@{ hasLineSelected },
+                        onTab@{ hasLineSelected },
 //                        onPaste@{ hasLineSelectedAndNotReadOnly && clipboardManager.hasText() },  // paste，必须 "剪贴板非空 且 选中某行" 才启用
                         onAppendALine@{ hasLineSelectedAndNotReadOnly },  // append a line
                         onDelete@{ hasLineSelectedAndNotReadOnly },  // delete

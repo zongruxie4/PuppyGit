@@ -1832,7 +1832,11 @@ class TextEditorState private constructor(
     }
 
     // this called when selection mode on
-    suspend fun indentLines(tabIndentSpacesCount: Int, targetIndices:List<Int>, trueTabFalseShiftTab: Boolean) {
+    suspend fun indentLines(
+        tabIndentSpacesCount: Int,
+        targetIndices:List<Int>,
+        trueTabFalseShiftTab: Boolean,
+    ) {
         lock.withLock {
             val fields = fields
             val newFields = mutableListOf<TextFieldState>()
@@ -1866,6 +1870,11 @@ class TextEditorState private constructor(
                 isMultipleSelectionMode = isMultipleSelectionMode,
                 focusingLineIdx = focusingLineIdx
             )
+
+            //通知页面状态变化
+            isContentEdited?.value = true
+            editorPageIsContentSnapshoted?.value = false
+
 
             onChanged(newState, true, false)
         }
