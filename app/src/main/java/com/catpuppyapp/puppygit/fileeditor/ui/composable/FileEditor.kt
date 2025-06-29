@@ -214,15 +214,9 @@ fun FileEditor(
         }
     }
 
-    val deleteLines = {
+    val deleteSelectedLines = {
         doJobThenOffLoading {
-
-            //删除选中行
-            textEditorState.value.createDeletedState()
-
-            //删除行，改变内容flag设为真
-            isContentEdited.value=true
-            editorPageIsContentSnapshoted.value=false
+            textEditorState.value.deleteSelectedLines()
         }
     }
 
@@ -236,7 +230,7 @@ fun FileEditor(
             //关弹窗
             showDeleteDialog.value=false
             //删除行
-            deleteLines()
+            deleteSelectedLines()
             //显示通知
             Msg.requireShow(activityContext.getString(R.string.deleted))
         }
@@ -717,7 +711,7 @@ fun FileEditor(
 
                             clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
                             Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())).appendCutSuffix())
-                            deleteLines()
+                            deleteSelectedLines()
                         },
                         onCopy@{
                             val selectedLinesNum = textEditorState.value.getSelectedCount();
@@ -727,7 +721,7 @@ fun FileEditor(
                             }
 
                             clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
-                            Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
+                            Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())))
 //                            editableController.value.createCopiedState()
                         },
 
@@ -742,8 +736,6 @@ fun FileEditor(
                                 Msg.requireShowLongDuration(activityContext.getString(R.string.clipboard_is_empty))
                                 return@onPaste
                             }
-
-                            EditCache.writeToFile(clipboardText)
 
                             doJobThenOffLoading {
                                 textEditorState.value.appendTextToLastSelectedLine(clipboardText)

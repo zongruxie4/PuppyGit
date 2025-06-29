@@ -76,6 +76,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.SelectionOption
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.getClipboardText
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.FileEditedPos
@@ -87,6 +88,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PatchUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.appendCutSuffix
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
@@ -1136,9 +1138,27 @@ fun TextEditor(
                                     val isCtrlAndC = keyEvent.isCtrlPressed && keyEvent.key == Key.C
                                     val isCtrlAndX = keyEvent.isCtrlPressed && keyEvent.key == Key.X
                                     if(isCtrlAndC || isCtrlAndX) {
-                                        val (currentIndex, currentField) = textEditorState.getCurrentField()
-                                        if(currentIndex != null && currentField != null && currentField.value.selection.collapsed) {
-                                            clipboardManager.setText(AnnotatedString(currentField.value.text))
+                                        if(textEditorState.isMultipleSelectionMode) {
+                                            clipboardManager.setText(AnnotatedString(textEditorState.getSelectedText()))
+                                            Msg.requireShow(
+                                                replaceStringResList(
+                                                    activityContext.getString(R.string.n_lines_copied),
+                                                    listOf(textEditorState.getSelectedCount().toString())
+                                                ).let { if(isCtrlAndX) it.appendCutSuffix() else it }
+                                            )
+
+                                            if(isCtrlAndX) {
+                                                doJobThenOffLoading {
+                                                    textEditorState.deleteSelectedLines()
+                                                }
+                                            }
+
+                                            return@opke true
+                                        }else {
+                                            val (currentIndex, currentField) = textEditorState.getCurrentField()
+                                            // if not collapsed, will handle by text filed default
+                                            if(currentIndex != null && currentField != null && currentField.value.selection.collapsed) {
+                                                clipboardManager.setText(AnnotatedString(currentField.value.text))
 
                                             // if press ctrl + x continuously or just simple keep pressed, the toast msg will be a terrible noise, so better disable it
 //                                            Msg.requireShow(activityContext.getString(R.string.copied).let { if(isCtrlAndX) it.appendCutSuffix() else it })
@@ -1159,41 +1179,81 @@ fun TextEditor(
 //                                                }
 //                                            }
 
-                                            if(isCtrlAndX) {
-                                                // delete the line
-                                                doJobThenOffLoading {
-                                                    textEditorState.deleteLineByIndices(listOf(currentIndex))
+                                                if(isCtrlAndX) {
+                                                    // delete the line
+                                                    doJobThenOffLoading {
+                                                        textEditorState.deleteLineByIndices(listOf(currentIndex))
+                                                    }
                                                 }
+
+                                                return@opke true
+                                            }
+                                        }
+                                    }
+
+                                    if(textEditorState.isMultipleSelectionMode && keyEvent.isCtrlPressed && keyEvent.key == Key.A) {
+                                        doJobThenOffLoading {
+                                            textEditorState.createSelectAllState()
+                                        }
+
+                                        return@opke true
+                                    }
+
+
+                                    // multi selection and ctrl+v pressed
+                                    if(textEditorState.isMultipleSelectionMode && textEditorState.selectedIndices.isNotEmpty() && keyEvent.isCtrlPressed && keyEvent.key == Key.V) {
+                                        val clipboardText = getClipboardText(clipboardManager)
+                                        if(clipboardText == null) {
+                                            Msg.requireShowLongDuration(activityContext.getString(R.string.clipboard_is_empty))
+                                        }else {
+                                            doJobThenOffLoading {
+                                                textEditorState.appendTextToLastSelectedLine(clipboardText)
+                                            }
+                                        }
+
+                                        return@opke true
+                                    }
+
+                                    // shift + tab
+                                    if(keyEvent.key == Key.Tab && keyEvent.isShiftPressed) {
+                                        if(textEditorState.isMultipleSelectionMode) {
+                                            doJobThenOffLoading {
+                                                textEditorState.let { it.indentLines(settings.editor.tabIndentSpacesCount, it.selectedIndices, trueTabFalseShiftTab = false) }
                                             }
 
                                             return@opke true
+                                        }else {
+                                            val (idx, f) = textEditorState.getCurrentField()
+                                            if(idx != null && f != null) {
+                                                doJobThenOffLoading {
+                                                    textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount, trueTabFalseShiftTab = false)
+                                                }
+
+                                                return@opke true
+                                            }
+
                                         }
                                     }
 
+
+                                    // tab
                                     if(keyEvent.key == Key.Tab && !keyEvent.isShiftPressed) {
-                                        val (idx, f) = textEditorState.getCurrentField()
-                                        if(idx == null || f == null) {
-                                            return@opke false
+                                        if(textEditorState.isMultipleSelectionMode) {
+                                            doJobThenOffLoading {
+                                                textEditorState.let { it.indentLines(settings.editor.tabIndentSpacesCount, it.selectedIndices, trueTabFalseShiftTab = true) }
+                                            }
+
+                                            return@opke true
+                                        }else {
+                                            val (idx, f) = textEditorState.getCurrentField()
+                                            if(idx != null && f != null) {
+                                                doJobThenOffLoading {
+                                                    textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount, trueTabFalseShiftTab = true)
+                                                }
+
+                                                return@opke true
+                                            }
                                         }
-
-                                        doJobThenOffLoading {
-                                            textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount, trueTabFalseShiftTab = true)
-                                        }
-
-                                        return@opke true
-                                    }
-
-                                    if(keyEvent.key == Key.Tab && keyEvent.isShiftPressed) {
-                                        val (idx, f) = textEditorState.getCurrentField()
-                                        if(idx == null || f == null) {
-                                            return@opke false
-                                        }
-
-                                        doJobThenOffLoading {
-                                            textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount, trueTabFalseShiftTab = false)
-                                        }
-
-                                        return@opke true
                                     }
 
 

@@ -684,6 +684,9 @@ class TextEditorState private constructor(
             isContentEdited?.value = true
             editorPageIsContentSnapshoted?.value = false
 
+            EditCache.writeToFile(text)
+
+
             val newState = internalCreate(
                 fields = newFields,
                 fieldsId = newId(),
@@ -1247,7 +1250,10 @@ class TextEditorState private constructor(
         indices:List<Int>,
 
         // null to use current fields
-        baseFields:List<TextFieldState>? = null
+        baseFields:List<TextFieldState>? = null,
+
+        // if deleteSelected, should be true, if is accept ours/theirs call this method, should be false, if not sure, use false is safe
+        trueClearAllSelectedIndicesFalseOnlyClearWhichDeleted:Boolean = false,
     ) {
         if(indices.isEmpty()) {
             return
@@ -1292,13 +1298,17 @@ class TextEditorState private constructor(
             }
 
 
-            isContentEdited?.value=true
-            editorPageIsContentSnapshoted?.value= false
+            isContentEdited?.value = true
+            editorPageIsContentSnapshoted?.value = false
 
             val newState = internalCreate(
                 fields = newFields,
                 fieldsId = newId(),
-                selectedIndices = selectedIndices,
+                selectedIndices = if(trueClearAllSelectedIndicesFalseOnlyClearWhichDeleted) {
+                    listOf()
+                } else {
+                    selectedIndices.filter { !indices.contains(it) }
+                },
                 isMultipleSelectionMode = isMultipleSelectionMode,
                 focusingLineIdx = focusingLineIdx
             )
@@ -1381,8 +1391,16 @@ class TextEditorState private constructor(
         }
     }
 
+    suspend fun deleteSelectedLines() {
+        if(selectedIndices.isEmpty()) {
+            return
+        }
 
-    suspend fun createDeletedState() {
+        deleteLineByIndices(selectedIndices, trueClearAllSelectedIndicesFalseOnlyClearWhichDeleted = true)
+    }
+
+    @Deprecated("keep for now, if no more need this, can delete")
+    suspend fun createDeletedState_Deprecated() {
         if(selectedIndices.isEmpty()) {
             return
         }
