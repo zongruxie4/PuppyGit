@@ -19,7 +19,6 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
-import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.generateRandomString
@@ -507,18 +506,18 @@ class TextEditorState private constructor(
 //    }
 
 
-    suspend fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
-        lock.withLock {
+    suspend fun updateField(targetIndex: Int, textFieldValue: TextFieldValue, requireLock:Boolean = true) {
+        val act =  p@{
             try {
                 targetIndexValidOrThrow(targetIndex, fields.size)
             }catch (e: Exception) { // will throw when line dost, maybe changed by external or other cases, but it's fine, no need throw exception
                 MyLog.d(TAG, "TextEditorState.updateField() err: ${e.stackTraceToString()}")
-                return
+                return@p
             }
 
             if (textFieldValue.text.contains('\n')) {
 //                throw InvalidParameterException("textFieldValue contains newline")  // contains new line应调用splitNewLine
-                return
+                return@p
             }
 
             val newText = textFieldValue.text
@@ -567,6 +566,14 @@ class TextEditorState private constructor(
             )
 
             onChanged(newState, if(contentChanged) true else null, contentChanged)
+        }
+
+        if(requireLock) {
+            lock.withLock {
+                act()
+            }
+        }else {
+            act()
         }
     }
 
@@ -747,11 +754,11 @@ class TextEditorState private constructor(
         requireSelectLine: Boolean=true, // if true, will add targetIndex into selected indices, set false if you don't want to select this line(e.g. when you just want go to line)
         highlightingStartIndex: Int = -1,
         highlightingEndExclusiveIndex: Int = -1,
-
+        requireLock: Boolean = true,
 
     ) {
 
-        lock.withLock {
+        val act = {
 //            val newFields = fields.toMutableList()
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
 //            val newSelectedIndices = selectedIndices.toMutableList()
@@ -780,6 +787,14 @@ class TextEditorState private constructor(
             )
 
             onChanged(newState, null, false)
+        }
+
+        if(requireLock) {
+            lock.withLock {
+                act()
+            }
+        }else {
+            act()
         }
     }
 
@@ -1725,86 +1740,137 @@ class TextEditorState private constructor(
     /**
      * @return true means handled, false otherwise
      */
-    fun handleTabIndent(tabIndentSpacesCount:Int, trueTabFalseShiftTab:Boolean):Boolean {
-        val (idx, f) = getCurrentField()
-        if(idx == null || f == null) {
-            return false
-        }
-
-
-        val handled =  try {
-            val fv = f.value
-
-            if(trueTabFalseShiftTab) {
-                val cursorAt = if(fv.selection.collapsed) fv.selection.start else fv.selection.min
-                val sb = StringBuilder(fv.text.substring(0, cursorAt))
-                val newText = sb.append(tabToSpaces(tabIndentSpacesCount)).append(fv.text.substring(cursorAt, fv.text.length)).toString()
-                val newSelection = if(fv.selection.collapsed) TextRange(cursorAt+tabIndentSpacesCount)
-                else TextRange(start = fv.selection.start + tabIndentSpacesCount, end = fv.selection.end + tabIndentSpacesCount)
-                doJobThenOffLoading {
-                    updateField(idx, f.value.copy(text = newText, selection = newSelection))
+    suspend fun handleTabIndent(idx:Int, f:TextFieldState, tabIndentSpacesCount:Int, trueTabFalseShiftTab:Boolean):Boolean {
+        return lock.withLock {
+            val handled =  try {
+                val handleTabRet = if(trueTabFalseShiftTab) {
+                    doTab(tabIndentSpacesCount,  f)
+                }else {
+                    doShiftTab(tabIndentSpacesCount, f)
                 }
-                true
-            }else {
-                if(fv.text.isEmpty()) {
+
+                if(handleTabRet.changed) {
+                    updateField(idx, f.value.copy(text = handleTabRet.newText, selection = handleTabRet.newSelection), requireLock = false)
+
                     true
                 }else {
-                    val (newText, removedCount) = if(fv.text.startsWith(tab)) {  // remove a tab
-                        Pair(fv.text.substring(1, fv.text.length), 1)
-                    }else {  // remove till non-space char
-                        if(tabIndentSpacesCount < 1) {  // a tab to 0 spaces, means nothing need to replace
-                            Pair(fv.text, 0)
-                        }else {
-                            var removed = 0
-                            for(i in fv.text) {
-                                if(i == spaceChar) {
-                                    if(++removed >= tabIndentSpacesCount) {
-                                        break
-                                    }
-                                }else {
-                                    break
-                                }
-                            }
+                    false
+                }
+            }catch (e: Exception) {
+                MyLog.e(TAG, "$TAG#handleTabIndent err: replace ${if(trueTabFalseShiftTab) "TAB" else "SHIFT+TAB"} to indent spaces err: ${e.stackTraceToString()}")
+                false
+            }
 
-                            if(removed == 0) {
-                                Pair(fv.text, 0)
-                            }else {
-                                Pair(fv.text.substring(removed, fv.text.length), removed)
-                            }
+            // avoid press tab make text field loss focus
+            if(!handled) {
+                selectField(idx, requireLock = false)
+            }
+
+            return true
+        }
+    }
+
+    private fun doTab(tabIndentSpacesCount: Int, f: TextFieldState): HandleTabRet {
+        val fv = f.value
+        val cursorAt = if (fv.selection.collapsed) fv.selection.start else fv.selection.min
+        val sb = StringBuilder(fv.text.substring(0, cursorAt))
+        val newText = sb.append(tabToSpaces(tabIndentSpacesCount)).append(fv.text.substring(cursorAt, fv.text.length)).toString()
+        val newSelection = if (fv.selection.collapsed) TextRange(cursorAt + tabIndentSpacesCount)
+        else TextRange(start = fv.selection.start + tabIndentSpacesCount, end = fv.selection.end + tabIndentSpacesCount)
+
+        return HandleTabRet(newText, newSelection, true)
+    }
+
+    /**
+     * @return new text and new selection for `fields[idx]`
+     */
+    private fun doShiftTab(
+        tabIndentSpacesCount: Int,
+        f: TextFieldState
+    ): HandleTabRet {
+        val fv = f.value
+        if(fv.text.isEmpty()) {
+            return HandleTabRet(newText = fv.text, newSelection = fv.selection, changed = false)
+        }
+
+        val (newText, removedCount) = if (fv.text.startsWith(tab)) {  // remove a tab
+            Pair(fv.text.substring(1, fv.text.length), 1)
+        } else {  // remove till non-space char
+            if (tabIndentSpacesCount < 1) {  // a tab to 0 spaces, means nothing need to replace
+                Pair(fv.text, 0)
+            } else {
+                var removed = 0
+                for (i in fv.text) {
+                    if (i == spaceChar) {
+                        if (++removed >= tabIndentSpacesCount) {
+                            break
                         }
-                    }
-
-                    if(removedCount < 1) {
-                        false
-                    }else {
-                        val newSelection = if(fv.selection.collapsed) {
-                            TextRange((fv.selection.start - removedCount).coerceAtLeast(0))
-                        }else {
-                            TextRange(start = (fv.selection.start - removedCount).coerceAtLeast(0), end = (fv.selection.end - removedCount).coerceAtLeast(0))
-                        }
-
-                        doJobThenOffLoading {
-                            updateField(idx, f.value.copy(text = newText, selection = newSelection))
-                        }
-
-                        true
+                    } else {
+                        break
                     }
                 }
-            }
-        }catch (e: Exception) {
-            MyLog.e(TAG, "$TAG#handleTabIndent err: replace ${if(trueTabFalseShiftTab) "TAB" else "SHIFT+TAB"} to indent spaces err: ${e.stackTraceToString()}")
-            false
-        }
 
-        // avoid press tab make text field loss focus
-        if(!handled) {
-            doJobThenOffLoading {
-                selectField(idx)
+                if (removed == 0) {
+                    Pair(fv.text, 0)
+                } else {
+                    Pair(fv.text.substring(removed, fv.text.length), removed)
+                }
             }
         }
 
-        return true
+        return if (removedCount < 1) {
+            HandleTabRet(newText = newText, newSelection = fv.selection, changed = false)
+        } else {
+            val newSelection = if (fv.selection.collapsed) {
+                TextRange((fv.selection.start - removedCount).coerceAtLeast(0))
+            } else {
+                TextRange(start = (fv.selection.start - removedCount).coerceAtLeast(0), end = (fv.selection.end - removedCount).coerceAtLeast(0))
+            }
+
+            HandleTabRet(newText, newSelection, changed = true)
+        }
     }
+
+    // this called when selection mode on
+    suspend fun indentLines(tabIndentSpacesCount: Int, targetIndices:List<Int>, trueTabFalseShiftTab: Boolean) {
+        lock.withLock {
+            val fields = fields
+            val newFields = mutableListOf<TextFieldState>()
+            val targetIndices = targetIndices.toMutableList()
+
+            fields.forEachIndexedBetter { i, f ->
+                val newF = if(targetIndices.contains(i)) {
+                    // 批量缩进，从行首开始
+                    // batch indents, always start at line column index 0
+                    val f = f.copy(value = f.value.copy(selection = TextRange(0)))
+
+                    val handleTabRet = if(trueTabFalseShiftTab) {
+                        doTab(tabIndentSpacesCount, f)
+                    }else {
+                        doShiftTab(tabIndentSpacesCount, f)
+                    }
+
+                    f.copy(value = f.value.copy(text = handleTabRet.newText, selection = handleTabRet.newSelection))
+                }else {
+                    f
+                }
+
+                newFields.add(newF)
+            }
+
+
+            val newState = internalCreate(
+                fields = newFields,
+                fieldsId = newId(),
+                selectedIndices = selectedIndices,
+                isMultipleSelectionMode = isMultipleSelectionMode,
+                focusingLineIdx = focusingLineIdx
+            )
+
+            onChanged(newState, true, false)
+        }
+    }
+
 
     companion object {
         fun create(
@@ -1933,4 +1999,10 @@ private class SelectFieldInternalRet(
     val fields: List<TextFieldState>,
     val selectedIndices: List<Int>,
     val focusingLineIdx:Int?,
+)
+
+private data class HandleTabRet(
+    val newText:String,
+    val newSelection: TextRange,
+    val changed: Boolean
 )

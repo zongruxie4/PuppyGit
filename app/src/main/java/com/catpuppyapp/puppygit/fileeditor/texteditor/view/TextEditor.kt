@@ -1171,15 +1171,29 @@ fun TextEditor(
                                     }
 
                                     if(keyEvent.key == Key.Tab && !keyEvent.isShiftPressed) {
-                                        if(textEditorState.handleTabIndent(tabIndentSpacesCount, trueTabFalseShiftTab = true)) {
-                                            return@opke true
+                                        val (idx, f) = textEditorState.getCurrentField()
+                                        if(idx == null || f == null) {
+                                            return@opke false
                                         }
+
+                                        doJobThenOffLoading {
+                                            textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount, trueTabFalseShiftTab = true)
+                                        }
+
+                                        return@opke true
                                     }
 
                                     if(keyEvent.key == Key.Tab && keyEvent.isShiftPressed) {
-                                        if(textEditorState.handleTabIndent(tabIndentSpacesCount, trueTabFalseShiftTab = false)) {
-                                            return@opke true
+                                        val (idx, f) = textEditorState.getCurrentField()
+                                        if(idx == null || f == null) {
+                                            return@opke false
                                         }
+
+                                        doJobThenOffLoading {
+                                            textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount, trueTabFalseShiftTab = false)
+                                        }
+
+                                        return@opke true
                                     }
 
 
