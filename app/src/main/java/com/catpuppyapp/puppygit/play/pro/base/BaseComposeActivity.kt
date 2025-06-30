@@ -23,7 +23,7 @@ open class BaseComposeActivity : ComponentActivity() {
         funName: String = "onCreate()",
         requireSetExceptionHandler:Boolean = true,
         requireEnableEdgeToEdge:Boolean = true,
-        allowCheckImePadding:Boolean = true,
+        allowImePadding:Boolean = true,
     ) {
         if(requireEnableEdgeToEdge) {
             enableEdgeToEdge()
@@ -37,7 +37,7 @@ open class BaseComposeActivity : ComponentActivity() {
         }
 
         //for make `Modifier.imePadding()` work
-        if(allowCheckImePadding) {
+        if(allowImePadding) {
             WindowCompat.setDecorFitsSystemWindows(window, false)
         }
 
