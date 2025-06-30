@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,7 +23,9 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import kotlinx.coroutines.delay
 
 
 // more menu icon always pinned, not in this count
@@ -78,6 +81,8 @@ fun BottomBar(
 
 
 ) {
+    val scope = rememberCoroutineScope()
+
     val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
     val showDropDownMenu = {
         dropDownMenuExpandState.value=true
@@ -192,12 +197,14 @@ fun BottomBar(
                     pinnedIconList.size * it + (if(visibleMoreIcon) it else 0F)
                 }.coerceAtLeast(0f).dp
 
+                val scrollableIconListState = rememberScrollState()
+
                 Row (
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
                         .offset(x = -offsetForPinnedAndMenuIcons)
                         .padding(start = offsetForPinnedAndMenuIcons)
-                        .horizontalScroll(rememberScrollState())
+                        .horizontalScroll(scrollableIconListState)
                     ,
                     verticalAlignment = Alignment.CenterVertically
                 ){
@@ -223,6 +230,16 @@ fun BottomBar(
                                iconOnClickList[idx]()
                             }
                         )
+                    }
+                }
+
+                LaunchedEffect(Unit) {
+                    doJobThenOffLoading {
+                        delay(200)
+                        // trying scroll to the most right of the list
+                        //  200 is a guessed number, any number is ok,
+                        //  just make sure it big enough to reach the end of the list
+                        UIHelper.scrollTo(scope, scrollableIconListState, 200)
                     }
                 }
 
