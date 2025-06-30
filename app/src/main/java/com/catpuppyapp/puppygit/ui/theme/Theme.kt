@@ -28,10 +28,6 @@ import com.catpuppyapp.puppygit.utils.pref.PrefUtil
 private const val TAG = "Theme"
 
 object Theme {
-    // copy from android `EdgeToEdge.kt`, they are used to default system navi bar colors
-    val DefaultLightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
-    val DefaultDarkScrim = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)
-
     val Orange = Color(0xFFFF5722)
     val darkLightBlue = Color(0xDF456464)
     val mdGreen = Color(0xFF13831C)

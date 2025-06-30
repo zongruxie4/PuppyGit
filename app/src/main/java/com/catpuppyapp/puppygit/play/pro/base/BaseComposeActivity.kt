@@ -2,10 +2,8 @@ package com.catpuppyapp.puppygit.play.pro.base
 
 import android.content.Context
 import android.content.res.Configuration
-import android.graphics.Color
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.platform.compositionContext
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
@@ -24,13 +22,11 @@ open class BaseComposeActivity : ComponentActivity() {
         TAG: String,
         funName: String = "onCreate()",
         requireSetExceptionHandler:Boolean = true,
-        requireEnableEdgeToEdge:Boolean = true,
+        requireEnableEdgeToEdge:Boolean = false,
         allowImePadding:Boolean = true,
     ) {
         if(requireEnableEdgeToEdge) {
-            enableEdgeToEdge(
-                navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
-            )
+            enableEdgeToEdge()
         }
 
         AppModel.init_1(realAppContext = applicationContext, exitApp = { finish() }, initActivity = true)
