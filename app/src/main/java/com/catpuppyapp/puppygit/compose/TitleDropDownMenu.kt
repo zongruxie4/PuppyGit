@@ -190,8 +190,8 @@ fun <T> TitleDropDownMenu(
                 ,
                 text = { menuItem(i, selected) },
                 onClick = {
-                    itemOnClick(i)
                     closeDropDownMenu()
+                    itemOnClick(i)
                 }
             )
         }
