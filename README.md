@@ -89,6 +89,16 @@ see:<br>
 - call pull/push/sync by tasker or other automation tools via http service
 
 
+## Editor
+Due to PuppyGit's Editor very basic and I have no plan to implement a complex editor for now. so I recommend some editors I was tried:
+
+`Squircle CE` code editor: https://github.com/massivemadness/Squircle-CE
+    
+`Markor`, markdown editor: https://github.com/gsantner/markor
+
+After installed, you can use PuppyGit's "Open As" feature to launch them in PuppyGit.
+
+
 ## About ssh
 when first time connect to an unknown host, PuppyGit will ask you allow/reject as default, its more safety, also, if you want, you can allow unknown hosts by default, just checkout the Settings page.
 #### note: PuppyGit only require private key and passphrase for connect to remote repo by ssh, it doesn't support generate ssh keys, if you want to generate ssh keys on android, try another app of mine: <a href=https://github.com/catpuppyapp/PuppySshKeyMan/releases>Ssh Key Man</a>

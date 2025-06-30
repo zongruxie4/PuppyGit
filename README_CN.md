@@ -86,6 +86,15 @@ Tasker可通过Http请求调用小狗Git执行操作，演示视频： <a href="
 - 进入退出app自动同步笔记
 - 通过http service调用 pull/push/sync
 
+## 文本编辑器
+由于小狗Git的编辑器很简陋，而我也没有计划在近期内把它做大做强，所以我推荐一些好用的编辑器给你：
+
+`Squircle CE` 代码编辑器: https://github.com/massivemadness/Squircle-CE
+
+`Markor`, markdown 编辑器: https://github.com/gsantner/markor
+
+安装之后可在小狗Git内通过“打开方式”并选择文本类型来启动它们。
+
 
 ## 关于 ssh
 首次连接到未知主机时，小狗git将会询问是否允许连接，这样更安全，或者如果你觉得麻烦，可前往设置页面启用默认允许所有连接。
