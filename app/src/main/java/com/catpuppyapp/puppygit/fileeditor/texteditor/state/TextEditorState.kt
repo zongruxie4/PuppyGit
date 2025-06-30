@@ -1817,7 +1817,7 @@ class TextEditorState private constructor(
                 selectField(idx, requireLock = false)
             }
 
-            return true
+            true
         }
     }
 
