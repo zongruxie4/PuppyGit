@@ -81,16 +81,7 @@ class MainActivity : BaseComposeActivity() {
         val funName = "onCreate"
 
         enableEdgeToEdge()
-        //20240519 上午: start: 尝试解决谷歌自动测试时的bug，什么gms err之类的
-        //20240519 下午：更新：注释了这段代码，再上传，没报错。
-        //20240519: 好像和这个无关，？参见未解决的问题文档，搜“play console测试莫名其妙报错 gms相关 原因不明 20240519”
-//        val threadPolicy = StrictMode.ThreadPolicy.Builder()
-//            .permitDiskReads()
-//            .permitCustomSlowCalls()
-////            .permitDiskWrites() // If you also want to ignore DiskWrites, Set this line too.
-//            .build();
-//        StrictMode.setThreadPolicy(threadPolicy);
-        //20240519: end: 尝试解决谷歌自动测试时的bug，什么gms err之类的
+
         MyLog.d(TAG, "#onCreate called")
 
         super.onCreate(savedInstanceState)
@@ -101,27 +92,7 @@ class MainActivity : BaseComposeActivity() {
         //如果是初次创建Activity，onNewIntent不会被调用，只能在这里设置一下，要不然有可能漏外部传来的intent（分享文件、编辑文件）
         IntentHandler.setNewIntent(intent)
 
-        //打印广告id，需要google play service
-//        doJobThenOffLoading {
-//            val adClient = AdvertisingIdClient.getAdvertisingIdInfo(applicationContext)
-//            // AdLimit为true代表用户退出个性化广告，即限制广告跟踪
-//            MyLog.d(TAG, "AdId:${adClient.id}, AdLimit:${adClient.isLimitAdTrackingEnabled}")
-//        }
 
-//        println("applicationContext.filesDir:"+applicationContext.filesDir)
-//        println("applicationContext.dataDir:"+applicationContext.dataDir)
-
-//        println("Environment.getExternalStorageDirectory()="+Environment.getExternalStorageDirectory())  // /storage/emulated/0
-//        println("applicationContext.filesDir="+applicationContext.filesDir)  // /data/user/0/com.catpuppyapp.puppygit/files
-//        println("applicationContext.getExternalFilesDir(null)="+applicationContext.getExternalFilesDir(null))  // /storage/emulated/0/Android/data/com.catpuppyapp.puppygit/files
-//        println("getShortUuid():::"+getShortUuid())
-
-        // applicationContext, life time with app process, save reference has low risk of memory leak,
-        // but some cases can't get properly resources (such as you switched language, but use applicationContext.getString() still get english),
-//      //  AppModel.init_1(applicationContext = applicationContext, exitApp = {finish()})
-
-        // baseContext, life time with activity, can get properly resources, but save reference to static field will increase risk of memory leak
-//        AppModel.init_1(activityContext = baseContext, realAppContext = applicationContext, exitApp = {finish()})
         AppModel.init_1(realAppContext = applicationContext, exitApp = {finish()}, initActivity = true)
 
         //for make imePadding() work
@@ -129,7 +100,6 @@ class MainActivity : BaseComposeActivity() {
 
         setExceptionHandler(TAG, funName)
 
-//        // val settings = SettingsUtil.getSettingsSnapshot()
 
 
         setContent {
