@@ -78,28 +78,19 @@ class MainActivity : BaseComposeActivity() {
 
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-        val funName = "onCreate"
+        super.onCreate(savedInstanceState)
 
-        enableEdgeToEdge()
+        val funName = "onCreate"
 
         MyLog.d(TAG, "#onCreate called")
 
-        super.onCreate(savedInstanceState)
+        init(TAG)
 
         setMainActivityLifeCycle(MainActivityLifeCycle.ON_CREATE)
 
 
         //如果是初次创建Activity，onNewIntent不会被调用，只能在这里设置一下，要不然有可能漏外部传来的intent（分享文件、编辑文件）
         IntentHandler.setNewIntent(intent)
-
-
-        AppModel.init_1(realAppContext = applicationContext, exitApp = {finish()}, initActivity = true)
-
-        //for make imePadding() work
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        setExceptionHandler(TAG, funName)
-
 
 
         setContent {

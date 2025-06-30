@@ -67,9 +67,11 @@ class CrashActivity : BaseComposeActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         val funName = "onCreate"
 
-        super.onCreate(savedInstanceState)
+        init(TAG)
+
 
         MyLog.d(TAG, "#onCreate called")
 

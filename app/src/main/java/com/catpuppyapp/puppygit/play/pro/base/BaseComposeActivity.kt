@@ -4,8 +4,10 @@ import android.content.Context
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.platform.compositionContext
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
+import androidx.core.view.WindowCompat
 import com.catpuppyapp.puppygit.play.pro.CrashActivity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -15,6 +17,32 @@ import com.catpuppyapp.puppygit.utils.showToast
 import kotlinx.coroutines.CoroutineExceptionHandler
 
 open class BaseComposeActivity : ComponentActivity() {
+
+    fun init(
+        TAG: String,
+        funName: String = "onCreate()",
+        requireSetExceptionHandler:Boolean = true,
+        requireEnableEdgeToEdge:Boolean = true,
+        allowCheckImePadding:Boolean = true,
+    ) {
+        if(requireEnableEdgeToEdge) {
+            enableEdgeToEdge()
+        }
+
+        AppModel.init_1(realAppContext = applicationContext, exitApp = { finish() }, initActivity = true)
+
+
+        if(requireSetExceptionHandler) {
+            setExceptionHandler(TAG, funName)
+        }
+
+        //for make `Modifier.imePadding()` work
+        if(allowCheckImePadding) {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+        }
+
+
+    }
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))
