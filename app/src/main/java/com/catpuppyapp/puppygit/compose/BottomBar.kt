@@ -185,15 +185,18 @@ fun BottomBar(
             }
 
             Box {
-                val offsetForMoreIcon = MyStyleKt.defaultLongPressAbleIconBtnPressedCircleSize.value.let {
+                // size of an icon
+                val baseIconSize = MyStyleKt.defaultLongPressAbleIconBtnPressedCircleSize
+
+                val offsetForPinnedAndMenuIcons = baseIconSize.value.let {
                     pinnedIconList.size * it + (if(visibleMoreIcon) it else 0F)
                 }.coerceAtLeast(0f).dp
 
                 Row (
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .offset(x = -offsetForMoreIcon)
-                        .padding(start = offsetForMoreIcon)
+                        .offset(x = -offsetForPinnedAndMenuIcons)
+                        .padding(start = offsetForPinnedAndMenuIcons)
                         .horizontalScroll(rememberScrollState())
                     ,
                     verticalAlignment = Alignment.CenterVertically
@@ -223,10 +226,15 @@ fun BottomBar(
                     }
                 }
 
+                val offsetForMenuIcon = if(visibleMoreIcon) baseIconSize else 0.dp
+
                 // pinned icons
                 Row(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
+                        .offset(x = -offsetForMenuIcon)
+                        .padding(start = offsetForMenuIcon)
+
                     ,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
