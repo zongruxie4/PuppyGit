@@ -17,8 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.ActivityUtil
-import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.hasManageStoragePermission
+import com.catpuppyapp.puppygit.utils.requireStoragePermissionIfNeed
 
 
 private const val TAG = "GrantManageStoragePermissionClickableText"
@@ -56,16 +55,6 @@ fun GrantManageStoragePermissionClickableText(activityContext: Context) {
 
 
     LaunchedEffect(Unit) {
-        try {
-            //若没授权，请求授权
-            if(hasManageStoragePermission(activityContext)) {
-                MyLog.d(TAG, "already has manage storage permission")
-            }else{
-                MyLog.d(TAG, "no manage storage permission, will request...")
-                ActivityUtil.getManageStoragePermissionOrShowFailedMsg(activityContext)
-            }
-        }catch (e: Exception) {
-            MyLog.d(TAG, "check and request manage storage permission err: ${e.stackTraceToString()}")
-        }
+        requireStoragePermissionIfNeed(activityContext, TAG)
     }
 }

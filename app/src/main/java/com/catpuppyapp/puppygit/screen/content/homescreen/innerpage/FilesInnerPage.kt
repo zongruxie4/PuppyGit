@@ -59,7 +59,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -74,6 +73,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.compose.ApplyPatchDialog
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CardButton
@@ -159,6 +160,7 @@ import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import com.catpuppyapp.puppygit.utils.mime.intentType
 import com.catpuppyapp.puppygit.utils.replaceStringResList
+import com.catpuppyapp.puppygit.utils.requireStoragePermissionIfNeed
 import com.catpuppyapp.puppygit.utils.saf.MyOpenDocumentTree
 import com.catpuppyapp.puppygit.utils.saf.SafAndFileCmpUtil
 import com.catpuppyapp.puppygit.utils.saf.SafAndFileCmpUtil.OpenInputStreamFailed
@@ -471,10 +473,10 @@ fun FilesInnerPage(
                             .fillMaxWidth()
                             .focusRequester(focusRequester)
                             .onPreviewKeyEvent { event ->
-                                if(event.key == Key.Enter) {
+                                if (event.key == Key.Enter) {
                                     goToDialogOnOk()
                                     true
-                                }else {
+                                } else {
                                     false
                                 }
                             }
@@ -3279,6 +3281,29 @@ fun FilesInnerPage(
         }
     }
 
+    // request external storage permission if access external storage path
+    LaunchedEffect(currentPath()) {
+        runCatching {
+            if(currentPath() == FsUtils.getExternalStorageRootPathNoEndsWithSeparator()) {
+                requireStoragePermissionIfNeed(activityContext, TAG)
+            }
+        }
+    }
+
+
+    // start: refresh when come back from other app
+    val wasPaused = remember { mutableStateOf(false) }
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+        wasPaused.value = true
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        if(wasPaused.value) {
+            wasPaused.value = false
+            changeStateTriggerRefreshPage(needRefreshFilesPage)
+        }
+    }
+    // end: refresh when come back from other app
 
     LaunchedEffect(needRefreshFilesPage.value) {
         //如果只有协程的话，其实try catch没意义，协程内部不会往外抛异常；若没协程，trycatch有意义，不然若发生异常会抛到外部导致app崩溃

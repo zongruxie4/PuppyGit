@@ -68,3 +68,24 @@ fun hasManageStoragePermission(context: Context): Boolean {
         (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
     }
 }
+
+
+/**
+ * @return true if sent permission request, false otherwise. note, return true only means request was sent, doesn't means granted
+ */
+fun requireStoragePermissionIfNeed(activityContext: Context, TAG: String): Boolean {
+    return try {
+        //若没授权，请求授权
+        if (hasManageStoragePermission(activityContext)) {
+            MyLog.d(TAG, "already has manage storage permission")
+            false
+        } else {
+            MyLog.d(TAG, "no manage storage permission, will request...")
+            ActivityUtil.getManageStoragePermissionOrShowFailedMsg(activityContext)
+            true
+        }
+    } catch (e: Exception) {
+        MyLog.d(TAG, "check and request manage storage permission err: ${e.stackTraceToString()}")
+        false
+    }
+}
