@@ -73,7 +73,7 @@ fun hasManageStoragePermission(context: Context): Boolean {
 /**
  * @return true if sent permission request, false otherwise. note, return true only means request was sent, doesn't means granted
  */
-fun requireStoragePermissionIfNeed(activityContext: Context, TAG: String): Boolean {
+fun requestStoragePermissionIfNeed(activityContext: Context, TAG: String): Boolean {
     return try {
         //若没授权，请求授权
         if (hasManageStoragePermission(activityContext)) {

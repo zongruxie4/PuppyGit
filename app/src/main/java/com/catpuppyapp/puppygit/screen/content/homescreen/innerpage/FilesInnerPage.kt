@@ -160,7 +160,7 @@ import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import com.catpuppyapp.puppygit.utils.mime.intentType
 import com.catpuppyapp.puppygit.utils.replaceStringResList
-import com.catpuppyapp.puppygit.utils.requireStoragePermissionIfNeed
+import com.catpuppyapp.puppygit.utils.requestStoragePermissionIfNeed
 import com.catpuppyapp.puppygit.utils.saf.MyOpenDocumentTree
 import com.catpuppyapp.puppygit.utils.saf.SafAndFileCmpUtil
 import com.catpuppyapp.puppygit.utils.saf.SafAndFileCmpUtil.OpenInputStreamFailed
@@ -3285,7 +3285,7 @@ fun FilesInnerPage(
     LaunchedEffect(currentPath()) {
         runCatching {
             if(currentPath() == FsUtils.getExternalStorageRootPathNoEndsWithSeparator()) {
-                requireStoragePermissionIfNeed(activityContext, TAG)
+                requestStoragePermissionIfNeed(activityContext, TAG)
             }
         }
     }

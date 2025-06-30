@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.ActivityUtil
-import com.catpuppyapp.puppygit.utils.requireStoragePermissionIfNeed
+import com.catpuppyapp.puppygit.utils.requestStoragePermissionIfNeed
 
 
 private const val TAG = "GrantManageStoragePermissionClickableText"
@@ -55,6 +55,6 @@ fun GrantManageStoragePermissionClickableText(activityContext: Context) {
 
 
     LaunchedEffect(Unit) {
-        requireStoragePermissionIfNeed(activityContext, TAG)
+        requestStoragePermissionIfNeed(activityContext, TAG)
     }
 }
