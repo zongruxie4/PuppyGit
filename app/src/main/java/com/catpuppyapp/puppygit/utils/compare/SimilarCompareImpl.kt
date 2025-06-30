@@ -254,9 +254,18 @@ class SimilarCompareImpl: SimilarCompare {
         }
 
 
+        // try to treat "abc, def);" and "abc, def, ghi);" as append text
+        val luckyOffset = -2
+
         // because prefix maybe have spaces indent, so reverser match is better
-        var addIndex = add.getLen() - 1
-        val lastCharOfDel = del.getChar(del.getLen() - 1)
+        var addIndex = add.getLen() - 1 + luckyOffset
+        val delIndex = del.getLen() - 1 + luckyOffset
+        // check index out of bounds
+        if(addIndex < 0 || addIndex >= add.getLen() || delIndex < 0 || delIndex >= del.getLen()) {
+            return false
+        }
+
+        val lastCharOfDel = del.getChar(delIndex)
         var appendCount = 0
         while(appendCount < expectedAppendCount) {
             if(add.getChar(addIndex--) == lastCharOfDel) {
@@ -264,6 +273,12 @@ class SimilarCompareImpl: SimilarCompare {
             }
 
             appendCount++
+
+
+            if(addIndex < 0 || addIndex >= add.getLen()) {
+                return appendCount >= expectedAppendCount
+            }
+
         }
 
         return true
