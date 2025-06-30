@@ -8,6 +8,7 @@ import android.content.Intent.ACTION_MAIN
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -79,6 +80,7 @@ class MainActivity : BaseComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val funName = "onCreate"
 
+        enableEdgeToEdge()
         //20240519 上午: start: 尝试解决谷歌自动测试时的bug，什么gms err之类的
         //20240519 下午：更新：注释了这段代码，再上传，没报错。
         //20240519: 好像和这个无关，？参见未解决的问题文档，搜“play console测试莫名其妙报错 gms相关 原因不明 20240519”
