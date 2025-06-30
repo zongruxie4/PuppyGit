@@ -1559,8 +1559,8 @@ fun DiffScreen(
                                             //如果加载过，则显示添加删除了多少行
                                             ScrollableRow {
                                                 Text(
+                                                    text = diffableItem.getAnnotatedAddDeletedAndParentPathString(colorOfChangeType),
                                                     fontSize = titleRelativePathFontSize,
-                                                    text = diffableItem.getAnnotatedAddDeletedAndParentPathString(colorOfChangeType)
                                                 )
                                             }
 

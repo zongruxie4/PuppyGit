@@ -158,9 +158,9 @@ data class DiffableItem(
         return buildAnnotatedString {
             //若已加载过diff内容则显示添加和删除了多少行
             if(maybeLoadedAtLeastOnce()) {
-                withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItemSaver.addedLines) }
-                withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
                 withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItemSaver.deletedLines) }
+                withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
+                withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItemSaver.addedLines) }
                 withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
             }
 

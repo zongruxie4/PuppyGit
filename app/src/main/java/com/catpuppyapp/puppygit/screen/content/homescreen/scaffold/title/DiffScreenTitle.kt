@@ -77,9 +77,10 @@ fun DiffScreenTitle(
                         ReadOnlyIcon()
                     }
 
-                    Text(fileName,
+                    Text(
+                        text = fileName,
                         fontSize = MyStyleKt.Title.firstLineFontSizeSmall,
-                        maxLines=1,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis,  //可滚动条目永远不会over flow，所以这个在这其实没啥意义
                         color = changeTypeColor
                     )
@@ -89,9 +90,9 @@ fun DiffScreenTitle(
                     Text(
                         text = curItem.getAnnotatedAddDeletedAndParentPathString(changeTypeColor),
                         fontSize = MyStyleKt.Title.secondLineFontSize,
-                        maxLines=1,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        color = changeTypeColor
+//                        color = changeTypeColor
                     )
                 }
             }
