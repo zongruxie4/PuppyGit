@@ -12,7 +12,9 @@ import androidx.compose.runtime.MutableState
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.LineNum
+import com.catpuppyapp.puppygit.dto.EditorPayload
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
@@ -205,7 +207,7 @@ object FsUtils {
     /**
      * This function origin version(by sheimi maybe) from: https://github.com/maks/MGit/blob/66ec88b8a9873ba3334d2b6b213801a9e8d9d3c7/app/src/main/java/me/sheimi/android/utils/FsUtils.java#L119C24-L119C32
      */
-    @Deprecated("use `opeFile` instead")
+    @Deprecated("instead of by `FsUtils.opeFile()`")
     fun openFileEditFirstIfFailedThenTryView(context: Context, file: File): Ret<String?> {
         val uri = getUriForFile(context, file)
         val mimeType = getMimeType(uri.toString())
@@ -231,7 +233,15 @@ object FsUtils {
         }
     }
 
-    fun openFile(context: Context, file: File, mimeType: String, readOnly:Boolean):Boolean {
+    fun openFile(
+        context: Context,
+        file: File,
+        mimeType: String,
+        // if true, uri only add read permission
+        readOnly:Boolean,
+
+        editorPayload: EditorPayload? = null
+    ):Boolean {
         try {
             val uri = getUriForFile(context, file)
 
@@ -250,6 +260,9 @@ object FsUtils {
                 intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
             }
 
+            if(editorPayload != null) {
+                intent.putExtra(IntentCons.ExtrasKey.editorPayload, editorPayload)
+            }
 
             // 测试无效，废弃）for support open image by gallary app
             // 另外，之前点图片无法选择图库是因为我的手机设置了默认图库，晕。。。。

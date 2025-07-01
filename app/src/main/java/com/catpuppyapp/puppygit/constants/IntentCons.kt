@@ -12,6 +12,8 @@ object IntentCons {
         const val filePath = "filePath"
         const val fileName = "fileName"
         const val lineNum = "lineNum"
+
+        const val editorPayload = "editorPayload"
     }
 
     object Action {
