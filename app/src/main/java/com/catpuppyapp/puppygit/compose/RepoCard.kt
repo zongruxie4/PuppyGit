@@ -21,7 +21,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Replay
-import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material.icons.outlined.Dangerous
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
@@ -457,7 +457,7 @@ fun RepoCard(
 
 //                            Text(text = stringResource(R.string.repo_label_error) + ": ")
                             InLineIcon(
-                                icon = Icons.Filled.WarningAmber,
+                                icon = Icons.Outlined.Dangerous,
                                 tooltipText = stringResource(R.string.repo_label_error)
                             )
                             ClickableText (
