@@ -3,4 +3,3 @@
 - focus target line when go to Editor from DiffScreen by click line number
 - Editor support auto indent when pressed enter
 - Editor support tab to spaces as indent
-- optimize Diff result display
