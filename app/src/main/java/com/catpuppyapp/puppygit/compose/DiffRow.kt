@@ -156,10 +156,11 @@ fun DiffRow (
 
 
 
+    // 只要非null且非空就使用。缺点：即使当前行没任何匹配，也会显示浅色背景，会让人产生一种当前行和某行有匹配的错觉
 //    val useStringPartList = !stringPartList.isNullOrEmpty()
-    // 如果为null或空 或者 所有元素都是modified，则不使用string part，否则使用
-//    val useStringPartList = !(stringPartList.isNullOrEmpty() || (stringPartList.indexOfFirst { it.modified.not() } == -1))
-    val useStringPartList = !stringPartList.isNullOrEmpty()
+    // 如果为null或空 或者 所有元素都是modified，则不使用string part，否则使用。缺点：如果某行只有空格且类型为modified，则看不出到底有几个空格，因为整行都是绿色或红色的。
+    val useStringPartList = !(stringPartList.isNullOrEmpty() || (stringPartList.indexOfFirst { it.modified.not() } == -1))
+
 
 
 
@@ -657,7 +658,7 @@ fun DiffRow (
             // if fill max width, will not be able to saw the spaces at the end, because the background will fill the whole line;
             //   if not fill, color will difference, so you can see the boundary of added text
             // 如果fill max width启用，将不能分辨末尾是否有空格，因为背景颜色会覆盖整行；若不fill则会有颜色差异，能看到添加内容的边界
-//            .fillMaxWidth()
+            .fillMaxWidth()
             .padding(end = 5.dp)
 
             //首行加顶部padding，其余不加
