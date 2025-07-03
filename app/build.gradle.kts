@@ -131,8 +131,8 @@ dependencies {
     implementation(platform("io.github.Rosemoe.sora-editor:bom:0.23.6"))
     implementation("io.github.Rosemoe.sora-editor:editor")
     implementation("io.github.Rosemoe.sora-editor:language-textmate")
-    implementation("io.github.Rosemoe.sora-editor:language-treesitter")
-    implementation("io.github.Rosemoe.sora-editor:language-java")
+//    implementation("io.github.Rosemoe.sora-editor:language-treesitter")
+//    implementation("io.github.Rosemoe.sora-editor:language-java")
 
 
 
