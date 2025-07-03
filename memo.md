@@ -1,3 +1,23 @@
+editor支持语法高亮 20250704：
+完全改用sora editor需要改的东西太多，只拿语法高亮的部分会相对简单，sora editor 使用textmate实现语法高亮，流程大概如下：
+sora editor创建text mate language对象后应该就会执行分析，然后分析完会调用recevier，
+可调用analyzer manager的inser/delete执行增量更新
+
+
+
+支持的语法高亮的语言需要特定配置文件，参见：
+https://project-sora.github.io/sora-editor-docs/zh/guide/using-language
+其中有语法文件的下载地址
+
+
+
+
+给ppgit的的编辑器应用语法高亮：
+可以直接把sora editor设置receiver的代码拿出来，逻辑在sora editor的 CodeEditor.setEditorLanguage() 里
+再把span转成annotatedstring，再在我的app里逐行显示，就行了，
+
+可优化：span转AnnotatedString可以修改下，直接返回AnnotatedString，这样就不需要转换了，但这个影响应该不大，可先测试下，如果感觉不卡，就先不用实现
+---
 TODO sha256 support 20250607:
 1. waiting for libgit2 sha256 feature become stable
 2. UI: add menu item to RepoCard menu to allow users switch hash method, then save settings into .gitconfig (need test if were switched to sha256, then, still can switch back to sha1?)
