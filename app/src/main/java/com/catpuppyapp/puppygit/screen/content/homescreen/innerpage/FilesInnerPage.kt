@@ -300,25 +300,22 @@ fun FilesInnerPage(
     val errorStrRes = stringResource(R.string.error)
 
 
-
     val defaultLoadingText = activityContext.getString(R.string.loading)
-    val isLoading = rememberSaveable { mutableStateOf(false)}
-    val loadingText = rememberSaveable { mutableStateOf(defaultLoadingText)}
-    val loadingOn = { msg:String ->
-        loadingText.value=msg
-        isLoading.value=true
+    val isLoading = rememberSaveable { mutableStateOf(false) }
+    val loadingText = rememberSaveable { mutableStateOf(defaultLoadingText) }
+    val loadingOn = { msg: String ->
+        loadingText.value = msg
+        isLoading.value = true
     }
     val loadingOff = {
-        isLoading.value=false
-        loadingText.value=defaultLoadingText
+        isLoading.value = false
+        loadingText.value = defaultLoadingText
     }
-
-
 
 
     // 取消任务相关变量，开始
-    val requireCancelAct = rememberSaveable { mutableStateOf(false)}
-    val cancellableActRunning = rememberSaveable { mutableStateOf(false)}
+    val requireCancelAct = rememberSaveable { mutableStateOf(false) }
+    val cancellableActRunning = rememberSaveable { mutableStateOf(false) }
     val resetAct = {
         requireCancelAct.value = false
     }
@@ -339,14 +336,14 @@ fun FilesInnerPage(
     //取消任务相关变量，结束
 
     //这个cancel变量必须确保及时更新，而我发现如果在非主线程更新可能获取到旧值，所以改成强制在主线程更新
-    val loadingOnCancellable:suspend (String)->Unit = { loadingText:String ->
+    val loadingOnCancellable: suspend (String) -> Unit = { loadingText: String ->
         withMainContext {
             loadingOn(loadingText)
             // reset，使其可取消
             startCancellableAct()
         }
     }
-    val loadingOffCancellable:suspend ()->Unit  = {
+    val loadingOffCancellable: suspend () -> Unit = {
         withMainContext {
             loadingOff()
             // reset，使其他可取消任务任务能正常开始执行
@@ -365,13 +362,13 @@ fun FilesInnerPage(
 //    val currentPathBreadCrumbList2 = remember{ mutableStateListOf<FileItemDto>() }  // key 2
 
 
-    val containsForSelected = { srcList:List<FileItemDto>, item:FileItemDto ->
+    val containsForSelected = { srcList: List<FileItemDto>, item: FileItemDto ->
         srcList.indexOfFirst { it.equalsForSelected(item) } != -1
     }
 
     val filesPageQuitSelectionMode = {
-        isFileSelectionMode.value=false  //关闭选择模式
-        isPasteMode.value=false  //关闭粘贴模式
+        isFileSelectionMode.value = false  //关闭选择模式
+        isPasteMode.value = false  //关闭粘贴模式
         selectedItems.value.clear()  //清空选中文件列表
     }
 
@@ -380,7 +377,7 @@ fun FilesInnerPage(
         UIHelper.selectIfNotInSelectedListElseRemove(item, selectedItems.value, contains = containsForSelected)
     }
 
-    val selectItem = { item:FileItemDto ->
+    val selectItem = { item: FileItemDto ->
         isFileSelectionMode.value = true
         UIHelper.selectIfNotInSelectedListElseNoop(item, selectedItems.value, contains = containsForSelected)
     }
@@ -389,7 +386,7 @@ fun FilesInnerPage(
         selectedItems.value.size
     }
 
-    val isItemInSelected = { f:FileItemDto->
+    val isItemInSelected = { f: FileItemDto ->
 //        selectedItems.value.contains(f)
         selectedItems.value.indexOfFirst { it.equalsForSelected(f) } != -1
     }
@@ -405,15 +402,15 @@ fun FilesInnerPage(
         keyName = "renameFileName",
         initValue = TextFieldValue("")
     )
-    val renameHasErr = rememberSaveable { mutableStateOf(false)}
-    val renameErrText = rememberSaveable { mutableStateOf( "")}
-    val showRenameDialog = rememberSaveable { mutableStateOf(false)}
-    val updateRenameFileName:(TextFieldValue)->Unit = {
+    val renameHasErr = rememberSaveable { mutableStateOf(false) }
+    val renameErrText = rememberSaveable { mutableStateOf("") }
+    val showRenameDialog = rememberSaveable { mutableStateOf(false) }
+    val updateRenameFileName: (TextFieldValue) -> Unit = {
         val newVal = it
         val oldVal = renameFileName.value
 
         //只有当值改变时，才解除输入框报错
-        if(oldVal.text != newVal.text) {
+        if (oldVal.text != newVal.text) {
             //用户一改名，就取消字段错误设置，允许点击克隆按钮，点击后再次检测，有错再设置为真
             renameHasErr.value = false
         }
@@ -424,10 +421,9 @@ fun FilesInnerPage(
     }
 
 
-
-    val showGoToPathDialog = rememberSaveable { mutableStateOf(false)}
+    val showGoToPathDialog = rememberSaveable { mutableStateOf(false) }
     val pathToGo = mutableCustomStateOf(stateKeyTag, "pathToGo") { TextFieldValue("") }
-    if(showGoToPathDialog.value) {
+    if (showGoToPathDialog.value) {
         val focusRequester = remember { FocusRequester() }
 
         val goToDialogOnOk = {
@@ -446,14 +442,14 @@ fun FilesInnerPage(
                 val finallyPath = FsUtils.internalExternalPrefixPathToRealPath(pathToGo)
 
                 val f = File(finallyPath)
-                if(f.canRead()) {
+                if (f.canRead()) {
                     goToPath(f.canonicalPath)
-                }else { // can't read path: usually by path non-exists or no permission to read
+                } else { // can't read path: usually by path non-exists or no permission to read
 //                    try relative path
                     val f = File(currentPath, pathToGo)
-                    if(f.canRead()) {
+                    if (f.canRead()) {
                         goToPath(f.canonicalPath)
-                    }else {
+                    } else {
                         Msg.requireShowLongDuration(activityContext.getString(R.string.cant_read_path))
                     }
                 }
@@ -479,8 +475,7 @@ fun FilesInnerPage(
                                 } else {
                                     false
                                 }
-                            }
-                        ,
+                            },
                         value = pathToGo.value,
 //                        singleLine = true,
                         onValueChange = {
@@ -512,12 +507,11 @@ fun FilesInnerPage(
     }
 
 
-
     val showApplyAsPatchDialog = rememberSaveable { mutableStateOf(false) }
     val errMsgForApplyPatch = rememberSaveable { mutableStateOf("") }
     val loadingRepoList = rememberSaveable { mutableStateOf(false) }
     val loadingRepoListJob = mutableCustomBoxOf<Job?>(stateKeyTag, "loadingRepoListJob") { null }  //如果不remember，这个值会被反复赋值，导致之前存的任务被冲掉
-    val fileFullPathForApplyAsPatch =  rememberSaveable { mutableStateOf("")}
+    val fileFullPathForApplyAsPatch = rememberSaveable { mutableStateOf("") }
     val allRepoList = mutableCustomStateListOf(stateKeyTag, "allRepoList", listOf<RepoEntity>())
     val initApplyAsPatchDialog = { item: FileItemDto ->
         //这里如果仓库特别多，查特别慢，用户会有卡住的感觉，所以先显示弹窗，
@@ -553,12 +547,12 @@ fun FilesInnerPage(
 
 
                 //检查当前选中的仓库是否仍有效
-                if(listFromDb.isNotEmpty()) {
+                if (listFromDb.isNotEmpty()) {
                     // if selectedRepo not in list(例如之前选过，然后被删除了), select first
                     val selectedRepoId = selectedRepo.value.id
 
                     // repo name match dir name first, it none match, check last selected repo id , if valid , use it, else use idx 0
-                    val repoNameMatchedDirNameIdx = listFromDb.indexOfFirst { it.repoName == parentName }.let { if(it < 0) listFromDb.indexOfFirst { selectedRepoId == it.id } else it }
+                    val repoNameMatchedDirNameIdx = listFromDb.indexOfFirst { it.repoName == parentName }.let { if (it < 0) listFromDb.indexOfFirst { selectedRepoId == it.id } else it }
                     selectedRepo.value = listFromDb[repoNameMatchedDirNameIdx.coerceAtLeast(0)]
 
                     delay(1)
@@ -567,7 +561,7 @@ fun FilesInnerPage(
                 loadingRepoList.value = false
             }
 
-            if(result.isFailure) {
+            if (result.isFailure) {
                 val errMsg = result.exceptionOrNull()?.localizedMessage ?: "load repos err"
 
                 errMsgForApplyPatch.value = errMsg
@@ -581,16 +575,16 @@ fun FilesInnerPage(
         showApplyAsPatchDialog.value = true
     }
 
-    if(showApplyAsPatchDialog.value) {
+    if (showApplyAsPatchDialog.value) {
         ApplyPatchDialog(
             errMsg = errMsgForApplyPatch.value,
             checkOnly = checkOnly,
-            selectedRepo=selectedRepo,
+            selectedRepo = selectedRepo,
             patchFileFullPath = fileFullPathForApplyAsPatch.value,
             repoList = allRepoList.value,
             loadingRepoList = loadingRepoList.value,
-            onCancel={
-                showApplyAsPatchDialog.value=false;
+            onCancel = {
+                showApplyAsPatchDialog.value = false;
 
                 //取消加载仓库的job，因为用户可能在加载完之前就关了弹窗，若不取消，
                 // 就还在加载，这时用户如果再点应用仓库，两个任务会冲突，
@@ -598,21 +592,21 @@ fun FilesInnerPage(
                 // 然后等会仓库列表又会刷新，因为这时第2个任务执行完了。。。
                 // 总之为了避免问题，这里取消下上次的job，减少出问题的概率（但理论上并不能完全避免）
                 runCatching { loadingRepoListJob.value?.cancel() }
-             },
-            onErrCallback={ e, selectedRepoId->
+            },
+            onErrCallback = { e, selectedRepoId ->
                 val errMsgPrefix = "apply patch err: err="
                 Msg.requireShowLongDuration(e.localizedMessage ?: errMsgPrefix)
                 createAndInsertError(selectedRepoId, errMsgPrefix + e.localizedMessage)
                 MyLog.e(TAG, "#ApplyPatchDialog err: $errMsgPrefix${e.stackTraceToString()}")
             },
-            onFinallyCallback={
-                showApplyAsPatchDialog.value=false
+            onFinallyCallback = {
+                showApplyAsPatchDialog.value = false
 
-                if(enableFilterState.value.not()) {
+                if (enableFilterState.value.not()) {
                     changeStateTriggerRefreshPage(needRefreshFilesPage)
                 }
             },
-            onOkCallback={
+            onOkCallback = {
                 Msg.requireShow(activityContext.getString(R.string.success))
             }
         )
@@ -622,23 +616,24 @@ fun FilesInnerPage(
     val showOpenAsDialog = rememberSaveable { mutableStateOf(false) }
     val readOnlyForOpenAsDialog = rememberSaveable { mutableStateOf(false) }
     val openAsDialogFilePath = rememberSaveable { mutableStateOf("") }
-    val showOpenInEditor = rememberSaveable { mutableStateOf(false)}
-    val fileNameForOpenAsDialog = remember{ derivedStateOf { getFileNameFromCanonicalPath(openAsDialogFilePath.value) } }
+    val showOpenInEditor = rememberSaveable { mutableStateOf(false) }
+    val fileNameForOpenAsDialog = remember { derivedStateOf { getFileNameFromCanonicalPath(openAsDialogFilePath.value) } }
 
-    val initOpenAsDialog = { fileFullPath:String, showOpenInInnerTextEditor:Boolean ->
+    val initOpenAsDialog = { fileFullPath: String, showOpenInInnerTextEditor: Boolean ->
         openAsDialogFilePath.value = fileFullPath
         showOpenInEditor.value = showOpenInInnerTextEditor
 
         showOpenAsDialog.value = true
     }
 
-    if(showOpenAsDialog.value) {
-        OpenAsDialog(readOnly = readOnlyForOpenAsDialog, fileName = fileNameForOpenAsDialog.value, filePath = openAsDialogFilePath.value, showOpenInEditor = showOpenInEditor.value,
-            openInEditor = {expectReadOnly:Boolean ->
+    if (showOpenAsDialog.value) {
+        OpenAsDialog(
+            readOnly = readOnlyForOpenAsDialog, fileName = fileNameForOpenAsDialog.value, filePath = openAsDialogFilePath.value, showOpenInEditor = showOpenInEditor.value,
+            openInEditor = { expectReadOnly: Boolean ->
                 requireInnerEditorOpenFile(openAsDialogFilePath.value, expectReadOnly)
             }
         ) {
-            showOpenAsDialog.value=false
+            showOpenAsDialog.value = false
         }
     }
 
@@ -649,33 +644,32 @@ fun FilesInnerPage(
     //如果apply patch测试通过，则启用包含apply as patch的菜单，否则使用不包含此选项的菜单
     //注意：会忽略值为空的选项！可用此特性来对用户隐藏未测试特性
     val fileMenuKeyTextList = listOf(
-            if(isFileChooser) "" else stringResource(R.string.open),  //用内部编辑器打开，得加个这个选项，因为如果自动判断文件该用外部程序打开，但又没对应的外部程序，用户又想用内部编辑器打开，但文件管理器又判断文件该用内部文件打开，就死局了，所以得加这个选项
-            if(isFileChooser) "" else stringResource(R.string.open_as),
-            stringResource(R.string.rename),
-            if(isFileChooser) "" else if(proFeatureEnabled(applyPatchTestPassed)) stringResource(R.string.apply_as_patch) else "",  //应用patch，弹窗让用户选仓库，然后可对仓库应用patch
-            if(isFileChooser) "" else stringResource(R.string.file_history),
-            stringResource(R.string.copy_full_path),
-            if(isFileChooser) "" else stringResource(R.string.copy_repo_relative_path),
-            stringResource(R.string.details),
-            stringResource(R.string.delete),
-        )
+        if (isFileChooser) "" else stringResource(R.string.open),  //用内部编辑器打开，得加个这个选项，因为如果自动判断文件该用外部程序打开，但又没对应的外部程序，用户又想用内部编辑器打开，但文件管理器又判断文件该用内部文件打开，就死局了，所以得加这个选项
+        if (isFileChooser) "" else stringResource(R.string.open_as),
+        stringResource(R.string.rename),
+        if (isFileChooser) "" else if (proFeatureEnabled(applyPatchTestPassed)) stringResource(R.string.apply_as_patch) else "",  //应用patch，弹窗让用户选仓库，然后可对仓库应用patch
+        if (isFileChooser) "" else stringResource(R.string.file_history),
+        stringResource(R.string.copy_full_path),
+        if (isFileChooser) "" else stringResource(R.string.copy_repo_relative_path),
+        stringResource(R.string.details),
+        stringResource(R.string.delete),
+    )
 
     //目录条目菜单没有open with
     val dirMenuKeyTextList = listOf(
         stringResource(R.string.rename),
         stringResource(R.string.copy_full_path),
-        if(isFileChooser) "" else stringResource(R.string.copy_repo_relative_path),
-        if(isFileChooser) "" else stringResource(R.string.import_as_repo),
-        if(isFileChooser) "" else stringResource(R.string.init_repo),
+        if (isFileChooser) "" else stringResource(R.string.copy_repo_relative_path),
+        if (isFileChooser) "" else stringResource(R.string.import_as_repo),
+        if (isFileChooser) "" else stringResource(R.string.init_repo),
         stringResource(R.string.add_storage_path),
         stringResource(R.string.details),
         stringResource(R.string.delete),
     )
 
 
-
     // 复制真实路径到剪贴板，显示提示copied
-    val copyThenShowCopied = { text:String ->
+    val copyThenShowCopied = { text: String ->
         clipboardManager.setText(AnnotatedString(text))
         Msg.requireShow(activityContext.getString(R.string.copied))
     }
@@ -685,41 +679,41 @@ fun FilesInnerPage(
 //        copyThenShowCopied(getFilePathStrBasedRepoDir(realFullPath, returnResultStartsWithSeparator = true))
 //    }
 
-    val copyRepoRelativePath = {realFullPath:String ->
+    val copyRepoRelativePath = { realFullPath: String ->
         try {
             val repo = Libgit2Helper.findRepoByPath(realFullPath)
-            if(repo == null) {
+            if (repo == null) {
                 Msg.requireShow(activityContext.getString(R.string.no_repo_found))
-            }else {
+            } else {
                 repo.use {
                     val realtivePath = Libgit2Helper.getRelativePathUnderRepo(Libgit2Helper.getRepoWorkdirNoEndsWithSlash(it), realFullPath)
 
                     // well, the repo already found, but the path got null, usually it happens when trying to copy a repo-relative-path from a repo folder
-                    if(realtivePath == null) {
+                    if (realtivePath == null) {
                         Msg.requireShow(activityContext.getString(R.string.path_not_under_repo))
-                    }else {
+                    } else {
                         copyThenShowCopied(realtivePath)
                     }
                 }
             }
-        }catch (e:Exception) {
-            Msg.requireShowLongDuration(e.localizedMessage?:"err")
+        } catch (e: Exception) {
+            Msg.requireShowLongDuration(e.localizedMessage ?: "err")
             MyLog.e(TAG, "#copyRepoRelativePath err: ${e.stackTraceToString()}")
         }
     }
 
 
     // details variables block start
-    val showDetailsDialog = rememberSaveable { mutableStateOf(false)}
+    val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
     val details_ItemsSize = rememberSaveable { mutableLongStateOf(0L) }  // this is not items count, is file size. this size is a recursive count
-    val details_AllCount = rememberSaveable{mutableIntStateOf(0)}  // selected items count(folder + files). note: this is not a recursive count
-    val details_FilesCount = rememberSaveable{mutableIntStateOf(0)}  // files count in selected items. not recursive count
-    val details_FoldersCount = rememberSaveable{mutableIntStateOf(0)}  // folders count in selected items. not recursive count
-    val details_CountingItemsSize = rememberSaveable { mutableStateOf(false)}  // indicate is calculating file size or finished
+    val details_AllCount = rememberSaveable { mutableIntStateOf(0) }  // selected items count(folder + files). note: this is not a recursive count
+    val details_FilesCount = rememberSaveable { mutableIntStateOf(0) }  // files count in selected items. not recursive count
+    val details_FoldersCount = rememberSaveable { mutableIntStateOf(0) }  // folders count in selected items. not recursive count
+    val details_CountingItemsSize = rememberSaveable { mutableStateOf(false) }  // indicate is calculating file size or finished
     val details_itemList = mutableCustomStateListOf(stateKeyTag, "details_itemList", listOf<FileItemDto>())
 
-    val initDetailsDialog = {list:List<FileItemDto> ->
-        val list = if(list.size == 1 && list.first().isDir) {
+    val initDetailsDialog = { list: List<FileItemDto> ->
+        val list = if (list.size == 1 && list.first().isDir) {
             // count folder and files if only show details for 1 item
             try {
                 var filesCount = 0
@@ -727,18 +721,18 @@ fun FilesInnerPage(
                 val first = list.first()
 
                 first.toFile().listFiles()!!.forEachBetter {
-                    if(it.isDirectory) {
+                    if (it.isDirectory) {
                         folderCount++
-                    }else {
+                    } else {
                         filesCount++
                     }
                 }
 
                 listOf(first.copy(folderCount = folderCount, fileCount = filesCount))
-            }catch (_:Exception) {
+            } catch (_: Exception) {
                 list
             }
-        }else {
+        } else {
             list
         }
 
@@ -756,7 +750,7 @@ fun FilesInnerPage(
             //count
             list.forEachBetter {
                 //ps: 因为已经在函数中追加了size，所以if(it.isDir)的代码块返回0即可
-                if(it.isDir) {
+                if (it.isDir) {
                     FsUtils.calculateFolderSize(it.toFile(), details_ItemsSize)
                 } else {
                     details_ItemsSize.longValue += it.sizeInBytes
@@ -772,18 +766,17 @@ fun FilesInnerPage(
         details_itemList.value.clear()
         details_itemList.value.addAll(list)
 
-        showDetailsDialog.value=true
+        showDetailsDialog.value = true
     }
 
     // details variables block end
 
 
-
     // import as repo variables block start
-    val showImportAsRepoDialog = rememberSaveable { mutableStateOf(false)}
+    val showImportAsRepoDialog = rememberSaveable { mutableStateOf(false) }
     val importAsRepoList = mutableCustomStateListOf(stateKeyTag, "importAsRepoList", listOf<String>())
-    val isReposParentFolderForImport = rememberSaveable { mutableStateOf(false)}
-    val initImportAsRepoDialog = { fullPathList:List<String> ->
+    val isReposParentFolderForImport = rememberSaveable { mutableStateOf(false) }
+    val initImportAsRepoDialog = { fullPathList: List<String> ->
         importAsRepoList.value.clear()
         importAsRepoList.value.addAll(fullPathList)
         isReposParentFolderForImport.value = false
@@ -793,9 +786,9 @@ fun FilesInnerPage(
 
 
     // init repo dialog variables block start
-    val showInitRepoDialog = rememberSaveable { mutableStateOf(false)}
+    val showInitRepoDialog = rememberSaveable { mutableStateOf(false) }
     val initRepoList = mutableCustomStateListOf(stateKeyTag, "initRepoList", listOf<String>())
-    val initInitRepoDialog = {pathList:List<String> ->
+    val initInitRepoDialog = { pathList: List<String> ->
         initRepoList.value.clear()
         initRepoList.value.addAll(pathList)
         showInitRepoDialog.value = true
@@ -803,9 +796,9 @@ fun FilesInnerPage(
     // init repo dialog variables block end
 
 
-    val addStoragePath = { newPath:String ->
+    val addStoragePath = { newPath: String ->
         try {
-            if(File(newPath).isDirectory.not()) {
+            if (File(newPath).isDirectory.not()) {
                 throw RuntimeException(activityContext.getString(R.string.path_is_not_a_dir))
             }
 
@@ -814,13 +807,13 @@ fun FilesInnerPage(
             val currentList = spForSave.storagePaths
 
             // save if not contains and not equals to app internal storage path(this is default repos storage path, can't delete or add, it always at first item of the Storage Paths in the CloneScreen)
-            if(StoragePathsMan.allowAddPath(newPath) && !currentList.contains(newPath)) {
+            if (StoragePathsMan.allowAddPath(newPath) && !currentList.contains(newPath)) {
                 currentList.add(newPath)
                 StoragePathsMan.save(spForSave)
             }
 
             Msg.requireShow(activityContext.getString(R.string.success))
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             Msg.requireShowLongDuration("err: ${e.localizedMessage}")
             MyLog.e(TAG, "add storage path at `$TAG` err: ${e.stackTraceToString()}")
         }
@@ -832,7 +825,7 @@ fun FilesInnerPage(
     val listForDeleteDialog = mutableCustomStateListOf(stateKeyTag, "listForDeleteDialog") { listOf<FileItemDto>() }
 //    val fileCountForDelDialog = rememberSaveable { mutableStateOf(0)}
 //    val folderCountForDelDialog = rememberSaveable { mutableStateOf(0)}
-    val initDelFileDialog = { list:List<FileItemDto> ->
+    val initDelFileDialog = { list: List<FileItemDto> ->
 //        val list = selectedItems.value
 //        allCountForDelDialog.value = list.size
 //        folderCountForDelDialog.value = list.count { it.isDir }
@@ -844,12 +837,12 @@ fun FilesInnerPage(
             addAll(list)
         }
 
-        showDelFileDialog.value=true
+        showDelFileDialog.value = true
     }
-    if(showDelFileDialog.value) {
+    if (showDelFileDialog.value) {
         ConfirmDialog2(
             title = stringResource(id = R.string.delete),
-            text = replaceStringResList(stringResource(R.string.n_items_will_be_deleted), listOf(""+allCountForDelDialog.value)),
+            text = replaceStringResList(stringResource(R.string.n_items_will_be_deleted), listOf("" + allCountForDelDialog.value)),
             okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showDelFileDialog.value = false }
         ) {
@@ -857,10 +850,10 @@ fun FilesInnerPage(
             showDelFileDialog.value = false
 
             //执行删除
-            doJobThenOffLoading (loadingOn = loadingOn, loadingOff = loadingOff) {
+            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff) {
                 val targets = listForDeleteDialog.value.toList()
 
-                if(targets.isEmpty()) {
+                if (targets.isEmpty()) {
                     Msg.requireShowLongDuration(activityContext.getString(R.string.no_item_selected))
                     return@doJobThenOffLoading  // 结束操作
                 }
@@ -882,10 +875,10 @@ fun FilesInnerPage(
                 //退出选择模式并刷新目录
                 filesPageQuitSelectionMode()
 
-                if(enableFilterState.value) {  //filter模式刷新会重新递归查找，太重量级，直接更新下过滤结果即可
+                if (enableFilterState.value) {  //filter模式刷新会重新递归查找，太重量级，直接更新下过滤结果即可
                     val filterList = filterList.value
                     targets.forEachBetter { filterList.remove(it) }
-                }else {
+                } else {
                     //这里不刷新页面也和过滤模式一样更新下列表其实也行，
                     // 但是，其实有可能用户会把当前所在目录给删掉，
                     // 只要通过面包屑进行跳转再选中当前目录，再通过面包屑返回当前目录，再删除即可
@@ -897,8 +890,7 @@ fun FilesInnerPage(
     }
 
 
-
-    val renameFile = {item:FileItemDto ->
+    val renameFile = { item: FileItemDto ->
         renameFileItemDto.value = item  // 旧item
         renameFileName.value = TextFieldValue(item.name, selection = getRangeForRenameFile(item.name))  //旧文件名
 
@@ -908,14 +900,14 @@ fun FilesInnerPage(
         showRenameDialog.value = true  // 显示弹窗
     }
 
-    val fileMenuKeyActList = listOf<(FileItemDto)->Unit>(
-        open@{ item:FileItemDto ->
+    val fileMenuKeyActList = listOf<(FileItemDto) -> Unit>(
+        open@{ item: FileItemDto ->
             val expectReadOnly = false
             requireInnerEditorOpenFile(item.fullPath, expectReadOnly)
             Unit
         },
 
-        openAs@{ item:FileItemDto ->
+        openAs@{ item: FileItemDto ->
             val showInnerEditor = false
             initOpenAsDialog(item.fullPath, showInnerEditor)
 
@@ -939,8 +931,8 @@ fun FilesInnerPage(
 //            }
 //            Unit
 //        },
-        renameFile ,
-        applyAsPatch@{item:FileItemDto ->
+        renameFile,
+        applyAsPatch@{ item: FileItemDto ->
             initApplyAsPatchDialog(item)
 //            Unit  // for make return type is Unit, or specify type at declare statement
         },
@@ -1007,23 +999,23 @@ fun FilesInnerPage(
         }
     )
 
-    val isImportMode = rememberSaveable { mutableStateOf(false)}
-    val showImportResultDialog = rememberSaveable { mutableStateOf(false)}
+    val isImportMode = rememberSaveable { mutableStateOf(false) }
+    val showImportResultDialog = rememberSaveable { mutableStateOf(false) }
 //    val successImportList = rememberSaveable { mutableStateListOf<String>() }
 //    val failedImportList = rememberSaveable { mutableStateListOf<String>() }
-    val failedImportListStr = rememberSaveable { mutableStateOf("")}
-    val successImportCount = rememberSaveable{mutableIntStateOf(0)}
-    val failedImportCount = rememberSaveable{mutableIntStateOf(0)}
+    val failedImportListStr = rememberSaveable { mutableStateOf("") }
+    val successImportCount = rememberSaveable { mutableIntStateOf(0) }
+    val failedImportCount = rememberSaveable { mutableIntStateOf(0) }
 
 
-    val getListState:(String)->LazyListState = { path:String ->
+    val getListState: (String) -> LazyListState = { path: String ->
         Cache.getFilesListStateByPath(path)
     }
 
     val breadCrumbListState = rememberLazyListState()
 
     //back handler block start
-    val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
+    val isBackHandlerEnable = rememberSaveable { mutableStateOf(true) }
 
     val backHandlerOnBack = getBackHandler(
         naviUp = naviUp,
@@ -1042,17 +1034,16 @@ fun FilesInnerPage(
         goToPath = goToPath,
         resetSearchVars = resetFilesSearchVars,
 
-    )
+        )
 
     //注册BackHandler，拦截返回键，实现双击返回和返回上级目录
-    BackHandler(enabled = isBackHandlerEnable.value, onBack = {backHandlerOnBack()})
+    BackHandler(enabled = isBackHandlerEnable.value, onBack = { backHandlerOnBack() })
     //back handler block end
 
 
-
     //导入失败则显示这个对话框，可以复制错误信息
-    if(showImportResultDialog.value) {
-        ConfirmDialog2 (
+    if (showImportResultDialog.value) {
+        ConfirmDialog2(
             title = stringResource(R.string.import_has_err),
             cancelBtnText = stringResource(R.string.close),
             showOk = false,
@@ -1061,14 +1052,14 @@ fun FilesInnerPage(
                 MySelectionContainer {
                     ScrollableColumn {
                         Row {
-                            Text(text = stringResource(R.string.import_success)+": "+successImportCount.value)
+                            Text(text = stringResource(R.string.import_success) + ": " + successImportCount.value)
                         }
                         Row {
-                            Text(text = stringResource(R.string.import_failed)+": "+failedImportCount.value)
+                            Text(text = stringResource(R.string.import_failed) + ": " + failedImportCount.value)
                         }
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        Row (modifier = Modifier.clickable {
+                        Row(modifier = Modifier.clickable {
                             clipboardManager.setText(AnnotatedString(failedImportListStr.value))
                             Msg.requireShow(activityContext.getString(R.string.copied))  //这里如果用 Msg.requierShow() 还得刷新页面才能看到信息，这个操作没必要刷新页面，不如直接用Toast，不过Toast怎么实现的？不用刷新页面吗？
                             //test x能) 测试下刷新页面是否就能看到信息且不影响弹窗（当然不会影响，因为显示弹窗的状态变量还是真啊！只要状态没变，页面还是一样）
@@ -1076,15 +1067,16 @@ fun FilesInnerPage(
 //                        changeStateTriggerRefreshPage(needRefreshFilesPage)
                             //test
                         }
-                        ){
-                            Text(text = stringResource(R.string.you_can_click_here_copy_err_msg),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.you_can_click_here_copy_err_msg),
                                 style = MyStyleKt.ClickableText.getStyle(),
                                 color = MyStyleKt.ClickableText.getColor(),
                             )
                         }
                         Spacer(modifier = Modifier.height(10.dp))
                         Row {
-                            Text(text = stringResource(R.string.err_msg)+":")
+                            Text(text = stringResource(R.string.err_msg) + ":")
                         }
                         Row {
                             Text(text = failedImportListStr.value, color = MyStyleKt.TextColor.error())
@@ -1099,15 +1091,15 @@ fun FilesInnerPage(
                 }
             },
             onCancel = { showImportResultDialog.value = false }
-        ){
-            showImportResultDialog.value=false
+        ) {
+            showImportResultDialog.value = false
         }
     }
 
 
 
 
-    if(showRenameDialog.value) {
+    if (showRenameDialog.value) {
         val focusRequester = remember { FocusRequester() }
 
         ConfirmDialog(
@@ -1118,42 +1110,43 @@ fun FilesInnerPage(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                      TextField(
-                          modifier = Modifier
-                              .fillMaxWidth()
-                              .padding(10.dp)
-                              .focusRequester(focusRequester)
-                          ,
-                          value = renameFileName.value,
-                          singleLine = true,
-                          isError = renameHasErr.value,
-                          supportingText = {
-                              if (renameHasErr.value) {
-                                  Text(
-                                      modifier = Modifier.fillMaxWidth(),
-                                      text = renameErrText.value,
-                                      color = MaterialTheme.colorScheme.error
-                                  )
-                              }
-                          },
-                          trailingIcon = {
-                              if (renameHasErr.value) {
-                                  Icon(imageVector=Icons.Filled.Error,
-                                      contentDescription=renameErrText.value,
-                                      tint = MaterialTheme.colorScheme.error)
-                                  }
-                          },
-                          onValueChange = {
-                              updateRenameFileName(it)
-                          },
-                          label = {
-                              Text(stringResource(R.string.file_name))
-                          },
-                          placeholder = {
-                              Text(stringResource(R.string.input_new_file_name))
-                          }
-                      )
-                  }
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                            .focusRequester(focusRequester),
+                        value = renameFileName.value,
+                        singleLine = true,
+                        isError = renameHasErr.value,
+                        supportingText = {
+                            if (renameHasErr.value) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = renameErrText.value,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        trailingIcon = {
+                            if (renameHasErr.value) {
+                                Icon(
+                                    imageVector = Icons.Filled.Error,
+                                    contentDescription = renameErrText.value,
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        onValueChange = {
+                            updateRenameFileName(it)
+                        },
+                        label = {
+                            Text(stringResource(R.string.file_name))
+                        },
+                        placeholder = {
+                            Text(stringResource(R.string.input_new_file_name))
+                        }
+                    )
+                }
             },
             onCancel = { showRenameDialog.value = false }
         ) {
@@ -1163,41 +1156,41 @@ fun FilesInnerPage(
 
                 val newFileName = renameFileName.value.text
                 val fileOrFolderNameCheckRet = checkFileOrFolderNameAndTryCreateFile(newFileName, activityContext)
-                if(fileOrFolderNameCheckRet.hasError()) {  // 检测是否有坏字符，例如路径分隔符
+                if (fileOrFolderNameCheckRet.hasError()) {  // 检测是否有坏字符，例如路径分隔符
                     renameHasErr.value = true
                     renameErrText.value = fileOrFolderNameCheckRet.msg
 
                     //检测新旧文件名是否相同 以及 新文件名是否已经存在，两者都视为文件已存在
-                }else if(newFileName == oldFileItemDto.name || isPathExists(File(oldFileItemDto.fullPath).parent, newFileName)) {
-                    renameHasErr.value=true
+                } else if (newFileName == oldFileItemDto.name || isPathExists(File(oldFileItemDto.fullPath).parent, newFileName)) {
+                    renameHasErr.value = true
                     renameErrText.value = activityContext.getString(R.string.file_already_exists)
-                }else {  //执行重命名文件
+                } else {  //执行重命名文件
                     showRenameDialog.value = false  //关闭弹窗
                     //执行重命名
-                    doJobThenOffLoading(loadingOn = loadingOn, loadingOff=loadingOff) {
+                    doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff) {
                         try {
                             val oldFile = File(oldFileItemDto.fullPath)
                             val newFile = File(File(oldFileItemDto.fullPath).parent, newFileName)
                             val renameSuccess = oldFile.renameTo(newFile)
-                            if(renameSuccess) {
+                            if (renameSuccess) {
                                 val newNameDto = FileItemDto.genFileItemDtoByFile(newFile, activityContext)
 
                                 //更新已选中条目列表
                                 val selectedItems = selectedItems.value
                                 selectedItems.toList().forEachIndexedBetter { idx, item ->
-                                    if(item == oldFileItemDto) {
+                                    if (item == oldFileItemDto) {
                                         selectedItems[idx] = newNameDto
                                     }
                                 }
 
 
                                 //刷新页面 或 更新过滤列表
-                                if(enableFilterState.value.not()) {
+                                if (enableFilterState.value.not()) {
                                     changeStateTriggerRefreshPage(needRefreshFilesPage)
-                                }else {
+                                } else {
                                     val filterList = filterList.value
                                     filterList.toList().forEachIndexedBetter { idx, item ->
-                                        if(item == oldFileItemDto) {
+                                        if (item == oldFileItemDto) {
                                             filterList[idx] = newNameDto
                                         }
                                     }
@@ -1205,20 +1198,20 @@ fun FilesInnerPage(
 
                                 //提示用户成功
                                 Msg.requireShow(activityContext.getString(R.string.success))
-                            }else {
+                            } else {
                                 Msg.requireShow(activityContext.getString(R.string.error))
                             }
-                        }catch (e:Exception) {
-                            Msg.requireShowLongDuration("rename failed: "+e.localizedMessage)
+                        } catch (e: Exception) {
+                            Msg.requireShowLongDuration("rename failed: " + e.localizedMessage)
                             MyLog.e(TAG, "rename failed: oldFile=${oldFileItemDto.fullPath}, newFileName=${newFileName}, err=${e.stackTraceToString()}")
                         }
 
                     }
                 }
-            }catch (outE:Exception) {
+            } catch (outE: Exception) {
                 renameHasErr.value = true
                 renameErrText.value = outE.localizedMessage ?: errorStrRes
-                MyLog.e(TAG, "#RenameDialog err: "+outE.stackTraceToString())
+                MyLog.e(TAG, "#RenameDialog err: " + outE.stackTraceToString())
             }
         }
 
@@ -1236,40 +1229,40 @@ fun FilesInnerPage(
         CreateFileOrFolderDialog2(
             fileName = fileNameForCreateDialog,
             errMsg = createFileOrFolderErrMsg,
-            onOk = f@{ fileOrFolderName: String, isDir:Boolean ->
+            onOk = f@{ fileOrFolderName: String, isDir: Boolean ->
                 //do create file or folder
                 try {
                     // if current path already deleted, then show err and abort create
-                    if(!File(currentPath()).exists()) {
+                    if (!File(currentPath()).exists()) {
                         throw RuntimeException(activityContext.getString(R.string.current_dir_doesnt_exist_anymore))
                     }
 
                     val fileOrFolderNameCheckRet = checkFileOrFolderNameAndTryCreateFile(fileOrFolderName, activityContext)
-                    if(fileOrFolderNameCheckRet.hasError()){
+                    if (fileOrFolderNameCheckRet.hasError()) {
                         createFileOrFolderErrMsg.value = fileOrFolderNameCheckRet.msg
                         return@f false
-                    }else {  //文件名ok，检查文件是否存在
+                    } else {  //文件名ok，检查文件是否存在
                         val file = File(currentPath(), fileOrFolderName)
                         if (file.exists()) {  //文件存在
                             createFileOrFolderErrMsg.value = fileAlreadyExistStrRes
                             return@f false
-                        }else {  //文件不存在（且文件名ok
-                            val isCreateSuccess = if(isDir) {  // create dir
+                        } else {  //文件不存在（且文件名ok
+                            val isCreateSuccess = if (isDir) {  // create dir
                                 file.mkdir()  //这不需要mkdirs()，用户肯定是在当前目录创建一层目录，所以mkdir()就够用了，而且路径分隔符 / 被检测文件名是否合法的函数当作非法字符，无法使用，所以用户其实也没法输入连环目录
-                            }else {  // create file
+                            } else {  // create file
                                 file.createNewFile()
                             }
 
                             //检测创建是否成功并显示提醒
                             if (isCreateSuccess) {  //创建成功
                                 Msg.requireShow(successStrRes)  //提示成功
-                                createFileOrFolderErrMsg.value=""  //清空错误信息
+                                createFileOrFolderErrMsg.value = ""  //清空错误信息
                                 fileNameForCreateDialog.value = TextFieldValue("")  //清空文件名
 
                                 //若创建的目录，创建完毕后打开
-                                if(isDir) {
+                                if (isDir) {
                                     goToPath(file.canonicalPath)
-                                }else {
+                                } else {
                                     changeStateTriggerRefreshPage(needRefreshFilesPage)
                                 }
 
@@ -1282,7 +1275,7 @@ fun FilesInnerPage(
                     }
                 } catch (e: Exception) {
                     createFileOrFolderErrMsg.value = e.localizedMessage ?: errorStrRes
-                    MyLog.e(TAG, "CreateFileOrFolderDialog in Files Page err: "+e.stackTraceToString())
+                    MyLog.e(TAG, "CreateFileOrFolderDialog in Files Page err: " + e.stackTraceToString())
 
                     return@f false
                 }
@@ -1331,45 +1324,44 @@ fun FilesInnerPage(
     // 向下滚动监听，结束
 
 
-
-    val findRepoThenGoToReposOrChangList = { fullPath:String, trueGoToReposFalseGoToChangeList:Boolean ->
+    val findRepoThenGoToReposOrChangList = { fullPath: String, trueGoToReposFalseGoToChangeList: Boolean ->
         doJobThenOffLoading job@{
             try {
                 val repo = Libgit2Helper.findRepoByPath(fullPath)
-                if(repo==null) {
+                if (repo == null) {
                     Msg.requireShow(activityContext.getString(R.string.not_found))
-                }else{
+                } else {
                     val repoWorkDir = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)
                     val onlyReturnReadyRepo = !trueGoToReposFalseGoToChangeList  // if go to repos page, no need require repo ready; if go to changelist, require a ready repo
                     val target = AppModel.dbContainer.repoRepository.getByFullSavePath(
                         repoWorkDir,
-                        onlyReturnReadyRepo=onlyReturnReadyRepo,
+                        onlyReturnReadyRepo = onlyReturnReadyRepo,
                         requireSyncRepoInfoWithGit = false
                     )
-                    if(target==null) {
+                    if (target == null) {
                         Msg.requireShow(activityContext.getString(R.string.not_found))
-                    }else {
-                        if(trueGoToReposFalseGoToChangeList) {
+                    } else {
+                        if (trueGoToReposFalseGoToChangeList) {
                             goToRepoPage(target.id)
-                        }else {
+                        } else {
                             goToChangeListPage(target)
                         }
                     }
                 }
 
-            }catch (e:Exception) {
-                Msg.requireShowLongDuration(e.localizedMessage ?:"err")
+            } catch (e: Exception) {
+                Msg.requireShowLongDuration(e.localizedMessage ?: "err")
                 MyLog.e(TAG, "#findRepoThenGoToReposOrChangList err: fullPath=$fullPath, trueGoToReposFalseGoToChangeList=$trueGoToReposFalseGoToChangeList, err=${e.localizedMessage}")
             }
         }
     }
 
 
-    val showInRepos = { fullPath:String ->
+    val showInRepos = { fullPath: String ->
         findRepoThenGoToReposOrChangList(fullPath, true)
     }
 
-    val showInChangeList = { fullPath:String ->
+    val showInChangeList = { fullPath: String ->
         findRepoThenGoToReposOrChangList(fullPath, false)
     }
 
@@ -1380,7 +1372,7 @@ fun FilesInnerPage(
     val onlyForThisFolderState = rememberSaveable { mutableStateOf(false) }
     val onlyForThisFolderStateBuf = rememberSaveable { mutableStateOf(false) }
 
-    if(showViewAndSortDialog.value) {
+    if (showViewAndSortDialog.value) {
         val height = 10.dp
         ConfirmDialog2(
             title = stringResource(R.string.view_and_sort),
@@ -1389,9 +1381,9 @@ fun FilesInnerPage(
                 ScrollableColumn {
                     SingleSelection(
                         itemList = SortMethod.entries,
-                        selected = {idx, item -> viewAndSortStateBuf.value.sortMethod == item.code},
-                        text = {idx, item -> SortMethod.getText(item, activityContext)},
-                        onClick = {idx, item -> viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(sortMethod = item.code)},
+                        selected = { idx, item -> viewAndSortStateBuf.value.sortMethod == item.code },
+                        text = { idx, item -> SortMethod.getText(item, activityContext) },
+                        onClick = { idx, item -> viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(sortMethod = item.code) },
                         minHeight = MyStyleKt.RadioOptions.middleHeight,
                     )
 
@@ -1400,7 +1392,7 @@ fun FilesInnerPage(
                         viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(ascend = newValue)
                     }
 
-                    MyCheckBox2(stringResource(R.string.folder_first), viewAndSortStateBuf.value.folderFirst) {newValue->
+                    MyCheckBox2(stringResource(R.string.folder_first), viewAndSortStateBuf.value.folderFirst) { newValue ->
                         viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(folderFirst = newValue)
                     }
                     Spacer(Modifier.height(height))
@@ -1413,14 +1405,14 @@ fun FilesInnerPage(
                 }
 
             },
-            onCancel = {showViewAndSortDialog.value = false}
+            onCancel = { showViewAndSortDialog.value = false }
         ) {
             showViewAndSortDialog.value = false
 
             doJobThenOffLoading {
                 // only update state and settings if has change
                 // in kotlin, left != right, should call equals() too
-                if(onlyForThisFolderStateBuf.value != onlyForThisFolderState.value || viewAndSortStateBuf.value.equals(viewAndSortState.value).not()) {
+                if (onlyForThisFolderStateBuf.value != onlyForThisFolderState.value || viewAndSortStateBuf.value.equals(viewAndSortState.value).not()) {
 
                     onlyForThisFolderState.value = onlyForThisFolderStateBuf.value
 
@@ -1432,9 +1424,9 @@ fun FilesInnerPage(
 
                     //update settings
                     settingsSnapshot.value = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
-                        if(onlyForThisFolderStateBuf.value) {
+                        if (onlyForThisFolderStateBuf.value) {
                             it.files.dirAndViewSort_Map.set(currentPath(), newViewAndSort)
-                        }else {  // set global sort method
+                        } else {  // set global sort method
                             // try remove, if hase dir specified sort method, if hasn't remove is ok as well, will not throw exception
                             it.files.dirAndViewSort_Map.remove(currentPath())
 
@@ -1454,8 +1446,8 @@ fun FilesInnerPage(
         contentPadding = contentPadding,
         onRefresh = { changeStateTriggerRefreshPage(needRefreshFilesPage) },
 
-    ) {
-        if(isLoading.value) {
+        ) {
+        if (isLoading.value) {
 //        LoadingDialog(loadingText.value)        //这个页面不适合用Dialog，页面会闪。
 
             LoadingTextCancellable(
@@ -1464,7 +1456,7 @@ fun FilesInnerPage(
                 showCancel = cancellableActRunning.value,
                 onCancel = cancelAct,  //这里直接传函数即可，仅当showCancel为真，才有可能调用此函数，所以不用检查是否需要传null
             )
-        }else {
+        } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1472,20 +1464,20 @@ fun FilesInnerPage(
 
             ) {
                 // bread crumb
-                if(currentPathBreadCrumbList.value.isEmpty()) {
-                    Row (modifier = Modifier
-                        .padding(5.dp)
-                        .horizontalScroll(rememberScrollState())
-                    ){
+                if (currentPathBreadCrumbList.value.isEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .padding(5.dp)
+                            .horizontalScroll(rememberScrollState())
+                    ) {
                         // noop, dead code, 之前可能进这里，但后来给面包屑强制添加了root path，所以其实应该不可能执行这里的代码了
                     }
-                }else {
+                } else {
                     LazyRow(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surfaceContainer)
-                            .padding(5.dp)
-                        ,
+                            .padding(5.dp),
                         state = breadCrumbListState,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -1495,20 +1487,20 @@ fun FilesInnerPage(
                             item {
                                 val separator = Cons.slash
                                 val breadCrumbDropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
-                                val curItemIsRoot = idx==0  // root path '/'
+                                val curItemIsRoot = idx == 0  // root path '/'
 //                            val curPathIsRoot = currentPath.value == separator
 //                            val curPathIsRootAndCurItemIsRoot = curPathIsRoot && curItemIsRoot
-                                val textColor = if(it.fullPath.startsWith(currentPath()+separator)) Color.Gray else Color.Unspecified
+                                val textColor = if (it.fullPath.startsWith(currentPath() + separator)) Color.Gray else Color.Unspecified
 
                                 //非根路径显示路径分割符
-                                if(curItemIsRoot.not()) {
+                                if (curItemIsRoot.not()) {
                                     Text(text = Cons.arrowToRight, color = textColor, fontWeight = FontWeight.Light)
                                 }
 
                                 Text(
                                     text = it.name,
                                     color = textColor,
-                                    fontWeight = if(it.fullPath == currentPath()) FontWeight.Bold else FontWeight.Normal,
+                                    fontWeight = if (it.fullPath == currentPath()) FontWeight.Bold else FontWeight.Normal,
                                     modifier = Modifier
                                         .combinedClickable(
                                             onLongClick = {  //long press will show menu for pressed path
@@ -1528,12 +1520,12 @@ fun FilesInnerPage(
                                 )
 
 
-                                if(breadCrumbDropDownMenuExpandState.value){
+                                if (breadCrumbDropDownMenuExpandState.value) {
                                     Column {
                                         val enableMenuItem = true
                                         //菜单列表
                                         DropdownMenu(
-                                            offset = DpOffset(x=0.dp, y=20.dp),
+                                            offset = DpOffset(x = 0.dp, y = 20.dp),
                                             expanded = breadCrumbDropDownMenuExpandState.value,
                                             onDismissRequest = { breadCrumbDropDownMenuExpandState.value = false }
                                         ) {
@@ -1548,7 +1540,7 @@ fun FilesInnerPage(
                                             )
 
 
-                                            if(isFileChooser.not()) {
+                                            if (isFileChooser.not()) {
                                                 DropdownMenuItem(
                                                     enabled = enableMenuItem,
                                                     text = { Text(stringResource(R.string.copy_repo_relative_path)) },
@@ -1624,9 +1616,9 @@ fun FilesInnerPage(
                         derivedStateOf {
                             //若当前目录在面包屑中的条目不可见，滚动使其可见
                             val indexOfCurPath = currentPathBreadCrumbList.value.indexOfFirst { it.fullPath == currentPath() }
-                            if(indexOfCurPath != -1) {
+                            if (indexOfCurPath != -1) {
                                 //滚动到当前条目前2个位置，不然当前条目在屏幕最左边，而比较顺眼的位置是最右边。。。。。不过滚动前2个位置只是粗略调整，没任何依据，如果当前文件夹名非常长的话，这样滚动就看不见了。。。。
-                                UIHelper.scrollToItem(scope, breadCrumbListState, indexOfCurPath-2)
+                                UIHelper.scrollToItem(scope, breadCrumbListState, indexOfCurPath - 2)
                             }
                         }
                     }.value;  //调用.value才会触发懒计算
@@ -1637,24 +1629,23 @@ fun FilesInnerPage(
                 val folderIsEmpty = currentPathFileList.value.isEmpty()
                 val hasErr = hasErr()
                 // if has err, show err, else show file list
-                if(hasErr || folderIsEmpty){
+                if (hasErr || folderIsEmpty) {
                     Column(
                         modifier = Modifier
                             .baseVerticalScrollablePageModifier(contentPadding, errScrollState)
-                            .padding(10.dp)
-                        ,
+                            .padding(10.dp),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         MySelectionContainer {
-                            if(hasErr){
+                            if (hasErr) {
                                 Text(getErr(), color = MyStyleKt.TextColor.error())
-                            }else if(folderIsEmpty) {
+                            } else if (folderIsEmpty) {
                                 Text(stringResource(R.string.folder_is_empty))
                             }  // else maybe
                         }
                     }
-                }else {
+                } else {
                     val keyword = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
                     val enableFilter = filterModeActuallyEnabled(filterOn = filesPageSimpleFilterOn.value, keyword = keyword)
 
@@ -1674,12 +1665,12 @@ fun FilesInnerPage(
                         match = { idx, it -> true },
                         customTask = {
                             val curDir = File(currentPath())
-                            if(curDir.canRead().not()) {  //目录不可读，提示下
+                            if (curDir.canRead().not()) {  //目录不可读，提示下
                                 Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
-                            }else { //目录可读，执行搜索
+                            } else { //目录可读，执行搜索
                                 val canceled = initSearch(keyword = keyword, lastKeyword = filesPageLastKeyword, token = filesPageSearchToken)
 
-                                val match = { idx:Int, it:File ->
+                                val match = { idx: Int, it: File ->
                                     val nameLowerCase = it.name.lowercase();
                                     //匹配名称 或 "*.txt"之类的后缀
                                     nameLowerCase.contains(keyword) || RegexUtil.matchWildcard(nameLowerCase, keyword)
@@ -1691,7 +1682,7 @@ fun FilesInnerPage(
                                 DirSearchUtil.realBreadthFirstSearch(
                                     dir = curDir,
                                     match = match,
-                                    matchedCallback = {idx, item -> filterList.value.add(FileItemDto.genFileItemDtoByFile(item, activityContext))},
+                                    matchedCallback = { idx, item -> filterList.value.add(FileItemDto.genFileItemDtoByFile(item, activityContext)) },
                                     canceled = canceled
                                 )
                             }
@@ -1699,7 +1690,7 @@ fun FilesInnerPage(
                     )
 
 
-                    val listState = if(enableFilter) filterListState else curListState.value
+                    val listState = if (enableFilter) filterListState else curListState.value
 
                     //更新是否启用filter
                     enableFilterState.value = enableFilter
@@ -1709,34 +1700,35 @@ fun FilesInnerPage(
                         list = currentPathFileList,
                         listState = listState,
                         requireForEachWithIndex = true,
-                        requirePaddingAtBottom =true
+                        requirePaddingAtBottom = true
                     ) { index, it ->
                         // 没测试，我看其他文件管理器针对目录都没open with，所以直接隐藏了) 需要测试：能否针对目录执行openwith？如果不能，对目录移除openwith选项
                         FileListItem(
-                            fullPathOfTopNoEndSlash = if(enableFilter) currentPath() else "",
+                            fullPathOfTopNoEndSlash = if (enableFilter) currentPath() else "",
                             item = it,
                             lastPathByPressBack = lastPathByPressBack.value,
                             isPasteMode = isPasteMode,
-                            menuKeyTextList = if(it.isFile) fileMenuKeyTextList else dirMenuKeyTextList,
-                            menuKeyActList = if(it.isFile) fileMenuKeyActList else dirMenuKeyActList,
-                            iconOnClick={  //点击文件或文件夹图标时的回调函数
+                            menuKeyTextList = if (it.isFile) fileMenuKeyTextList else dirMenuKeyTextList,
+                            menuKeyActList = if (it.isFile) fileMenuKeyActList else dirMenuKeyActList,
+                            iconOnClick = {  //点击文件或文件夹图标时的回调函数
                                 if (isFileChooser.not() && !isPasteMode.value && !isImportMode.value) {
                                     switchItemSelected(it)
                                 }
                             },
                             switchItemSelected = switchItemSelected,
-                            isItemInSelected=isItemInSelected,
+                            isItemInSelected = isItemInSelected,
                             itemOnLongClick = {
-                                if(isFileChooser.not()){
+                                if (isFileChooser.not()) {
                                     //如果不是选择模式或粘贴模式，切换为选择模式
                                     if (!isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
 //                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         switchItemSelected(it)
 
                                         //如果处于选择模式，长按执行连续选择
-                                    }else if(isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
+                                    } else if (isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
 //                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        UIHelper.doSelectSpan(index, it,
+                                        UIHelper.doSelectSpan(
+                                            index, it,
                                             //这里调用 toList() 是为了拷贝下源list，避免并发修改异常
                                             selectedItems.value.toList(), currentPathFileList.toList(),
                                             switchItemSelected,
@@ -1753,8 +1745,8 @@ fun FilesInnerPage(
                                 //关闭过滤模式的逻辑：如果是目录，一律关闭；如果是文件，判断是否用内部Editor打开，如果是关闭，否则不关闭。
                                 if (it.isFile) {
                                     //单选文件模式，点击文件后直接返回
-                                    if(isFileChooser) {
-                                        if(fileChooserType == FileChooserType.SINGLE_FILE) {
+                                    if (isFileChooser) {
+                                        if (fileChooserType == FileChooserType.SINGLE_FILE) {
                                             updateSelectedPath(it.fullPath)
                                             naviUp()
                                         }
@@ -1764,7 +1756,7 @@ fun FilesInnerPage(
                                     }
 
                                     //粘贴或导入模式下点击文件无效，除非先退出对应模式(不过没禁止通过三个点的菜单打开文件)
-                                    if(isPasteMode.value || isImportMode.value) {
+                                    if (isPasteMode.value || isImportMode.value) {
                                         return@itemOnClick
                                     }
 
@@ -1773,12 +1765,12 @@ fun FilesInnerPage(
                                     //goto editor page with file path
 
                                     //若匹配内部Editor关联文件类型，则打开
-                                    if(RegexUtil.matchWildcardList(it.name, settingsSnapshot.value.editor.fileAssociationList, ignoreCase = true)) {
+                                    if (RegexUtil.matchWildcardList(it.name, settingsSnapshot.value.editor.fileAssociationList, ignoreCase = true)) {
                                         //请求打开文件
                                         val expectReadOnly = false
                                         requireInnerEditorOpenFile(it.fullPath, expectReadOnly)
 
-                                    }else {  //非关联类型，尝试用外部软件打开
+                                    } else {  //非关联类型，尝试用外部软件打开
 
                                         //已废弃：若文件在只读目录，默认以只读方式打开
                                         //  readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(it.fullPath)
@@ -1794,7 +1786,7 @@ fun FilesInnerPage(
                                         //有后缀名并且不是 */*，则调用open file，请求系统显示能打开此类型文件的应用;
                                         // 如果是 */* 则代表检测文件类型失败，或者未知类型，这时应弹窗让用户选择具体类型
 //                                        if(hasExtension && mimeType != MimeType.ANY.intentType) {
-                                        if(mimeType != MimeType.ANY.intentType) {
+                                        if (mimeType != MimeType.ANY.intentType) {
 
                                             //请求外部打开（实际会显示支持此类型的app供用户选择）
                                             val openSuccess = FsUtils.openFile(
@@ -1809,7 +1801,7 @@ fun FilesInnerPage(
                                                 val showInnerEditor = true
                                                 initOpenAsDialog(it.fullPath, showInnerEditor)
                                             }
-                                        }else { // 无后缀或没检测出具体类型
+                                        } else { // 无后缀或没检测出具体类型
                                             val showInnerEditor = true
                                             initOpenAsDialog(it.fullPath, showInnerEditor)
                                         }
@@ -1817,7 +1809,7 @@ fun FilesInnerPage(
                                 } else {  // if(item.isDirectory) 点击目录，直接打开。
                                     //粘贴模式下点击被选中的文件夹无效，以免出现无限递归复制
                                     //导入模式不会选中PuppyGit app中的文件夹且所有文件夹都可点击，所以无需判断导入模式
-                                    if(isPasteMode.value && isItemInSelected(it)) {
+                                    if (isPasteMode.value && isItemInSelected(it)) {
                                         return@itemOnClick
                                     }
 
@@ -1842,24 +1834,23 @@ fun FilesInnerPage(
     }
 
 
-
     //x 废弃，一旋转屏幕，弹窗也会关闭，所以无所谓) 这个应该用remember，因为屏幕一旋转，选中列表会被清空，所以，就算显示删除对话框，也不知道该删什么
-    val showRemoveFromGitDialog = rememberSaveable { mutableStateOf(false)}
-    if(showRemoveFromGitDialog.value) {
+    val showRemoveFromGitDialog = rememberSaveable { mutableStateOf(false) }
+    if (showRemoveFromGitDialog.value) {
         ConfirmDialog(
             title = stringResource(id = R.string.remove_from_git),
             text = stringResource(R.string.will_remove_selected_items_from_git_are_u_sure),
             okTextColor = MyStyleKt.TextColor.danger(),
-            onCancel = { showRemoveFromGitDialog.value=false }
+            onCancel = { showRemoveFromGitDialog.value = false }
         ) {
             //关闭弹窗
             showRemoveFromGitDialog.value = false
 
             //执行删除
-            doJobThenOffLoading (loadingOn = loadingOn, loadingOff=loadingOff) {
+            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff) {
                 val selectedItems = selectedItems.value.toList()
 
-                if(selectedItems.isEmpty()) {
+                if (selectedItems.isEmpty()) {
                     Msg.requireShow(activityContext.getString(R.string.no_item_selected))
                     //退出选择模式和刷新页面
 //                    filesPageQuitSelectionMode()
@@ -1869,7 +1860,7 @@ fun FilesInnerPage(
 
                 //注意：如果选中的文件在不同的目录下，可能会失效，因为这里仅通过第一个元素查找仓库，多数情况下不会有问题，因为选择文件默认只能在同一目录选（虽然没严格限制导致有办法跳过）
                 var repoWillUse = Libgit2Helper.findRepoByPath(selectedItems[0].fullPath)
-                if(repoWillUse == null) {
+                if (repoWillUse == null) {
                     Msg.requireShowLongDuration(activityContext.getString(R.string.err_dir_is_not_a_git_repo))
                     //退出选择模式和刷新页面
 //                    filesPageQuitSelectionMode()
@@ -1910,7 +1901,6 @@ fun FilesInnerPage(
     }
 
 
-
     val showCopyOrMoveOrExportFileErrDialog = rememberSaveable { mutableStateOf(false) }
 //    val copyOrMoveOrExportFileErrList = mutableCustomStateListOf(stateKeyTag, "copyOrMoveOrExportFileErrList") { mutableListOf<PasteResult>() }
     val copyOrMoveOrExportFileErrMsg = rememberSaveable { mutableStateOf("") }
@@ -1928,7 +1918,7 @@ fun FilesInnerPage(
         showCopyOrMoveOrExportFileErrDialog.value = true
     }
 
-    if(showCopyOrMoveOrExportFileErrDialog.value) {
+    if (showCopyOrMoveOrExportFileErrDialog.value) {
         val closeAndRefreshPage = {
             //关弹窗
             showCopyOrMoveOrExportFileErrDialog.value = false
@@ -1955,7 +1945,7 @@ fun FilesInnerPage(
         }
     }
 
-    val copyOrMoveOrExportFile = copyOrMoveOrExportFile@{ srcList:List<FileItemDto>, targetFullPath:String, requireDeleteSrc:Boolean ->
+    val copyOrMoveOrExportFile = copyOrMoveOrExportFile@{ srcList: List<FileItemDto>, targetFullPath: String, requireDeleteSrc: Boolean ->
 //                if(pastMode.intValue == pastMode_Copy) {
 //                    //执行拷贝
 //                }else if(pastMode.intValue == pastMode_Move) {
@@ -1964,16 +1954,16 @@ fun FilesInnerPage(
 //                fileNeedOverrideList.clear()
         //其实不管拷贝还是移动都要先拷贝，区别在于移动后需要删除源目录
         //如果发现同名，添加到同名列表，弹窗询问是否覆盖。
-        doJobThenOffLoading (loadingOn = loadingOn, loadingOff=loadingOff) {
+        doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff) {
             val ret = FsUtils.copyOrMoveOrExportFile(srcList.map { it.toFile() }, File(targetFullPath), requireDeleteSrc)
-            if(ret.hasError()) {
-                if(ret.code == Ret.ErrCode.srcListIsEmpty) {
+            if (ret.hasError()) {
+                if (ret.code == Ret.ErrCode.srcListIsEmpty) {
                     Msg.requireShow(activityContext.getString(R.string.no_item_selected))
-                }else if(ret.code == Ret.ErrCode.targetIsFileButExpectDir) {
+                } else if (ret.code == Ret.ErrCode.targetIsFileButExpectDir) {
                     Msg.requireShow(activityContext.getString(R.string.err_target_is_file_but_expect_dir))
-                }else {  //若有错误信息则显示错误信息弹窗
+                } else {  //若有错误信息则显示错误信息弹窗
                     val errList = ret.data
-                    if(errList != null && errList.isNotEmpty()) {
+                    if (errList != null && errList.isNotEmpty()) {
                         initCopyOrMoveOrExportFileErrDialog(errList)
                     }
                 }
@@ -1995,18 +1985,18 @@ fun FilesInnerPage(
     val pasteMode_Move = 1
     val pasteMode_Copy = 2
     val pasteMode_None = 0  //不执行任何操作
-    val pasteMode = rememberSaveable{mutableIntStateOf(pasteMode_None)}
-    val setPasteModeThenShowPasteBar = { pastModeVal:Int ->
+    val pasteMode = rememberSaveable { mutableIntStateOf(pasteMode_None) }
+    val setPasteModeThenShowPasteBar = { pastModeVal: Int ->
         pasteMode.intValue = pastModeVal
-        isFileSelectionMode.value=false
-        isPasteMode.value=true
+        isFileSelectionMode.value = false
+        isPasteMode.value = true
     }
 
 
     val itemListForExport = mutableCustomStateListOf(stateKeyTag, "itemListForExport") { listOf<FileItemDto>() }
     val showSafImportDialog = rememberSaveable { mutableStateOf(false) }
     val showSafExportDialog = rememberSaveable { mutableStateOf(false) }
-    val initSafExportDialog = { itemList:List<FileItemDto> ->
+    val initSafExportDialog = { itemList: List<FileItemDto> ->
         itemListForExport.value.clear()
         itemListForExport.value.addAll(itemList)
 
@@ -2017,15 +2007,15 @@ fun FilesInnerPage(
         //检查目录是否可读
         val curPathReadable = try {
             File(currentPath()).canRead()
-        }catch (e:Exception) {
+        } catch (e: Exception) {
             false
         }
 
         //若可读则显示弹窗，否则提示读取路径失败
-        if(curPathReadable) {
+        if (curPathReadable) {
             showSafExportDialog.value = false
             showSafImportDialog.value = true
-        }else {
+        } else {
             Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
         }
     }
@@ -2035,19 +2025,19 @@ fun FilesInnerPage(
 
     val chooseDirLauncher = rememberLauncherForActivityResult(MyOpenDocumentTree()) { uri ->
         //执行导出
-        if(uri!=null) {
+        if (uri != null) {
             SafUtil.takePersistableRWPermission(activityContext.contentResolver, uri)
 
             choosenSafUri.value = uri
         }
     }
 
-    val showImportExportErrorDialog = rememberSaveable { mutableStateOf(false)}
-    val importExportErrorMsg = rememberSaveable { mutableStateOf("")}
+    val showImportExportErrorDialog = rememberSaveable { mutableStateOf(false) }
+    val importExportErrorMsg = rememberSaveable { mutableStateOf("") }
 
 
-    if(showSafExportDialog.value || showSafImportDialog.value) {
-        val importOrExportText = if(showSafExportDialog.value) stringResource(R.string.export) else stringResource(R.string.import_str)
+    if (showSafExportDialog.value || showSafImportDialog.value) {
+        val importOrExportText = if (showSafExportDialog.value) stringResource(R.string.export) else stringResource(R.string.import_str)
         val closeDialog = { showSafExportDialog.value = false; showSafImportDialog.value = false }
         ConfirmDialog2(
             title = importOrExportText,
@@ -2061,7 +2051,7 @@ fun FilesInnerPage(
                             },
                             content = {
                                 Text(
-                                    text = if(choosenSafUri.value == null) stringResource(R.string.select_path) else choosenSafUri.value.toString(),
+                                    text = if (choosenSafUri.value == null) stringResource(R.string.select_path) else choosenSafUri.value.toString(),
                                     color = UIHelper.getCardButtonTextColor(enabled = true, inDarkTheme = inDarkTheme)
                                 )
                             },
@@ -2085,13 +2075,13 @@ fun FilesInnerPage(
 
             closeDialog()
 
-            val loadingText = activityContext.getString(if(trueExportFalseImport) R.string.exporting else R.string.importing)
+            val loadingText = activityContext.getString(if (trueExportFalseImport) R.string.exporting else R.string.importing)
 
             doJobThenOffLoading {
                 val uri = choosenSafUri.value!!
-                val conflictStrategy = if(safImportExportOverwrite.value) FsUtils.CopyFileConflictStrategy.OVERWRITE_FOLDER_AND_FILE else FsUtils.CopyFileConflictStrategy.SKIP
+                val conflictStrategy = if (safImportExportOverwrite.value) FsUtils.CopyFileConflictStrategy.OVERWRITE_FOLDER_AND_FILE else FsUtils.CopyFileConflictStrategy.SKIP
                 val chosenDir = DocumentFile.fromTreeUri(activityContext, uri)
-                if(chosenDir==null) {
+                if (chosenDir == null) {
                     Msg.requireShow(activityContext.getString(R.string.err_documentfile_is_null))
                     return@doJobThenOffLoading
                 }
@@ -2100,7 +2090,7 @@ fun FilesInnerPage(
                 try {
                     loadingOnCancellable(loadingText)
 
-                    if(trueExportFalseImport) {
+                    if (trueExportFalseImport) {
                         FsUtils.recursiveExportFiles_Saf(
                             contentResolver = activityContext.contentResolver,
                             targetDir = chosenDir,
@@ -2108,7 +2098,7 @@ fun FilesInnerPage(
                             canceled = { requireCancelAct.value },
                             conflictStrategy = conflictStrategy
                         )
-                    }else {
+                    } else {
                         FsUtils.recursiveImportFiles_Saf(
                             contentResolver = activityContext.contentResolver,
                             targetDir = File(currentPath()),
@@ -2120,10 +2110,10 @@ fun FilesInnerPage(
 
                     // throw RuntimeException("测试异常！")  passed
                     Msg.requireShow(activityContext.getString(R.string.success))
-                }catch (cancelled: CancellationException){
+                } catch (cancelled: CancellationException) {
                     Msg.requireShow(activityContext.getString(R.string.canceled))
-                }catch (e:Exception) {
-                    MyLog.e(TAG, "#SafImportOrExportDialog err: "+e.stackTraceToString())
+                } catch (e: Exception) {
+                    MyLog.e(TAG, "#SafImportOrExportDialog err: " + e.stackTraceToString())
                     val errorMsg = "err: ${e.localizedMessage}"
                     //都显示弹窗了就不用toast了
 //                    Msg.requireShow(errorMsg)
@@ -2131,11 +2121,11 @@ fun FilesInnerPage(
                     //设置错误信息，显示个错误弹窗
                     importExportErrorMsg.value = errorMsg
                     showImportExportErrorDialog.value = true
-                }finally {
+                } finally {
                     loadingOffCancellable()
 
                     //如果是导入模式，结束后需要刷新页面
-                    if(!trueExportFalseImport) {
+                    if (!trueExportFalseImport) {
                         changeStateTriggerRefreshPage(needRefreshFilesPage)
                     }
                 }
@@ -2145,7 +2135,6 @@ fun FilesInnerPage(
     }
 
 
-
     val showSafDiffDialog = rememberSaveable { mutableStateOf(false) }
     val safDiffResultStr = rememberSaveable { mutableStateOf("") }
     val initSafDiffDialog = {
@@ -2153,7 +2142,7 @@ fun FilesInnerPage(
         showSafDiffDialog.value = true
     }
 
-    if(showSafDiffDialog.value) {
+    if (showSafDiffDialog.value) {
         val closeDialog = { showSafDiffDialog.value = false; cancelAct() }
 
         ConfirmDialog2(
@@ -2168,7 +2157,7 @@ fun FilesInnerPage(
                             },
                             content = {
                                 Text(
-                                    text = if(choosenSafUri.value == null) stringResource(R.string.select_path) else choosenSafUri.value.toString(),
+                                    text = if (choosenSafUri.value == null) stringResource(R.string.select_path) else choosenSafUri.value.toString(),
                                     color = UIHelper.getCardButtonTextColor(enabled = true, inDarkTheme = inDarkTheme)
                                 )
                             },
@@ -2178,10 +2167,10 @@ fun FilesInnerPage(
                     Spacer(Modifier.height(20.dp))
 
                     //正在运行，点击可取消；未运行，点击则执行比较
-                    SingleLineCardButton(text = if(cancellableActRunning.value) "Cancel!" else "Diff!", enabled = true) {
-                        if(cancellableActRunning.value) {  //正在运行，点击则取消
+                    SingleLineCardButton(text = if (cancellableActRunning.value) "Cancel!" else "Diff!", enabled = true) {
+                        if (cancellableActRunning.value) {  //正在运行，点击则取消
                             cancelAct()
-                        }else {  //未运行则点击执行比较
+                        } else {  //未运行则点击执行比较
                             // compare
                             doJobThenOffLoading(
                                 loadingOn = { startCancellableAct() },
@@ -2192,7 +2181,7 @@ fun FilesInnerPage(
                             ) {
                                 val uri = choosenSafUri.value!!
                                 val chosenDir = DocumentFile.fromTreeUri(activityContext, uri)
-                                if(chosenDir==null) {
+                                if (chosenDir == null) {
                                     Msg.requireShow(activityContext.getString(R.string.err_documentfile_is_null))
                                     return@doJobThenOffLoading
                                 }
@@ -2218,15 +2207,15 @@ fun FilesInnerPage(
                                     safDiffResultStr.value = "spent time: $spentTime second(s)\n\n------------\n\n$result"
 
                                     Msg.requireShow(activityContext.getString(R.string.done))
-                                }catch (cancelled: CancellationException){
+                                } catch (cancelled: CancellationException) {
                                     safDiffResultStr.value = ""
                                     Msg.requireShow(activityContext.getString(R.string.canceled))
-                                }catch (openInputStreamFailed: OpenInputStreamFailed){
+                                } catch (openInputStreamFailed: OpenInputStreamFailed) {
                                     val errMsg = "open input stream for uri failed"
                                     safDiffResultStr.value = openInputStreamFailed.localizedMessage ?: errMsg
                                     Msg.requireShow(errMsg)
-                                }catch (e:Exception) {
-                                    MyLog.e(TAG, "#SafDiffDialog err: "+e.stackTraceToString())
+                                } catch (e: Exception) {
+                                    MyLog.e(TAG, "#SafDiffDialog err: " + e.stackTraceToString())
                                     val errorMsg = "err: ${e.localizedMessage}"
                                     //都显示弹窗了就不用toast了
 //                    Msg.requireShow(errorMsg)
@@ -2239,7 +2228,7 @@ fun FilesInnerPage(
                         }
                     }
 
-                    if(safDiffResultStr.value.isNotBlank()) {
+                    if (safDiffResultStr.value.isNotBlank()) {
                         Spacer(Modifier.height(20.dp))
 
                         MySelectionContainer {
@@ -2270,14 +2259,14 @@ fun FilesInnerPage(
 
     val chooseDirLauncherThenExport = rememberLauncherForActivityResult(MyOpenDocumentTree()) exportSaf@{ uri ->
         //执行导出
-        if(uri!=null) {
+        if (uri != null) {
             SafUtil.takePersistableRWPermission(activityContext.contentResolver, uri)
 
             val loadingText = activityContext.getString(R.string.exporting)
 
             doJobThenOffLoading {
                 val chosenDir = DocumentFile.fromTreeUri(activityContext, uri)
-                if(chosenDir==null) {
+                if (chosenDir == null) {
                     Msg.requireShow(activityContext.getString(R.string.err_get_export_dir_failed))
                     return@doJobThenOffLoading
                 }
@@ -2293,38 +2282,38 @@ fun FilesInnerPage(
                     )
                     // throw RuntimeException("测试异常！")  passed
                     Msg.requireShow(activityContext.getString(R.string.export_success))
-                }catch (cancelled: CancellationException){
+                } catch (cancelled: CancellationException) {
                     Msg.requireShow(activityContext.getString(R.string.canceled))
-                }catch (e:Exception) {
-                    MyLog.e(TAG, "#exportSaf@ err: "+e.stackTraceToString())
+                } catch (e: Exception) {
+                    MyLog.e(TAG, "#exportSaf@ err: " + e.stackTraceToString())
                     val exportErrStrRes = activityContext.getString(R.string.export_err)
                     Msg.requireShow(exportErrStrRes)
-                    importExportErrorMsg.value = "$exportErrStrRes: "+e.localizedMessage
+                    importExportErrorMsg.value = "$exportErrStrRes: " + e.localizedMessage
                     showImportExportErrorDialog.value = true
-                }finally {
+                } finally {
                     loadingOffCancellable()
                 }
             }
 
-        }else {  //用户如果没选目录，uri就会等于null
+        } else {  //用户如果没选目录，uri就会等于null
             Msg.requireShow(activityContext.getString(R.string.export_canceled))
         }
     }
 
-    if(showInitRepoDialog.value) {
+    if (showInitRepoDialog.value) {
         val selctedDirs = initRepoList.value
 
-        if(selctedDirs.isEmpty()) {
+        if (selctedDirs.isEmpty()) {
             showInitRepoDialog.value = false
             Msg.requireShow(stringResource(R.string.no_dir_selected))
-        }else {
+        } else {
             ConfirmDialog(
                 title = stringResource(R.string.init_repo),
                 text = stringResource(R.string.will_init_selected_folders_to_git_repos_are_you_sure),
                 okBtnEnabled = selctedDirs.isNotEmpty(),
-                onCancel = { showInitRepoDialog.value = false}
+                onCancel = { showInitRepoDialog.value = false }
             ) {
-                showInitRepoDialog.value=false
+                showInitRepoDialog.value = false
                 doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                     try {
                         var successCnt = 0
@@ -2332,20 +2321,20 @@ fun FilesInnerPage(
                             try {
                                 Libgit2Helper.initGitRepo(dirPath)
                                 successCnt++
-                            }catch (e:Exception) {
+                            } catch (e: Exception) {
 //                            Msg.requireShowLongDuration(e.localizedMessage ?: "err")
                                 MyLog.e(TAG, "init repo in FilesPage err: path=${dirPath}, err=${e.localizedMessage}")
                             }
                         }
 
-                        Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_inited), listOf(""+successCnt)))
-                    }finally {
-                        if(enableFilterState.value.not()) {
+                        Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_inited), listOf("" + successCnt)))
+                    } finally {
+                        if (enableFilterState.value.not()) {
                             changeStateTriggerRefreshPage(needRefreshFilesPage)
-                        }else {
+                        } else {
                             val filterList = filterList.value
                             filterList.toList().forEachIndexedBetter { idx, item ->
-                                if(selctedDirs.contains(item.fullPath)) {
+                                if (selctedDirs.contains(item.fullPath)) {
                                     filterList[idx] = FileItemDto.genFileItemDtoByFile(File(item.fullPath), activityContext)
                                 }
                             }
@@ -2358,21 +2347,22 @@ fun FilesInnerPage(
     }
 
 
-    if(showImportAsRepoDialog.value) {
+    if (showImportAsRepoDialog.value) {
         val selctedDirs = importAsRepoList.value
 
-        if(selctedDirs.isEmpty()) {
+        if (selctedDirs.isEmpty()) {
             showImportAsRepoDialog.value = false
             Msg.requireShow(stringResource(R.string.no_dir_selected))
-        }else {
+        } else {
             ConfirmDialog(
                 title = stringResource(R.string.import_repo),
                 requireShowTextCompose = true,
                 textCompose = {
-                    Column(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(5.dp)
-                        .verticalScroll(rememberScrollState())
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(5.dp)
+                            .verticalScroll(rememberScrollState())
                     ) {
                         GrantManageStoragePermissionClickableText(activityContext)
 
@@ -2382,7 +2372,7 @@ fun FilesInnerPage(
 
                         Spacer(Modifier.height(5.dp))
 
-                        if(isReposParentFolderForImport.value) {
+                        if (isReposParentFolderForImport.value) {
                             DefaultPaddingText(stringResource(R.string.will_scan_repos_under_folders))
                         }
                     }
@@ -2396,7 +2386,7 @@ fun FilesInnerPage(
                     val importRepoResult = ImportRepoResult()
                     try {
                         selctedDirs.forEachBetter { dirPath ->
-                            val result = AppModel.dbContainer.repoRepository.importRepos(dir=dirPath, isReposParent=isReposParentFolderForImport.value)
+                            val result = AppModel.dbContainer.repoRepository.importRepos(dir = dirPath, isReposParent = isReposParentFolderForImport.value)
                             importRepoResult.all += result.all
                             importRepoResult.success += result.success
                             importRepoResult.failed += result.failed
@@ -2405,12 +2395,12 @@ fun FilesInnerPage(
 
                         showImportAsRepoDialog.value = false
 
-                        Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_imported), listOf(""+importRepoResult.success)))
-                    }catch (e:Exception) {
+                        Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_imported), listOf("" + importRepoResult.success)))
+                    } catch (e: Exception) {
                         //出错的时候，importRepoResult的计数不一定准，有可能比实际成功和失败的少，不过不可能多
-                        MyLog.e(TAG, "import repo from FilesPage err: importRepoResult=$importRepoResult, err="+e.stackTraceToString())
+                        MyLog.e(TAG, "import repo from FilesPage err: importRepoResult=$importRepoResult, err=" + e.stackTraceToString())
                         Msg.requireShowLongDuration("err: ${e.localizedMessage}")
-                    }finally {
+                    } finally {
                         // because import doesn't change Files page, so need not do anything yet
                     }
                 }
@@ -2420,7 +2410,7 @@ fun FilesInnerPage(
     }
 
 
-    if(showDetailsDialog.value) {
+    if (showDetailsDialog.value) {
         val itemList = details_itemList.value
         ConfirmDialog2(
             title = stringResource(id = R.string.details),
@@ -2430,9 +2420,14 @@ fun FilesInnerPage(
                 MySelectionContainer {
                     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                         //这显示的是选中条目数，如果size==1显示，会产生是文件夹内文件和文件夹数量的错觉，令人困惑
-                        if(itemList.size > 1) {
+                        if (itemList.size > 1) {
                             Row {
-                                Text(text = replaceStringResList(stringResource(R.string.items_n1_n2_folders_n3_files), listOf(""+details_AllCount.intValue, ""+details_FoldersCount.intValue, ""+details_FilesCount.intValue)))
+                                Text(
+                                    text = replaceStringResList(
+                                        stringResource(R.string.items_n1_n2_folders_n3_files),
+                                        listOf("" + details_AllCount.intValue, "" + details_FoldersCount.intValue, "" + details_FilesCount.intValue)
+                                    )
+                                )
                             }
 
                             Spacer(modifier = Modifier.height(15.dp))
@@ -2440,37 +2435,47 @@ fun FilesInnerPage(
 
                         Row {
                             // if counting not finished: "123MB..." else "123MB"
-                            Text(text = replaceStringResList(stringResource(R.string.size_n), listOf(getHumanReadableSizeStr(details_ItemsSize.longValue))) + (if (details_CountingItemsSize.value) "..." else ""))
+                            Text(
+                                text = replaceStringResList(
+                                    stringResource(R.string.size_n),
+                                    listOf(getHumanReadableSizeStr(details_ItemsSize.longValue))
+                                ) + (if (details_CountingItemsSize.value) Cons.oneChar3dots else "")
+                            )
                         }
 
 
                         //when only selected 1 item, show it's name and path
-                        if(itemList.size==1) {
+                        if (itemList.size == 1) {
                             val item = itemList[0]
 
                             Spacer(modifier = Modifier.height(15.dp))
 
                             Row {
-                                Text(text = stringResource(R.string.name)+": "+item.name)
+                                Text(text = stringResource(R.string.name) + ": " + item.name)
                             }
 
-                            if(item.isDir) {
+                            if (item.isDir) {
                                 Spacer(modifier = Modifier.height(15.dp))
                                 Row {
-                                    Text(text = replaceStringResList(stringResource(R.string.item_count_n), listOf(replaceStringResList(stringResource(R.string.folder_n_file_m), listOf(""+item.folderCount, ""+item.fileCount)))))
+                                    Text(
+                                        text = replaceStringResList(
+                                            stringResource(R.string.item_count_n),
+                                            listOf(replaceStringResList(stringResource(R.string.folder_n_file_m), listOf("" + item.folderCount, "" + item.fileCount)))
+                                        )
+                                    )
                                 }
                             }
 
                             Spacer(modifier = Modifier.height(15.dp))
 
                             Row {
-                                Text(text = stringResource(R.string.path)+": "+item.fullPath)
+                                Text(text = stringResource(R.string.path) + ": " + item.fullPath)
                             }
 
                             Spacer(modifier = Modifier.height(15.dp))
 
                             Row {
-                                Text(text = stringResource(R.string.last_modified)+": "+item.lastModifiedTime)
+                                Text(text = stringResource(R.string.last_modified) + ": " + item.lastModifiedTime)
                             }
 
 //                            Spacer(modifier = Modifier.height(15.dp))
@@ -2484,7 +2489,7 @@ fun FilesInnerPage(
             //隐藏取消按钮，点击ok和点击弹窗外区域关闭弹窗
             showCancel = false,  //隐藏取消按钮
             onCancel = {},  //因为隐藏了取消按钮，所以执行操作传空即可
-            onDismiss = {showDetailsDialog.value = false},  //点击弹窗外区域执行的操作
+            onDismiss = { showDetailsDialog.value = false },  //点击弹窗外区域执行的操作
             okBtnText = stringResource(R.string.close),
         ) {  // onOk
             showDetailsDialog.value = false
@@ -2502,31 +2507,37 @@ fun FilesInnerPage(
 //    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     val showSelectedItemsShortDetailsDialogForImportMode = rememberSaveable { mutableStateOf(false) }
 //    val selectedItemsShortDetailsStrForImportMode = rememberSaveable { mutableStateOf("")}
-    if(showSelectedItemsShortDetailsDialog.value) {
+    if (showSelectedItemsShortDetailsDialog.value) {
         SelectedFileListItem(
-           list = selectedItems.value,
-            textFormatterForCopy = {it.name+"\n"+it.fullPath+"\n\n"},
+            list = selectedItems.value,
+            textFormatterForCopy = { it.name + "\n" + it.fullPath + "\n\n" },
             removeItem = switchItemSelected,
-            clearAll = {selectedItems.value.clear()},
+            clearAll = { selectedItems.value.clear() },
             goToParentAndScrollToItem = goToParentAndScrollToItem,
-            closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
+            closeDialog = { showSelectedItemsShortDetailsDialog.value = false }
         )
     }
 
-    if(showSelectedItemsShortDetailsDialogForImportMode.value) {
+    if (showSelectedItemsShortDetailsDialogForImportMode.value) {
         SelectedItemDialog(
             title = stringResource(R.string.import_str),
             selectedItems = requireImportUriList.value,
-            formatter = {if(AppModel.devModeOn) it.toString() else {FsUtils.getFileRealNameFromUri(activityContext, it) ?: it.path ?: ""}},
-            clearAll = {requireImportUriList.value.clear()},
-            switchItemSelected = {requireImportUriList.value.remove(it)},
-            closeDialog = {showSelectedItemsShortDetailsDialogForImportMode.value = false}
+            formatter = {
+                if (AppModel.devModeOn) {
+                    it.toString()
+                } else {
+                    FsUtils.getFileRealNameFromUri(activityContext, it) ?: it.toString()
+                }
+            },
+            clearAll = { requireImportUriList.value.clear() },
+            switchItemSelected = { requireImportUriList.value.remove(it) },
+            closeDialog = { showSelectedItemsShortDetailsDialogForImportMode.value = false }
         )
     }
 
 
-    val showIgnoreDialog = rememberSaveable { mutableStateOf(false)}
-    if(showIgnoreDialog.value) {
+    val showIgnoreDialog = rememberSaveable { mutableStateOf(false) }
+    if (showIgnoreDialog.value) {
         val selectedItems = selectedItems.value
 
         GitIgnoreDialog(
@@ -2537,22 +2548,22 @@ fun FilesInnerPage(
             getRepository = {
                 try {
                     var repoWillUse = Libgit2Helper.findRepoByPath(selectedItems[0].fullPath)
-                    if(repoWillUse == null) {
+                    if (repoWillUse == null) {
                         Msg.requireShowLongDuration(activityContext.getString(R.string.err_dir_is_not_a_git_repo))
                     }
 
                     repoWillUse
-                }catch (e:Exception) {
+                } catch (e: Exception) {
                     MyLog.e(TAG, "#getRepository err: ${e.stackTraceToString()}")
                     Msg.requireShowLongDuration("err: ${e.localizedMessage}")
 
                     null
                 }
             },
-            getIgnoreItems = { repoWorkDirFullPath:String ->
+            getIgnoreItems = { repoWorkDirFullPath: String ->
                 //这里不用捕获异常，若出错，会在onCatch处理
                 val selectedItemList = selectedItems.toList()
-                if(selectedItemList.isEmpty()) {
+                if (selectedItemList.isEmpty()) {
                     Msg.requireShowLongDuration(activityContext.getString(R.string.no_item_selected))
                 }
 
@@ -2560,7 +2571,7 @@ fun FilesInnerPage(
                     IgnoreItem(pathspec = getFilePathUnderParent(repoWorkDirFullPath, it.fullPath), isFile = it.isFile)
                 }
             },
-            onCatch = { e:Exception ->
+            onCatch = { e: Exception ->
                 val errMsg = e.localizedMessage
                 Msg.requireShowLongDuration("err: " + errMsg)
                 MyLog.e(TAG, "ignore files err: ${e.stackTraceToString()}")
@@ -2569,14 +2580,13 @@ fun FilesInnerPage(
                 //过滤模式关闭 且 当前目录是仓库workdir根目录则刷新页面
                 //过滤模式不刷新页面：过滤模式涉及递归搜索，忽略文件没必要重新过滤，顶多遗漏一个新增的.gitignore文件，可以接受
                 //当前目录非仓库workdir根目录不刷新页面：因为只有仓库根目录可能的.gitignore文件可能会被创建或更新，所以只有当前目录为仓库workdir根目录，才有必要刷新
-                if(enableFilterState.value.not() && currentPath() == repoWorkDirFullPath) {
+                if (enableFilterState.value.not() && currentPath() == repoWorkDirFullPath) {
                     //因为有可能会添加 .gitignore 文件，所以需要刷新下页面
                     changeStateTriggerRefreshPage(needRefreshFilesPage)
                 }
             }
         )
     }
-
 
 
     val countNumOnClickForSelectAndPasteModeBottomBar = {
@@ -2591,7 +2601,7 @@ fun FilesInnerPage(
     //Bottom bar，一个是选择模式，一个是粘贴模式
     val isFileChooserAndSingleDirType = isFileChooser && fileChooserType == FileChooserType.SINGLE_DIR
     if (isFileChooserAndSingleDirType || isFileSelectionMode.value) {
-        val selectionModeIconList = if(isFileChooserAndSingleDirType) {
+        val selectionModeIconList = if (isFileChooserAndSingleDirType) {
             listOf(
                 Icons.Filled.Check, // 确定选择这个目录
             )
@@ -2605,7 +2615,7 @@ fun FilesInnerPage(
         }
 
         val selectAll = {
-            val list = if(enableFilterState.value) filterList.value else currentPathFileList.value
+            val list = if (enableFilterState.value) filterList.value else currentPathFileList.value
 
             list.toList().forEachBetter {
                 selectItem(it)
@@ -2614,7 +2624,7 @@ fun FilesInnerPage(
             Unit
         }
 
-        val selectionModeIconTextList = if(isFileChooserAndSingleDirType){
+        val selectionModeIconTextList = if (isFileChooserAndSingleDirType) {
             listOf(
                 stringResource(R.string.confirm), // 确定选择
             )
@@ -2627,23 +2637,23 @@ fun FilesInnerPage(
             )
         }
 
-        val confirmForChooser = { path:String ->
+        val confirmForChooser = { path: String ->
             updateSelectedPath(path)
             naviUp()
         }
 
-        val confirmForMultiChooser = { path:List<FileItemDto> ->
+        val confirmForMultiChooser = { path: List<FileItemDto> ->
             // not impemented yet
         }
 
-        val selectionModeIconOnClickList = if(isFileChooserAndSingleDirType){
+        val selectionModeIconOnClickList = if (isFileChooserAndSingleDirType) {
             listOf(
                 confirm@{
                     confirmForChooser(currentPath())
                 }
             )
         } else {
-            listOf<()->Unit>(
+            listOf<() -> Unit>(
                 delete@{
                     initDelFileDialog(selectedItems.value)
                 },
@@ -2659,17 +2669,17 @@ fun FilesInnerPage(
             )
         }
 
-        val selectionModeIconEnableList = if(isFileChooserAndSingleDirType) {
+        val selectionModeIconEnableList = if (isFileChooserAndSingleDirType) {
             listOf(
                 //单选模式永远启用确认，点击确认即代表选择当前目录，如果选文件的话，需要额外处理，点击文件条目时获取文件路径并返回，就不需要显示这个确认了
                 confirm@{ true },  //是否启用确认
             )
         } else {
             listOf(
-                delete@{getSelectedFilesCount()>0},  //是否启用delete
-                move@{getSelectedFilesCount()>0},  //是否启用move
-                copy@{getSelectedFilesCount()>0},  //是否启用copy
-                selectAll@{true},  //是否启用全选
+                delete@{ getSelectedFilesCount() > 0 },  //是否启用delete
+                move@{ getSelectedFilesCount() > 0 },  //是否启用move
+                copy@{ getSelectedFilesCount() > 0 },  //是否启用copy
+                selectAll@{ true },  //是否启用全选
             )
         }
 
@@ -2677,9 +2687,9 @@ fun FilesInnerPage(
             stringResource(id = R.string.ignore),
             stringResource(id = R.string.remove_from_git),
             stringResource(id = R.string.details),
-            if(proFeatureEnabled(importReposFromFilesTestPassed)) stringResource(id = R.string.import_as_repo) else "",  // empty string will be ignore when display menu items
-            if(proFeatureEnabled(initRepoFromFilesPageTestPassed)) stringResource(id = R.string.init_repo) else "",
-            if(showImportForBottomBar) stringResource(R.string.import_str) else "", // 底栏没必要显示import，避免以后修改，保留代码，用开关变量控制是否显示
+            if (proFeatureEnabled(importReposFromFilesTestPassed)) stringResource(id = R.string.import_as_repo) else "",  // empty string will be ignore when display menu items
+            if (proFeatureEnabled(initRepoFromFilesPageTestPassed)) stringResource(id = R.string.init_repo) else "",
+            if (showImportForBottomBar) stringResource(R.string.import_str) else "", // 底栏没必要显示import，避免以后修改，保留代码，用开关变量控制是否显示
             stringResource(R.string.export),
         ))
 
@@ -2744,7 +2754,7 @@ fun FilesInnerPage(
                 //只要当前目录可读，就启用import
                 try {
                     File(currentPath()).canRead()
-                }catch (_:Exception) {
+                } catch (_: Exception) {
                     false
                 }
             },
@@ -2753,35 +2763,35 @@ fun FilesInnerPage(
         ))
 
 
-        if(!isLoading.value) {
-            if(isFileChooser) {
+        if (!isLoading.value) {
+            if (isFileChooser) {
                 BottomBar(
                     showClose = false,
                     showSelectedCount = false,
-                    quitSelectionMode={},
-                    iconList=selectionModeIconList,
-                    iconTextList=selectionModeIconTextList,
-                    iconDescTextList=selectionModeIconTextList,
-                    iconOnClickList=selectionModeIconOnClickList,
-                    iconEnableList=selectionModeIconEnableList,
-                    moreItemTextList= listOf(),
-                    moreItemOnClickList= listOf(),
+                    quitSelectionMode = {},
+                    iconList = selectionModeIconList,
+                    iconTextList = selectionModeIconTextList,
+                    iconDescTextList = selectionModeIconTextList,
+                    iconOnClickList = selectionModeIconOnClickList,
+                    iconEnableList = selectionModeIconEnableList,
+                    moreItemTextList = listOf(),
+                    moreItemOnClickList = listOf(),
                     moreItemEnableList = listOf(),
                     getSelectedFilesCount = getSelectedFilesCount,
                     countNumOnClickEnabled = true,
                     countNumOnClick = countNumOnClickForSelectAndPasteModeBottomBar,
                     reverseMoreItemList = true
                 )
-            }else {
+            } else {
                 BottomBar(
-                    quitSelectionMode=filesPageQuitSelectionMode,
-                    iconList=selectionModeIconList,
-                    iconTextList=selectionModeIconTextList,
-                    iconDescTextList=selectionModeIconTextList,
-                    iconOnClickList=selectionModeIconOnClickList,
-                    iconEnableList=selectionModeIconEnableList,
-                    moreItemTextList=selectionModeMoreItemTextList,
-                    moreItemOnClickList=selectionModeMoreItemOnClickList,
+                    quitSelectionMode = filesPageQuitSelectionMode,
+                    iconList = selectionModeIconList,
+                    iconTextList = selectionModeIconTextList,
+                    iconDescTextList = selectionModeIconTextList,
+                    iconOnClickList = selectionModeIconOnClickList,
+                    iconEnableList = selectionModeIconEnableList,
+                    moreItemTextList = selectionModeMoreItemTextList,
+                    moreItemOnClickList = selectionModeMoreItemOnClickList,
                     moreItemEnableList = selectionModeMoreItemEnableList,
                     getSelectedFilesCount = getSelectedFilesCount,
                     countNumOnClickEnabled = true,
@@ -2793,22 +2803,16 @@ fun FilesInnerPage(
     }
 
 
-
-
-
-
-
-
     //导入模式
 
     val quitImportMode = {
-        isImportMode.value=false
+        isImportMode.value = false
         requireImportUriList.value.clear()
     }
 
-    val getRequireUriFilesCount = {requireImportUriList.value.size}
+    val getRequireUriFilesCount = { requireImportUriList.value.size }
 
-    if(isImportMode.value) {
+    if (isImportMode.value) {
         val selectionModeIconList = listOf(
             Icons.Filled.FileDownload,
         )
@@ -2817,7 +2821,7 @@ fun FilesInnerPage(
         )
         val selectionModeIconOnClickList = listOf(
             importFiles@{
-                doJobThenOffLoading (loadingOn = loadingOn, loadingOff=loadingOff, loadingText=activityContext.getString(R.string.importing)) {
+                doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.importing)) {
 //                    val successList = mutableListOf<String>()
 //                    val failedList = mutableListOf<String>()
                     val sb = StringBuilder()
@@ -2825,12 +2829,12 @@ fun FilesInnerPage(
                     var failedCnt = 0
 
                     val dest = currentPath()
-                    var previousFilePath=""
-                    var curTarget:File?=null
+                    var previousFilePath = ""
+                    var curTarget: File? = null
 
-                    requireImportUriList.value.toList().forEachBetter forEach@{ it:Uri? ->
+                    requireImportUriList.value.toList().forEachBetter forEach@{ it: Uri? ->
                         try {
-                            if(it!=null && it.path!=null && it.path!!.length>0) {
+                            if (it != null && it.path != null && it.path!!.length > 0) {
                                 //从这到更新curTarget，curTarget和perviousFilePath都应该相同
 
                                 //有的文件管理器提供的路径即使执行到这里也是转码过的，
@@ -2844,9 +2848,9 @@ fun FilesInnerPage(
 //                                val srcDocumentFile = FsUtils.getDocumentFileFromUri(appContext, it)
 
                                 val src = File(it.path!!)
-                                if(src.isDirectory) {  //不支持拷贝目录
+                                if (src.isDirectory) {  //不支持拷贝目录
                                     failedCnt++
-                                    sb.appendLine("'${it.path}'"+": is a directory, only support import files!")
+                                    sb.appendLine("'${it.path}'" + ": is a directory, only support import files!")
                                     return@forEach
                                 }
 
@@ -2854,11 +2858,11 @@ fun FilesInnerPage(
 
                                 //尝试获取真实文件名
                                 var srcFileName = FsUtils.getFileRealNameFromUri(activityContext, it)
-                                if(srcFileName==null) {  //获取真实文件名失败
+                                if (srcFileName == null) {  //获取真实文件名失败
                                     //尝试获取uri中的文件名，可能和真实文件名不符
                                     srcFileName = src.name
                                     MyLog.w(TAG, "#importFiles@: getFileRealNameFromUri() return null, will use src.name:${srcFileName}")
-                                    if(srcFileName.isNullOrEmpty()) {  //获取文件名失败
+                                    if (srcFileName.isNullOrEmpty()) {  //获取文件名失败
                                         //真实文件名和src.name都获取失败，生成个随机文件名，不过如果代码执行到这，我估计多半拷贝不了文件，连文件名都没有，一般是哪里出问题了才会这样
                                         val randomName = getShortUUID()
                                         srcFileName = randomName
@@ -2872,9 +2876,9 @@ fun FilesInnerPage(
                                 curTarget = File(target.canonicalPath)  //获得target后，立刻创建一个拷贝，用来在异常时判断是否更新了target来决定是否删除target
 //                                println("target.canonicalPath:::"+target.canonicalPath)
                                 val inputStream = activityContext.contentResolver.openInputStream(it)
-                                if(inputStream==null) {
+                                if (inputStream == null) {
                                     failedCnt++
-                                    sb.appendLine("'${it.path}'"+": can't read!")
+                                    sb.appendLine("'${it.path}'" + ": can't read!")
                                     return@forEach
                                 }
                                 //拷贝并自动关流
@@ -2886,16 +2890,16 @@ fun FilesInnerPage(
 //                                inputStream.copyTo(target.outputStream())  //还得手动关流，麻烦
                                 succCnt++
                                 //只有操作成功后才更新上一文件path，这样的话，如果拷贝失败，上一路径和当前路径就会不同，就能判断是否换了target了，从而避免误删之前的target
-                                previousFilePath == curTarget?.canonicalPath?:""
-                            }else {
+                                previousFilePath == curTarget?.canonicalPath ?: ""
+                            } else {
                                 failedCnt++
                                 sb.appendLine("uri is null!")
                             }
 
-                        }catch (e:Exception) {
+                        } catch (e: Exception) {
                             //检查目标文件是否存在，如果存在，删除 。 算了，不删了，让用户自己看着办吧！如果拷贝失败，有可能依然创建了文件，但文件大小为0，但如果不为0呢？我还得判断，算了，不管了，让用户自己看着办吧！算了，还是删一下吧！
                             failedCnt++
-                            sb.appendLine((it?.path?:"/fileNameIsNull/") + ": error: "+e.localizedMessage)
+                            sb.appendLine((it?.path ?: "/fileNameIsNull/") + ": error: " + e.localizedMessage)
 
                             //检查，确保target更新了而不是上个文件，避免target更新前就异常导致删除之前成功复制的target，如果target确实更新了且执行失败，且文件大小为0，删除文件
                             try {
@@ -2918,9 +2922,9 @@ fun FilesInnerPage(
                     failedImportCount.intValue = failedCnt
                     failedImportListStr.value = sb.toString()
 
-                    if(failedCnt<1) {  //成功显示提示信息
+                    if (failedCnt < 1) {  //成功显示提示信息
                         Msg.requireShow(activityContext.getString(R.string.import_success))
-                    }else {  //失败显示弹窗，可复制失败结果
+                    } else {  //失败显示弹窗，可复制失败结果
 //                        successImportList.clear()
 //                        successImportList.addAll(successList)
 //                        failedImportList.clear()
@@ -2938,7 +2942,7 @@ fun FilesInnerPage(
             },
         )
         val selectionModeIconEnableList = listOf(
-            {requireImportUriList.value.isNotEmpty()},
+            { requireImportUriList.value.isNotEmpty() },
         )
 
         val countNumOnClickForImportMode = {
@@ -2951,28 +2955,28 @@ fun FilesInnerPage(
             showSelectedItemsShortDetailsDialogForImportMode.value = true
         }
 
-        if(!isLoading.value) {
+        if (!isLoading.value) {
             BottomBar(
-                quitSelectionMode=quitImportMode,
-                iconList=selectionModeIconList,
-                iconTextList=selectionModeIconTextList,
-                iconDescTextList=selectionModeIconTextList,
-                iconOnClickList=selectionModeIconOnClickList,
-                iconEnableList=selectionModeIconEnableList,
-                moreItemTextList= listOf(),
-                moreItemOnClickList= listOf(),
+                quitSelectionMode = quitImportMode,
+                iconList = selectionModeIconList,
+                iconTextList = selectionModeIconTextList,
+                iconDescTextList = selectionModeIconTextList,
+                iconOnClickList = selectionModeIconOnClickList,
+                iconEnableList = selectionModeIconEnableList,
+                moreItemTextList = listOf(),
+                moreItemOnClickList = listOf(),
                 moreItemEnableList = listOf(),
                 getSelectedFilesCount = getRequireUriFilesCount,
                 countNumOnClickEnabled = true,
-                countNumOnClick=countNumOnClickForImportMode
+                countNumOnClick = countNumOnClickForImportMode
             )
         }
     }
 
 
 
-    if(showImportExportErrorDialog.value) {
-        val closeDialog = {showImportExportErrorDialog.value=false; importExportErrorMsg.value=""}
+    if (showImportExportErrorDialog.value) {
+        val closeDialog = { showImportExportErrorDialog.value = false; importExportErrorMsg.value = "" }
 
         //显示导出失败弹窗，包含错误信息且可拷贝
         CopyableDialog(
@@ -2994,37 +2998,38 @@ fun FilesInnerPage(
 
     val showExportDialog = rememberSaveable { mutableStateOf(false) }
 
-    if(showExportDialog.value) {
+    if (showExportDialog.value) {
         ConfirmDialog(
-            title= stringResource(id = R.string.export),
+            title = stringResource(id = R.string.export),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                              Row {
-                                Text(text = stringResource(id = R.string.will_export_files_to)+":")
+                    Row {
+                        Text(text = stringResource(id = R.string.will_export_files_to) + ":")
 
-                              }
-                              Spacer(modifier = Modifier.height(10.dp))
-                              Row(
-                                  horizontalArrangement = Arrangement.Center,
-                                  verticalAlignment = Alignment.CenterVertically
-                              ) {
-                                  Text(text = FsUtils.appExportFolderNameUnderDocumentsDirShowToUser,
-                                      fontWeight = FontWeight.ExtraBold
-                                      )
-                              }
-                              Spacer(modifier = Modifier.height(10.dp))
-                              Row {
-                                  Text(text = stringResource(id = R.string.are_you_sure))
-                              }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = FsUtils.appExportFolderNameUnderDocumentsDirShowToUser,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row {
+                        Text(text = stringResource(id = R.string.are_you_sure))
+                    }
 
-                          }
+                }
             },
             onCancel = { showExportDialog.value = false }
         ) onOk@{
-            showExportDialog.value=false
+            showExportDialog.value = false
             val ret = FsUtils.getExportDirUnderPublicDocument()
-            if(ret.hasError() || ret.data==null || !ret.data!!.exists()) {
+            if (ret.hasError() || ret.data == null || !ret.data!!.exists()) {
                 Msg.requireShowLongDuration(activityContext.getString(R.string.get_default_export_folder_failed_plz_choose_one))
                 //如果获取默认export目录失败，弹出文件选择器，让用户选个目录
                 chooseDirLauncherThenExport.launch(null)  //这里传的null是弹出的界面的起始文件夹
@@ -3040,14 +3045,14 @@ fun FilesInnerPage(
 
 
 
-    if(isPasteMode.value) {
+    if (isPasteMode.value) {
         val iconList = listOf(
             Icons.Filled.ContentPaste,
-            if(pasteMode.intValue == pasteMode_Move) Icons.Filled.ContentCut else Icons.Filled.ContentCopy
+            if (pasteMode.intValue == pasteMode_Move) Icons.Filled.ContentCut else Icons.Filled.ContentCopy
         )
         val iconTextList = listOf(
             stringResource(R.string.paste),
-            if(pasteMode.intValue == pasteMode_Move) stringResource(R.string.cut) else stringResource(R.string.copy)
+            if (pasteMode.intValue == pasteMode_Move) stringResource(R.string.cut) else stringResource(R.string.copy)
         )
         val iconOnClickList = listOf(
             paste@{
@@ -3056,29 +3061,29 @@ fun FilesInnerPage(
             },
             cutOrCopyIndicator@{},
 
-        )
+            )
 
         val iconEnableList = listOf(
-            {getSelectedFilesCount()>0},  //是否启用paste
-            cutOrCopyIndicator@{false},  //永远禁用，只用来指示是cut还是copy
+            { getSelectedFilesCount() > 0 },  //是否启用paste
+            cutOrCopyIndicator@{ false },  //永远禁用，只用来指示是cut还是copy
         )
 
 
         val quitPasteAndBackToSelectionMode = {
-            isPasteMode.value=false  //关闭粘贴模式
-            isFileSelectionMode.value=true  //开启选择模式
+            isPasteMode.value = false  //关闭粘贴模式
+            isFileSelectionMode.value = true  //开启选择模式
         }
 
-        if(!isLoading.value) {
+        if (!isLoading.value) {
             BottomBar(
-                quitSelectionMode=quitPasteAndBackToSelectionMode,
-                iconList=iconList,
-                iconTextList=iconTextList,
-                iconDescTextList=iconTextList,
-                iconOnClickList=iconOnClickList,
-                iconEnableList=iconEnableList,
-                moreItemTextList= listOf(),
-                moreItemOnClickList= listOf(),
+                quitSelectionMode = quitPasteAndBackToSelectionMode,
+                iconList = iconList,
+                iconTextList = iconTextList,
+                iconDescTextList = iconTextList,
+                iconOnClickList = iconOnClickList,
+                iconEnableList = iconEnableList,
+                moreItemTextList = listOf(),
+                moreItemOnClickList = listOf(),
                 moreItemEnableList = listOf(),
                 getSelectedFilesCount = getSelectedFilesCount,
                 countNumOnClickEnabled = true,
@@ -3139,59 +3144,59 @@ fun FilesInnerPage(
 
     //有从标题页面请求执行的操作，执行一下
     //判断请求执行什么操作，然后执行
-    if(filesPageRequestFromParent.value==PageRequest.goToTop) {
+    if (filesPageRequestFromParent.value == PageRequest.goToTop) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             UIHelper.scrollToItem(scope, curListState.value, 0)
         }
     }
 
-    if(filesPageRequestFromParent.value==PageRequest.safDiff) {
+    if (filesPageRequestFromParent.value == PageRequest.safDiff) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             initSafDiffDialog()
         }
     }
 
-    if(filesPageRequestFromParent.value==PageRequest.safImport) {
+    if (filesPageRequestFromParent.value == PageRequest.safImport) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             initSafImportDialog()
         }
     }
 
-    if(filesPageRequestFromParent.value==PageRequest.safExport) {
+    if (filesPageRequestFromParent.value == PageRequest.safExport) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             val curFile = File(currentPath())
             val curPathReadable = try {
                 curFile.canRead()
-            }catch (e:Exception) {
+            } catch (e: Exception) {
                 false
             }
 
-            if(curPathReadable) {
+            if (curPathReadable) {
                 val subFiles = curFile.listFiles()
-                if(subFiles == null || subFiles.isEmpty()) { //空文件夹没什么好导出的
+                if (subFiles == null || subFiles.isEmpty()) { //空文件夹没什么好导出的
                     Msg.requireShow(activityContext.getString(R.string.folder_is_empty))
-                }else { //执行导出
+                } else { //执行导出
                     initSafExportDialog(subFiles.map { FileItemDto.genFileItemDtoByFile(it, activityContext) })
                 }
-            }else {
+            } else {
                 Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
             }
         }
     }
 
-    if(filesPageRequestFromParent.value==PageRequest.switchBetweenTopAndLastPosition) {
+    if (filesPageRequestFromParent.value == PageRequest.switchBetweenTopAndLastPosition) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             UIHelper.switchBetweenTopAndLastVisiblePosition(scope, curListState.value, lastPosition)
         }
     }
 
-    if(filesPageRequestFromParent.value==PageRequest.requireShowPathDetails) {
+    if (filesPageRequestFromParent.value == PageRequest.requireShowPathDetails) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             initDetailsDialog(listOf(curPathFileItemDto.value))
         }
     }
 
-    if(filesPageRequestFromParent.value==PageRequest.createFileOrFolder) {
+    if (filesPageRequestFromParent.value == PageRequest.createFileOrFolder) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             //选中文本
             fileNameForCreateDialog.apply {
@@ -3199,12 +3204,12 @@ fun FilesInnerPage(
             }
 
             //显示新建文件或文件夹的弹窗，弹窗里可选择是创建文件还是文件夹
-            createFileOrFolderErrMsg.value=""  //初始化错误信息为空
+            createFileOrFolderErrMsg.value = ""  //初始化错误信息为空
             showCreateFileOrFolderDialog.value = true  //显示弹窗
         }
     }
 
-    if(filesPageRequestFromParent.value==PageRequest.showViewAndSortMenu) {
+    if (filesPageRequestFromParent.value == PageRequest.showViewAndSortMenu) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             onlyForThisFolderStateBuf.value = onlyForThisFolderState.value
             viewAndSortStateBuf.value = viewAndSortState.value.copy()
@@ -3214,11 +3219,11 @@ fun FilesInnerPage(
 
     //注：匹配带数据的request应该用startsWith
 //    if(filesPageRequestFromParent.value.startsWith(PageRequest.DataRequest.goToIndexWithDataSplit)) {
-    if(PageRequest.DataRequest.isDataRequest(filesPageRequestFromParent.value, PageRequest.goToIndex)) {
+    if (PageRequest.DataRequest.isDataRequest(filesPageRequestFromParent.value, PageRequest.goToIndex)) {
         PageRequest.getRequestThenClearStateThenDoAct(filesPageRequestFromParent) { request ->
             val index = try {
                 PageRequest.DataRequest.getDataFromRequest(request).toInt()
-            }catch (e:Exception) {
+            } catch (e: Exception) {
                 0
             }
 
@@ -3227,7 +3232,7 @@ fun FilesInnerPage(
     }
 
 
-    if(filesPageRequestFromParent.value==PageRequest.goToPath) {
+    if (filesPageRequestFromParent.value == PageRequest.goToPath) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             //全选文本
             pathToGo.value = pathToGo.value.let { it.copy(selection = TextRange(0, it.text.length)) }
@@ -3244,68 +3249,81 @@ fun FilesInnerPage(
 //        }
 //    }
 
-    if(filesPageRequestFromParent.value==PageRequest.copyFullPath) {
+    if (filesPageRequestFromParent.value == PageRequest.copyFullPath) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             copyThenShowCopied(currentPath())
         }
     }
 
-    if(filesPageRequestFromParent.value==PageRequest.copyRepoRelativePath) {
+    if (filesPageRequestFromParent.value == PageRequest.copyRepoRelativePath) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             copyRepoRelativePath(currentPath())
         }
     }
 
-    if(filesPageRequestFromParent.value==PageRequest.goToInternalStorage) {
+    if (filesPageRequestFromParent.value == PageRequest.goToInternalStorage) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             goToPath(FsUtils.getInternalStorageRootPathNoEndsWithSeparator())
         }
     }
 
-    if(filesPageRequestFromParent.value==PageRequest.goToExternalStorage) {
+    if (filesPageRequestFromParent.value == PageRequest.goToExternalStorage) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             goToPath(FsUtils.getExternalStorageRootPathNoEndsWithSeparator())
         }
     }
-    if(filesPageRequestFromParent.value==PageRequest.goToInnerDataStorage) {
+    if (filesPageRequestFromParent.value == PageRequest.goToInnerDataStorage) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             goToPath(FsUtils.getInnerStorageRootPathNoEndsWithSeparator())
         }
     }
-    if(filesPageRequestFromParent.value==PageRequest.goToExternalDataStorage) {
+    if (filesPageRequestFromParent.value == PageRequest.goToExternalDataStorage) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             val targetPath = AppModel.externalDataDir?.canonicalPath ?: ""
-            if(targetPath.isBlank()) {
+            if (targetPath.isBlank()) {
                 Msg.requireShow(activityContext.getString(R.string.invalid_path))
-            }else {
+            } else {
                 goToPath(targetPath)
             }
         }
     }
 
-    // request external storage permission if access external storage path
+    // start: request external storage permission if access external storage path
+    val refreshWhenResume = rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(currentPath()) {
         runCatching {
-            if(currentPath() == FsUtils.getExternalStorageRootPathNoEndsWithSeparator()) {
+            if (currentPath() == FsUtils.getExternalStorageRootPathNoEndsWithSeparator()) {
                 requestStoragePermissionIfNeed(activityContext, TAG)
+
+                // for refresh list to show files after granted permission
+                refreshWhenResume.value = true
             }
         }
     }
-
-
-    // start: refresh when come back from other app
-    val wasPaused = remember { mutableStateOf(false) }
-    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
-        wasPaused.value = true
-    }
-
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        if(wasPaused.value) {
-            wasPaused.value = false
+        if(refreshWhenResume.value) {
+            refreshWhenResume.value = false
             changeStateTriggerRefreshPage(needRefreshFilesPage)
         }
     }
+    // end: request external storage permission if access external storage path
+
+
+    // disabled reason: maybe cause unexpected reload, if search mode on, may take long time to do a non-senese searching again
+    // start: refresh when come back from other app
+//    val wasPaused = remember { mutableStateOf(false) }
+//    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+//        wasPaused.value = true
+//    }
+//
+//    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+//        if(wasPaused.value) {
+//            wasPaused.value = false
+//            changeStateTriggerRefreshPage(needRefreshFilesPage)
+//        }
+//    }
     // end: refresh when come back from other app
+
 
     LaunchedEffect(needRefreshFilesPage.value) {
         //如果只有协程的话，其实try catch没意义，协程内部不会往外抛异常；若没协程，trycatch有意义，不然若发生异常会抛到外部导致app崩溃
