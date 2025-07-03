@@ -1786,8 +1786,13 @@ fun FilesInnerPage(
                                         //有后缀名并且不是 */*，则调用open file，请求系统显示能打开此类型文件的应用;
                                         // 如果是 */* 则代表检测文件类型失败，或者未知类型，这时应弹窗让用户选择具体类型
 //                                        if(hasExtension && mimeType != MimeType.ANY.intentType) {
-                                        if (mimeType != MimeType.ANY.intentType) {
-
+                                        if(mimeType.startsWith("text/")) {  // 文本类型，直接用内部编辑器打开
+                                            val expectReadOnly = false
+                                            requireInnerEditorOpenFile(it.fullPath, expectReadOnly)
+                                        }else if (mimeType == MimeType.ANY.intentType) { // Any, */* ， 无后缀或没检测出具体类型就会是这个
+                                            val showInnerEditor = true
+                                            initOpenAsDialog(it.fullPath, showInnerEditor)
+                                        } else { // 非 text 非*/* ，有具体类型，请求系统打开，若失败，显示open as弹窗，不过一般不会失败
                                             //请求外部打开（实际会显示支持此类型的app供用户选择）
                                             val openSuccess = FsUtils.openFile(
                                                 activityContext,
@@ -1801,9 +1806,6 @@ fun FilesInnerPage(
                                                 val showInnerEditor = true
                                                 initOpenAsDialog(it.fullPath, showInnerEditor)
                                             }
-                                        } else { // 无后缀或没检测出具体类型
-                                            val showInnerEditor = true
-                                            initOpenAsDialog(it.fullPath, showInnerEditor)
                                         }
                                     }
                                 } else {  // if(item.isDirectory) 点击目录，直接打开。
