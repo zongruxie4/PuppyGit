@@ -3295,10 +3295,10 @@ fun FilesInnerPage(
     LaunchedEffect(currentPath()) {
         runCatching {
             if (currentPath() == FsUtils.getExternalStorageRootPathNoEndsWithSeparator()) {
-                val permissionRequested = requestStoragePermissionIfNeed(activityContext, TAG)
+                val permissionRequestSent = requestStoragePermissionIfNeed(activityContext, TAG)
 
                 // for refresh list to show files when come back from permission grant view
-                refreshWhenResume.value = permissionRequested
+                refreshWhenResume.value = permissionRequestSent
             }
         }
     }
