@@ -95,6 +95,10 @@ target_compile_options(${CMAKE_PROJECT_NAME}
 #        -Werror  #把警告当错误对待，例如未使用变量，原本只是黄色警告，若开启这个选择，则会变成红色报错编译不通过
         )
 
+# libgit2 等so库不改，只改这里，是不是好像意义不大？
+# 16kb page size support for ndk r26, see: https://developer.android.com/guide/practices/page-sizes#cmake
+target_link_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wl,-z,max-page-size=16384")
+
 target_link_libraries(
         #你的库必须在第一个，否则编译会报错
         ${CMAKE_PROJECT_NAME}
