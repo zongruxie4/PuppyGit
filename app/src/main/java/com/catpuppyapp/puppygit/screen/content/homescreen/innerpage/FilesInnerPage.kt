@@ -1785,14 +1785,16 @@ fun FilesInnerPage(
 
                                         //猜测文件mime类型并打开，若失败，显示open as弹窗
 
-                                        val hasExtension = it.name.contains(".")
+//                                        val hasExtension = it.name.contains(".")
+                                        //猜测app mimeType
+                                        //无后缀的会返回 */*，所以不用检测是否有后缀了，直接检测是否是 */* 就可以了
+                                        val mimeType = MimeType.guessFromFileName(it.name).intentType
+                                        MyLog.d(TAG, "fileName=${it.name}, guessed mimeType=$mimeType")
 
-                                        if(hasExtension) {  //有后缀名，根据后缀猜测文件类型
-                                            //猜测app mimeType
-                                            val mimeType = MimeType.guessFromFileName(it.name).intentType
-
-                                            //无后缀的会返回 */*
-                                            MyLog.d(TAG, "fileName=${it.name}, guessed mimeType=$mimeType")
+                                        //有后缀名并且不是 */*，则调用open file，请求系统显示能打开此类型文件的应用;
+                                        // 如果是 */* 则代表检测文件类型失败，或者未知类型，这时应弹窗让用户选择具体类型
+//                                        if(hasExtension && mimeType != MimeType.ANY.intentType) {
+                                        if(mimeType != MimeType.ANY.intentType) {
 
                                             //请求外部打开（实际会显示支持此类型的app供用户选择）
                                             val openSuccess = FsUtils.openFile(
@@ -1807,7 +1809,7 @@ fun FilesInnerPage(
                                                 val showInnerEditor = true
                                                 initOpenAsDialog(it.fullPath, showInnerEditor)
                                             }
-                                        }else { //无后缀名，让用户选择以哪种类型打开
+                                        }else { // 无后缀或没检测出具体类型
                                             val showInnerEditor = true
                                             initOpenAsDialog(it.fullPath, showInnerEditor)
                                         }
