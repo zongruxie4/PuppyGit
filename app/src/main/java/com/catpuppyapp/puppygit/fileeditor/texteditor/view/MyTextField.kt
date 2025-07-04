@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.DisableSoftKeyboard
 import com.catpuppyapp.puppygit.dev.bug_Editor_WrongUpdateEditColumnIdx_Fixed
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -43,8 +42,6 @@ private const val TAG = "MyTextField"
 
 @Composable
 internal fun MyTextField(
-    idx:Int,
-    editorState: TextEditorState,
     scrollIfInvisible:()->Unit,
     disableSoftKb:Boolean,
     readOnly:Boolean,
@@ -81,7 +78,7 @@ internal fun MyTextField(
 
     DisableSoftKeyboard(disableSoftKb) {
         BasicTextField(
-            value = if(editorState.textStyles.value != null) textFieldState.value.copy(annotatedString = editorState.convertSpanToAnnotatedString(editorState.getSpansForLine(idx), textFieldState.value.text)) else textFieldState.value,
+            value = textFieldState.value,
             readOnly = readOnly,
             enabled = enabled,
             onValueChange = {

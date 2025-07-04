@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
 import android.content.Context
-import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
@@ -95,7 +94,6 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.programlang.ProgramLanguageUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
@@ -109,7 +107,6 @@ import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.isFileSizeOverLimit
-import com.catpuppyapp.puppygit.utils.programlang.EditorStyleDelegate
 import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
@@ -117,7 +114,6 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
 import io.github.rosemoe.sora.text.Content
-import io.github.rosemoe.sora.text.ContentReference
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -2027,11 +2023,6 @@ private suspend fun doInit(
                         resetLastCursorAtColumn = resetLastCursorAtColumn,
                     )
                 )
-
-                ProgramLanguageUtil.testLanguageJava?.analyzeManager?.let {
-                    it.setReceiver(EditorStyleDelegate(editorPageTextEditorState))
-                    it.reset(ContentReference(Content(File(file.canonicalPath).readText())), Bundle())
-                }
 
                 lastTextEditorState.value = editorPageTextEditorState.value
             }

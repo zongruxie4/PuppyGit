@@ -2,9 +2,6 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
@@ -30,17 +27,7 @@ import com.catpuppyapp.puppygit.utils.getNextIndentByCurrentStr
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import com.catpuppyapp.puppygit.utils.isStartInclusiveEndExclusiveRangeValid
-import com.catpuppyapp.puppygit.utils.programlang.ProgramLanguageUtil
 import com.catpuppyapp.puppygit.utils.tabToSpaces
-import com.catpuppyapp.puppygit.utils.withMainContext
-import io.github.rosemoe.sora.lang.analysis.StyleUpdateRange
-import io.github.rosemoe.sora.lang.styling.Span
-import io.github.rosemoe.sora.lang.styling.SpanFactory
-import io.github.rosemoe.sora.lang.styling.Styles
-import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
-import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
-import io.github.rosemoe.sora.util.RendererUtils
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -1944,120 +1931,8 @@ class TextEditorState private constructor(
         }
     }
 
-    fun postInLifecycle(action: Runnable) {
-        runBlocking {
-            withMainContext {
-                action.run()
-            }
-        }
-    }
-
-    var textStyles: MutableState<Styles?> = mutableStateOf(null)
-    var colorScheme:EditorColorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
-    fun getEditorLanguage() = ProgramLanguageUtil.testLanguageJava!!
-
-
-
-    fun setStyles(styles: Styles?) {
-        if(styles == null) {
-            return
-        }
-
-        MyLog.d(TAG, "$TAG#setStyles: called")
-        textStyles.value = styles
-
-        runBlocking {
-            lock.withLock {
-                val newFields = mutableListOf<TextFieldState>()
-                fields.forEachIndexedBetter { idx, it ->
-                    newFields.add(
-                        it.copy(value = it.value.copy(annotatedString = convertSpanToAnnotatedString(getSpansForLine(idx), it.value.text))))
-                }
-
-                println("newfsize=${newFields.size}")
-                println("ofsize=${fields.size}")
-//
-//                val newState = internalCreate(
-//                    fields = newFields,
-//                    fieldsId = newId(),
-//                    selectedIndices = selectedIndices,
-//                    isMultipleSelectionMode = isMultipleSelectionMode,
-//                    focusingLineIdx = focusingLineIdx
-//                )
-
-//                val newState = TextEditorState(
-//                    fieldsId= fieldsId,
-//                    fields = fields,
-//                    selectedIndices = selectedIndices,
-//                    isMultipleSelectionMode = isMultipleSelectionMode,
-//                    focusingLineIdx = focusingLineIdx,
-//
-//                    //这几个变量是共享的，一般不用改
-//                    isContentEdited = isContentEdited,
-//                    editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-//                    onChanged = {_,_,_,-> }
-//                )
-
-//                onChanged(newState, null, false)
-            }
-        }
-    }
-
-
-    fun convertSpanToAnnotatedString(spans: List<Span?>, text: String): AnnotatedString {
-        return buildAnnotatedString {
-            var lastColumn = 0
-            spans.forEachBetter {
-             if(it != null) {
-//                 Color(-13421773)
-                 println("foregroundColorId=${it.foregroundColorId}")
-//                 println("backgroundColorId=${it.backgroundColorId}")
-//                 println("column=${it.column}")
-//                 println("colorrrrrrrrrrrr: ${RendererUtils.getForegroundColor(it, colorScheme)}")
-                 withStyle(SpanStyle(color = Color(RendererUtils.getForegroundColor(it, colorScheme)))) {
-
-                     //这个column是当前到下一个为一个区间，下一个若没有代表整个字符串
-                     append("ffffffffffffff")
-                     lastColumn = it.column
-                 }
-             }
-            }
-        }
-    }
-
-    fun updateStyles(styles: Styles, range: StyleUpdateRange?) {
-        if (textStyles !== styles || range == null) {
-            setStyles(styles)
-            return
-        }
-
-    }
-
-    var defaultSpans: MutableList<Span?> = ArrayList(2)
-
-    /**
-     * Get spans on the given line
-     */
-    fun getSpansForLine(line: Int): MutableList<Span?> {
-        val spanMap = if (textStyles.value == null) null else textStyles.value!!.spans
-        if (defaultSpans.isEmpty()) {
-            defaultSpans.add(SpanFactory.obtain(0, EditorColorScheme.TEXT_NORMAL.toLong()))
-        }
-        try {
-            if (spanMap != null) {
-                return spanMap.read().getSpansOnLine(line)
-            } else {
-                return defaultSpans
-            }
-        } catch (e: java.lang.Exception) {
-            return defaultSpans
-        }
-    }
-
 
     companion object {
-
-
         fun create(
             text: String,
             fieldsId: String,
