@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.utils
+package com.catpuppyapp.puppygit.utils.programlang
 
 import android.content.Context
 import android.content.res.AssetManager
@@ -7,9 +7,11 @@ import io.github.dingyi222666.monarch.languages.JavaLanguage
 import io.github.dingyi222666.monarch.languages.KotlinLanguage
 import io.github.dingyi222666.monarch.languages.PythonLanguage
 import io.github.dingyi222666.monarch.languages.TypescriptLanguage
+import io.github.rosemoe.sora.langs.monarch.MonarchColorScheme
 import io.github.rosemoe.sora.langs.monarch.registry.MonarchGrammarRegistry
 import io.github.rosemoe.sora.langs.monarch.registry.dsl.monarchLanguages
 import io.github.rosemoe.sora.langs.monarch.registry.model.ThemeSource
+import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
@@ -20,24 +22,42 @@ import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolve
 import org.eclipse.tm4e.core.registry.IThemeSource
 
 object ProgramLanguageUtil {
+    var typeface: Typeface? = null
+    var testLanguageJava: TextMateLanguage? = null
 
-    fun setupLanguage(assets: AssetManager, applicationContext: Context) {
 
-        val typeface = Typeface.createFromAsset(assets, "JetBrainsMono-Regular.ttf")
+    fun init(assets: AssetManager, applicationContext: Context) {
+
+        typeface = Typeface.createFromAsset(assets, "JetBrainsMono-Regular.ttf")
 
         // Load textmate themes and grammars
         setupTextmate(applicationContext)
 
         // Load monarch themes and grammars
         setupMonarch(applicationContext)
+        // Before using Textmate Language, TextmateColorScheme should be applied
+        ensureTextmateTheme()
 
 
-        // Set editor language to textmate Java
-        val language = TextMateLanguage.create(
-            "source.java", true
+//        // Set editor language to textmate Java
+        testLanguageJava = TextMateLanguage.create(
+            "source.java", loadDefaultTextMateLanguages(), loadDefaultTextMateThemes(), false
         )
 
+
+
+        println("ctheme::::"+io.github.rosemoe.sora.langs.monarch.registry.ThemeRegistry.currentTheme.name)
+
+
+
     }
+    /**
+     * Ensure the editor uses a [TextMateColorScheme]
+     */
+    private fun ensureTextmateTheme() {
+//        TextMateColorScheme.create()
+    }
+
 
     /**
      * Setup Textmate. Load our grammars and themes from assets
@@ -57,7 +77,7 @@ object ProgramLanguageUtil {
     /**
      * Load default textmate themes
      */
-    private /*suspend*/ fun loadDefaultTextMateThemes() /*= withContext(Dispatchers.IO)*/ {
+    private /*suspend*/ fun loadDefaultTextMateThemes():ThemeRegistry /*= withContext(Dispatchers.IO)*/ {
         val themes = arrayOf("darcula", "abyss", "quietlight", "solarized_dark")
         val themeRegistry = ThemeRegistry.getInstance()
         themes.forEach { name ->
@@ -68,14 +88,16 @@ object ProgramLanguageUtil {
                         FileProviderRegistry.getInstance().tryGetInputStream(path), path, null
                     ), name
                 ).apply {
-                    if (name != "quietlight") {
+                    if (name != "darcula") {
                         isDark = true
                     }
                 }
             )
         }
 
-        themeRegistry.setTheme("quietlight")
+        themeRegistry.setTheme("darcula")
+
+        return themeRegistry
     }
 
     /**
@@ -83,8 +105,8 @@ object ProgramLanguageUtil {
      *
      * @see loadDefaultLanguagesWithDSL Load by Kotlin DSL
      */
-    private /*suspend*/ fun loadDefaultTextMateLanguages() /*= withContext(Dispatchers.Main)*/ {
-        GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
+    private /*suspend*/ fun loadDefaultTextMateLanguages():GrammarRegistry /*= withContext(Dispatchers.Main)*/ {
+        return GrammarRegistry.getInstance().apply { loadGrammars("textmate/languages.json") }
     }
 
     /**
@@ -129,7 +151,7 @@ object ProgramLanguageUtil {
      * Load default languages from Monarch
      */
     private fun loadDefaultMonarchLanguages() {
-        MonarchGrammarRegistry.INSTANCE.loadGrammars(
+        MonarchGrammarRegistry.Companion.INSTANCE.loadGrammars(
             monarchLanguages {
                 language("java") {
                     monarchLanguage = JavaLanguage

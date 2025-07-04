@@ -46,7 +46,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.ProgramLanguageUtil
+import com.catpuppyapp.puppygit.utils.programlang.ProgramLanguageUtil
 import com.catpuppyapp.puppygit.utils.RndText
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -91,7 +91,8 @@ class MainActivity : BaseComposeActivity() {
         //如果是初次创建Activity，onNewIntent不会被调用，只能在这里设置一下，要不然有可能漏外部传来的intent（分享文件、编辑文件）
         IntentHandler.setNewIntent(intent)
 
-        ProgramLanguageUtil.setupLanguage(assets, applicationContext)
+        // 这里允许失败，只是会禁用语法高亮
+        ProgramLanguageUtil.init(assets, applicationContext)
 
         setContent {
             InitContent(applicationContext) {
