@@ -97,7 +97,7 @@ target_compile_options(${CMAKE_PROJECT_NAME}
 
 # libgit2 等so库不改，只改这里，是不是好像意义不大？
 # 16kb page size support for ndk r26, see: https://developer.android.com/guide/practices/page-sizes#cmake
-target_link_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wl,-z,max-page-size=16384")
+#target_link_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wl,-z,max-page-size=16384")
 
 target_link_libraries(
         #你的库必须在第一个，否则编译会报错
