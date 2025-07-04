@@ -43,6 +43,15 @@ private fun setCodeEditorFactory(
     val editor = CodeEditor(context)
     editor.apply {
         setText(state.content.value)
+        isDisableSoftKbdIfHardKbdAvailable = state.isDisableSoftKbdIfHardKbdAvailable
+        isWordwrap = state.softWrap
+
+//        subscribeAlways(ScrollEvent::class.java) { event ->
+//            println("startX: ${event.startX}")
+//            println("endX: ${event.endX}")
+//            println("startY: ${event.startY}")
+//            println("endY: ${event.endY}")
+//        }
     }
     state.editor = editor
     return editor

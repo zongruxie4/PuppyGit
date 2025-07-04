@@ -9,7 +9,10 @@ import io.github.rosemoe.sora.widget.CodeEditor
 
 data class CodeEditorState(
     var editor: CodeEditor? = null,
-    val initialContent: Content = Content()
+    val initialContent: Content = Content(),
+    //if true, when hard kb available, will not show soft kb; set to false to show soft kb in any case
+    val isDisableSoftKbdIfHardKbdAvailable: Boolean = true,
+    val softWrap: Boolean = true,
 ) {
     val content = mutableStateOf(initialContent)
 }
