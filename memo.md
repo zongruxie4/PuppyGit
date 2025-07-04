@@ -17,6 +17,9 @@ https://project-sora.github.io/sora-editor-docs/zh/guide/using-language
 再把span转成annotatedstring，再在我的app里逐行显示，就行了，
 
 可优化：span转AnnotatedString可以修改下，直接返回AnnotatedString，这样就不需要转换了，但这个影响应该不大，可先测试下，如果感觉不卡，就先不用实现
+
+备忘：
+需要测试 RTL布局 语法高亮是否会报错，可能需要逆向遍历索引
 ---
 TODO sha256 support 20250607:
 1. waiting for libgit2 sha256 feature become stable
