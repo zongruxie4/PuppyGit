@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
@@ -28,12 +29,14 @@ import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import com.catpuppyapp.puppygit.utils.isStartInclusiveEndExclusiveRangeValid
 import com.catpuppyapp.puppygit.utils.tabToSpaces
+import io.github.rosemoe.sora.lang.styling.Styles
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.OutputStream
 
 
+private val stylesApplyLock = Mutex()
 private const val TAG = "TextEditorState"
 private const val lb = "\n"
 private const val tab = "\t"
@@ -1929,6 +1932,29 @@ class TextEditorState private constructor(
 
             onChanged(newState, true, true)
         }
+    }
+
+    fun applySyntaxHighlighting(expectedFieldsId:String, styles: Styles) {
+        if(expectedFieldsId != fieldsId) {
+            return
+        }
+
+        TODO()
+        // 加锁，处理styles，按行分割（检查一下：最后分割出的行数应和fields size一样）
+        // 创建新 state，调用onChange
+        stylesApplyLock.withLock {
+            lock.withLock {
+                创建一个TextFieldState的highlighting cache map，根据field syntax hight id把样式存上，
+                遍历text field时，根据其id取annotated string，
+                若无，使用原text field，若有，使用缓存的带语法高亮的text field
+            }
+        }
+    }
+
+    // 在MyTextField应调用此方法获得AnnotatedString
+    fun generateAnnotatedStringForLine(lineIdx: Int): AnnotatedString {
+
+        TODO()
     }
 
 

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.utils.getRandomUUID
 
 
 private val lineChangeType_NEW_dark =  Color(0xFF33691E)
@@ -15,8 +16,7 @@ private val lineChangeType_UPDATED = Color(0xFF03A9F4)
 //这个stable注解，我看了下应该符合条件，若更新状态出问题，可取消注解试试
 @Stable
 class TextFieldState(
-    //这个id本来是作为LazyColumn的item key的，可能和触发重组有关，但实际上我很多地方都忘了在修改这个对象后更换此id，所以最后取消用这个值在做key了，不知道compose怎么判断是否需要重组，不过能用同时不卡就行了，有问题再处理
-//    val id: String = getRandomUUID(),
+    val syntaxHighlightId: String = getRandomUUID(),
 
     val value: TextFieldValue = TextFieldValue(),
 
@@ -30,13 +30,14 @@ class TextFieldState(
 
 ) {
     fun copy(
-//        id: String = this.id,
+        //仅当 value.text 修改才应该换新id；否则语法高亮会失效
+        syntaxHighlightId: String = this.syntaxHighlightId,
         value: TextFieldValue = this.value,
         isSelected: Boolean = this.isSelected,
         changeType: LineChangeType = this.changeType,
 
     ) = TextFieldState(
-//        id = id,
+        syntaxHighlightId = syntaxHighlightId,
         value = value,
         isSelected = isSelected,
         changeType = changeType,
@@ -44,7 +45,7 @@ class TextFieldState(
     );
 
     override fun toString(): String {
-        return "TextFieldState(value=$value, isSelected=$isSelected, changeType=$changeType)"
+        return "TextFieldState(syntaxHighlightId=$syntaxHighlightId, value=$value, isSelected=$isSelected, changeType=$changeType)"
     }
 
 
@@ -56,6 +57,7 @@ class TextFieldState(
 
         other as TextFieldState
 
+        if (syntaxHighlightId != other.syntaxHighlightId) return false
         if (isSelected != other.isSelected) return false
         if (changeType != other.changeType) return false
         if (value != other.value) return false
@@ -65,6 +67,7 @@ class TextFieldState(
 
     override fun hashCode(): Int {
         var result = isSelected.hashCode()
+        result = 31 * result + syntaxHighlightId.hashCode()
         result = 31 * result + value.hashCode()
         result = 31 * result + changeType.hashCode()
         return result

@@ -7,6 +7,11 @@ object PLScopes {
 
     val HTML = "text.html.basic"
 
+    val SCOPES = listOf(
+        HTML,
+
+    )
+
 
     fun guessScope(fileName: String):String {
         if(fileName.endsWith(".html") || fileName.endsWith(".htm")) {

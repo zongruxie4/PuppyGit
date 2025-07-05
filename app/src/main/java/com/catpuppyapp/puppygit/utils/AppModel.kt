@@ -35,6 +35,8 @@ import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppMigrator
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppVersionMan
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.CommitCache
+import com.catpuppyapp.puppygit.utils.cache.EditorFieldAnnotatedStringCache
+import com.catpuppyapp.puppygit.utils.cache.EditorStylesCache
 import com.catpuppyapp.puppygit.utils.cert.CertMan
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
@@ -717,6 +719,14 @@ object AppModel {
         runCatching {
             //退出app清提交缓存
             runBlocking { CommitCache.clear() }
+        }
+
+        runCatching {
+            EditorStylesCache.clear()
+        }
+
+        runCatching {
+            EditorFieldAnnotatedStringCache.clear()
         }
     }
 

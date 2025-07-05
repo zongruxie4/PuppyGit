@@ -91,6 +91,8 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
+import com.catpuppyapp.puppygit.utils.cache.EditorFieldAnnotatedStringCache
+import com.catpuppyapp.puppygit.utils.cache.EditorStylesCache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doActWithLockIfFree
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -457,6 +459,12 @@ fun EditorInnerPage(
 
 
 
+        runCatching {
+            EditorStylesCache.clear()
+        }
+        runCatching {
+            EditorFieldAnnotatedStringCache.clear()
+        }
 
 
         isEdited.value = false
