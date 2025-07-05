@@ -1,6 +1,7 @@
 editor支持语法高亮 20250704：
+只取text mate分析语法高亮：
 完全改用sora editor需要改的东西太多，只拿语法高亮的部分会相对简单，sora editor 使用textmate实现语法高亮，流程大概如下：
-sora editor创建text mate language对象后应该就会执行分析，然后分析完会调用recevier，
+sora editor创建text mate language对象后应该就会执行分析，然后分析完会调用receiver，
 可调用analyzer manager的inser/delete执行增量更新
 
 
@@ -21,6 +22,14 @@ https://project-sora.github.io/sora-editor-docs/zh/guide/using-language
 备忘：
 需要测试 RTL布局 语法高亮是否会报错，可能需要逆向遍历索引
 连笔字ligature，关闭
+
+
+
+
+如果修改sora editor以支持accept ours/theirs buttons:
+（未测试）找到`EditorRender`类的`drawRows()`，在那个函数里绘制的行，找到绘制行的部分，在合适的位置画图标，然后记录坐标，然后在`CodeEditor.onTouchEvent()`里判断是否点了对应坐标，如果点了则执行对应操作
+
+
 ---
 TODO sha256 support 20250607:
 1. waiting for libgit2 sha256 feature become stable
