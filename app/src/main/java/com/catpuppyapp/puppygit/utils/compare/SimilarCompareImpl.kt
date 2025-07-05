@@ -15,7 +15,7 @@ class SimilarCompareImpl: SimilarCompare {
         del: CompareParam<T>,
         emptyAsMatch:Boolean,
         emptyAsModified:Boolean,
-        onlyLineSeparatorAsEmpty:Boolean,
+//        onlyLineSeparatorAsEmpty:Boolean,
         searchDirection: SearchDirection,
         requireBetterMatching: Boolean,
         search: Search,
@@ -50,18 +50,16 @@ class SimilarCompareImpl: SimilarCompare {
 
 
         // empty check
-        //两个都为空或只有换行符，不比较，直接返回结果，当作无匹配
-        // both are empty
-        if((addWillUse.isEmpty() && delWillUse.isEmpty())){
+        if((addWillUse.isEmpty() && delWillUse.isEmpty())) {  // both are empty and equals
             return IndexModifyResult(matched = emptyAsMatch, matchedByReverseSearch = false,
                 listOf(IndexStringPart(0, add.getLen(), emptyAsModified)),
                 listOf(IndexStringPart(0, del.getLen(), emptyAsModified)))
         }else if(addWillUse.isEmpty() && delWillUse.isEmpty().not()) {
-            return IndexModifyResult(matched = true, matchedByReverseSearch = false,
+            return IndexModifyResult(matched = emptyAsMatch, matchedByReverseSearch = false,
                 listOf(IndexStringPart(0, add.getLen(), emptyAsModified)),
                 listOf(IndexStringPart(0, del.getLen(), true)))
         }else if(addWillUse.isEmpty().not() && delWillUse.isEmpty()) {
-            return IndexModifyResult(matched = true, matchedByReverseSearch = false,
+            return IndexModifyResult(matched = emptyAsMatch, matchedByReverseSearch = false,
                 listOf(IndexStringPart(0, add.getLen(), true)),
                 listOf(IndexStringPart(0, del.getLen(), emptyAsModified)))
         }

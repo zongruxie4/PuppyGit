@@ -20,6 +20,7 @@ https://project-sora.github.io/sora-editor-docs/zh/guide/using-language
 
 备忘：
 需要测试 RTL布局 语法高亮是否会报错，可能需要逆向遍历索引
+连笔字ligature，关闭
 ---
 TODO sha256 support 20250607:
 1. waiting for libgit2 sha256 feature become stable
