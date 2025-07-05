@@ -16,6 +16,7 @@ private val lineChangeType_UPDATED = Color(0xFF03A9F4)
 //这个stable注解，我看了下应该符合条件，若更新状态出问题，可取消注解试试
 @Stable
 class TextFieldState(
+    //仅当 value.text 修改才应该换新id；否则语法高亮会失效
     val syntaxHighlightId: String = getRandomUUID(),
 
     val value: TextFieldValue = TextFieldValue(),
@@ -30,14 +31,12 @@ class TextFieldState(
 
 ) {
     fun copy(
-        //仅当 value.text 修改才应该换新id；否则语法高亮会失效
-        syntaxHighlightId: String = this.syntaxHighlightId,
         value: TextFieldValue = this.value,
         isSelected: Boolean = this.isSelected,
         changeType: LineChangeType = this.changeType,
 
     ) = TextFieldState(
-        syntaxHighlightId = syntaxHighlightId,
+        syntaxHighlightId = if(value.text != this.value.text) getRandomUUID() else this.syntaxHighlightId,
         value = value,
         isSelected = isSelected,
         changeType = changeType,
