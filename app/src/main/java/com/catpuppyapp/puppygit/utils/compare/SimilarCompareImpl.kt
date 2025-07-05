@@ -13,7 +13,7 @@ class SimilarCompareImpl: SimilarCompare {
     override fun<T:CharSequence> doCompare(
         add: CompareParam<T>,
         del: CompareParam<T>,
-        emptyAsMatch:Boolean,
+        emptyAsMatched:Boolean,
         emptyAsModified:Boolean,
 //        onlyLineSeparatorAsEmpty:Boolean,
         searchDirection: SearchDirection,
@@ -51,15 +51,15 @@ class SimilarCompareImpl: SimilarCompare {
 
         // empty check
         if((addWillUse.isEmpty() && delWillUse.isEmpty())) {  // both are empty and equals
-            return IndexModifyResult(matched = emptyAsMatch, matchedByReverseSearch = false,
+            return IndexModifyResult(matched = emptyAsMatched, matchedByReverseSearch = false,
                 listOf(IndexStringPart(0, add.getLen(), emptyAsModified)),
                 listOf(IndexStringPart(0, del.getLen(), emptyAsModified)))
         }else if(addWillUse.isEmpty() && delWillUse.isEmpty().not()) {
-            return IndexModifyResult(matched = emptyAsMatch, matchedByReverseSearch = false,
+            return IndexModifyResult(matched = emptyAsMatched, matchedByReverseSearch = false,
                 listOf(IndexStringPart(0, add.getLen(), emptyAsModified)),
                 listOf(IndexStringPart(0, del.getLen(), true)))
         }else if(addWillUse.isEmpty().not() && delWillUse.isEmpty()) {
-            return IndexModifyResult(matched = emptyAsMatch, matchedByReverseSearch = false,
+            return IndexModifyResult(matched = emptyAsMatched, matchedByReverseSearch = false,
                 listOf(IndexStringPart(0, add.getLen(), true)),
                 listOf(IndexStringPart(0, del.getLen(), emptyAsModified)))
         }

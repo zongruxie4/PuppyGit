@@ -30,15 +30,26 @@ interface SimilarCompare {
      *          and only ignore when '\n' at end of line, if both has '\n', will treat '\n' as no-modified, else modified,
      *          but it will not effect the `matched` of `IndexModifyResult`, so, modified or no-modified, maybe not effect for view (因为新行的匹配状态不会影响结果是否匹配，所以显示上可能没差)
      * @param treatNoWordMatchAsNoMatchedWhenMatchByWord if true, will treat as no matched when match by words and only non-word (e.g. punctuations) chars matched
-     * 
+     *
+     * @param emptyAsMatched if true, when any line is empty, return a matched result; else return a unmatched result
+     * @param emptyAsModified if true, when a line is empty, return a string part that set modified to true
+     *
      * @author Bandeapart1964 of catpuppyapp
      */
     fun<T:CharSequence> doCompare(
         add: CompareParam<T>,
         del: CompareParam<T>,
-        emptyAsMatch: Boolean = false,
+
+        // 空行当作匹配（使用 string part，若emptyAsModified为假，则背景为浅色，否则深色），若为假则当作不匹配（不使用string part，背景一定为深色）
+        // treat empty line as matched or not, if matched and `emptyAsModified` is false, the background color will be shadow, else deep
+        emptyAsMatched: Boolean = false,
+        // 把空字符当作修改过（深色背景）还是没修改过（浅色背景）
+        // treat empty str as modified or not, if as modified, the background will be deep, else shadow
         emptyAsModified: Boolean = true,
+
+        // this param not in use, may will remove in the future, the `ignoreEndOfNewLine` can cover it's use case
 //        onlyLineSeparatorAsEmpty: Boolean = true,
+
         searchDirection: SearchDirection = SearchDirection.FORWARD_FIRST,
         requireBetterMatching: Boolean = false,
         search: Search = Search.INSTANCE,
