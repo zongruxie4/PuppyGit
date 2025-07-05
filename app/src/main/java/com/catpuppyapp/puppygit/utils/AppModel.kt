@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.AppContainer
@@ -629,6 +630,8 @@ object AppModel {
         if(settings.httpService.launchOnAppStartup) {
             HttpService.start(applicationContext)
         }
+
+        MyCodeEditor.init(applicationContext, Theme.inDarkTheme)
 
 
         //初始化与谷歌play的连接，查询支付信息之类的
