@@ -1894,9 +1894,12 @@ private suspend fun doInit(
 
         //读取文件内容
         try {
-            //若文件改变，更新undo stack
+            //若文件改变
             if(requireOpenFilePath != undoStack.filePath) {
+                //更新undo stack
                 undoStack.reset(requireOpenFilePath)
+
+                // TODO 如果切换了语法高亮，也在这里 reset 为自动检测（打开其他文件则重置）
             }
 
 
