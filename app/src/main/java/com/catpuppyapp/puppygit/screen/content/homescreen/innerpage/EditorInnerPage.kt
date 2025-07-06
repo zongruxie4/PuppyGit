@@ -125,10 +125,6 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 fun EditorInnerPage(
     stateKeyTag:String,
 
-    updatePlScopeIfNeeded:(fileName:String) -> Unit,
-    resetPlScope: () -> Unit,
-    codeEditor: CustomStateSaveable<MyCodeEditor>,
-
     disableSoftKb: MutableState<Boolean>,
 
     recentFileList: CustomStateListSaveable<FileDetail>,
@@ -447,6 +443,25 @@ fun EditorInnerPage(
     }
 
 
+    val plScope = rememberSaveable { mutableStateOf(PLScopes.AUTO) }
+    val resetPlScope = { plScope.value = PLScopes.AUTO }
+    val updatePlScopeIfNeeded = { fileName:String ->
+        // if was detected language or selected by user, then will not update program language scope again
+        if(plScope.value == PLScopes.AUTO) {
+            plScope.value = PLScopes.guessScope(fileName)
+        }
+    }
+
+    val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
+        MyCodeEditor(
+            appContext = AppModel.realAppContext,
+            plScope = plScope,
+            editorState = editorPageTextEditorState
+        )
+    }
+
+
+
 
     //更新最后打开文件状态变量并保存到配置文件（注：重复打开同一文件不会重复更新）
     val saveLastOpenPath = {path:String->
@@ -690,7 +705,7 @@ fun EditorInnerPage(
     val readOnlyForOpenAsDialog = rememberSaveable { mutableStateOf(false) }
     val openAsDialogFilePath = rememberSaveable { mutableStateOf("") }
     // `derivedStateOf` can auto capture state values, so, don't have to pass the `key` explicitly actually, but pass is ok as well
-    val fileName = remember(openAsDialogFilePath.value) { derivedStateOf { getFileNameFromCanonicalPath(openAsDialogFilePath.value) } }
+    val openAsDialogFileName = remember(openAsDialogFilePath.value) { derivedStateOf { getFileNameFromCanonicalPath(openAsDialogFilePath.value) } }
     val showReloadDialogForOpenAs = rememberSaveable { mutableStateOf(false) }
 //    val showOpenInEditor = StateUtil.getRememberSaveableState(initValue = false)
     fun initOpenAsDialog(filePath:String, showReloadDialog:Boolean = true) {
@@ -700,7 +715,7 @@ fun EditorInnerPage(
     }
 
     if(showOpenAsDialog.value) {
-        OpenAsDialog(readOnly = readOnlyForOpenAsDialog, fileName = fileName.value, filePath = openAsDialogFilePath.value,
+        OpenAsDialog(readOnly = readOnlyForOpenAsDialog, fileName = openAsDialogFileName.value, filePath = openAsDialogFilePath.value,
             openSuccessCallback = {
                 if(showReloadDialogForOpenAs.value) {
                     //x 废弃，废案，万一用户就想保留陈旧内容呢？还是询问用户吧) 如果成功请求外部打开文件，把文件就绪设为假，下次返回就会重新加载文件，避免显示陈旧内容
@@ -1752,6 +1767,7 @@ fun EditorInnerPage(
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         appPaused.value = false
 
+        updatePlScopeIfNeeded(editorPageShowingFileDto.value.name)
         codeEditor.value.analyze()
 
         //检查，如果 Activity 的on resume事件刚被触发，说明用户刚从后台把app调出来，这时调用软重载文件（会检测变化若判断很可能无变化则不重载）
@@ -2050,9 +2066,8 @@ private suspend fun doInit(
                 editorPageTextEditorState.value = newState
                 lastTextEditorState.value = newState
 
+                // syntax highlightings
                 updatePlScopeIfNeeded(file.name)
-
-
                 codeEditor.analyze()
             }
 

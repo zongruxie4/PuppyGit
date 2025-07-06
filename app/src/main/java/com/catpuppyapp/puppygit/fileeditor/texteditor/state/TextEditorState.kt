@@ -1970,6 +1970,26 @@ class TextEditorState private constructor(
     }
 
 
+    /**
+     * @return a new `fieldsId` which related to adjusted styles, or empty string represent target line doesn't exist
+     */
+//    suspend fun deletedLine(lineIdx: Int):String {
+//        val cachedStyles = codeEditor?.obtainCachedStyles()
+//        if(cachedStyles != null) {
+//            val line = fields.getOrNull(lineIdx)
+//            if(line == null) {
+//                return ""
+//            }
+//
+//            lock.withLock {
+//                val newStyles = Styles(cachedStyles.spans)
+//
+//            }
+//        }
+//    }
+
+
+
     companion object {
         fun create(
             codeEditor: MyCodeEditor?,

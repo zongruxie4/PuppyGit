@@ -68,6 +68,21 @@ class MyCodeEditor(
         stylesMap.clear()
     }
 
+    fun obtainCachedStyles():Styles? {
+        val cachedStyles = stylesMap.get(editorState.value.fieldsId)
+        return if(cachedStyles != null && cachedStyles.inDarkTheme == Theme.inDarkTheme) {
+            cachedStyles.styles
+        }else {
+            // when switched theme, maybe need remove another themes cached styles, if not clear is ok too,
+            //   but, whatever, they will be cleared when exit app
+            // 如果切换了app主题，可能需要清下之前主题缓存的styles，不过不清也没事，不清的好处是如果用户来回切换主题，不会反复执行代码高亮分支，清的好处是可能有助于释放内存，
+            //  但不管在这清不清，都无所谓，反正退出app时一定会清
+//            stylesMap.remove(editorState.fieldsId)
+
+
+            null
+        }
+    }
 
     fun analyze() {
         if(SettingsUtil.isEditorSyntaxHighlightEnabled().not()) {
@@ -90,21 +105,14 @@ class MyCodeEditor(
 
         // has cached
         // 检查是否有cached styles，有则直接应用
-        val cachedStyles = stylesMap.get(editorState.fieldsId)
-        if(cachedStyles != null && cachedStyles.inDarkTheme == Theme.inDarkTheme) {
+        val cachedStyles = obtainCachedStyles()
+        if(cachedStyles != null) {
             doJobThenOffLoading {
-                editorState.applySyntaxHighlighting(editorState.fieldsId, cachedStyles.styles)
+                editorState.applySyntaxHighlighting(editorState.fieldsId, cachedStyles)
             }
             return
         }
 
-        // when switched theme, maybe need remove another themes cached styles, if not clear is ok too,
-        //   but, whatever, they will be cleared when exit app
-        // 如果切换了app主题，可能需要清下之前主题缓存的styles，不过不清也没事，不清的好处是如果用户来回切换主题，不会反复执行代码高亮分支，清的好处是可能有助于释放内存，
-        //  但不管在这清不清，都无所谓，反正退出app时一定会清
-//        else {
-//            stylesMap.remove(editorState.fieldsId)
-//        }
 
 
 

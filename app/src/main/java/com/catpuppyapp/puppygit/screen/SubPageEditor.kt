@@ -138,22 +138,6 @@ fun SubPageEditor(
     val editorPageSnapshotedFileInfo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSnapshotedFileInfo",FileSimpleDto() )
 
 
-    val plScope = rememberSaveable { mutableStateOf(PLScopes.AUTO) }
-    val resetPlScope = { plScope.value = PLScopes.AUTO }
-    val updatePlScopeIfNeeded = { fileName:String ->
-        // if was detected language or selected by user, then will not update program language scope again
-        if(plScope.value == PLScopes.AUTO) {
-            plScope.value = PLScopes.guessScope(fileName)
-        }
-    }
-
-    val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
-        MyCodeEditor(
-            appContext = AppModel.realAppContext,
-            plScope = plScope,
-            editorState = editorPageTextEditorState
-        )
-    }
 
 
     val editorPageLastScrollEvent = mutableCustomStateOf<ScrollEvent?>(stateKeyTag, "editorPageLastScrollEvent") { null }  //这个用remember就行，没必要在显示配置改变时还保留这个滚动状态，如果显示配置改变，直接设为null，从配置文件读取滚动位置重定位更好
@@ -502,10 +486,6 @@ fun SubPageEditor(
         EditorInnerPage(
 //            stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
             stateKeyTag = stateKeyTag,
-
-            updatePlScopeIfNeeded = updatePlScopeIfNeeded,
-            resetPlScope = resetPlScope,
-            codeEditor = codeEditor,
 
             disableSoftKb = editorDisableSoftKb,
             recentFileList = editorRecentFileList,
