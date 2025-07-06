@@ -14,14 +14,19 @@ object PLTheme {
 
     val THEMES = listOf(THEME_DARK, THEME_LIGHT)
 
-    val current = mutableStateOf(AUTO)
+//    val current = mutableStateOf(AUTO)
+//
+//    fun init(inDarkTheme: Boolean) {
+//        current.value = if(inDarkTheme) THEME_DARK else THEME_LIGHT
+//    }
+//
+//    fun update(inDarkTheme: Boolean) {
+//        init(inDarkTheme)
+//    }
 
-    fun init(inDarkTheme: Boolean) {
-        current.value = if(inDarkTheme) THEME_DARK else THEME_LIGHT
-    }
-
-    fun update(inDarkTheme: Boolean) {
-        init(inDarkTheme)
+    fun applyTheme(inDarkTheme: Boolean) {
+        val theme = if(inDarkTheme) THEME_DARK else THEME_LIGHT
+        ThemeRegistry.getInstance().setTheme(theme)
     }
 
 
@@ -45,7 +50,5 @@ object PLTheme {
                 }
             )
         }
-
-        themeRegistry.setTheme(current.value)
     }
 }

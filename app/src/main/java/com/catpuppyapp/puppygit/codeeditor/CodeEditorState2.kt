@@ -6,7 +6,7 @@ import kotlinx.parcelize.Parcelize
 // it was had "CodeEditorState", so named this to "2"
 @Parcelize
 data class CodeEditorState2(
-    val theme: String = PLTheme.current.value,
+    val theme: String = "",
     val languageScopeName: String = PLScopes.NONE,
     val autoCompleteEnabled: Boolean = false,
 ): Parcelable

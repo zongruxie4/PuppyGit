@@ -46,6 +46,9 @@ object Theme {
     // this value will update when theme ready
     var inDarkTheme = false
 
+    // inDarkTheme的state版，方便触发页面重新渲染
+    val inDarkThemeState = mutableStateOf(false)
+
     val themeList = listOf(
         auto,  // auto, 实际就是跟随系统
         light,  // light
@@ -141,20 +144,24 @@ fun PuppyGitAndroidTheme(
             val context = LocalContext.current
             if (darkTheme) {
                 Theme.inDarkTheme = true;
+                Theme.inDarkThemeState.value = true
                 getDynamicColor(true, context)
             }else {
                 Theme.inDarkTheme = false
+                Theme.inDarkThemeState.value = false
                 getDynamicColor(false, context)
             }
         }
 
         darkTheme -> {
             Theme.inDarkTheme = true;
+            Theme.inDarkThemeState.value = true
             DarkColorScheme
         }
 
         else -> {
             Theme.inDarkTheme = false;
+            Theme.inDarkThemeState.value = false
             LightColorScheme
         }
     }

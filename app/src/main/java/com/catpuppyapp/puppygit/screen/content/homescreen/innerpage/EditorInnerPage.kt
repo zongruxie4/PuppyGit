@@ -125,6 +125,10 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 fun EditorInnerPage(
     stateKeyTag:String,
 
+    updatePlScopeIfNeeded:(fileName:String) -> Unit,
+    resetPlScope: () -> Unit,
+    codeEditor: CustomStateSaveable<MyCodeEditor>,
+
     disableSoftKb: MutableState<Boolean>,
 
     recentFileList: CustomStateListSaveable<FileDetail>,
@@ -275,24 +279,6 @@ fun EditorInnerPage(
         lastCursorAtColumn.value
     }
     // lastCursorAtColumn block end
-
-    val plScope = rememberSaveable { mutableStateOf(PLScopes.AUTO) }
-    val resetPlScope = { plScope.value = PLScopes.AUTO }
-    val updatePlScopeIfNeeded = { fileName:String ->
-        // if was detected language or selected by user, then will not update program language scope again
-        if(plScope.value == PLScopes.AUTO) {
-            plScope.value = PLScopes.guessScope(fileName)
-        }
-    }
-
-    val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
-        MyCodeEditor(
-            appContext = AppModel.realAppContext,
-            inDarkTheme = inDarkTheme,
-            plScope = plScope,
-            editorState = editorPageTextEditorState
-        )
-    }
 
     //在编辑器弹出键盘用的，不过后来用simple editor库了，就不需要这个了
 //    val keyboardCtl = LocalSoftwareKeyboardController.current
@@ -1766,6 +1752,8 @@ fun EditorInnerPage(
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         appPaused.value = false
 
+        codeEditor.value.analyze()
+
         //检查，如果 Activity 的on resume事件刚被触发，说明用户刚从后台把app调出来，这时调用软重载文件（会检测变化若判断很可能无变化则不重载）
         doActIfIsExpectLifeCycle(MainActivityLifeCycle.ON_RESUME) {
             //如果显示重载确认弹窗，则不自动重载；如果未显示重载确认弹窗且文件未编辑（换句话说：已成功保存），则自动重载
@@ -2065,7 +2053,7 @@ private suspend fun doInit(
                 updatePlScopeIfNeeded(file.name)
 
 
-                codeEditor.analyze(newState)
+                codeEditor.analyze()
             }
 
 

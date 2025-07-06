@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -28,31 +29,30 @@ private const val TAG = "MyCodeEditor"
 
 class MyCodeEditor(
     val appContext: Context,
-    val inDarkTheme: Boolean,
     val plScope: MutableState<String>,
     val editorState: CustomStateSaveable<TextEditorState>,
 ): CodeEditor(appContext) {
 
     //{fieldsId: syntaxHighlightId: AnnotatedString}
     val highlightMap: MutableMap<String, Map<String, AnnotatedString>> = ConcurrentMap()
-    val stylesMap: MutableMap<String, Styles> = ConcurrentMap()
-    val myEditorStyleDelegate: MyEditorStyleDelegate = MyEditorStyleDelegate(editorState, stylesMap)
+    val stylesMap: MutableMap<String, StylesResult> = ConcurrentMap()
 
+    fun genNewStyleDelegate() = MyEditorStyleDelegate(editorState, editorState.value.fieldsId, Theme.inDarkTheme, stylesMap)
 //    var editor: CodeEditor? = null
 
     init {
         try {
-            // order is important
+
+            setupTextmate(appContext)
+
             this.apply {
                 colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
             }
 
-            PLTheme.init(inDarkTheme)
-
-            setupTextmate(appContext)
-
+            // for clear when Activity destroy
             AppModel.editorCache.add(this)
 
+            analyze()
         }catch (e: Exception) {
             MyLog.e(TAG, "#init err: ${e.stackTraceToString()}")
         }
@@ -68,26 +68,47 @@ class MyCodeEditor(
         stylesMap.clear()
     }
 
-    fun analyze(editorState: TextEditorState) {
+
+    fun analyze() {
         if(SettingsUtil.isEditorSyntaxHighlightEnabled().not()) {
             return
         }
 
         val plScope = plScope.value
         // no highlights or not supported
-        if(plScope == PLScopes.NONE || PLScopes.SCOPES.contains(plScope).not()) {
+        if(PLScopes.scopeInvalid(plScope)) {
             return
         }
 
+
+        val editorState = editorState.value
+
+        // invalid state, maybe just created, but never used
+        if(editorState.fieldsId.isBlank()) {
+            return
+        }
+
+        // has cached
         // 检查是否有cached styles，有则直接应用
         val cachedStyles = stylesMap.get(editorState.fieldsId)
-        if(cachedStyles != null) {
+        if(cachedStyles != null && cachedStyles.inDarkTheme == Theme.inDarkTheme) {
             doJobThenOffLoading {
-                editorState.applySyntaxHighlighting(editorState.fieldsId, cachedStyles)
+                editorState.applySyntaxHighlighting(editorState.fieldsId, cachedStyles.styles)
             }
             return
         }
 
+        // when switched theme, maybe need remove another themes cached styles, if not clear is ok too,
+        //   but, whatever, they will be cleared when exit app
+        // 如果切换了app主题，可能需要清下之前主题缓存的styles，不过不清也没事，不清的好处是如果用户来回切换主题，不会反复执行代码高亮分支，清的好处是可能有助于释放内存，
+        //  但不管在这清不清，都无所谓，反正退出app时一定会清
+//        else {
+//            stylesMap.remove(editorState.fieldsId)
+//        }
+
+
+
+        // do analyze
         //执行分析
         // 用editorState.getAllText()获取已\n结尾的文件，这里不要直接读取文件，避免 /r/n，可能导致解析出的索引与editor state实际使用的不匹配
         val text = editorState.getAllText()
@@ -95,13 +116,19 @@ class MyCodeEditor(
             return
         }
 
+        PLTheme.applyTheme(Theme.inDarkTheme)
+
         this.let {
-            it.setEditorLanguage(
-                TextMateLanguage.create(
-                    plScope, false
-                )
-            )
             it.setText(text)
+
+            val autoComplete = false
+            val lang = TextMateLanguage.create(
+                plScope, autoComplete
+            )
+
+            lang.analyzeManager.setReceiver(genNewStyleDelegate())
+
+            it.setEditorLanguage(lang)
         }
     }
 
@@ -125,15 +152,8 @@ class MyCodeEditor(
         this.diagnostics = null
 
         // Setup new one
-        val mgr = lang.getAnalyzeManager()
-        // avoid throw NPE when parent class `CodeEditor.initialize()` running
-        if(myEditorStyleDelegate != null) {
-            myEditorStyleDelegate.reset()
-            mgr.setReceiver(myEditorStyleDelegate)
-        }
-
         if (text != null) {
-            mgr.reset(ContentReference(text), extraArguments)
+            lang.getAnalyzeManager().reset(ContentReference(text), extraArguments)
         }
 
         if (snippetController != null) {
@@ -184,3 +204,8 @@ class MyCodeEditor(
 
     // TODO 添加修改行和删除行的函数，外部调用 code editor重新执行语法分析，然后应用style到调用的那个state
 }
+
+class StylesResult(
+    val inDarkTheme: Boolean,
+    val styles: Styles,
+)

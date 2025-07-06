@@ -50,6 +50,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
+import com.catpuppyapp.puppygit.codeeditor.PLScopes
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
@@ -104,6 +106,7 @@ import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -155,6 +158,7 @@ fun HomeScreen(
 //    val appContext = AppModel.appContext  //这个获取不了Activity!
     val activityContext = LocalContext.current  //这个能获取到
 
+    val inDarkTheme = Theme.inDarkTheme
 //    val settingsTmp = remember { SettingsUtil.getSettingsSnapshot() }   //避免状态变量里的设置项过旧，重新获取一个
 
     val allRepoParentDir = AppModel.allRepoParentDir
@@ -453,6 +457,28 @@ fun HomeScreen(
     val needRefreshEditorPage = rememberSaveable { mutableStateOf("")}
     val editorPageIsSaving = rememberSaveable { mutableStateOf(false)}
     val showReloadDialog = rememberSaveable { mutableStateOf(false)}
+
+
+
+    val plScope = rememberSaveable { mutableStateOf(PLScopes.AUTO) }
+    val resetPlScope = { plScope.value = PLScopes.AUTO }
+    val updatePlScopeIfNeeded = { fileName:String ->
+        // if was detected language or selected by user, then will not update program language scope again
+        if(plScope.value == PLScopes.AUTO) {
+            plScope.value = PLScopes.guessScope(fileName)
+        }
+    }
+
+    val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
+        MyCodeEditor(
+            appContext = AppModel.realAppContext,
+            plScope = plScope,
+            editorState = editorPageTextEditorState
+        )
+    }
+
+
+
 
     val changeListHasIndexItems = rememberSaveable { mutableStateOf(false)}
 //    val changeListRequirePull = rememberSaveable { mutableStateOf(false)}
@@ -1441,6 +1467,10 @@ fun HomeScreen(
                 EditorInnerPage(
 //                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
                     stateKeyTag = stateKeyTag,
+
+                    updatePlScopeIfNeeded = updatePlScopeIfNeeded,
+                    resetPlScope = resetPlScope,
+                    codeEditor = codeEditor,
 
                     disableSoftKb = editorDisableSoftKb,
                     recentFileList = editorRecentFileList,

@@ -16,6 +16,7 @@ import com.catpuppyapp.puppygit.screen.shared.CommitListFrom
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.IntentHandler
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.cache.NaviCache
 
@@ -29,7 +30,8 @@ fun AppScreenNavigator() {
 
 //    val startScreen = Cons.selectedItem_Repos
     //初始启动页面的子页面（Repos/Files之类的）
-    val currentHomeScreen = rememberSaveable{ mutableIntStateOf(Cons.selectedItem_Repos) }
+//    val currentHomeScreen = rememberSaveable{ mutableIntStateOf(Cons.selectedItem_Repos) }
+    val currentHomeScreen = rememberSaveable{ mutableIntStateOf(SettingsUtil.obtainLastQuitHomeScreen()) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
 //    val scope = ComposeHelper.getCoroutineScope()

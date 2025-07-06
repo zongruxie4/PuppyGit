@@ -1943,11 +1943,12 @@ class TextEditorState private constructor(
             while (spanIdx <= spans.size) {
                 val curSpan = spans.get(spanIdx - 1)
                 val nextSpan = spans.getOrNull(spanIdx++)
-                val endInclusive = nextSpan?.column ?: (rawText.length - 1)
-                val textRange = IntRange(start, endInclusive)
-                start = endInclusive
+                val endExclusive = nextSpan?.column ?: rawText.length
+                val textRange = IntRange(start, endExclusive - 1)
+                start = endExclusive
                 val style = curSpan.style
                 val foregroundColor = Color(RendererUtils.getForegroundColor(curSpan, colorScheme))
+//                println("forecolor = ${RendererUtils.getForegroundColor(curSpan, colorScheme)}")
 //                val backgroundColor = Color(RendererUtils.getBackgroundColor(curSpan, obtainColorScheme()))
                 val fontWeight = if(TextStyle.isBold(style)) FontWeight.Bold else null
                 val fontStyle = if(TextStyle.isItalics(style)) FontStyle.Italic else null

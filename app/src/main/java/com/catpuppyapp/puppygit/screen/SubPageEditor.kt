@@ -21,6 +21,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
+import com.catpuppyapp.puppygit.codeeditor.PLScopes
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.SmallFab
@@ -40,6 +42,7 @@ import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -91,6 +94,8 @@ fun SubPageEditor(
 //    val appContext = AppModel.appContext  //这个获取不了Activity!
     val activityContext = LocalContext.current  //这个能获取到
     val scope = rememberCoroutineScope()
+    val inDarkTheme = Theme.inDarkTheme
+
 //    val allRepoParentDir = AppModel.allRepoParentDir
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
@@ -131,6 +136,25 @@ fun SubPageEditor(
     val showReloadDialog = rememberSaveable { mutableStateOf(false)}
     val editorPageShowingFileDto = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageShowingFileDto",FileSimpleDto() )
     val editorPageSnapshotedFileInfo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSnapshotedFileInfo",FileSimpleDto() )
+
+
+    val plScope = rememberSaveable { mutableStateOf(PLScopes.AUTO) }
+    val resetPlScope = { plScope.value = PLScopes.AUTO }
+    val updatePlScopeIfNeeded = { fileName:String ->
+        // if was detected language or selected by user, then will not update program language scope again
+        if(plScope.value == PLScopes.AUTO) {
+            plScope.value = PLScopes.guessScope(fileName)
+        }
+    }
+
+    val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
+        MyCodeEditor(
+            appContext = AppModel.realAppContext,
+            plScope = plScope,
+            editorState = editorPageTextEditorState
+        )
+    }
+
 
     val editorPageLastScrollEvent = mutableCustomStateOf<ScrollEvent?>(stateKeyTag, "editorPageLastScrollEvent") { null }  //这个用remember就行，没必要在显示配置改变时还保留这个滚动状态，如果显示配置改变，直接设为null，从配置文件读取滚动位置重定位更好
     val editorPageLazyListState = rememberLazyListState()
@@ -478,6 +502,10 @@ fun SubPageEditor(
         EditorInnerPage(
 //            stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
             stateKeyTag = stateKeyTag,
+
+            updatePlScopeIfNeeded = updatePlScopeIfNeeded,
+            resetPlScope = resetPlScope,
+            codeEditor = codeEditor,
 
             disableSoftKb = editorDisableSoftKb,
             recentFileList = editorRecentFileList,

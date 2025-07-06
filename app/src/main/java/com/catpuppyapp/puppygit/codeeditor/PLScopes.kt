@@ -25,5 +25,7 @@ object PLScopes {
         return NONE
     }
 
+    fun scopeInvalid(plScope: String) = plScope == NONE || !SCOPES.contains(plScope)
+
 
 }
