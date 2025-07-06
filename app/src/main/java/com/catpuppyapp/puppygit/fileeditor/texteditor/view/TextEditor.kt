@@ -1101,7 +1101,7 @@ fun TextEditor(
                                 searchMode = searchMode.value,
                                 lastEditedColumnIndexState=lastEditedColumnIndexState,
                                 needShowCursorHandle = needShowCursorHandle,
-                                textFieldState = textFieldState,
+                                textFieldState = textEditorState.obtainHighlightedTextField(textFieldState),
                                 enabled = !textEditorState.isMultipleSelectionMode,
                                 fontSize = fontSize.intValue,
                                 fontColor = fontColor,

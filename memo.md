@@ -46,6 +46,11 @@ editor有至少有3处需调整以实现增量更新语法，尽量简化逻辑�
     2 顶级页面的在切换文件后清空(即 mark1要做的事)
     3 顶级页面的在关闭文件后清空
 
+编辑器字体可以考虑换成jet brains的 ttf
+如果切换了语法高亮的语言，clear() code editor，然后重新针对当前文件执行分析
+
+考虑要不要把打开过滤模式自动聚焦关闭？弹软键盘有点突兀，但不弹又没法立刻输入。。。。。。想想
+
 ---
 TODO sha256 support 20250607:
 1. waiting for libgit2 sha256 feature become stable

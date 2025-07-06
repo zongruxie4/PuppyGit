@@ -5,9 +5,13 @@ object PLScopes {
     // 无语法高亮
     val NONE = ""
 
+    // init value for state
+    val AUTO = "AUTO_DETECTED"
+
     val HTML = "text.html.basic"
 
     val SCOPES = listOf(
+        NONE,
         HTML,
 
     )

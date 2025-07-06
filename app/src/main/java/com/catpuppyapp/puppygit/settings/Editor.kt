@@ -69,5 +69,8 @@ data class Editor (
     /**
      * <=0 to use real tab '\t', else will replace tab to spaces
      */
-    var tabIndentSpacesCount:Int = 4
+    var tabIndentSpacesCount:Int = 4,
+
+
+    var syntaxHighlightEnabled:Boolean = true,
 )

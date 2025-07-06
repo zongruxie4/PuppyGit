@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
+import com.catpuppyapp.puppygit.codeeditor.PLScopes
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
@@ -85,14 +87,13 @@ import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.screen.shared.doActIfIsExpectLifeCycle
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
-import com.catpuppyapp.puppygit.utils.cache.EditorFieldAnnotatedStringCache
-import com.catpuppyapp.puppygit.utils.cache.EditorStylesCache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doActWithLockIfFree
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -109,6 +110,7 @@ import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -223,6 +225,7 @@ fun EditorInnerPage(
     val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
+    val inDarkTheme = Theme.inDarkTheme
 
     val exitApp = {
 
@@ -273,6 +276,23 @@ fun EditorInnerPage(
     }
     // lastCursorAtColumn block end
 
+    val plScope = rememberSaveable { mutableStateOf(PLScopes.AUTO) }
+    val resetPlScope = { plScope.value = PLScopes.AUTO }
+    val updatePlScopeIfNeeded = { fileName:String ->
+        // if was detected language or selected by user, then will not update program language scope again
+        if(plScope.value == PLScopes.AUTO) {
+            plScope.value = PLScopes.guessScope(fileName)
+        }
+    }
+
+    val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
+        MyCodeEditor(
+            appContext = AppModel.realAppContext,
+            inDarkTheme = inDarkTheme,
+            plScope = plScope,
+            editorState = editorPageTextEditorState
+        )
+    }
 
     //在编辑器弹出键盘用的，不过后来用simple editor库了，就不需要这个了
 //    val keyboardCtl = LocalSoftwareKeyboardController.current
@@ -458,13 +478,14 @@ fun EditorInnerPage(
 
 
 
+        // start: reset syntax highlighting related vars
+        runCatching {
+            codeEditor.value.clearCache()
+        }
 
-        runCatching {
-            EditorStylesCache.clear()
-        }
-        runCatching {
-            EditorFieldAnnotatedStringCache.clear()
-        }
+        resetPlScope()
+        // end: reset syntax highlighting related vars
+
 
 
         isEdited.value = false
@@ -1767,9 +1788,12 @@ fun EditorInnerPage(
         // doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)){
         doJobThenOffLoading {
             try {
+
                 doActWithLockIfFree(loadLock, "EditorInnerPage#Init#${needRefreshEditorPage.value}#${editorPageShowingFilePath.value.ioPath}") {
                     doInit(
-//                        codeEditorState = codeEditorState,
+                        updatePlScopeIfNeeded = updatePlScopeIfNeeded,
+                        resetPlScope = resetPlScope,
+                        codeEditor = codeEditor.value,
                         resetLastCursorAtColumn = resetLastCursorAtColumn,
                         requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
                         ignoreFocusOnce = ignoreFocusOnce,
@@ -1835,7 +1859,9 @@ fun EditorInnerPage(
 }
 
 private suspend fun doInit(
-//    codeEditorState: CodeEditorState?,
+    updatePlScopeIfNeeded:(fileName:String) -> Unit,
+    resetPlScope: () -> Unit,
+    codeEditor: MyCodeEditor,
     resetLastCursorAtColumn: ()->Unit,
     requirePreviewScrollToEditorCurPos: MutableState<Boolean>,
     ignoreFocusOnce: MutableState<Boolean>,
@@ -1902,12 +1928,15 @@ private suspend fun doInit(
 
         //读取文件内容
         try {
-            //若文件改变
+            //file changed
             if(requireOpenFilePath != undoStack.filePath) {
-                //更新undo stack
+                //reset undo stack
                 undoStack.reset(requireOpenFilePath)
 
-                // TODO 如果切换了语法高亮，也在这里 reset 为自动检测（打开其他文件则重置）
+                // clear editor cache
+                codeEditor.clearCache()
+                // reset syntax highlighting language to auto detect
+                resetPlScope()
             }
 
 
@@ -2013,8 +2042,9 @@ private suspend fun doInit(
             if(soraEditorComposeTestPassed) {
 //                codeEditorState!!.content.value = Content(file.bufferedReader().use { it.readText() })
             }else {
-                editorPageTextEditorState.value = TextEditorState.create(
-//                file = editorPageShowingFilePath.toFuckSafFile(activityContext),
+                val newState = TextEditorState.create(
+                    codeEditor = codeEditor,
+
                     file = file,
                     fieldsId = TextEditorState.newId(),
                     isContentEdited = isEdited,
@@ -2029,7 +2059,13 @@ private suspend fun doInit(
                     )
                 )
 
-                lastTextEditorState.value = editorPageTextEditorState.value
+                editorPageTextEditorState.value = newState
+                lastTextEditorState.value = newState
+
+                updatePlScopeIfNeeded(file.name)
+
+
+                codeEditor.analyze(newState)
             }
 
 

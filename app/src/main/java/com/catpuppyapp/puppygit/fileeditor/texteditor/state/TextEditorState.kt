@@ -2,14 +2,19 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
+import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.Ret
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState.Companion.create
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
@@ -29,7 +34,11 @@ import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import com.catpuppyapp.puppygit.utils.isStartInclusiveEndExclusiveRangeValid
 import com.catpuppyapp.puppygit.utils.tabToSpaces
+import io.github.rosemoe.sora.lang.styling.Span
 import io.github.rosemoe.sora.lang.styling.Styles
+import io.github.rosemoe.sora.lang.styling.TextStyle
+import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
+import io.github.rosemoe.sora.util.RendererUtils
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -51,6 +60,8 @@ private fun targetIndexValidOrThrow(targetIndex:Int, listSize:Int) {
 //不实现equals，直接比较指针地址，反而性能可能更好，不过状态更新可能并不准确，例如fields没更改的情况也会触发页面刷新
 @Immutable
 class TextEditorState private constructor(
+
+    val codeEditor: MyCodeEditor?,
 
     /**
      the `fieldsId` only about fields, same fieldsId should has same fields，but isn't enforce (但不强制要求)
@@ -74,6 +85,7 @@ class TextEditorState private constructor(
     private val lock = Mutex()
 
     fun copy(
+        codeEditor: MyCodeEditor? = this.codeEditor,
         fieldsId: String = this.fieldsId,
         fields: List<TextFieldState> = this.fields,
         selectedIndices: List<Int> = this.selectedIndices,
@@ -83,6 +95,7 @@ class TextEditorState private constructor(
         editorPageIsContentSnapshoted:MutableState<Boolean> = this.editorPageIsContentSnapshoted,
         onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit = this.onChanged,
     ):TextEditorState = create(
+        codeEditor = codeEditor,
         fieldsId = fieldsId,
         fields = fields,
         selectedIndices = selectedIndices,
@@ -1406,55 +1419,6 @@ class TextEditorState private constructor(
         deleteLineByIndices(selectedIndices, trueClearAllSelectedIndicesFalseOnlyClearWhichDeleted = true)
     }
 
-    @Deprecated("keep for now, if no more need this, can delete")
-    suspend fun createDeletedState_Deprecated() {
-        if(selectedIndices.isEmpty()) {
-            return
-        }
-
-        lock.withLock {
-            //把没选中的行取出来，作为新的文件内容
-            val newFields = fields.filterIndexed { index, _ ->
-                !selectedIndices.contains(index)
-            }
-
-            //如果选中行列表selectedIndices无重复索引且不可能有错误索引的话，
-            // 可简单对比已选中行selectedIndices.size和fields.size来判断有无选中所有行，
-            // 但我不确定selectedIndices是否会有重复索引和是否会有无效索引，
-            // 所以这里暂时不用size判断是否选中了所有行
-
-            //判断是否删除了所有行，如果新的文件内容列表newFields一个元素都没有，则说明全删了
-            val isDeletedAll = newFields.isEmpty()
-
-            //如果是删除所有，创建一个空状态；否则创建删除选中行后的状态
-            val newState = if(isDeletedAll) {
-                create(
-                    fieldsId = newId(),
-                    text = "",
-                    isMultipleSelectionMode = isMultipleSelectionMode,
-                    isContentEdited = isContentEdited,
-                    editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-                    onChanged = onChanged,
-                    focusingLineIdx = null, //全删了就一行都不用聚焦了，不过其实还会保留一行供输入，想聚焦可以自己点下那一行
-                )
-            }else {
-                //非全删，创建新状态，不要影响选择模式，要不然有的情况自动退选择模式，有的不退，容易让人感到混乱
-                internalCreate(
-                    fieldsId = newId(),
-                    fields = newFields,
-                    selectedIndices = emptyList(),
-                    isMultipleSelectionMode = isMultipleSelectionMode,  //一般来说此值在这会是true，不过，这里的语义是“不修改是否选择模式”，所以把这个字段传过去比直接设为true要合适
-                    focusingLineIdx = focusingLineIdx
-
-                )
-            }
-
-            isContentEdited?.value=true
-            editorPageIsContentSnapshoted?.value=false
-
-            onChanged(newState, true, true)
-        }
-    }
 
 
     /**
@@ -1725,6 +1689,7 @@ class TextEditorState private constructor(
             focusingLineIdx = focusingLineIdx,
 
             //这几个变量是共享的，一般不用改
+            codeEditor = codeEditor,
             isContentEdited = isContentEdited,
             editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
             onChanged = onChanged
@@ -1934,32 +1899,80 @@ class TextEditorState private constructor(
         }
     }
 
-    fun applySyntaxHighlighting(expectedFieldsId:String, styles: Styles) {
+    suspend fun applySyntaxHighlighting(expectedFieldsId:String, styles: Styles) {
         if(expectedFieldsId != fieldsId) {
             return
         }
 
-        TODO()
+
         // 加锁，处理styles，按行分割（检查一下：最后分割出的行数应和fields size一样）
-        // 创建新 state，调用onChange
+        // 创建新 state，调用onChange （测试：如果不创建state也可触发页面刷新，则无需创建新state）
         stylesApplyLock.withLock {
             lock.withLock {
-                创建一个TextFieldState的highlighting cache map，根据field syntax hight id把样式存上，
-                遍历text field时，根据其id取annotated string，
-                若无，使用原text field，若有，使用缓存的带语法高亮的text field
+//                创建一个TextFieldState的highlighting cache map，根据field syntax hight id把样式存上，
+//                遍历text field时，根据其id取annotated string，
+//                若无，使用原text field，若有，使用缓存的带语法高亮的text field
+
+                val shMap = mutableMapOf<String, AnnotatedString>()
+                val spansReader = styles.spans.read()
+                fields.forEachIndexedBetter { idx, value ->
+                    val spans = spansReader.getSpansOnLine(idx)
+                    val annotatedString = generateAnnotatedStringForLine(value, spans)
+                    shMap.put(value.syntaxHighlightId, annotatedString)
+                }
+
+                codeEditor?.putSyntaxHighlight(fieldsId, shMap)
+
+                // just for trigger re-render page
+                onChanged(copy(), null, false)
             }
         }
     }
 
     // 在MyTextField应调用此方法获得AnnotatedString
-    fun generateAnnotatedStringForLine(lineIdx: Int): AnnotatedString {
+    fun generateAnnotatedStringForLine(textFieldState: TextFieldState, spans:List<Span>): AnnotatedString {
+        val colorScheme = codeEditor?.colorScheme
+        if(colorScheme == null) {
+            return AnnotatedString(textFieldState.value.text)
+        }
 
-        TODO()
+        return buildAnnotatedString {
+            var start = 0
+            var spanIdx = 1
+            val rawText = textFieldState.value.text
+            while (spanIdx <= spans.size) {
+                val curSpan = spans.get(spanIdx - 1)
+                val nextSpan = spans.getOrNull(spanIdx++)
+                val endInclusive = nextSpan?.column ?: (rawText.length - 1)
+                val textRange = IntRange(start, endInclusive)
+                start = endInclusive
+                val style = curSpan.style
+                val foregroundColor = Color(RendererUtils.getForegroundColor(curSpan, colorScheme))
+//                val backgroundColor = Color(RendererUtils.getBackgroundColor(curSpan, obtainColorScheme()))
+                val fontWeight = if(TextStyle.isBold(style)) FontWeight.Bold else null
+                val fontStyle = if(TextStyle.isItalics(style)) FontStyle.Italic else null
+                withStyle(SpanStyle(color = foregroundColor, fontStyle = fontStyle, fontWeight = fontWeight)) {
+                    append(rawText.substring(textRange))
+                }
+            }
+        }
+    }
+
+    fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
+        val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
+        val annotatedString = sh?.get(raw.syntaxHighlightId)
+        return if(annotatedString == null) {
+            raw
+        }else {
+            raw.copy(value = raw.value.copy(annotatedString = annotatedString))
+        }
     }
 
 
     companion object {
         fun create(
+            codeEditor: MyCodeEditor?,
+
             text: String,
             fieldsId: String,
             isMultipleSelectionMode:Boolean,
@@ -1970,6 +1983,8 @@ class TextEditorState private constructor(
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
         ): TextEditorState {
             return create(
+                codeEditor = codeEditor,
+
                 lines = text.lines(),
                 fieldsId= fieldsId,
                 isMultipleSelectionMode = isMultipleSelectionMode,
@@ -1983,6 +1998,8 @@ class TextEditorState private constructor(
         }
 
         fun create(
+            codeEditor: MyCodeEditor?,
+
             lines: List<String>,
             fieldsId: String,
             isMultipleSelectionMode:Boolean,
@@ -1993,6 +2010,8 @@ class TextEditorState private constructor(
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
         ): TextEditorState {
             return create(
+                codeEditor = codeEditor,
+
                 fields = createInitTextFieldStates(lines),
                 fieldsId= fieldsId,
                 selectedIndices = listOf(),
@@ -2007,6 +2026,8 @@ class TextEditorState private constructor(
         }
 
         fun create(
+            codeEditor: MyCodeEditor?,
+
             file: FuckSafFile,
             fieldsId: String,
             isMultipleSelectionMode:Boolean,
@@ -2017,6 +2038,8 @@ class TextEditorState private constructor(
         ): TextEditorState {
             //这里`addNewLineIfFileEmpty`必须传true，以确保和String.lines()行为一致，不然若文件末尾有空行，读取出来会少一行
             return create(
+                codeEditor = codeEditor,
+
                 lines = FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true),
                 fieldsId= fieldsId,
                 isMultipleSelectionMode = isMultipleSelectionMode,
@@ -2029,6 +2052,7 @@ class TextEditorState private constructor(
         }
 
         fun create(
+            codeEditor: MyCodeEditor?,
             fields: List<TextFieldState>,
             fieldsId: String,
             selectedIndices: List<Int>,
@@ -2039,6 +2063,7 @@ class TextEditorState private constructor(
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
         ): TextEditorState {
             return TextEditorState(
+                codeEditor = codeEditor,
                 fieldsId= fieldsId,
                 fields = fields,
                 selectedIndices = selectedIndices,

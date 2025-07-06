@@ -35,8 +35,6 @@ import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppMigrator
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppVersionMan
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.CommitCache
-import com.catpuppyapp.puppygit.utils.cache.EditorFieldAnnotatedStringCache
-import com.catpuppyapp.puppygit.utils.cache.EditorStylesCache
 import com.catpuppyapp.puppygit.utils.cert.CertMan
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
@@ -49,6 +47,7 @@ import com.catpuppyapp.puppygit.utils.time.TimeZoneMode
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import com.github.git24j.core.Libgit2
 import io.ktor.util.collections.ConcurrentMap
+import io.ktor.util.collections.ConcurrentSet
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.time.ZoneOffset
@@ -56,6 +55,8 @@ import java.time.ZoneOffset
 private const val TAG ="AppModel"
 
 object AppModel {
+
+    val editorCache: MutableSet<MyCodeEditor> = ConcurrentSet()
 
 
 //    private val inited_1 = mutableStateOf(false)
@@ -633,7 +634,6 @@ object AppModel {
             HttpService.start(applicationContext)
         }
 
-        MyCodeEditor.init(applicationContext, Theme.inDarkTheme)
 
 
         //初始化与谷歌play的连接，查询支付信息之类的
@@ -721,12 +721,10 @@ object AppModel {
             runBlocking { CommitCache.clear() }
         }
 
-        runCatching {
-            EditorStylesCache.clear()
-        }
-
-        runCatching {
-            EditorFieldAnnotatedStringCache.clear()
+        editorCache.forEach {
+            runCatching {
+                it.release()
+            }
         }
     }
 

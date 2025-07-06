@@ -394,6 +394,7 @@ fun getEditorStateOnChange(
 //初始状态值随便填，只是为了帮助泛型确定类型并且避免使用null作为初始值而已，具体的值在打开文件后会重新创建
 fun getInitTextEditorState():TextEditorState {
     return TextEditorState.create(
+        codeEditor = null,
         text = "",
         fieldsId = "",
         isContentEdited = mutableStateOf(false),

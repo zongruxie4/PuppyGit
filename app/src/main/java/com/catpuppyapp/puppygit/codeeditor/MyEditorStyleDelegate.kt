@@ -1,7 +1,7 @@
 package com.catpuppyapp.puppygit.codeeditor
 
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
-import com.catpuppyapp.puppygit.utils.cache.EditorStylesCache
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import io.github.rosemoe.sora.lang.analysis.AnalyzeManager
 import io.github.rosemoe.sora.lang.analysis.StyleReceiver
@@ -11,12 +11,17 @@ import io.github.rosemoe.sora.lang.styling.Styles
 
 class MyEditorStyleDelegate(
     val editorState: CustomStateSaveable<TextEditorState>,
-
+    // key 是 fieldsId
+    val stylesMap: MutableMap<String, Styles>
 ): StyleReceiver {
-    val curFieldsId = editorState.value.fieldsId
+    var curFieldsId = editorState.value.fieldsId
+
+    fun reset() {
+        curFieldsId = editorState.value.fieldsId
+    }
 
     override fun setStyles(sourceManager: AnalyzeManager, styles: Styles?) {
-
+        setStyles(sourceManager, styles, {})
     }
 
     override fun setStyles(sourceManager: AnalyzeManager, styles: Styles?, action: Runnable?) {
@@ -25,10 +30,12 @@ class MyEditorStyleDelegate(
         }
 
         // cache可只有一个实例，需要并发安全，key为filesId，全局唯一
-        EditorStylesCache.set(curFieldsId, styles)
+        stylesMap.put(curFieldsId, styles)
 
         if(editorState.value.fieldsId == curFieldsId) {
-            editorState.value.applySyntaxHighlighting(curFieldsId, styles)
+            doJobThenOffLoading {
+                editorState.value.applySyntaxHighlighting(curFieldsId, styles)
+            }
         }
     }
 
