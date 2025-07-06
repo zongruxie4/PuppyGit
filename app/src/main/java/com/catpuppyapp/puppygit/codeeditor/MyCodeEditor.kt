@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.codeeditor
 
 import android.content.Context
+import androidx.annotation.UiThread
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
@@ -9,10 +10,10 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import io.github.rosemoe.sora.lang.EmptyLanguage
 import io.github.rosemoe.sora.lang.Language
+import io.github.rosemoe.sora.lang.analysis.StyleUpdateRange
 import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
@@ -34,8 +35,9 @@ class MyCodeEditor(
 ): CodeEditor(appContext) {
 
     //{fieldsId: syntaxHighlightId: AnnotatedString}
-    val highlightMap: MutableMap<String, Map<String, AnnotatedString>> = ConcurrentMap()
+    val highlightMap: MutableMap<String, Map<String, AnnotatedStringResult>> = ConcurrentMap()
     val stylesMap: MutableMap<String, StylesResult> = ConcurrentMap()
+//    val editorStateMap: MutableMap<String, TextEditorState> = ConcurrentMap()
 
     fun genNewStyleDelegate() = MyEditorStyleDelegate(editorState, editorState.value.fieldsId, Theme.inDarkTheme, stylesMap)
 //    var editor: CodeEditor? = null
@@ -107,9 +109,10 @@ class MyCodeEditor(
         // 检查是否有cached styles，有则直接应用
         val cachedStyles = obtainCachedStyles()
         if(cachedStyles != null) {
-            doJobThenOffLoading {
-                editorState.applySyntaxHighlighting(editorState.fieldsId, cachedStyles)
-            }
+            // 会在 style receiver收到之后立刻apply，所以这里不需要再apply了，如果有缓存就代表已经apply过了
+//            doJobThenOffLoading {
+//                editorState.applySyntaxHighlighting(editorState.fieldsId, cachedStyles)
+//            }
             return
         }
 
@@ -171,6 +174,9 @@ class MyCodeEditor(
         invalidate()
     }
 
+
+
+
     /**
      * Setup Textmate. Load our grammars and themes from assets
      */
@@ -201,11 +207,11 @@ class MyCodeEditor(
 
 
     // map key String is field's `syntaxHighlightId`, 让highlights map在外部，方便切换语法高亮方案时清空
-    fun putSyntaxHighlight(fieldsId:String, highlights:Map<String, AnnotatedString>) {
+    fun putSyntaxHighlight(fieldsId:String, highlights:Map<String, AnnotatedStringResult>) {
         highlightMap.put(fieldsId, highlights)
     }
     // 这里不用 get 而是用 obtain，是为了避免和默认的getter 名冲突
-    fun obtainSyntaxHighlight(fieldsId:String):Map<String, AnnotatedString>? {
+    fun obtainSyntaxHighlight(fieldsId:String):Map<String, AnnotatedStringResult>? {
         return highlightMap.get(fieldsId)
     }
 
@@ -216,4 +222,9 @@ class MyCodeEditor(
 class StylesResult(
     val inDarkTheme: Boolean,
     val styles: Styles,
+)
+
+class AnnotatedStringResult(
+    val inDarkTheme: Boolean,
+    val annotatedString: AnnotatedString
 )

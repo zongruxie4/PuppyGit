@@ -11,7 +11,9 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
+import com.catpuppyapp.puppygit.codeeditor.AnnotatedStringResult
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
+import com.catpuppyapp.puppygit.codeeditor.StylesResult
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState.Companion.create
@@ -20,12 +22,14 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.EditCache
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.generateRandomString
@@ -57,6 +61,8 @@ private fun targetIndexValidOrThrow(targetIndex:Int, listSize:Int) {
     }
 }
 
+private val lock = Mutex()
+
 //不实现equals，直接比较指针地址，反而性能可能更好，不过状态更新可能并不准确，例如fields没更改的情况也会触发页面刷新
 @Immutable
 class TextEditorState private constructor(
@@ -82,7 +88,6 @@ class TextEditorState private constructor(
     val onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
 
 ) {
-    private val lock = Mutex()
 
     fun copy(
         codeEditor: MyCodeEditor? = this.codeEditor,
@@ -1899,26 +1904,37 @@ class TextEditorState private constructor(
         }
     }
 
-    suspend fun applySyntaxHighlighting(expectedFieldsId:String, styles: Styles) {
-        if(expectedFieldsId != fieldsId) {
+    suspend fun applySyntaxHighlighting(expectedFieldsId:String, stylesResult: StylesResult) {
+        val styles = stylesResult.styles
+        val inDarkTheme = stylesResult.inDarkTheme
+        val isForThisInstance = expectedFieldsId == fieldsId && inDarkTheme == Theme.inDarkTheme
+        //避免应用其他实例的样式
+        if(!isForThisInstance) {
             return
         }
 
-
         // 加锁，处理styles，按行分割（检查一下：最后分割出的行数应和fields size一样）
         // 创建新 state，调用onChange （测试：如果不创建state也可触发页面刷新，则无需创建新state）
-        stylesApplyLock.withLock {
+        stylesApplyLock.withLock sl@{
+            val filedForCheckApplied = fields.getOrNull(0) ?: return@sl
+
+            val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
+            // already applied spans
+            if(sh?.get(filedForCheckApplied.syntaxHighlightId) != null) {
+                return@sl
+            }
+
             lock.withLock {
 //                创建一个TextFieldState的highlighting cache map，根据field syntax hight id把样式存上，
 //                遍历text field时，根据其id取annotated string，
 //                若无，使用原text field，若有，使用缓存的带语法高亮的text field
 
-                val shMap = mutableMapOf<String, AnnotatedString>()
+                val shMap = mutableMapOf<String, AnnotatedStringResult>()
                 val spansReader = styles.spans.read()
                 fields.forEachIndexedBetter { idx, value ->
                     val spans = spansReader.getSpansOnLine(idx)
                     val annotatedString = generateAnnotatedStringForLine(value, spans)
-                    shMap.put(value.syntaxHighlightId, annotatedString)
+                    shMap.put(value.syntaxHighlightId, AnnotatedStringResult(inDarkTheme, annotatedString))
                 }
 
                 codeEditor?.putSyntaxHighlight(fieldsId, shMap)
@@ -1960,33 +1976,55 @@ class TextEditorState private constructor(
     }
 
     fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
+        val stylesResult = codeEditor?.stylesMap?.get(fieldsId)
+        if(stylesResult == null) {
+            return raw
+        }
+
         val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
-        val annotatedString = sh?.get(raw.syntaxHighlightId)
-        return if(annotatedString == null) {
+        val annotatedStringResult = sh?.get(raw.syntaxHighlightId)
+        return if(annotatedStringResult == null || annotatedStringResult.inDarkTheme != Theme.inDarkTheme) {
+            // styles exists, but haven't annotated string, maybe styles not applied
+            if(annotatedStringResult == null) {
+                doJobThenOffLoading {
+                    applySyntaxHighlighting(fieldsId, stylesResult)
+                }
+            }
+
             raw
         }else {
-            raw.copy(value = raw.value.copy(annotatedString = annotatedString))
+            raw.copy(value = raw.value.copy(annotatedString = annotatedStringResult.annotatedString))
         }
     }
 
 
+    fun copyStyles() = Styles(codeEditor?.obtainCachedStyles().spans)
+
     /**
      * @return a new `fieldsId` which related to adjusted styles, or empty string represent target line doesn't exist
      */
-//    suspend fun deletedLine(lineIdx: Int):String {
-//        val cachedStyles = codeEditor?.obtainCachedStyles()
-//        if(cachedStyles != null) {
-//            val line = fields.getOrNull(lineIdx)
-//            if(line == null) {
-//                return ""
-//            }
-//
-//            lock.withLock {
-//                val newStyles = Styles(cachedStyles.spans)
-//
-//            }
-//        }
-//    }
+    fun updateStyleForDeleteLine(styles: Styles, startLineIndex: Int, endLineIndexInclusive: Int):String {
+        // TODO 增删内容需要调用 spans的after change，然后调用lang.analyzeManager()的insert/ delete重新执行分析
+        //  其中需要用到 char position，有3个字段，line为行索引，column为列索引，均为0开始，index为文本在全文中的索引
+        //  如果删除多行，需要把行排序，然后逐行删除，每删一行把后面的索引减1
+        //  好麻烦，想吐
+        codeEditor.afterDelete()
+    }
+
+    fun updateStylesForInsertLine(styles: Styles, startLineIndex: Int, endLineIndexInclusive: Int):String {
+        val cachedStyles = codeEditor?.obtainCachedStyles()
+        if(cachedStyles != null) {
+            val line = fields.getOrNull(lineIdx)
+            if(line == null) {
+                return ""
+            }
+
+            lock.withLock {
+                val newStyles = Styles(cachedStyles.spans)
+
+            }
+        }
+    }
 
 
 
