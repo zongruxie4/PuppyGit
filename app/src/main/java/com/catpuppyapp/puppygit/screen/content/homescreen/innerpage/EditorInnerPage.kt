@@ -125,6 +125,10 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 fun EditorInnerPage(
     stateKeyTag:String,
 
+    updatePlScopeIfNeeded:(fileName:String) -> Unit,
+    resetPlScope: () -> Unit,
+    codeEditor: CustomStateSaveable<MyCodeEditor>,
+
     disableSoftKb: MutableState<Boolean>,
 
     recentFileList: CustomStateListSaveable<FileDetail>,
@@ -441,25 +445,6 @@ fun EditorInnerPage(
         }
 //        }
     }
-
-
-    val plScope = rememberSaveable { mutableStateOf(PLScopes.AUTO) }
-    val resetPlScope = { plScope.value = PLScopes.AUTO }
-    val updatePlScopeIfNeeded = { fileName:String ->
-        // if was detected language or selected by user, then will not update program language scope again
-        if(plScope.value == PLScopes.AUTO) {
-            plScope.value = PLScopes.guessScope(fileName)
-        }
-    }
-
-    val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
-        MyCodeEditor(
-            appContext = AppModel.realAppContext,
-            plScope = plScope,
-            editorState = editorPageTextEditorState
-        )
-    }
-
 
 
 

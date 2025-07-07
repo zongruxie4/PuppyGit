@@ -61,7 +61,6 @@ private fun targetIndexValidOrThrow(targetIndex:Int, listSize:Int) {
     }
 }
 
-private val lock = Mutex()
 
 //不实现equals，直接比较指针地址，反而性能可能更好，不过状态更新可能并不准确，例如fields没更改的情况也会触发页面刷新
 @Immutable
@@ -88,6 +87,7 @@ class TextEditorState private constructor(
     val onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
 
 ) {
+    private val lock = Mutex()
 
     fun copy(
         codeEditor: MyCodeEditor? = this.codeEditor,
@@ -1940,7 +1940,9 @@ class TextEditorState private constructor(
                 codeEditor?.putSyntaxHighlight(fieldsId, shMap)
 
                 // just for trigger re-render page
-                onChanged(copy(), null, false)
+                if(fieldsId == codeEditor?.editorState?.value?.fieldsId) {
+                    onChanged(copy(), null, false)
+                }
             }
         }
     }

@@ -24,14 +24,19 @@ import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolve
 import io.github.rosemoe.sora.text.ContentReference
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.ktor.util.collections.ConcurrentMap
+import kotlinx.coroutines.channels.Channel
 
 
 private const val TAG = "MyCodeEditor"
+//private val highlightMapShared: MutableMap<String, Map<String, AnnotatedStringResult>> = ConcurrentMap()
+//private val stylesMapShared: MutableMap<String, StylesResult> = ConcurrentMap()
+
 
 class MyCodeEditor(
     val appContext: Context,
     val plScope: MutableState<String>,
     val editorState: CustomStateSaveable<TextEditorState>,
+    val styleRequestChannel: Channel<TextEditorState> = Channel(1000)
 ): CodeEditor(appContext) {
 
     //{fieldsId: syntaxHighlightId: AnnotatedString}
@@ -39,7 +44,7 @@ class MyCodeEditor(
     val stylesMap: MutableMap<String, StylesResult> = ConcurrentMap()
 //    val editorStateMap: MutableMap<String, TextEditorState> = ConcurrentMap()
 
-    fun genNewStyleDelegate() = MyEditorStyleDelegate(editorState, editorState.value.fieldsId, Theme.inDarkTheme, stylesMap)
+    fun genNewStyleDelegate() = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap)
 //    var editor: CodeEditor? = null
 
     init {

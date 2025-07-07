@@ -460,6 +460,23 @@ fun HomeScreen(
 
 
 
+    val plScope = rememberSaveable { mutableStateOf(PLScopes.AUTO) }
+    val resetPlScope = { plScope.value = PLScopes.AUTO }
+    val updatePlScopeIfNeeded = { fileName:String ->
+        // if was detected language or selected by user, then will not update program language scope again
+        if(plScope.value == PLScopes.AUTO) {
+            plScope.value = PLScopes.guessScope(fileName)
+        }
+    }
+
+    val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
+        MyCodeEditor(
+            appContext = AppModel.realAppContext,
+            plScope = plScope,
+            editorState = editorPageTextEditorState
+        )
+    }
+
 
 
 
@@ -1451,6 +1468,9 @@ fun HomeScreen(
 //                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
                     stateKeyTag = stateKeyTag,
 
+                    updatePlScopeIfNeeded = updatePlScopeIfNeeded,
+                    resetPlScope = resetPlScope,
+                    codeEditor = codeEditor,
 
                     disableSoftKb = editorDisableSoftKb,
                     recentFileList = editorRecentFileList,
