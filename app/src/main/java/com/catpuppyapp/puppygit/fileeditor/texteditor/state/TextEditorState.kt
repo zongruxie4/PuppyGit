@@ -14,6 +14,8 @@ import androidx.compose.ui.text.withStyle
 import com.catpuppyapp.puppygit.codeeditor.AnnotatedStringResult
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.codeeditor.StylesResult
+import com.catpuppyapp.puppygit.codeeditor.StylesResultFrom
+import com.catpuppyapp.puppygit.codeeditor.StylesUpdateRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState.Companion.create
@@ -42,6 +44,7 @@ import io.github.rosemoe.sora.lang.styling.Span
 import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.lang.styling.TextStyle
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
+import io.github.rosemoe.sora.text.CharPosition
 import io.github.rosemoe.sora.util.RendererUtils
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -88,6 +91,9 @@ class TextEditorState private constructor(
 
 ) {
     private val lock = Mutex()
+
+    // temporary use when syntax highlighting analyzing
+    var temporaryStyles: StylesResult? = null
 
     fun copy(
         codeEditor: MyCodeEditor? = this.codeEditor,
@@ -587,6 +593,20 @@ class TextEditorState private constructor(
                 // 传 -1 跳过聚焦某行，因为onFocus()已经聚焦了，另外，通常onFocus()会调用这里的selectField()
                 focusingLineIdx = -1,
             )
+
+            if(contentChanged) {
+                val baseStyles = copyStyles()
+                if(baseStyles != null) {
+                    val baseFields = newState.fields.toMutableList()
+                    // delete current line
+                    updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
+
+                    // add new content to current line
+                    updateStylesAfterInsertLine(baseFields, baseStyles, targetIndex, ignoreThis = false, textFieldValue.text, newState)
+                    // set temporary styles to new state
+                    newState.temporaryStyles = baseStyles
+                }
+            }
 
             onChanged(newState, if(contentChanged) true else null, contentChanged)
         }
@@ -1645,20 +1665,16 @@ class TextEditorState private constructor(
         }
     }
 
-    fun getSelectedText(): String {
+    fun getSelectedText(indices: List<Int>? = null, keepEndLineBreak: Boolean = false): String {
         // 把索引排序，然后取出文本，拼接，返回
         val sb = StringBuilder()
-        selectedIndices.toSortedSet().forEach { selectedLineIndex->
+        (indices ?: selectedIndices).toSortedSet().forEach { selectedLineIndex->
             doActIfIndexGood(selectedLineIndex, fields) { field ->
                 sb.append(field.value.text).append(lb)
             }
         }
 
-        return sb.removeSuffix(lb).toString()
-
-        //废弃：保留末尾多出来的换行符，就是要让它多一个，不然复制多行时粘贴后会定位到最后一行开头，反直觉，要解决这个问题需要改掉整个行处理机制，太麻烦了，所以暂时这样规避下，其实这样倒合理，在粘贴内容到一行的中间部位时，感觉比之前还合理
-//        return sb.toString()
-
+        return if(keepEndLineBreak) sb.toString() else sb.removeSuffix(lb).toString()
     }
 
     //获取选择行记数（获取选择了多少行）
@@ -1916,12 +1932,15 @@ class TextEditorState private constructor(
         // 加锁，处理styles，按行分割（检查一下：最后分割出的行数应和fields size一样）
         // 创建新 state，调用onChange （测试：如果不创建state也可触发页面刷新，则无需创建新state）
         stylesApplyLock.withLock sl@{
-            val filedForCheckApplied = fields.getOrNull(0) ?: return@sl
+            // only check for editor request, so that callbakc can override TextEditorState bundled styles(usually temporary)
+            if(stylesResult.from == StylesResultFrom.TEXT_STATE) {
+                val filedForCheckApplied = fields.getOrNull(0) ?: return@sl
 
-            val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
-            // already applied spans
-            if(sh?.get(filedForCheckApplied.syntaxHighlightId) != null) {
-                return@sl
+                val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
+                // already applied spans
+                if(sh?.get(filedForCheckApplied.syntaxHighlightId) != null) {
+                    return@sl
+                }
             }
 
             lock.withLock {
@@ -1941,7 +1960,7 @@ class TextEditorState private constructor(
 
                 // just for trigger re-render page
                 if(fieldsId == codeEditor?.editorState?.value?.fieldsId) {
-                    onChanged(copy(), null, false)
+                    onChanged(codeEditor.editorState.value.copy(), null, false)
                 }
             }
         }
@@ -1978,9 +1997,12 @@ class TextEditorState private constructor(
     }
 
     fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
-        val stylesResult = codeEditor?.stylesMap?.get(fieldsId)
+        var stylesResult = codeEditor?.stylesMap?.get(fieldsId)
         if(stylesResult == null) {
-            return raw
+            stylesResult = temporaryStyles
+            if(stylesResult == null) {
+                return raw
+            }
         }
 
         val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
@@ -2000,32 +2022,98 @@ class TextEditorState private constructor(
     }
 
 
-    fun copyStyles() = Styles(codeEditor?.obtainCachedStyles().spans)
+    fun copyStyles() = codeEditor?.obtainCachedStyles()?.let{ StylesResult(it.inDarkTheme, Styles(it.styles.spans), it.from) }
 
-    /**
-     * @return a new `fieldsId` which related to adjusted styles, or empty string represent target line doesn't exist
-     */
-    fun updateStyleForDeleteLine(styles: Styles, startLineIndex: Int, endLineIndexInclusive: Int):String {
-        // TODO 增删内容需要调用 spans的after change，然后调用lang.analyzeManager()的insert/ delete重新执行分析
-        //  其中需要用到 char position，有3个字段，line为行索引，column为列索引，均为0开始，index为文本在全文中的索引
-        //  如果删除多行，需要把行排序，然后逐行删除，每删一行把后面的索引减1
-        //  好麻烦，想吐
-        codeEditor.afterDelete()
+
+    // 增删内容需要调用 spans的after change，然后调用lang.analyzeManager()的insert/ delete重新执行分析
+    //  其中需要用到 char position，有3个字段，line为行索引，column为列索引，均为0开始，index为文本在全文中的索引
+    //  如果删除多行，需要把行排序，然后逐行删除，每删一行把后面的索引减1
+    fun updateStylesAfterDeleteLine(
+        baseFields: MutableList<TextFieldState>,
+        stylesResult: StylesResult,
+        startLineIndex: Int,
+        ignoreThis: Boolean,
+        newTextEditorState: TextEditorState
+    ) {
+        val endLineIndexInclusive = startLineIndex
+        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = true)
+        val endIdxOfText = getIndexOfText(baseFields, endLineIndexInclusive, trueStartFalseEnd = false)
+        if(startIdxOfText == -1 || endIdxOfText == -1) {
+            return
+        }
+
+        val start = CharPosition(startLineIndex, 0, startIdxOfText)
+        // +1 for '\n'
+        val end = CharPosition(endLineIndexInclusive, baseFields[endLineIndexInclusive].value.text.length+1, endIdxOfText)
+
+        baseFields.removeAt(startLineIndex)
+
+
+        // style will update spans
+        stylesResult.styles.adjustOnDelete(start, end)
+
+        val selectedText = getSelectedText(IntRange(startLineIndex, endLineIndexInclusive).toList(), keepEndLineBreak = true)
+        val lang = codeEditor?.editorLanguage
+        if(lang != null) {
+            val act = {
+                lang.analyzeManager.delete(start, end, selectedText)
+            }
+
+            codeEditor.sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis, newTextEditorState, act))
+        }
+
     }
 
-    fun updateStylesForInsertLine(styles: Styles, startLineIndex: Int, endLineIndexInclusive: Int):String {
-        val cachedStyles = codeEditor?.obtainCachedStyles()
-        if(cachedStyles != null) {
-            val line = fields.getOrNull(lineIdx)
-            if(line == null) {
-                return ""
-            }
+    fun updateStylesAfterInsertLine(
+        baseFields: MutableList<TextFieldState>,
+        stylesResult: StylesResult,
+        startLineIndex: Int,
+        ignoreThis: Boolean,
+        insertedContent: String,
+        newTextEditorState: TextEditorState
+    ) {
+        val endLineIndexInclusive = startLineIndex
 
-            lock.withLock {
-                val newStyles = Styles(cachedStyles.spans)
-
-            }
+        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = true)
+        val endIdxOfText = getIndexOfText(baseFields, endLineIndexInclusive, trueStartFalseEnd = false)
+        if(startIdxOfText == -1 || endIdxOfText == -1) {
+            return
         }
+
+        // 这个new可有可无，因为这个baseFields实际不是textstate应用的state
+        baseFields.add(startLineIndex, TextFieldState(insertedContent, changeType = LineChangeType.NEW))
+
+        val start = CharPosition(startLineIndex, 0, startIdxOfText)
+        // +1 for '\n'
+        val end = start
+        // style will update spans
+        stylesResult.styles.adjustOnInsert(start, end)
+
+        val selectedText = insertedContent
+        val lang = codeEditor?.editorLanguage
+        if(lang != null) {
+            val act = {
+                lang.analyzeManager.insert(start, end, selectedText)
+            }
+
+            codeEditor.sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis, newTextEditorState, act))
+        }
+    }
+
+    // lineIdx is index(since 0), not line number(since 1)
+    fun getIndexOfText(baseFields: List<TextFieldState>, lineIdx: Int, trueStartFalseEnd: Boolean):Int {
+        var li = -1
+        var charIndex = 0
+        var lastLine = ""
+        while (++li != lineIdx) {
+            val f = baseFields.getOrNull(li) ?: return -1
+            // +1 for '\n'
+            charIndex+=(f.value.text.length + 1)
+            lastLine = f.value.text
+        }
+
+        // +1 for '\n'
+        return charIndex+ (if(trueStartFalseEnd) 0 else (lastLine.length+1))
     }
 
 

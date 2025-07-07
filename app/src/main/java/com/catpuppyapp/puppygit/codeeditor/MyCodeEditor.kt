@@ -36,7 +36,9 @@ class MyCodeEditor(
     val appContext: Context,
     val plScope: MutableState<String>,
     val editorState: CustomStateSaveable<TextEditorState>,
-    val styleRequestChannel: Channel<TextEditorState> = Channel(1000)
+    //除非样式分析执行特别慢，否则队列不会满，也不会阻塞线程，如果真的特别慢，或许文件特别大，最好禁用语法高亮
+    // except styles analyze very slow, else, the channel queue will not fullfill and will not block thread，if really very slow, may have large file, better disable syntax highlighting
+    val styleUpdateRequestChannel: Channel<StylesUpdateRequest> = Channel(2000)
 ): CodeEditor(appContext) {
 
     //{fieldsId: syntaxHighlightId: AnnotatedString}
@@ -75,10 +77,10 @@ class MyCodeEditor(
         stylesMap.clear()
     }
 
-    fun obtainCachedStyles():Styles? {
+    fun obtainCachedStyles(): StylesResult? {
         val cachedStyles = stylesMap.get(editorState.value.fieldsId)
         return if(cachedStyles != null && cachedStyles.inDarkTheme == Theme.inDarkTheme) {
-            cachedStyles.styles
+            cachedStyles
         }else {
             // when switched theme, maybe need remove another themes cached styles, if not clear is ok too,
             //   but, whatever, they will be cleared when exit app
@@ -89,6 +91,10 @@ class MyCodeEditor(
 
             null
         }
+    }
+
+    fun sendUpdateStylesRequest(stylesUpdateRequest: StylesUpdateRequest) {
+        styleUpdateRequestChannel.trySend(stylesUpdateRequest)
     }
 
     fun analyze() {
@@ -112,7 +118,7 @@ class MyCodeEditor(
 
         // has cached
         // 检查是否有cached styles，有则直接应用
-        val cachedStyles = obtainCachedStyles()
+        val cachedStyles = obtainCachedStyles()?.styles
         if(cachedStyles != null) {
             // 会在 style receiver收到之后立刻apply，所以这里不需要再apply了，如果有缓存就代表已经apply过了
 //            doJobThenOffLoading {
@@ -227,9 +233,23 @@ class MyCodeEditor(
 class StylesResult(
     val inDarkTheme: Boolean,
     val styles: Styles,
+    val from: StylesResultFrom,
 )
+
+enum class StylesResultFrom {
+    CODE_EDITOR,
+    TEXT_STATE,
+}
+
 
 class AnnotatedStringResult(
     val inDarkTheme: Boolean,
     val annotatedString: AnnotatedString
+)
+
+class StylesUpdateRequest(
+    // 很多时候需要对同一个state先执行删除，再执行新增，分别会调用两次增量更新，这时，忽略前面的操作，只响应最后一个
+    val ignoreThis: Boolean,
+    val targetEditorState: TextEditorState,
+    val act:()->Unit,
 )
