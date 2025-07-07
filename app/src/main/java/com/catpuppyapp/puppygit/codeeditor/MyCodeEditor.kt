@@ -41,6 +41,7 @@ class MyCodeEditor(
     val stylesUpdateRequestChannel: Channel<StylesUpdateRequest> = Channel(2000)
 ): CodeEditor(appContext) {
 
+    var myLang: Language? = null
     //{fieldsId: syntaxHighlightId: AnnotatedString}
     val highlightMap: MutableMap<String, Map<String, AnnotatedStringResult>> = ConcurrentMap()
     val stylesMap: MutableMap<String, StylesResult> = ConcurrentMap()
@@ -179,6 +180,7 @@ class MyCodeEditor(
             old.destroy()
         }
 
+        myLang = lang
         this.diagnostics = null
 
         // Setup new one

@@ -601,7 +601,7 @@ class TextEditorState private constructor(
             if(contentChanged) {
                 val baseStyles = copyStyles()
                 if(baseStyles != null) {
-                    val baseFields = newState.fields.toMutableList()
+                    val baseFields = fields.toMutableList()
                     // delete current line
                     updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
 
@@ -2037,7 +2037,7 @@ class TextEditorState private constructor(
             }
         }
 
-        return StylesResult(cachedStyle.inDarkTheme, Styles(cachedStyle.styles.spans), cachedStyle.from)
+        return StylesResult(cachedStyle.inDarkTheme, Styles(cachedStyle.styles.spans), StylesResultFrom.TEXT_STATE)
     }
 
 
@@ -2060,7 +2060,8 @@ class TextEditorState private constructor(
 
         val start = CharPosition(startLineIndex, 0, startIdxOfText)
         // +1 for '\n'
-        val end = CharPosition(endLineIndexInclusive, baseFields[endLineIndexInclusive].value.text.length+1, endIdxOfText)
+        val offset = if(endLineIndexInclusive == baseFields.lastIndex) 0 else 1
+        val end = CharPosition(endLineIndexInclusive, baseFields[endLineIndexInclusive].value.text.length + offset, endIdxOfText)
 
         baseFields.removeAt(startLineIndex)
 
@@ -2069,7 +2070,7 @@ class TextEditorState private constructor(
         stylesResult.styles.adjustOnDelete(start, end)
 
         val selectedText = getSelectedText(IntRange(startLineIndex, endLineIndexInclusive).toList(), keepEndLineBreak = true)
-        val lang = codeEditor?.editorLanguage
+        val lang = codeEditor?.myLang
         if(lang != null) {
             val act = {
                 lang.analyzeManager.delete(start, end, selectedText)
@@ -2106,7 +2107,7 @@ class TextEditorState private constructor(
         stylesResult.styles.adjustOnInsert(start, end)
 
         val selectedText = insertedContent
-        val lang = codeEditor?.editorLanguage
+        val lang = codeEditor?.myLang
         if(lang != null) {
             val act = {
                 lang.analyzeManager.insert(start, end, selectedText)
