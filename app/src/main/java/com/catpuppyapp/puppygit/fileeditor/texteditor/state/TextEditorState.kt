@@ -2109,11 +2109,11 @@ class TextEditorState private constructor(
         //如果越界，可能最后一行已经删除了，这时追加内容到当前最后一行末尾；若索引有效，则追加到目标行的开头
         val (startLineIndex, trueStartFalseEnd, columnIndex) = if(startLineIndex >= baseFields.size) {
             // 如果追加到最后一行末尾，需要前置个换行符
-            insertedContent = "\n" + insertedContent
-            Triple(baseFields.lastIndex, false, baseFields.last().value.text.length)
+//            insertedContent = "\n" + insertedContent
+            Triple(startLineIndex, false, 0)
         }else {
-            insertedContent = insertedContent + "\n"
-            Triple(startLineIndex, true, 0)
+//            insertedContent = insertedContent + "\n"
+            Triple(startLineIndex, false, 0)
         }
         println("inseetrStartLined333333333: $startLineIndex")
 
@@ -2134,8 +2134,13 @@ class TextEditorState private constructor(
         }
 
         val start = CharPosition(startLineIndex, columnIndex, startIdxOfText)
+        insertIndex--
         // +1 for '\n'
-        val end = start
+        val end = CharPosition(insertIndex, columnIndex + baseFields[insertIndex].value.text.length, startIdxOfText + insertedContent.length)
+
+        println("baseFields[insertIndex].value.text.length: ${baseFields[insertIndex].value.text.length}")
+        println("starttttttttttttt: $start")
+        println("enddddddddddddd: $end")
         // style will update spans
         stylesResult.styles.adjustOnInsert(start, end)
 
@@ -2156,6 +2161,7 @@ class TextEditorState private constructor(
         lineIdx: Int,
         trueStartFalseEnd: Boolean
     ):Int {
+        val lineIdx = if(trueStartFalseEnd) lineIdx - 1 else lineIdx
         var li = -1
         var charIndex = 0
         var lastLine = ""
@@ -2167,8 +2173,9 @@ class TextEditorState private constructor(
         }
 
         // +1 for '\n'
-        val offset = if(lineIdx == baseFields.lastIndex) 0 else 1
-        return charIndex + (if(trueStartFalseEnd) 0 else (lastLine.length + offset))
+//        val offset = if(!trueStartFalseEnd && lineIdx == baseFields.lastIndex) 0 else 1
+//        return charIndex + offset
+        return charIndex
     }
 
 
