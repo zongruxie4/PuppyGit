@@ -453,6 +453,18 @@ class TextEditorState private constructor(
                 focusingLineIdx = sfiRet.focusingLineIdx
             )
 
+            val baseStyles = copyStyles()
+            if(baseStyles != null) {
+                val baseFields = fields.toMutableList()
+                // delete current line
+                updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
+
+                // add new content to current line
+                updateStylesAfterInsertLine(baseFields, baseStyles, targetIndex, ignoreThis = false, splitFieldValues.joinToString("\n") { it.text }, newState)
+                // set temporary styles to new state
+                newState.temporaryStyles = baseStyles
+            }
+
             onChanged(newState, true, true)
         }
     }
@@ -2037,7 +2049,7 @@ class TextEditorState private constructor(
             }
         }
 
-        return StylesResult(cachedStyle.inDarkTheme, Styles(cachedStyle.styles.spans), StylesResultFrom.TEXT_STATE)
+        return StylesResult(cachedStyle.inDarkTheme, Styles(cachedStyle.styles.spans).apply { indentCountMode = cachedStyle.styles.indentCountMode }, StylesResultFrom.TEXT_STATE)
     }
 
 
@@ -2089,18 +2101,39 @@ class TextEditorState private constructor(
         insertedContent: String,
         newTextEditorState: TextEditorState
     ) {
-        val endLineIndexInclusive = startLineIndex
+        val rawInsertedContent = insertedContent
+        var insertedContent = insertedContent
+//        val endLineIndexInclusive = startLineIndex
+        val rawStartIndex = startLineIndex
+        println("inseetrStartLine: $startLineIndex")
+        //如果越界，可能最后一行已经删除了，这时追加内容到当前最后一行末尾；若索引有效，则追加到目标行的开头
+        val (startLineIndex, trueStartFalseEnd, columnIndex) = if(startLineIndex >= baseFields.size) {
+            // 如果追加到最后一行末尾，需要前置个换行符
+            insertedContent = "\n" + insertedContent
+            Triple(baseFields.lastIndex, false, baseFields.last().value.text.length)
+        }else {
+            insertedContent = insertedContent + "\n"
+            Triple(startLineIndex, true, 0)
+        }
+        println("inseetrStartLined333333333: $startLineIndex")
 
-        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = true)
-        val endIdxOfText = getIndexOfText(baseFields, endLineIndexInclusive, trueStartFalseEnd = false)
-        if(startIdxOfText == -1 || endIdxOfText == -1) {
+        println("insertedContent: ```$insertedContent```")
+        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd)
+//        val endIdxOfText = getIndexOfText(baseFields, endLineIndexInclusive, trueStartFalseEnd = false)
+        if(startIdxOfText == -1) {
             return
         }
 
-        // 这个new可有可无，因为这个baseFields实际不是textstate应用的state
-        baseFields.add(startLineIndex, TextFieldState(insertedContent, changeType = LineChangeType.NEW))
+        println("startIdxOfText $startIdxOfText")
 
-        val start = CharPosition(startLineIndex, 0, startIdxOfText)
+
+        // 这个LineChangeType.NEW可有可无，因为这个baseFields实际不是textstate应用的state
+        var insertIndex = rawStartIndex
+        rawInsertedContent.lines().forEachBetter {
+            baseFields.add(insertIndex++, TextFieldState(value = TextFieldValue(it), changeType = LineChangeType.NEW))
+        }
+
+        val start = CharPosition(startLineIndex, columnIndex, startIdxOfText)
         // +1 for '\n'
         val end = start
         // style will update spans
@@ -2118,7 +2151,11 @@ class TextEditorState private constructor(
     }
 
     // lineIdx is index(since 0), not line number(since 1)
-    fun getIndexOfText(baseFields: List<TextFieldState>, lineIdx: Int, trueStartFalseEnd: Boolean):Int {
+    fun getIndexOfText(
+        baseFields: List<TextFieldState>,
+        lineIdx: Int,
+        trueStartFalseEnd: Boolean
+    ):Int {
         var li = -1
         var charIndex = 0
         var lastLine = ""
@@ -2130,7 +2167,8 @@ class TextEditorState private constructor(
         }
 
         // +1 for '\n'
-        return charIndex+ (if(trueStartFalseEnd) 0 else (lastLine.length+1))
+        val offset = if(lineIdx == baseFields.lastIndex) 0 else 1
+        return charIndex + (if(trueStartFalseEnd) 0 else (lastLine.length + offset))
     }
 
 

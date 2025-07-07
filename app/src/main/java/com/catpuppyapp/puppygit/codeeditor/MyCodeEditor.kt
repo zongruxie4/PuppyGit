@@ -156,6 +156,8 @@ class MyCodeEditor(
             val lang = TextMateLanguage.create(
                 plScope, autoComplete
             )
+            lang.isAutoCompleteEnabled = false
+            lang.tabSize = 0
 
             lang.analyzeManager.setReceiver(genNewStyleDelegate())
 

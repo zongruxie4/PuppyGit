@@ -16,8 +16,7 @@ private val lineChangeType_UPDATED = Color(0xFF03A9F4)
 //这个stable注解，我看了下应该符合条件，若更新状态出问题，可取消注解试试
 @Stable
 class TextFieldState(
-    //仅当 value.text 修改才应该换新id；否则语法高亮会失效
-    val syntaxHighlightId: String = getRandomUUID(),
+
 
     val value: TextFieldValue = TextFieldValue(),
 
@@ -28,7 +27,8 @@ class TextFieldState(
 
     //用来指示当前行是编辑过，还是新增行，就像notepad++那样，这个状态和git无关，只针对当前会话，临时的，若实现成和git有关的话，有点麻烦，算了
     var changeType:LineChangeType = LineChangeType.NONE,
-
+    //仅当 value.text 修改才应该换新id；否则语法高亮会失效
+    val syntaxHighlightId: String = getRandomUUID(),
 ) {
     fun copy(
         value: TextFieldValue = this.value,
@@ -36,12 +36,12 @@ class TextFieldState(
         changeType: LineChangeType = this.changeType,
 
     ) = TextFieldState(
-        syntaxHighlightId = if(value.text != this.value.text) getRandomUUID() else this.syntaxHighlightId,
         value = value,
         isSelected = isSelected,
         changeType = changeType,
+        syntaxHighlightId = if(value.text != this.value.text || this.syntaxHighlightId.isBlank()) getRandomUUID() else this.syntaxHighlightId,
 
-    );
+    )
 
     override fun toString(): String {
         return "TextFieldState(syntaxHighlightId=$syntaxHighlightId, value=$value, isSelected=$isSelected, changeType=$changeType)"

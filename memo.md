@@ -51,6 +51,16 @@ editor有至少有3处需调整以实现增量更新语法，尽量简化逻辑�
 
 考虑要不要把打开过滤模式自动聚焦关闭？弹软键盘有点突兀，但不弹又没法立刻输入。。。。。。想想
 
+
+
+text edito state需修改：
+append/replace
+delete
+
+测试：
+把 codeEditor.colorscheme = tm theme，那个代码删掉，试试能不能正常分析语法高亮？若能就不需要sora editor的CodeEditor了
+
+
 ---
 TODO sha256 support 20250607:
 1. waiting for libgit2 sha256 feature become stable
