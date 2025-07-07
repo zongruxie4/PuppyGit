@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.codeeditor
 
 import android.content.Context
+import android.os.Bundle
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
@@ -18,8 +19,10 @@ import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver
+import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.ContentReference
 import io.github.rosemoe.sora.widget.CodeEditor
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -38,8 +41,10 @@ class MyCodeEditor(
     val editorState: CustomStateSaveable<TextEditorState>,
     //除非样式分析执行特别慢，否则队列不会满，也不会阻塞线程，如果真的特别慢，或许文件特别大，最好禁用语法高亮
     // except styles analyze very slow, else, the channel queue will not fullfill and will not block thread，if really very slow, may have large file, better disable syntax highlighting
-    val stylesUpdateRequestChannel: Channel<StylesUpdateRequest> = Channel(2000)
-): CodeEditor(appContext) {
+    val stylesUpdateRequestChannel: Channel<StylesUpdateRequest> = Channel(2000),
+    var colorScheme: EditorColorScheme = EditorColorScheme()
+) { // TODO 测试不继承CodeEditor是否会报错？
+//): CodeEditor(appContext) {
 
     var myLang: Language? = null
     //{fieldsId: syntaxHighlightId: AnnotatedString}
@@ -57,9 +62,9 @@ class MyCodeEditor(
 
             setupTextmate(appContext)
 
-            this.apply {
-                colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
-            }
+            colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
+
+            colorScheme.applyDefault()
 
             // for clear when Activity destroy
             AppModel.editorCache.add(this)
@@ -70,8 +75,12 @@ class MyCodeEditor(
         }
     }
 
-    override fun release() {
-        super.release()
+//    override fun release() {
+//        super.release()
+//        clearCache()
+//    }
+
+    fun release() {
         clearCache()
     }
 
@@ -148,54 +157,59 @@ class MyCodeEditor(
         PLTheme.applyTheme(Theme.inDarkTheme)
 
         this.let {
+            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = true, editorState, {}))
             sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
 
-            it.setText(text)
 
             val autoComplete = false
             val lang = TextMateLanguage.create(
                 plScope, autoComplete
             )
+
+            myLang = lang
             lang.isAutoCompleteEnabled = false
             lang.tabSize = 0
 
             lang.analyzeManager.setReceiver(genNewStyleDelegate())
+            lang.analyzeManager.reset(ContentReference(Content(text)), Bundle())
 
-            it.setEditorLanguage(lang)
+//            it.setEditorLanguage(lang)
+//            it.setText(text)
+
         }
     }
 
-    override fun setEditorLanguage(lang: Language?) {
-        var lang = lang
-        if (lang == null) {
-            lang = EmptyLanguage()
-        }
-
-        // Destroy old one
-        val old: Language? = editorLanguage
-        if (old != null) {
-            val formatter = old.getFormatter()
-            formatter.setReceiver(null)
-            formatter.destroy()
-            old.getAnalyzeManager().setReceiver(null)
-            old.getAnalyzeManager().destroy()
-            old.destroy()
-        }
-
-        myLang = lang
-        this.diagnostics = null
-
-        // Setup new one
-        if (text != null) {
-            lang.getAnalyzeManager().reset(ContentReference(text), extraArguments)
-        }
-
-        if (snippetController != null) {
-            snippetController.stopSnippet()
-        }
-        renderContext.invalidateRenderNodes()
-        invalidate()
-    }
+//    override fun setEditorLanguage(lang: Language?) {
+//        var lang = lang
+//        if (lang == null) {
+//            lang = EmptyLanguage()
+//        }
+//
+//        // Destroy old one
+//        val old: Language? = editorLanguage
+//        if (old != null) {
+//            val formatter = old.getFormatter()
+//            formatter.setReceiver(null)
+//            formatter.destroy()
+//            old.getAnalyzeManager().setReceiver(null)
+//            old.getAnalyzeManager().destroy()
+//            old.destroy()
+//        }
+//
+//        myLang = lang
+//        this.diagnostics = null
+//
+//        // Setup new one
+//        if (text != null) {
+//            lang.getAnalyzeManager().reset(ContentReference(text), extraArguments)
+//        }
+//
+//        if (snippetController != null) {
+//            snippetController.stopSnippet()
+//        }
+//        renderContext.invalidateRenderNodes()
+//        invalidate()
+//    }
 
 
 

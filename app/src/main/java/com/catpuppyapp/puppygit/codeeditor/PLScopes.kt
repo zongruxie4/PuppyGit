@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.codeeditor
 //PL is "Program Language"
 object PLScopes {
     // 无语法高亮
+    // 可用 EmptyLanguage()
     val NONE = ""
 
     // init value for state

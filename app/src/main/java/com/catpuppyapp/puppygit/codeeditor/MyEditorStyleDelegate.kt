@@ -23,14 +23,15 @@ class MyEditorStyleDelegate(
     }
 
     override fun setStyles(sourceManager: AnalyzeManager, styles: Styles?, action: Runnable?) {
-        if(styles == null) {
-            return
-        }
-
         val requester = codeEditor.stylesUpdateRequestChannel.tryReceive().getOrNull()
         if(requester == null || requester.ignoreThis) {
             return
         }
+
+        if(styles == null) {
+            return
+        }
+
 
 //        (resolved) 不行，有问题：
 //        lang + editorState1 调用分析，未结束时，lang + editorState2 重新设置了receiver，然后 组合1的结果出来了，就被组合2拿到了，而组合2无法得知组合1 到底是谁
