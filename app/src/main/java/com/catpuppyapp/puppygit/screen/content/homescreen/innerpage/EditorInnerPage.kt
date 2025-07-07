@@ -2045,7 +2045,8 @@ private suspend fun doInit(
                         lastTextEditorState = lastTextEditorState,
                         undoStack = undoStack,
                         resetLastCursorAtColumn = resetLastCursorAtColumn,
-                    )
+                    ),
+                    temporaryStyles = null,
                 )
 
                 editorPageTextEditorState.value = newState

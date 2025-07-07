@@ -89,11 +89,13 @@ class TextEditorState private constructor(
 
     val onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
 
+
+    // temporary use when syntax highlighting analyzing
+    var temporaryStyles: StylesResult? = null,
+
 ) {
     private val lock = Mutex()
 
-    // temporary use when syntax highlighting analyzing
-    var temporaryStyles: StylesResult? = null
 
     fun copy(
         codeEditor: MyCodeEditor? = this.codeEditor,
@@ -105,6 +107,7 @@ class TextEditorState private constructor(
         isContentEdited: MutableState<Boolean> = this.isContentEdited,
         editorPageIsContentSnapshoted:MutableState<Boolean> = this.editorPageIsContentSnapshoted,
         onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit = this.onChanged,
+        temporaryStyles: StylesResult? = this.temporaryStyles,
     ):TextEditorState = create(
         codeEditor = codeEditor,
         fieldsId = fieldsId,
@@ -114,7 +117,8 @@ class TextEditorState private constructor(
         focusingLineIdx = focusingLineIdx,
         isContentEdited = isContentEdited,
         editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-        onChanged = onChanged
+        onChanged = onChanged,
+        temporaryStyles = temporaryStyles,
     )
 
 
@@ -1958,6 +1962,8 @@ class TextEditorState private constructor(
 
                 codeEditor?.putSyntaxHighlight(fieldsId, shMap)
 
+//                codeEditor?.stylesMap?.put(fieldsId, stylesResult)
+
                 // just for trigger re-render page
                 if(fieldsId == codeEditor?.editorState?.value?.fieldsId) {
                     onChanged(codeEditor.editorState.value.copy(), null, false)
@@ -2022,7 +2028,17 @@ class TextEditorState private constructor(
     }
 
 
-    fun copyStyles() = codeEditor?.obtainCachedStyles()?.let{ StylesResult(it.inDarkTheme, Styles(it.styles.spans), it.from) }
+    fun copyStyles(): StylesResult? {
+        var cachedStyle = codeEditor?.obtainCachedStyles()
+        if(cachedStyle == null) {
+            cachedStyle = temporaryStyles
+            if(cachedStyle == null) {
+                return null
+            }
+        }
+
+        return StylesResult(cachedStyle.inDarkTheme, Styles(cachedStyle.styles.spans), cachedStyle.from)
+    }
 
 
     // 增删内容需要调用 spans的after change，然后调用lang.analyzeManager()的insert/ delete重新执行分析
@@ -2130,6 +2146,8 @@ class TextEditorState private constructor(
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
+            temporaryStyles: StylesResult?,
+
         ): TextEditorState {
             return create(
                 codeEditor = codeEditor,
@@ -2141,8 +2159,8 @@ class TextEditorState private constructor(
 
                 isContentEdited = isContentEdited,
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-                onChanged = onChanged
-
+                onChanged = onChanged,
+                temporaryStyles = temporaryStyles
             )
         }
 
@@ -2157,6 +2175,8 @@ class TextEditorState private constructor(
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
+            temporaryStyles: StylesResult?,
+
         ): TextEditorState {
             return create(
                 codeEditor = codeEditor,
@@ -2169,7 +2189,9 @@ class TextEditorState private constructor(
 
                 isContentEdited = isContentEdited,
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-                onChanged = onChanged
+                onChanged = onChanged,
+
+                temporaryStyles = temporaryStyles
 
             )
         }
@@ -2184,6 +2206,7 @@ class TextEditorState private constructor(
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
+            temporaryStyles: StylesResult?,
         ): TextEditorState {
             //这里`addNewLineIfFileEmpty`必须传true，以确保和String.lines()行为一致，不然若文件末尾有空行，读取出来会少一行
             return create(
@@ -2196,7 +2219,8 @@ class TextEditorState private constructor(
 
                 isContentEdited = isContentEdited,
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-                onChanged = onChanged
+                onChanged = onChanged,
+                temporaryStyles = temporaryStyles,
             )
         }
 
@@ -2210,6 +2234,7 @@ class TextEditorState private constructor(
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
+            temporaryStyles: StylesResult?,
         ): TextEditorState {
             return TextEditorState(
                 codeEditor = codeEditor,
@@ -2220,7 +2245,8 @@ class TextEditorState private constructor(
                 focusingLineIdx = focusingLineIdx,
                 isContentEdited = isContentEdited,
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-                onChanged = onChanged
+                onChanged = onChanged,
+                temporaryStyles = temporaryStyles,
             )
         }
 

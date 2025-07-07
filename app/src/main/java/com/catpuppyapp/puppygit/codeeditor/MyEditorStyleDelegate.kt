@@ -23,10 +23,12 @@ class MyEditorStyleDelegate(
     }
 
     override fun setStyles(sourceManager: AnalyzeManager, styles: Styles?, action: Runnable?) {
-        // make sure consume
-        val updateRequest = codeEditor.styleUpdateRequestChannel.tryReceive().getOrNull()
+        if(styles == null) {
+            return
+        }
 
-        if(styles == null || updateRequest == null || updateRequest.ignoreThis) {
+        val requester = codeEditor.stylesUpdateRequestChannel.tryReceive().getOrNull()
+        if(requester == null || requester.ignoreThis) {
             return
         }
 
@@ -36,15 +38,12 @@ class MyEditorStyleDelegate(
 
         // cache只有一个实例，需要并发安全，key为fieldsId，全局唯一
         val stylesResult = StylesResult(inDarkTheme, styles, StylesResultFrom.CODE_EDITOR)
-        val targetEditorState = updateRequest?.targetEditorState
-        if(targetEditorState != null && inDarkTheme == Theme.inDarkTheme) {
+        val targetEditorState = requester.targetEditorState
+        if(inDarkTheme == Theme.inDarkTheme) {
             stylesMap.put(targetEditorState.fieldsId, stylesResult)
             doJobThenOffLoading {
                 targetEditorState.applySyntaxHighlighting(targetEditorState.fieldsId, stylesResult)
             }
-
-            // do next update task
-            updateRequest.act()
         }
     }
 

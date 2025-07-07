@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.codeeditor
 
 import android.content.Context
-import androidx.annotation.UiThread
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
@@ -9,11 +8,9 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import io.github.rosemoe.sora.lang.EmptyLanguage
 import io.github.rosemoe.sora.lang.Language
-import io.github.rosemoe.sora.lang.analysis.StyleUpdateRange
 import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
@@ -24,7 +21,10 @@ import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolve
 import io.github.rosemoe.sora.text.ContentReference
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.ktor.util.collections.ConcurrentMap
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 
 private const val TAG = "MyCodeEditor"
@@ -38,13 +38,15 @@ class MyCodeEditor(
     val editorState: CustomStateSaveable<TextEditorState>,
     //除非样式分析执行特别慢，否则队列不会满，也不会阻塞线程，如果真的特别慢，或许文件特别大，最好禁用语法高亮
     // except styles analyze very slow, else, the channel queue will not fullfill and will not block thread，if really very slow, may have large file, better disable syntax highlighting
-    val styleUpdateRequestChannel: Channel<StylesUpdateRequest> = Channel(2000)
+    val stylesUpdateRequestChannel: Channel<StylesUpdateRequest> = Channel(2000)
 ): CodeEditor(appContext) {
 
     //{fieldsId: syntaxHighlightId: AnnotatedString}
     val highlightMap: MutableMap<String, Map<String, AnnotatedStringResult>> = ConcurrentMap()
     val stylesMap: MutableMap<String, StylesResult> = ConcurrentMap()
 //    val editorStateMap: MutableMap<String, TextEditorState> = ConcurrentMap()
+
+    val stylesRequestLock = ReentrantLock(true)
 
     fun genNewStyleDelegate() = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap)
 //    var editor: CodeEditor? = null
@@ -93,8 +95,12 @@ class MyCodeEditor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun sendUpdateStylesRequest(stylesUpdateRequest: StylesUpdateRequest) {
-        styleUpdateRequestChannel.trySend(stylesUpdateRequest)
+        stylesRequestLock.withLock {
+            stylesUpdateRequest.act()
+            stylesUpdateRequestChannel.trySend(stylesUpdateRequest)
+        }
     }
 
     fun analyze() {
@@ -141,6 +147,8 @@ class MyCodeEditor(
         PLTheme.applyTheme(Theme.inDarkTheme)
 
         this.let {
+            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
+
             it.setText(text)
 
             val autoComplete = false
