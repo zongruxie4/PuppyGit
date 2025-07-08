@@ -1750,8 +1750,12 @@ class TextEditorState private constructor(
         selectedIndices: List<Int>,
         isMultipleSelectionMode: Boolean,
         focusingLineIdx: Int?,
-        temporaryStyles: StylesResult? = codeEditor?.stylesMap?.get(fieldsId),
+        temporaryStyles: StylesResult? = codeEditor?.stylesMap?.let { it.get(fieldsId) ?: it.get(this.fieldsId) ?: this.temporaryStyles },
     ): TextEditorState {
+        if(temporaryStyles != null) {
+            MyLog.d(TAG, "temporaryStyles is not null")
+        }
+
         return TextEditorState(
             fieldsId= fieldsId,
             fields = fields,
