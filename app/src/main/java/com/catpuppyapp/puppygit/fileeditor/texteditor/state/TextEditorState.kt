@@ -2044,7 +2044,7 @@ class TextEditorState private constructor(
                 val nextSpan = spans.getOrNull(spanIdx++)
                 val endExclusive = nextSpan?.column ?: rawText.length
                 val textRange = IntRange(start, endExclusive - 1)
-                if(textRange.start < 0 && textRange.endInclusive >= rawText.length) {
+                if(textRange.start < 0 || textRange.endInclusive >= rawText.length) {
                     continue
                 }
                 start = endExclusive
