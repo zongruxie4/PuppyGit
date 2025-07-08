@@ -2221,8 +2221,11 @@ class TextEditorState private constructor(
 
         val start = CharPosition(startLineIndex, columnIndex, startIdxOfText)
         insertIndex--
+        val endAtLastLine = insertIndex == baseFields.lastIndex
+        val endIndex = if(endAtLastLine) insertIndex else (insertIndex + 1);
+        val endColumnIndex = if(endAtLastLine) baseFields.lastOrNull()?.value?.text?.length ?: 0 else 0
         // +1 for '\n'
-        val end = CharPosition(insertIndex+1, 0, startIdxOfText + insertedContent.length)
+        val end = CharPosition(endIndex, endColumnIndex, startIdxOfText + insertedContent.length)
 //        val end = baseFields.getOrNull(insertIndex).let {
 //            if(it != null) {
 //                CharPosition(insertIndex, columnIndex + it.value.text.length, startIdxOfText + insertedContent.length)
