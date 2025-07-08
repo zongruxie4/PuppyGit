@@ -2118,9 +2118,9 @@ class TextEditorState private constructor(
         newTextEditorState: TextEditorState,
         endLineIndexInclusive: Int = startLineIndex,
     ) {
-        val endLineIndexInclusiveIsLastIndex = endLineIndexInclusive == baseFields.lastIndex
+        val endLineIndexInclusiveIsLastIndex = endLineIndexInclusive >= baseFields.lastIndex
         val endExclusive =  endLineIndexInclusive + 1
-        val endIndex = if(baseFields.size == 1) 0 else if(endLineIndexInclusiveIsLastIndex) endLineIndexInclusive else endExclusive
+        val endIndex = if(endLineIndexInclusiveIsLastIndex) endLineIndexInclusive else endExclusive
 
         val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = true)
         val endIdxOfText = getIndexOfText(baseFields, endIndex, trueStartFalseEnd = !endLineIndexInclusiveIsLastIndex)
@@ -2130,15 +2130,15 @@ class TextEditorState private constructor(
 
         val start = CharPosition(startLineIndex, 0, startIdxOfText)
         // +1 for '\n'
-        val offset = if(endLineIndexInclusiveIsLastIndex) -1 else 0
-        val endColumn = baseFields[endLineIndexInclusive].value.text.length + offset
+        val lastLineLen = baseFields.getOrNull(endLineIndexInclusive)?.value?.text?.length ?: 0
+        val endColumn = if(endLineIndexInclusiveIsLastIndex) lastLineLen else 0
         val end = CharPosition(endIndex, endColumn, endIdxOfText)
 
-        baseFields.removeAt(startLineIndex)
-        if(endLineIndexInclusive != startLineIndex) {
-            baseFields.removeAt(if(endLineIndexInclusive > startLineIndex) endLineIndexInclusive - 1 else endLineIndexInclusive)
+        for(i in IntRange(startLineIndex, endLineIndexInclusive).reversed()) {
+            baseFields.removeAt(i)
         }
 
+        println("baseFields[insertIndex].value.text: ${baseFields.getOrNull(endLineIndexInclusive)?.value?.text}")
         println("ddddddddddddddddddddstart: $start")
         println("dddddddddddddddddend: $end")
 
