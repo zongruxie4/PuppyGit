@@ -46,7 +46,8 @@ class MyCodeEditor(
 ) { // TODO 测试不继承CodeEditor是否会报错？
 //): CodeEditor(appContext) {
 
-    var myLang: Language? = null
+    var languageScope:String = ""
+    var myLang: TextMateLanguage? = null
     //{fieldsId: syntaxHighlightId: AnnotatedString}
     val highlightMap: MutableMap<String, Map<String, AnnotatedStringResult>> = ConcurrentMap()
     val stylesMap: MutableMap<String, StylesResult> = ConcurrentMap()
@@ -125,6 +126,9 @@ class MyCodeEditor(
             return
         }
 
+        val scopeChanged = plScope != languageScope
+        languageScope = plScope
+
 
         val editorState = editorState.value
 
@@ -135,7 +139,7 @@ class MyCodeEditor(
 
         // has cached
         // 检查是否有cached styles，有则直接应用
-        if(!force) {
+        if(!force && !scopeChanged) {
             val cachedStyles = obtainCachedStyles()?.styles
             if(cachedStyles != null) {
                 // 会在 style receiver收到之后立刻apply，所以这里不需要再apply了，如果有缓存就代表已经apply过了
@@ -168,11 +172,12 @@ class MyCodeEditor(
 
 
             val autoComplete = false
-            val lang = TextMateLanguage.create(
-                plScope, autoComplete
-            )
+            val lang = if(myLang == null || scopeChanged) {
+                TextMateLanguage.create(plScope, autoComplete).let { myLang == it; it }
+            }else {
+                myLang!!
+            }
 
-            myLang = lang
             lang.isAutoCompleteEnabled = false
             lang.tabSize = 0
 
