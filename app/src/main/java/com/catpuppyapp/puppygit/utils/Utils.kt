@@ -1343,8 +1343,8 @@ fun getNextIndentByCurrentStr(current:String?, aTabToNSpaces:Int):String {
                 // e.g. for yml
                 || it.endsWith(":")
 
-                // e.g. for html xml
-                || it.startsWith("<")
+                // e.g. for html xml ，如果标签在一行内闭合，缩进就错了，懒得判断，直接禁用算了
+//                || it.startsWith("<")
     }) {
         sb.append(tabToSpaces(aTabToNSpaces))
     }
