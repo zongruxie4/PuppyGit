@@ -1750,7 +1750,7 @@ class TextEditorState private constructor(
         selectedIndices: List<Int>,
         isMultipleSelectionMode: Boolean,
         focusingLineIdx: Int?,
-        temporaryStyles: StylesResult? = this.temporaryStyles,
+        temporaryStyles: StylesResult? = codeEditor?.stylesMap?.get(fieldsId),
     ): TextEditorState {
         return TextEditorState(
             fieldsId= fieldsId,
