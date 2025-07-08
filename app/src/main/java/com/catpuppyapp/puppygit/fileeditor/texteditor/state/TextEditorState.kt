@@ -2093,7 +2093,7 @@ class TextEditorState private constructor(
         if(cachedStyle == null) {
             cachedStyle = temporaryStyles
             if(cachedStyle == null) {
-                codeEditor?.analyze()
+                codeEditor?.analyze(force = true)
                 return null
             }
         }

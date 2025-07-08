@@ -39,8 +39,8 @@ class MyEditorStyleDelegate(
 
         // cache只有一个实例，需要并发安全，key为fieldsId，全局唯一
         val stylesResult = StylesResult(inDarkTheme, styles, StylesResultFrom.CODE_EDITOR)
-        val targetEditorState = requester.targetEditorState
         if(inDarkTheme == Theme.inDarkTheme) {
+            val targetEditorState = requester.targetEditorState
             stylesMap.put(targetEditorState.fieldsId, stylesResult)
             doJobThenOffLoading {
                 targetEditorState.applySyntaxHighlighting(targetEditorState.fieldsId, stylesResult)
