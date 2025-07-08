@@ -2116,7 +2116,7 @@ class TextEditorState private constructor(
 
         val start = CharPosition(startLineIndex, 0, startIdxOfText)
         // +1 for '\n'
-        val offset = if(endLineIndexInclusiveIsLastIndex) 0 else 1
+        val offset = if(endLineIndexInclusiveIsLastIndex) -1 else 0
         val endColumn = baseFields[endLineIndexInclusive].value.text.length + offset
         val end = CharPosition(endIndex, endColumn, endIdxOfText)
 
