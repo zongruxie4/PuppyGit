@@ -2103,7 +2103,7 @@ class TextEditorState private constructor(
                 }
             }
 
-            MyLog.d(TAG, "#$funName: stylesResult is null: ${stylesResult == null}, stylesResult.filesId=${stylesResult?.fieldsId}")
+            MyLog.d(TAG, "#$funName: stylesResult.fieldsId=${stylesResult?.fieldsId}, spansCount=${stylesResult?.styles?.spans?.lineCount}")
 
             raw
         }else {
