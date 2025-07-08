@@ -453,9 +453,7 @@ class TextEditorState private constructor(
                 focusingLineIdx = sfiRet.focusingLineIdx
             )
 
-            val baseStyles = copyStyles()
-            if(baseStyles != null) {
-                val baseFields = fields.toMutableList()
+            updateStyles { baseStyles, baseFields ->
                 // delete current line
                 updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
 
@@ -611,9 +609,7 @@ class TextEditorState private constructor(
             )
 
             if(contentChanged) {
-                val baseStyles = copyStyles()
-                if(baseStyles != null) {
-                    val baseFields = fields.toMutableList()
+                updateStyles { baseStyles, baseFields ->
                     // delete current line
                     updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
 
@@ -633,6 +629,13 @@ class TextEditorState private constructor(
             }
         }else {
             act()
+        }
+    }
+
+    fun updateStyles(act: (baseStyles: StylesResult, baseFields: MutableList<TextFieldState>) -> Unit) {
+        val baseStyles = copyStyles()
+        if(baseStyles != null) {
+            act(baseStyles, fields.toMutableList())
         }
     }
 
@@ -825,9 +828,7 @@ class TextEditorState private constructor(
 
 
 
-            val baseStyles = copyStyles()
-            if(baseStyles != null) {
-                val baseFields = fields.toMutableList()
+            updateStyles { baseStyles, baseFields ->
                 // delete current and previous lines
                 updateStylesAfterDeleteLine(baseFields, baseStyles, toLineIdx, ignoreThis = true, newState, endLineIndexInclusive = targetIndex)
 
