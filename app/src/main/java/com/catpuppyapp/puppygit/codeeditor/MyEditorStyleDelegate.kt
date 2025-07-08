@@ -17,14 +17,19 @@ class MyEditorStyleDelegate(
     val codeEditor: MyCodeEditor,
     val inDarkTheme: Boolean,
     val stylesMap: MutableMap<String, StylesResult>,
+    val editorState: TextEditorState? = null
 ): StyleReceiver {
     override fun setStyles(sourceManager: AnalyzeManager, styles: Styles?) {
         setStyles(sourceManager, styles, null)
     }
 
     override fun setStyles(sourceManager: AnalyzeManager, styles: Styles?, action: Runnable?) {
-        val requester = codeEditor.stylesUpdateRequestChannel.tryReceive().getOrNull()
-        if(requester == null || requester.ignoreThis) {
+//        val requester = codeEditor.stylesUpdateRequestChannel.tryReceive().getOrNull()
+//        if(requester == null || requester.ignoreThis) {
+//            return
+//        }
+
+        if(editorState == null) {
             return
         }
 
@@ -39,10 +44,11 @@ class MyEditorStyleDelegate(
 //        啊，这个问题其实可以解决，因为这里无论如何都会put，所以我可以在获取某个字段的annotatedstring的时候检查，如果有style没高亮，执行apply，就行了
 
         // cache只有一个实例，需要并发安全，key为fieldsId，全局唯一
-        val stylesResult = StylesResult(inDarkTheme, styles, StylesResultFrom.CODE_EDITOR, fieldsId = requester.targetEditorState.fieldsId)
+        val stylesResult = StylesResult(inDarkTheme, styles, StylesResultFrom.CODE_EDITOR, fieldsId = editorState.fieldsId)
         codeEditor.latestStyles = stylesResult
         if(inDarkTheme == Theme.inDarkTheme) {
-            val targetEditorState = requester.targetEditorState
+//            val targetEditorState = requester.targetEditorState
+            val targetEditorState = editorState
             stylesMap.put(targetEditorState.fieldsId, stylesResult)
             doJobThenOffLoading {
                 targetEditorState.applySyntaxHighlighting(targetEditorState.fieldsId, stylesResult)

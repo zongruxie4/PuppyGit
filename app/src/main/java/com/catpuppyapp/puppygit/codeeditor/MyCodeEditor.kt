@@ -58,7 +58,7 @@ class MyCodeEditor(
 
     val stylesRequestLock = ReentrantLock(true)
 
-    fun genNewStyleDelegate() = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap)
+    fun genNewStyleDelegate(editorState: TextEditorState?) = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap, editorState)
 //    var editor: CodeEditor? = null
 
     init {
@@ -114,6 +114,12 @@ class MyCodeEditor(
     @OptIn(ExperimentalCoroutinesApi::class)
     fun sendUpdateStylesRequest(stylesUpdateRequest: StylesUpdateRequest) {
         stylesRequestLock.withLock {
+            val targetEditorState = if(stylesUpdateRequest.ignoreThis) {
+                null
+            }else {
+                stylesUpdateRequest.targetEditorState
+            }
+            myLang?.analyzeManager?.setReceiver(genNewStyleDelegate(targetEditorState))
             stylesUpdateRequest.act()
             stylesUpdateRequestChannel.trySend(stylesUpdateRequest)
         }
@@ -182,7 +188,7 @@ class MyCodeEditor(
             lang.isAutoCompleteEnabled = false
             lang.tabSize = 0
 
-            lang.analyzeManager.setReceiver(genNewStyleDelegate())
+            lang.analyzeManager.setReceiver(genNewStyleDelegate(editorState))
             lang.analyzeManager.reset(ContentReference(Content(text)), Bundle())
 
 //            it.setEditorLanguage(lang)
