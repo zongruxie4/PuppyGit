@@ -161,8 +161,9 @@ class MyCodeEditor(
             return
         }
 
-        println("text: $text")
+//        println("text: $text")
 
+        MyLog.d(TAG, "will run full syntax highlighting analyze")
         PLTheme.applyTheme(Theme.inDarkTheme)
 
         this.let {

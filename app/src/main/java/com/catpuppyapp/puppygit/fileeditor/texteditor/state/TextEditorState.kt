@@ -2097,9 +2097,10 @@ class TextEditorState private constructor(
         var cachedStyle = codeEditor?.obtainCachedStyles()
         if(cachedStyle == null) {
             cachedStyle = temporaryStyles
-            codeEditor?.analyze(force = true)
+//            codeEditor?.analyze(force = true)
 
-            if(cachedStyle == null) {
+            if(cachedStyle == null || cachedStyle.from == StylesResultFrom.TEXT_STATE) {
+                codeEditor?.analyze()
                 return null
             }
         }
