@@ -1993,6 +1993,8 @@ class TextEditorState private constructor(
     }
 
     suspend fun applySyntaxHighlighting(expectedFieldsId:String, stylesResult: StylesResult) {
+        val funName = "applySyntaxHighlighting"
+        MyLog.d(TAG, "#$funName: stylesResult expectedFieldsId=$expectedFieldsId")
         val styles = stylesResult.styles
         val inDarkTheme = stylesResult.inDarkTheme
         val isForThisInstance = expectedFieldsId == fieldsId && inDarkTheme == Theme.inDarkTheme
@@ -2098,7 +2100,7 @@ class TextEditorState private constructor(
 
     fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
         val funName = "obtainHighlightedTextField"
-
+        MyLog.d(TAG, "#$funName: fieldsId=$fieldsId")
         val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
         val annotatedStringResult = sh?.get(raw.syntaxHighlightId)
         return if(annotatedStringResult == null || annotatedStringResult.inDarkTheme != Theme.inDarkTheme) {
@@ -2262,6 +2264,7 @@ class TextEditorState private constructor(
                 }
             }
 
+            println("newTextEditorState.fieldsId = ${newTextEditorState.fieldsId}")
             codeEditor.sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis, newTextEditorState, act))
         }
     }
