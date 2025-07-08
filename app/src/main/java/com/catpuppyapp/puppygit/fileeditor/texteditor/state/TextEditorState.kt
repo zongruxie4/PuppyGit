@@ -2039,14 +2039,10 @@ class TextEditorState private constructor(
 
 //                codeEditor?.stylesMap?.put(fieldsId, stylesResult)
 
+                val latestEditorState = codeEditor?.editorState?.value
                 // just for trigger re-render page
-                if(fieldsId == codeEditor?.editorState?.value?.fieldsId) {
-                    onChanged(codeEditor.editorState.value.copy(temporaryStyles = stylesResult), null, false)
-                }else if(codeEditor?.editorState?.value?.temporaryStyles == null) {
-                    codeEditor?.editorState?.value?.let {
-                        it.temporaryStyles = stylesResult
-                        onChanged(it.copy(), null, false)
-                    }
+                if(fieldsId == latestEditorState?.fieldsId) {
+                    onChanged(latestEditorState.copy(temporaryStyles = stylesResult), null, false)
                 }
             }
         }
