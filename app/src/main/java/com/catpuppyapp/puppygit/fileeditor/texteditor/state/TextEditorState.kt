@@ -772,7 +772,8 @@ class TextEditorState private constructor(
 
             val newFields = fields.toMutableList()
 
-            val toField = newFields[targetIndex - 1]
+            val toLineIdx = targetIndex - 1
+            val toField = newFields[toLineIdx]
             val fromField = newFields[targetIndex]
             val toText = toField.value.text
             val fromText = fromField.value.text
@@ -821,6 +822,22 @@ class TextEditorState private constructor(
                 isMultipleSelectionMode = isMultipleSelectionMode,
                 focusingLineIdx = sfiRet.focusingLineIdx
             )
+
+
+
+            val baseStyles = copyStyles()
+            if(baseStyles != null) {
+                val baseFields = fields.toMutableList()
+                // delete current and previous lines
+                updateStylesAfterDeleteLine(baseFields, baseStyles, toLineIdx, ignoreThis = true, newState, endLineIndexInclusive = targetIndex)
+
+                // add new content to previous line
+                updateStylesAfterInsertLine(baseFields, baseStyles, toLineIdx, ignoreThis = false, toTextFieldState.value.text, newState)
+                // set temporary styles to new state
+                newState.temporaryStyles = baseStyles
+            }
+
+
 
             onChanged(newState, true, true)
         }
@@ -2061,9 +2078,9 @@ class TextEditorState private constructor(
         stylesResult: StylesResult,
         startLineIndex: Int,
         ignoreThis: Boolean,
-        newTextEditorState: TextEditorState
+        newTextEditorState: TextEditorState,
+        endLineIndexInclusive: Int = startLineIndex,
     ) {
-        val endLineIndexInclusive = startLineIndex
         val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = true)
         val endIdxOfText = getIndexOfText(baseFields, endLineIndexInclusive, trueStartFalseEnd = false)
         if(startIdxOfText == -1 || endIdxOfText == -1) {
@@ -2076,7 +2093,12 @@ class TextEditorState private constructor(
         val end = CharPosition(endLineIndexInclusive, baseFields[endLineIndexInclusive].value.text.length + offset, endIdxOfText)
 
         baseFields.removeAt(startLineIndex)
+        if(endLineIndexInclusive != startLineIndex) {
+            baseFields.removeAt(if(endLineIndexInclusive > startLineIndex) endLineIndexInclusive - 1 else endLineIndexInclusive)
+        }
 
+        println("ddddddddddddddddddddstart: $start")
+        println("dddddddddddddddddend: $end")
 
         // style will update spans
         stylesResult.styles.adjustOnDelete(start, end)
@@ -2112,7 +2134,7 @@ class TextEditorState private constructor(
             insertedContent = "\n" + insertedContent
             Triple(baseFields.lastIndex, false, baseFields.last().value.text.length)
         }else {
-//            insertedContent = insertedContent + "\n"
+            insertedContent = insertedContent + "\n"
             Triple(startLineIndex, true, 0)
         }
         println("inseetrStartLined333333333: $startLineIndex")
