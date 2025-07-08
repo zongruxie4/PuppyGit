@@ -2162,7 +2162,9 @@ class TextEditorState private constructor(
         println("dddddddddddddddddend: $end")
 
         // style will update spans
-        stylesResult.styles.adjustOnDelete(start, end)
+        if(stylesResult.styles.spans.lineCount > end.line) {
+            stylesResult.styles.adjustOnDelete(start, end)
+        }
 
         val selectedText = getSelectedText(IntRange(startLineIndex, endLineIndexInclusive).toList(), keepEndLineBreak = true)
         val lang = codeEditor?.myLang
