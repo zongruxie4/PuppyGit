@@ -2097,8 +2097,9 @@ class TextEditorState private constructor(
         var cachedStyle = codeEditor?.obtainCachedStyles()
         if(cachedStyle == null) {
             cachedStyle = temporaryStyles
+            codeEditor?.analyze(force = true)
+
             if(cachedStyle == null) {
-                codeEditor?.analyze(force = true)
                 return null
             }
         }
@@ -2138,7 +2139,7 @@ class TextEditorState private constructor(
             baseFields.removeAt(i)
         }
 
-        println("baseFields[insertIndex].value.text: ${baseFields.getOrNull(endLineIndexInclusive)?.value?.text}")
+        println("baseFields[insertIndex].value.text: ${baseFields.getOrNull(end.line)?.value?.text}")
         println("ddddddddddddddddddddstart: $start")
         println("dddddddddddddddddend: $end")
 
@@ -2203,7 +2204,7 @@ class TextEditorState private constructor(
         val start = CharPosition(startLineIndex, columnIndex, startIdxOfText)
         insertIndex--
         // +1 for '\n'
-        val end = CharPosition(insertIndex, columnIndex + baseFields[insertIndex].value.text.length, startIdxOfText + insertedContent.length)
+        val end = CharPosition(insertIndex+1, 0, startIdxOfText + insertedContent.length)
 //        val end = baseFields.getOrNull(insertIndex).let {
 //            if(it != null) {
 //                CharPosition(insertIndex, columnIndex + it.value.text.length, startIdxOfText + insertedContent.length)
