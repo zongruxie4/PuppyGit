@@ -119,6 +119,13 @@ class MyCodeEditor(
             }else {
                 stylesUpdateRequest.targetEditorState
             }
+            // 这个可能导致问题，想象一下：为textEditorState实例1设置了receiver，然后执行分析，
+            //   收到结果前，又为textEditorState实例2设置了receiver，
+            //   这时，textEditorState实例2就可能会收到1的分析结果，这个分析结果就会错误绑定到实例2，实例1就没样式了
+            //   但是，及时如此，也比用channel靠谱。
+            //   最好的解决方案：应该让receiver把执行分析时关联的text editor state实例绑定上，或者，只创建一个editor state实例，
+            //   后者可以实现，但需要修改撤销机制，因为目前的撤销机制是直接存储整个editor实例，如果改成只存fields，就行了，
+            //   不对，好像还是无法解决哪个styles的结果和哪个editor state实例关联的问题。。。。。。。
             myLang?.analyzeManager?.setReceiver(genNewStyleDelegate(targetEditorState))
             stylesUpdateRequest.act()
             stylesUpdateRequestChannel.trySend(stylesUpdateRequest)
