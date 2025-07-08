@@ -2003,6 +2003,7 @@ class TextEditorState private constructor(
 
         // already applied
         if(stylesResult.uniqueId == temporaryStyles?.uniqueId) {
+            MyLog.d(TAG, "already applied styles, uniqueId=${stylesResult.uniqueId}")
             return
         }
 
@@ -2018,6 +2019,12 @@ class TextEditorState private constructor(
                 val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
                 // already applied spans
                 if(sh?.get(filedForCheckApplied.syntaxHighlightId) != null) {
+                    codeEditor?.editorState?.value?.let {
+                        if(it.fieldsId == stylesResult.fieldsId) {
+                            onChanged(it.copy(temporaryStyles = stylesResult), null, false)
+                        }
+                    }
+
                     return@sl
                 }
             }
@@ -2096,14 +2103,14 @@ class TextEditorState private constructor(
         val annotatedStringResult = sh?.get(raw.syntaxHighlightId)
         return if(annotatedStringResult == null || annotatedStringResult.inDarkTheme != Theme.inDarkTheme) {
             // styles exists, but haven't annotated string, maybe styles not applied
-            val stylesResult = tryGetStylesResult()
-            if(stylesResult != null && stylesResult.inDarkTheme == Theme.inDarkTheme) {
-                doJobThenOffLoading {
-                    applySyntaxHighlighting(fieldsId, stylesResult)
-                }
-            }
+//            val stylesResult = tryGetStylesResult()
+//            if(stylesResult != null && stylesResult.inDarkTheme == Theme.inDarkTheme) {
+//                doJobThenOffLoading {
+//                    applySyntaxHighlighting(fieldsId, stylesResult)
+//                }
+//            }
 
-            MyLog.d(TAG, "#$funName: stylesResult.fieldsId=${stylesResult?.fieldsId}, spansCount=${stylesResult?.styles?.spans?.lineCount}")
+//            MyLog.d(TAG, "#$funName: stylesResult.fieldsId=${stylesResult?.fieldsId}, spansCount=${stylesResult?.styles?.spans?.lineCount}")
 
             raw
         }else {
