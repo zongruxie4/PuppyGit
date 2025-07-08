@@ -2184,6 +2184,8 @@ class TextEditorState private constructor(
         insertedContent: String,
         newTextEditorState: TextEditorState
     ) {
+        val needReRunAnalyze = baseFields.isEmpty()
+
         val rawInsertedContent = insertedContent
         var insertedContent = insertedContent
 //        val endLineIndexInclusive = startLineIndex
@@ -2244,7 +2246,11 @@ class TextEditorState private constructor(
         val lang = codeEditor?.myLang
         if(lang != null) {
             val act = {
-                lang.analyzeManager.insert(start, end, selectedText)
+                if(needReRunAnalyze) {
+                    codeEditor.analyze(editorState = newTextEditorState)
+                }else {
+                    lang.analyzeManager.insert(start, end, selectedText)
+                }
             }
 
             codeEditor.sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis, newTextEditorState, act))

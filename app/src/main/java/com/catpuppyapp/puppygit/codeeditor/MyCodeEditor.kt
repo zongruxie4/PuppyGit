@@ -119,7 +119,7 @@ class MyCodeEditor(
         }
     }
 
-    fun analyze(force: Boolean = false) {
+    fun analyze(force: Boolean = false, editorState: TextEditorState = this.editorState.value) {
         val plScope = plScope.value
         // no highlights or not supported
         if(SettingsUtil.isEditorSyntaxHighlightEnabled().not() || PLScopes.scopeInvalid(plScope)) {
@@ -131,7 +131,6 @@ class MyCodeEditor(
         languageScope = plScope
 
 
-        val editorState = editorState.value
 
         // invalid state, maybe just created, but never used
         if(editorState.fieldsId.isBlank()) {
