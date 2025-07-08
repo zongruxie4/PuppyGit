@@ -9,6 +9,8 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.getRandomUUID
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import io.github.rosemoe.sora.lang.EmptyLanguage
 import io.github.rosemoe.sora.lang.Language
@@ -138,12 +140,12 @@ class MyCodeEditor(
         // has cached
         // 检查是否有cached styles，有则直接应用
         if(!force && !scopeChanged) {
-            val cachedStyles = obtainCachedStyles()?.styles
+            val cachedStyles = obtainCachedStyles()
             if(cachedStyles != null) {
-                // 会在 style receiver收到之后立刻apply，所以这里不需要再apply了，如果有缓存就代表已经apply过了
-//            doJobThenOffLoading {
-//                editorState.applySyntaxHighlighting(editorState.fieldsId, cachedStyles)
-//            }
+                // 会在 style receiver收到之后立刻apply，所以这里正常不需要再apply了，但内部会检测，如果已经applied，则不会重复applied，所以这里调用也无妨
+                doJobThenOffLoading {
+                    editorState.applySyntaxHighlighting(editorState.fieldsId, cachedStyles)
+                }
                 return
             }
         }
@@ -275,6 +277,7 @@ class StylesResult(
     val inDarkTheme: Boolean,
     val styles: Styles,
     val from: StylesResultFrom,
+    val uniqueId: String = getRandomUUID(),
 )
 
 enum class StylesResultFrom {

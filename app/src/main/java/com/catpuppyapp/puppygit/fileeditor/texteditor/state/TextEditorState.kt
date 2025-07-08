@@ -1984,6 +1984,11 @@ class TextEditorState private constructor(
             return
         }
 
+        // already applied
+        if(stylesResult.uniqueId == temporaryStyles?.uniqueId) {
+            return
+        }
+
         // 加锁，处理styles，按行分割（检查一下：最后分割出的行数应和fields size一样）
         // 创建新 state，调用onChange （测试：如果不创建state也可触发页面刷新，则无需创建新state）
         stylesApplyLock.withLock sl@{
@@ -2017,7 +2022,7 @@ class TextEditorState private constructor(
 
                 // just for trigger re-render page
                 if(fieldsId == codeEditor?.editorState?.value?.fieldsId) {
-                    onChanged(codeEditor.editorState.value.copy(), null, false)
+                    onChanged(codeEditor.editorState.value.copy(temporaryStyles = stylesResult), null, false)
                 }else if(codeEditor?.editorState?.value?.temporaryStyles == null) {
                     codeEditor?.editorState?.value?.let {
                         it.temporaryStyles = stylesResult
