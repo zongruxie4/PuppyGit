@@ -2012,9 +2012,11 @@ class TextEditorState private constructor(
                 // just for trigger re-render page
                 if(fieldsId == codeEditor?.editorState?.value?.fieldsId) {
                     onChanged(codeEditor.editorState.value.copy(), null, false)
-                }else if(temporaryStyles == null) {
-                    temporaryStyles = stylesResult
-                    onChanged(copy(), null, false)
+                }else if(codeEditor?.editorState?.value?.temporaryStyles == null) {
+                    codeEditor?.editorState?.value?.let {
+                        it.temporaryStyles = stylesResult
+                        onChanged(it.copy(), null, false)
+                    }
                 }
             }
         }
@@ -2102,9 +2104,9 @@ class TextEditorState private constructor(
         newTextEditorState: TextEditorState,
         endLineIndexInclusive: Int = startLineIndex,
     ) {
-        val endLineIndexInclusiveIsLastIndex = endLineIndexInclusive == baseFields.size - 1
+        val endLineIndexInclusiveIsLastIndex = endLineIndexInclusive == baseFields.lastIndex
         val endExclusive =  endLineIndexInclusive + 1
-        val endIndex = if(endLineIndexInclusiveIsLastIndex) endLineIndexInclusive else endExclusive
+        val endIndex = if(baseFields.size == 1) 0 else if(endLineIndexInclusiveIsLastIndex) endLineIndexInclusive else endExclusive
 
         val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = true)
         val endIdxOfText = getIndexOfText(baseFields, endIndex, trueStartFalseEnd = !endLineIndexInclusiveIsLastIndex)
@@ -2114,9 +2116,9 @@ class TextEditorState private constructor(
 
         val start = CharPosition(startLineIndex, 0, startIdxOfText)
         // +1 for '\n'
-        val offset = if(endLineIndexInclusive == baseFields.lastIndex) 0 else 1
-        val endColumn = if(endLineIndexInclusiveIsLastIndex) baseFields[endLineIndexInclusive].value.text.length + offset else 0
-        val end = CharPosition(endExclusive, endColumn, endIdxOfText)
+        val offset = if(endLineIndexInclusiveIsLastIndex) 0 else 1
+        val endColumn = baseFields[endLineIndexInclusive].value.text.length + offset
+        val end = CharPosition(endIndex, endColumn, endIdxOfText)
 
         baseFields.removeAt(startLineIndex)
         if(endLineIndexInclusive != startLineIndex) {
@@ -2155,7 +2157,9 @@ class TextEditorState private constructor(
         val rawStartIndex = startLineIndex
         println("inseetrStartLine: $startLineIndex")
         //如果越界，可能最后一行已经删除了，这时追加内容到当前最后一行末尾；若索引有效，则追加到目标行的开头
-        val (startLineIndex, trueStartFalseEnd, columnIndex) = if(startLineIndex >= baseFields.size) {
+        val (startLineIndex, trueStartFalseEnd, columnIndex) = if(baseFields.isEmpty()) {
+            Triple(0, true, 0)
+        } else if(startLineIndex >= baseFields.size) {
             // 如果追加到最后一行末尾，需要前置个换行符
             insertedContent = "\n" + insertedContent
             Triple(baseFields.lastIndex, false, baseFields.last().value.text.length)
@@ -2183,9 +2187,16 @@ class TextEditorState private constructor(
         }
 
         val start = CharPosition(startLineIndex, columnIndex, startIdxOfText)
-//        insertIndex--
+        insertIndex--
         // +1 for '\n'
         val end = CharPosition(insertIndex, columnIndex + baseFields[insertIndex].value.text.length, startIdxOfText + insertedContent.length)
+//        val end = baseFields.getOrNull(insertIndex).let {
+//            if(it != null) {
+//                CharPosition(insertIndex, columnIndex + it.value.text.length, startIdxOfText + insertedContent.length)
+//            }else {
+//                CharPosition(insertIndex, columnIndex + it.value.text.length, startIdxOfText + insertedContent.length)
+//            }
+//        }
 
         println("baseFields[insertIndex].value.text.length: ${baseFields[insertIndex].value.text.length}")
         println("starttttttttttttt: $start")
@@ -2210,6 +2221,10 @@ class TextEditorState private constructor(
         lineIdx: Int,
         trueStartFalseEnd: Boolean
     ):Int {
+        if(baseFields.isEmpty()) {
+            return 0
+        }
+
         val lineIdx = if(trueStartFalseEnd) lineIdx - 1 else lineIdx
         var li = -1
         var charIndex = 0
