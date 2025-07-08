@@ -2044,6 +2044,10 @@ class TextEditorState private constructor(
                 if(fieldsId == latestEditorState?.fieldsId) {
                     onChanged(latestEditorState.copy(temporaryStyles = stylesResult), null, false)
                 }
+
+                // if no check, editor content will incorrect
+                // 如果不检查fieldsId，editor内容会出错，例如你输入了123，然后应用了上个状态，导致内容变成没有123时的状态，这种错误是不可接受的
+//                onChanged(copy(temporaryStyles = stylesResult), null, false)
             }
         }
     }
