@@ -1392,6 +1392,21 @@ class TextEditorState private constructor(
                 focusingLineIdx = focusingLineIdx
             )
 
+            updateStyles { baseStyles, baseFields ->
+                println(baseFields.size)
+                // 降序删除不用算索引偏移
+                // delete current line
+                val lastIdx = indices.size - 1
+                indices.sortedDescending().forEachIndexed { idx, lineIdxWillDel ->
+                    println("delidx: $lineIdxWillDel")
+                    // 仅当删除最后一个条目时更新一次样式
+                    updateStylesAfterDeleteLine(baseFields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState)
+                }
+
+                // set temporary styles to new state
+                newState.temporaryStyles = baseStyles
+            }
+
             onChanged(newState, true, true)
         }
     }
@@ -2082,8 +2097,12 @@ class TextEditorState private constructor(
         newTextEditorState: TextEditorState,
         endLineIndexInclusive: Int = startLineIndex,
     ) {
+        val endLineIndexInclusiveIsLastIndex = endLineIndexInclusive == baseFields.size - 1
+        val endExclusive =  endLineIndexInclusive + 1
+        val endIndex = if(endLineIndexInclusiveIsLastIndex) endLineIndexInclusive else endExclusive
+
         val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = true)
-        val endIdxOfText = getIndexOfText(baseFields, endLineIndexInclusive, trueStartFalseEnd = false)
+        val endIdxOfText = getIndexOfText(baseFields, endIndex, trueStartFalseEnd = !endLineIndexInclusiveIsLastIndex)
         if(startIdxOfText == -1 || endIdxOfText == -1) {
             return
         }
@@ -2091,7 +2110,8 @@ class TextEditorState private constructor(
         val start = CharPosition(startLineIndex, 0, startIdxOfText)
         // +1 for '\n'
         val offset = if(endLineIndexInclusive == baseFields.lastIndex) 0 else 1
-        val end = CharPosition(endLineIndexInclusive, baseFields[endLineIndexInclusive].value.text.length + offset, endIdxOfText)
+        val endColumn = if(endLineIndexInclusiveIsLastIndex) baseFields[endLineIndexInclusive].value.text.length + offset else 0
+        val end = CharPosition(endExclusive, endColumn, endIdxOfText)
 
         baseFields.removeAt(startLineIndex)
         if(endLineIndexInclusive != startLineIndex) {
@@ -2158,7 +2178,7 @@ class TextEditorState private constructor(
         }
 
         val start = CharPosition(startLineIndex, columnIndex, startIdxOfText)
-        insertIndex--
+//        insertIndex--
         // +1 for '\n'
         val end = CharPosition(insertIndex, columnIndex + baseFields[insertIndex].value.text.length, startIdxOfText + insertedContent.length)
 
