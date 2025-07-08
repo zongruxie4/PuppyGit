@@ -2090,20 +2090,20 @@ class TextEditorState private constructor(
     }
 
     fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
-        val stylesResult = tryGetStylesResult()
-        if(stylesResult == null) {
-            return raw
-        }
+        val funName = "obtainHighlightedTextField"
 
         val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
         val annotatedStringResult = sh?.get(raw.syntaxHighlightId)
         return if(annotatedStringResult == null || annotatedStringResult.inDarkTheme != Theme.inDarkTheme) {
             // styles exists, but haven't annotated string, maybe styles not applied
-            if(annotatedStringResult == null) {
+            val stylesResult = tryGetStylesResult()
+            if(stylesResult != null && stylesResult.inDarkTheme == Theme.inDarkTheme) {
                 doJobThenOffLoading {
                     applySyntaxHighlighting(fieldsId, stylesResult)
                 }
             }
+
+            MyLog.d(TAG, "#$funName: stylesResult is null: ${stylesResult == null}, stylesResult.filesId=${stylesResult?.fieldsId}")
 
             raw
         }else {
