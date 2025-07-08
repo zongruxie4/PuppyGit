@@ -69,7 +69,6 @@ private fun targetIndexValidOrThrow(targetIndex:Int, listSize:Int) {
 @Immutable
 class TextEditorState private constructor(
 
-    val codeEditor: MyCodeEditor?,
 
     /**
      the `fieldsId` only about fields, same fieldsId should has same fields，but isn't enforce (但不强制要求)
@@ -89,6 +88,7 @@ class TextEditorState private constructor(
 
     val onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
 
+    val codeEditor: MyCodeEditor?,
 
     // temporary use when syntax highlighting analyzing
     var temporaryStyles: StylesResult? = null,
@@ -98,7 +98,6 @@ class TextEditorState private constructor(
 
 
     fun copy(
-        codeEditor: MyCodeEditor? = this.codeEditor,
         fieldsId: String = this.fieldsId,
         fields: List<TextFieldState> = this.fields,
         selectedIndices: List<Int> = this.selectedIndices,
@@ -107,9 +106,9 @@ class TextEditorState private constructor(
         isContentEdited: MutableState<Boolean> = this.isContentEdited,
         editorPageIsContentSnapshoted:MutableState<Boolean> = this.editorPageIsContentSnapshoted,
         onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit = this.onChanged,
+        codeEditor: MyCodeEditor? = this.codeEditor,
         temporaryStyles: StylesResult? = this.temporaryStyles,
     ):TextEditorState = create(
-        codeEditor = codeEditor,
         fieldsId = fieldsId,
         fields = fields,
         selectedIndices = selectedIndices,
@@ -118,6 +117,7 @@ class TextEditorState private constructor(
         isContentEdited = isContentEdited,
         editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
         onChanged = onChanged,
+        codeEditor = codeEditor,
         temporaryStyles = temporaryStyles,
     )
 
@@ -2109,18 +2109,19 @@ class TextEditorState private constructor(
         //如果越界，可能最后一行已经删除了，这时追加内容到当前最后一行末尾；若索引有效，则追加到目标行的开头
         val (startLineIndex, trueStartFalseEnd, columnIndex) = if(startLineIndex >= baseFields.size) {
             // 如果追加到最后一行末尾，需要前置个换行符
-//            insertedContent = "\n" + insertedContent
-            Triple(startLineIndex, false, 0)
+            insertedContent = "\n" + insertedContent
+            Triple(baseFields.lastIndex, false, baseFields.last().value.text.length)
         }else {
 //            insertedContent = insertedContent + "\n"
-            Triple(startLineIndex, false, 0)
+            Triple(startLineIndex, true, 0)
         }
         println("inseetrStartLined333333333: $startLineIndex")
 
         println("insertedContent: ```$insertedContent```")
         val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd)
 //        val endIdxOfText = getIndexOfText(baseFields, endLineIndexInclusive, trueStartFalseEnd = false)
-        if(startIdxOfText == -1) {
+        if(startIdxOfText < 0) {
+            MyLog.w(TAG, "`startIndexOfText` invalid")
             return
         }
 
@@ -2130,7 +2131,7 @@ class TextEditorState private constructor(
         // 这个LineChangeType.NEW可有可无，因为这个baseFields实际不是textstate应用的state
         var insertIndex = rawStartIndex
         rawInsertedContent.lines().forEachBetter {
-            baseFields.add(insertIndex++, TextFieldState(value = TextFieldValue(it), changeType = LineChangeType.NEW))
+            baseFields.add(insertIndex++, TextFieldState(value = TextFieldValue(it)))
         }
 
         val start = CharPosition(startLineIndex, columnIndex, startIdxOfText)
@@ -2164,87 +2165,74 @@ class TextEditorState private constructor(
         val lineIdx = if(trueStartFalseEnd) lineIdx - 1 else lineIdx
         var li = -1
         var charIndex = 0
-        var lastLine = ""
-        while (++li != lineIdx) {
+//        var lastLine = ""
+        while (++li <= lineIdx) {
             val f = baseFields.getOrNull(li) ?: return -1
             // +1 for '\n'
-            charIndex+=(f.value.text.length + 1)
-            lastLine = f.value.text
+            charIndex += (f.value.text.length + 1)
+//            lastLine = f.value.text
         }
 
         // +1 for '\n'
 //        val offset = if(!trueStartFalseEnd && lineIdx == baseFields.lastIndex) 0 else 1
 //        return charIndex + offset
-        return charIndex
+        return charIndex + (if(lineIdx == baseFields.lastIndex) -1 else 0)
     }
 
 
 
     companion object {
         fun create(
-            codeEditor: MyCodeEditor?,
-
             text: String,
             fieldsId: String,
             isMultipleSelectionMode:Boolean,
             focusingLineIdx:Int?,
-
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
+            codeEditor: MyCodeEditor?,
             temporaryStyles: StylesResult?,
-
         ): TextEditorState {
             return create(
-                codeEditor = codeEditor,
-
                 lines = text.lines(),
                 fieldsId= fieldsId,
                 isMultipleSelectionMode = isMultipleSelectionMode,
                 focusingLineIdx = focusingLineIdx,
-
                 isContentEdited = isContentEdited,
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
                 onChanged = onChanged,
+                codeEditor = codeEditor,
                 temporaryStyles = temporaryStyles
             )
         }
 
         fun create(
-            codeEditor: MyCodeEditor?,
-
             lines: List<String>,
             fieldsId: String,
             isMultipleSelectionMode:Boolean,
             focusingLineIdx:Int?,
-
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
+            codeEditor: MyCodeEditor?,
             temporaryStyles: StylesResult?,
-
         ): TextEditorState {
             return create(
-                codeEditor = codeEditor,
-
                 fields = createInitTextFieldStates(lines),
                 fieldsId= fieldsId,
                 selectedIndices = listOf(),
                 isMultipleSelectionMode = isMultipleSelectionMode,
                 focusingLineIdx = focusingLineIdx,
-
                 isContentEdited = isContentEdited,
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
                 onChanged = onChanged,
-
+                codeEditor = codeEditor,
                 temporaryStyles = temporaryStyles
 
             )
         }
 
         fun create(
-            codeEditor: MyCodeEditor?,
-
             file: FuckSafFile,
             fieldsId: String,
             isMultipleSelectionMode:Boolean,
@@ -2252,26 +2240,24 @@ class TextEditorState private constructor(
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
+            codeEditor: MyCodeEditor?,
             temporaryStyles: StylesResult?,
         ): TextEditorState {
             //这里`addNewLineIfFileEmpty`必须传true，以确保和String.lines()行为一致，不然若文件末尾有空行，读取出来会少一行
             return create(
-                codeEditor = codeEditor,
-
                 lines = FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true),
                 fieldsId= fieldsId,
                 isMultipleSelectionMode = isMultipleSelectionMode,
                 focusingLineIdx = focusingLineIdx,
-
                 isContentEdited = isContentEdited,
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
                 onChanged = onChanged,
+                codeEditor = codeEditor,
                 temporaryStyles = temporaryStyles,
             )
         }
 
         fun create(
-            codeEditor: MyCodeEditor?,
             fields: List<TextFieldState>,
             fieldsId: String,
             selectedIndices: List<Int>,
@@ -2280,10 +2266,10 @@ class TextEditorState private constructor(
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
+            codeEditor: MyCodeEditor?,
             temporaryStyles: StylesResult?,
         ): TextEditorState {
             return TextEditorState(
-                codeEditor = codeEditor,
                 fieldsId= fieldsId,
                 fields = fields,
                 selectedIndices = selectedIndices,
@@ -2292,6 +2278,7 @@ class TextEditorState private constructor(
                 isContentEdited = isContentEdited,
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
                 onChanged = onChanged,
+                codeEditor = codeEditor,
                 temporaryStyles = temporaryStyles,
             )
         }
