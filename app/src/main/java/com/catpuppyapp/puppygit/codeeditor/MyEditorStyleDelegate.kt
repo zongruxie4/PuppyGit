@@ -38,7 +38,7 @@ class MyEditorStyleDelegate(
 //        啊，这个问题其实可以解决，因为这里无论如何都会put，所以我可以在获取某个字段的annotatedstring的时候检查，如果有style没高亮，执行apply，就行了
 
         // cache只有一个实例，需要并发安全，key为fieldsId，全局唯一
-        val stylesResult = StylesResult(inDarkTheme, styles, StylesResultFrom.CODE_EDITOR)
+        val stylesResult = StylesResult(inDarkTheme, styles, StylesResultFrom.CODE_EDITOR, fieldsId = requester.targetEditorState.fieldsId)
         if(inDarkTheme == Theme.inDarkTheme) {
             val targetEditorState = requester.targetEditorState
             stylesMap.put(targetEditorState.fieldsId, stylesResult)

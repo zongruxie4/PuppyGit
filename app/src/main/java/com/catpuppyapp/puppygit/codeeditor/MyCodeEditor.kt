@@ -274,11 +274,12 @@ class MyCodeEditor(
     // TODO 添加修改行和删除行的函数，外部调用 code editor重新执行语法分析，然后应用style到调用的那个state
 }
 
-class StylesResult(
+data class StylesResult(
     val inDarkTheme: Boolean,
     val styles: Styles,
     val from: StylesResultFrom,
     val uniqueId: String = getRandomUUID(),
+    val fieldsId:String = "",
 )
 
 enum class StylesResultFrom {

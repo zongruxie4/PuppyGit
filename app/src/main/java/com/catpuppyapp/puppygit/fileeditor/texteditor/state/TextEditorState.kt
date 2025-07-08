@@ -36,6 +36,7 @@ import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.getNextIndentByCurrentStr
+import com.catpuppyapp.puppygit.utils.getRandomUUID
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import com.catpuppyapp.puppygit.utils.isStartInclusiveEndExclusiveRangeValid
@@ -2095,17 +2096,18 @@ class TextEditorState private constructor(
     fun copyStyles(): StylesResult? {
         println("in fielsId: ${fieldsId}")
         var cachedStyle = codeEditor?.obtainCachedStyles()
-        if(cachedStyle == null) {
+        if(cachedStyle == null || cachedStyle.fieldsId != fieldsId) {
             cachedStyle = temporaryStyles
 //            codeEditor?.analyze(force = true)
 
-            if(cachedStyle == null || cachedStyle.from == StylesResultFrom.TEXT_STATE) {
+            if(cachedStyle == null || cachedStyle.fieldsId != fieldsId) {
                 codeEditor?.analyze()
                 return null
             }
         }
 
-        return StylesResult(cachedStyle.inDarkTheme, Styles(cachedStyle.styles.spans).apply { indentCountMode = cachedStyle.styles.indentCountMode }, StylesResultFrom.TEXT_STATE)
+//        return cachedStyle.copy(styles = Styles(cachedStyle.styles.spans).apply { indentCountMode = cachedStyle.styles.indentCountMode }, from = StylesResultFrom.TEXT_STATE)
+        return cachedStyle.copy(styles = Styles(cachedStyle.styles.spans), from = StylesResultFrom.TEXT_STATE, uniqueId = getRandomUUID())
     }
 
 
