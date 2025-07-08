@@ -173,7 +173,7 @@ class MyCodeEditor(
 
             val autoComplete = false
             val lang = if(myLang == null || scopeChanged) {
-                TextMateLanguage.create(plScope, autoComplete).let { myLang == it; it }
+                TextMateLanguage.create(plScope, autoComplete).let { myLang = it; it }
             }else {
                 myLang!!
             }
