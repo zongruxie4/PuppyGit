@@ -757,6 +757,22 @@ class TextEditorState private constructor(
 
             )
 
+            updateStyles { baseStyles, baseFields ->
+                val insertIndex = if(!trueAppendFalseReplace) {
+                    // delete current and previous lines
+                    updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
+                    targetIndex
+                }else {
+                    targetIndex + 1
+                }
+
+                // add new content to previous line
+                updateStylesAfterInsertLine(baseFields, baseStyles, insertIndex, ignoreThis = false, text, newState)
+
+                // set temporary styles to new state
+                newState.temporaryStyles = baseStyles
+            }
+
             //更新状态
             onChanged(newState, true, true)
         }
