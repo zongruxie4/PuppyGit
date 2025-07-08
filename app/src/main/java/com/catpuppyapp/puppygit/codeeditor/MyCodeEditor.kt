@@ -44,7 +44,8 @@ class MyCodeEditor(
     //除非样式分析执行特别慢，否则队列不会满，也不会阻塞线程，如果真的特别慢，或许文件特别大，最好禁用语法高亮
     // except styles analyze very slow, else, the channel queue will not fullfill and will not block thread，if really very slow, may have large file, better disable syntax highlighting
     val stylesUpdateRequestChannel: Channel<StylesUpdateRequest> = Channel(2000),
-    var colorScheme: EditorColorScheme = EditorColorScheme()
+    var colorScheme: EditorColorScheme = EditorColorScheme(),
+    var latestStyles: StylesResult? = null,
 ) { // TODO 测试不继承CodeEditor是否会报错？
 //): CodeEditor(appContext) {
 

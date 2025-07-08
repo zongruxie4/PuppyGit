@@ -1990,6 +1990,8 @@ class TextEditorState private constructor(
             return
         }
 
+        temporaryStyles = stylesResult
+
         // 加锁，处理styles，按行分割（检查一下：最后分割出的行数应和fields size一样）
         // 创建新 state，调用onChange （测试：如果不创建state也可触发页面刷新，则无需创建新state）
         stylesApplyLock.withLock sl@{
@@ -2068,9 +2070,9 @@ class TextEditorState private constructor(
     }
 
     fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
-        var stylesResult = codeEditor?.stylesMap?.get(fieldsId)
+        var stylesResult = temporaryStyles
         if(stylesResult == null) {
-            stylesResult = temporaryStyles
+            stylesResult = codeEditor?.stylesMap?.get(fieldsId)
             if(stylesResult == null) {
                 return raw
             }
@@ -2095,9 +2097,9 @@ class TextEditorState private constructor(
 
     fun copyStyles(): StylesResult? {
         println("in fielsId: ${fieldsId}")
-        var cachedStyle = codeEditor?.obtainCachedStyles()
-        if(cachedStyle == null || cachedStyle.fieldsId != fieldsId) {
-            cachedStyle = temporaryStyles
+        var cachedStyle = temporaryStyles
+        if(cachedStyle == null) {
+            cachedStyle = codeEditor?.latestStyles
 //            codeEditor?.analyze(force = true)
 
             if(cachedStyle == null || cachedStyle.fieldsId != fieldsId) {
