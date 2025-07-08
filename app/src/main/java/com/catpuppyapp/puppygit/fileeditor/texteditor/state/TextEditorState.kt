@@ -2012,6 +2012,9 @@ class TextEditorState private constructor(
                 // just for trigger re-render page
                 if(fieldsId == codeEditor?.editorState?.value?.fieldsId) {
                     onChanged(codeEditor.editorState.value.copy(), null, false)
+                }else if(temporaryStyles == null) {
+                    temporaryStyles = stylesResult
+                    onChanged(copy(), null, false)
                 }
             }
         }
@@ -2074,10 +2077,12 @@ class TextEditorState private constructor(
 
 
     fun copyStyles(): StylesResult? {
+        println("in fielsId: ${fieldsId}")
         var cachedStyle = codeEditor?.obtainCachedStyles()
         if(cachedStyle == null) {
             cachedStyle = temporaryStyles
             if(cachedStyle == null) {
+                codeEditor?.analyze()
                 return null
             }
         }

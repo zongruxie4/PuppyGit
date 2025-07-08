@@ -90,6 +90,7 @@ class MyCodeEditor(
     }
 
     fun obtainCachedStyles(): StylesResult? {
+        println("outter filesId: ${editorState.value.fieldsId}")
         val cachedStyles = stylesMap.get(editorState.value.fieldsId)
         return if(cachedStyles != null && cachedStyles.inDarkTheme == Theme.inDarkTheme) {
             cachedStyles
@@ -113,7 +114,7 @@ class MyCodeEditor(
         }
     }
 
-    fun analyze() {
+    fun analyze(force: Boolean = false) {
         if(SettingsUtil.isEditorSyntaxHighlightEnabled().not()) {
             return
         }
@@ -134,13 +135,15 @@ class MyCodeEditor(
 
         // has cached
         // 检查是否有cached styles，有则直接应用
-        val cachedStyles = obtainCachedStyles()?.styles
-        if(cachedStyles != null) {
-            // 会在 style receiver收到之后立刻apply，所以这里不需要再apply了，如果有缓存就代表已经apply过了
+        if(!force) {
+            val cachedStyles = obtainCachedStyles()?.styles
+            if(cachedStyles != null) {
+                // 会在 style receiver收到之后立刻apply，所以这里不需要再apply了，如果有缓存就代表已经apply过了
 //            doJobThenOffLoading {
 //                editorState.applySyntaxHighlighting(editorState.fieldsId, cachedStyles)
 //            }
-            return
+                return
+            }
         }
 
 
@@ -154,9 +157,12 @@ class MyCodeEditor(
             return
         }
 
+        println("text: $text")
+
         PLTheme.applyTheme(Theme.inDarkTheme)
 
         this.let {
+            clearStylesChannel()
             sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = true, editorState, {}))
             sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
 
@@ -176,6 +182,12 @@ class MyCodeEditor(
 //            it.setEditorLanguage(lang)
 //            it.setText(text)
 
+        }
+    }
+
+    private fun clearStylesChannel() {
+        stylesRequestLock.withLock {
+            while (stylesUpdateRequestChannel.tryReceive().isSuccess) {}
         }
     }
 
