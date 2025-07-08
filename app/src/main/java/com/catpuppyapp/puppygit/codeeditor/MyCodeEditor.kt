@@ -83,6 +83,7 @@ class MyCodeEditor(
 
     fun release() {
         clearCache()
+        clearStylesChannel()
     }
 
     fun clearCache() {
@@ -116,13 +117,10 @@ class MyCodeEditor(
     }
 
     fun analyze(force: Boolean = false) {
-        if(SettingsUtil.isEditorSyntaxHighlightEnabled().not()) {
-            return
-        }
-
         val plScope = plScope.value
         // no highlights or not supported
-        if(PLScopes.scopeInvalid(plScope)) {
+        if(SettingsUtil.isEditorSyntaxHighlightEnabled().not() || PLScopes.scopeInvalid(plScope)) {
+            release()
             return
         }
 
