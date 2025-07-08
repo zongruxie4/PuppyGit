@@ -2069,13 +2069,14 @@ class TextEditorState private constructor(
         }
     }
 
+    fun tryGetStylesResult(): StylesResult? {
+        return temporaryStyles ?: codeEditor?.stylesMap?.get(fieldsId)
+    }
+
     fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
-        var stylesResult = temporaryStyles
+        val stylesResult = tryGetStylesResult()
         if(stylesResult == null) {
-            stylesResult = codeEditor?.stylesMap?.get(fieldsId)
-            if(stylesResult == null) {
-                return raw
-            }
+            return raw
         }
 
         val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
@@ -2096,20 +2097,16 @@ class TextEditorState private constructor(
 
 
     fun copyStyles(): StylesResult? {
-        println("in fielsId: ${fieldsId}")
-        var cachedStyle = temporaryStyles
+        println("in fieldsId: ${fieldsId}")
+        val cachedStyle = tryGetStylesResult()
+//        if(cachedStyle == null || cachedStyle.fieldsId != fieldsId) {
         if(cachedStyle == null) {
-            cachedStyle = codeEditor?.latestStyles
-//            codeEditor?.analyze(force = true)
-
-            if(cachedStyle == null || cachedStyle.fieldsId != fieldsId) {
-                codeEditor?.analyze()
-                return null
-            }
+            codeEditor?.analyze()
+            return null
         }
 
 //        return cachedStyle.copy(styles = Styles(cachedStyle.styles.spans).apply { indentCountMode = cachedStyle.styles.indentCountMode }, from = StylesResultFrom.TEXT_STATE)
-        return cachedStyle.copy(styles = Styles(cachedStyle.styles.spans), from = StylesResultFrom.TEXT_STATE, uniqueId = getRandomUUID())
+        return cachedStyle.copy(styles = Styles(cachedStyle.styles.spans), from = StylesResultFrom.TEXT_STATE, uniqueId = getRandomUUID(), fieldsId = fieldsId)
     }
 
 
