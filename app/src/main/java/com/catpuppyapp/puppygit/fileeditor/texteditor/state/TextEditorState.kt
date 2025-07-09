@@ -758,12 +758,12 @@ class TextEditorState private constructor(
             )
 
             updateStyles { baseStyles, baseFields ->
-                val insertIndex = if(!trueAppendFalseReplace) {
+                val insertIndex = if(trueAppendFalseReplace) {
+                    targetIndex + 1
+                } else {
                     // delete current and previous lines
                     updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
                     targetIndex
-                }else {
-                    targetIndex + 1
                 }
 
                 // add new content to previous line
@@ -1409,19 +1409,23 @@ class TextEditorState private constructor(
                 focusingLineIdx = focusingLineIdx
             )
 
-            updateStyles { baseStyles, baseFields ->
-                println(baseFields.size)
-                // 降序删除不用算索引偏移
-                // delete current line
-                val lastIdx = indices.size - 1
-                indices.sortedDescending().forEachIndexed { idx, lineIdxWillDel ->
-                    println("delidx: $lineIdxWillDel")
-                    // 仅当删除最后一个条目时更新一次样式
-                    updateStylesAfterDeleteLine(baseFields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState)
-                }
+            // if deleted lines count more than left lines, then  re-analyze syntax highlight
+            // else deleted lines
+            if(newFields.size <= indices.size) {
+                codeEditor?.analyze(newState)
+            }else {
+                updateStyles { baseStyles, baseFields ->
+                    // 降序删除不用算索引偏移
+                    // delete current line
+                    val lastIdx = indices.size - 1
+                    indices.sortedDescending().forEachIndexed { idx, lineIdxWillDel ->
+                        // 仅当删除最后一个条目时更新一次样式
+                        updateStylesAfterDeleteLine(baseFields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState)
+                    }
 
-                // set temporary styles to new state
-                newState.temporaryStyles = baseStyles
+                    // set temporary styles to new state
+                    newState.temporaryStyles = baseStyles
+                }
             }
 
             onChanged(newState, true, true)
