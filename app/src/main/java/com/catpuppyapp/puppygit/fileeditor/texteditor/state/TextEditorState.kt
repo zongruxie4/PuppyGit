@@ -2179,7 +2179,11 @@ class TextEditorState private constructor(
         val lang = codeEditor?.myLang
         if(lang != null) {
             val act = {
-                lang.analyzeManager.delete(start, end, selectedText)
+                if(baseFields.isEmpty()) {
+                    codeEditor.analyze(newTextEditorState)
+                }else {
+                    lang.analyzeManager.delete(start, end, selectedText)
+                }
             }
 
             codeEditor.sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis, newTextEditorState, act))
@@ -2258,7 +2262,7 @@ class TextEditorState private constructor(
         if(lang != null) {
             val act = {
                 if(needReRunAnalyze) {
-                    codeEditor.analyze(editorState = newTextEditorState)
+                    codeEditor.analyze(newTextEditorState)
                 }else {
                     lang.analyzeManager.insert(start, end, selectedText)
                 }

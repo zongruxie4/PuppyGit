@@ -126,7 +126,7 @@ class MyCodeEditor(
         }
     }
 
-    fun analyze(force: Boolean = false, editorState: TextEditorState = this.editorState.value) {
+    fun analyze(editorState: TextEditorState = this.editorState.value, force: Boolean = false) {
         val plScope = plScope.value
         // no highlights or not supported
         if(SettingsUtil.isEditorSyntaxHighlightEnabled().not() || PLScopes.scopeInvalid(plScope)) {
