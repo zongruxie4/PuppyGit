@@ -30,6 +30,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.catpuppyapp.puppygit.codeeditor.PLFont
 import com.catpuppyapp.puppygit.compose.DisableSoftKeyboard
 import com.catpuppyapp.puppygit.dev.bug_Editor_WrongUpdateEditColumnIdx_Fixed
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
@@ -110,8 +111,11 @@ internal fun MyTextField(
                 if (it.text.contains('\n')) onContainNewLine(it) else onUpdateText(it)
             },
             //字体样式:字体颜色、字体大小、背景颜色等
-            textStyle = textStyle.copy(fontSize = fontSize.sp, color = fontColor,
-                background = bgColor
+            textStyle = textStyle.copy(
+                fontSize = fontSize.sp,
+                color = fontColor,
+                background = bgColor,
+                fontFamily = PLFont.codeFont,
             ),
             //光标颜色
             cursorBrush = SolidColor(if(inDarkTheme) Color.LightGray else Color.Black),
