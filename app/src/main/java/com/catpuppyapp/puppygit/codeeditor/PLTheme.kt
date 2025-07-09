@@ -9,12 +9,16 @@ import org.eclipse.tm4e.core.registry.IThemeSource
 object PLTheme {
     // follow app theme
     private val AUTO = ""
-    private val THEME_DARK = "darcula"
+//    private val THEME_DARK = "darcula"
+    private val THEME_DARK = "solarized_dark"
+//    private val THEME_DARK = "abyss"
     private val THEME_LIGHT = "quietlight"
+//    private val THEME_LIGHT = "solarized_dark"
 
     val THEMES = listOf(THEME_DARK, THEME_LIGHT)
 
     val BG_DARK = Color(0xFF131313)
+//    val BG_DARK = Color(0xFF002B36)  // solarized dark, default, blue
     val BG_LIGHT = Color(0xFFF7F7F7)
 //    val current = mutableStateOf(AUTO)
 //
