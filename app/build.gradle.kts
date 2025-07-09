@@ -128,12 +128,20 @@ android {
 }
 
 dependencies {
-    implementation(platform("io.github.Rosemoe.sora-editor:bom:0.23.6"))
-    implementation("io.github.Rosemoe.sora-editor:editor")
-    implementation("io.github.Rosemoe.sora-editor:language-textmate")
+    //TODO move dependency versions to libs.versions.toml file
+
+    // start: sora editor
+//    implementation(platform("io.github.Rosemoe.sora-editor:bom:0.23.6"))
+//    implementation("io.github.Rosemoe.sora-editor:editor")
+//    implementation("io.github.Rosemoe.sora-editor:language-textmate")
 //    implementation("io.github.Rosemoe.sora-editor:language-treesitter")
 //    implementation("io.github.Rosemoe.sora-editor:language-java")
+    implementation("org.eclipse.jdt:org.eclipse.jdt.annotation:2.3.100")
+    implementation("org.jruby.joni:joni:2.2.6")
+    implementation("com.google.code.gson:gson:2.13.1")
+    implementation("org.snakeyaml:snakeyaml-engine:2.9")
 
+    // end: sora editor
 
 
     // start: temporary markdown dependencies, remove when 'compose-markdown' support custom coilStore(for load image from relative path)

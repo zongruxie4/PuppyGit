@@ -23,7 +23,6 @@ import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver
 import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.ContentReference
-import io.github.rosemoe.sora.widget.CodeEditor
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
