@@ -2189,14 +2189,15 @@ class TextEditorState private constructor(
             baseFields.removeAt(i)
         }
 
-        MyLog.d(TAG, "#$funName: newState fields size=${newTextEditorState.fields.size}, baseFields.size=${baseFields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
-        if(baseFields.isEmpty()) {
+        MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fileds.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
+
+        if(ignoreThis.not() && (baseFields.isEmpty() || (fields.size == 1 && fields[0].value.text.isBlank()))) {
             codeEditor?.analyze(newTextEditorState)
             return
         }
 
 //        println("baseFields[insertIndex].value.text: ${baseFields.getOrNull(end.line)?.value?.text}")
-        MyLog.d(TAG, "#$funName: will delete range: start=$start, end=$end")
+//        MyLog.d(TAG, "#$funName: will delete range: start=$start, end=$end")
 
         // style will update spans
         stylesResult.styles.adjustOnDelete(start, end)
@@ -2222,9 +2223,9 @@ class TextEditorState private constructor(
         insertedContent: String,
         newTextEditorState: TextEditorState
     ) {
-        val needReRunAnalyze = baseFields.isEmpty()
+        val funName = "updateStylesAfterInsertLine"
 
-        if(needReRunAnalyze) {
+        if(ignoreThis.not() && (baseFields.isEmpty() || (fields.size == 1 && fields[0].value.text.isBlank()))) {
             codeEditor?.analyze(newTextEditorState)
             return
         }
@@ -2240,9 +2241,7 @@ class TextEditorState private constructor(
             insertedContent = insertedContent + "\n"
             Triple(startLineIndex, true, 0)
         }
-        println("inseetrStartLined333333333: $startLineIndex")
 
-        println("insertedContent: ```$insertedContent```")
         val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd)
 //        val endIdxOfText = getIndexOfText(baseFields, endLineIndexInclusive, trueStartFalseEnd = false)
         if(startIdxOfText < 0) {
@@ -2250,7 +2249,6 @@ class TextEditorState private constructor(
             return
         }
 
-        println("startIdxOfText $startIdxOfText")
 
 
         // 这个LineChangeType.NEW可有可无，因为这个baseFields实际不是textstate应用的state
@@ -2274,9 +2272,9 @@ class TextEditorState private constructor(
 //            }
 //        }
 
-        println("baseFields[insertIndex].value.text.length: ${baseFields[insertIndex].value.text.length}")
-        println("starttttttttttttt: $start")
-        println("enddddddddddddd: $end")
+        MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fileds.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
+
+
         // style will update spans
         stylesResult.styles.adjustOnInsert(start, end)
 
