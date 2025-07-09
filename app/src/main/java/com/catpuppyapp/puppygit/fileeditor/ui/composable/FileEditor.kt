@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import com.catpuppyapp.puppygit.codeeditor.PLTheme
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.MarkDownContainer
@@ -333,6 +334,7 @@ fun FileEditor(
                         Modifier
                     }else {
                         Modifier
+                            .background(PLTheme.getBackground(inDarkTheme))
                             // listen keyboard pressed for TextEditor
                             // redo and undo shortcuts supports as default by BasicTextField,
                             //  so here must use `onPreviewKeyEvent` rather than `onKeyEvent` to intercept the key events

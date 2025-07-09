@@ -1,6 +1,6 @@
 package com.catpuppyapp.puppygit.codeeditor
 
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.model.ThemeModel
@@ -14,6 +14,8 @@ object PLTheme {
 
     val THEMES = listOf(THEME_DARK, THEME_LIGHT)
 
+    val BG_DARK = Color(0xFF131313)
+    val BG_LIGHT = Color(0xFFF7F7F7)
 //    val current = mutableStateOf(AUTO)
 //
 //    fun init(inDarkTheme: Boolean) {
@@ -28,6 +30,8 @@ object PLTheme {
         val theme = if(inDarkTheme) THEME_DARK else THEME_LIGHT
         ThemeRegistry.getInstance().setTheme(theme)
     }
+
+    fun getBackground(inDarkTheme: Boolean) = if(inDarkTheme) BG_DARK else BG_LIGHT
 
 
     /**
