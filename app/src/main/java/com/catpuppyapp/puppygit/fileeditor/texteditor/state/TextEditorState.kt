@@ -2149,12 +2149,12 @@ class TextEditorState private constructor(
         newTextEditorState: TextEditorState,
         endLineIndexInclusive: Int = startLineIndex,
     ) {
-        val endLineIndexInclusiveIsLastIndex = endLineIndexInclusive >= baseFields.lastIndex
+        val isDelLastLine = endLineIndexInclusive >= baseFields.lastIndex
         val endExclusive =  endLineIndexInclusive + 1
-        val endIndex = if(endLineIndexInclusiveIsLastIndex) endLineIndexInclusive else endExclusive
+        val endIndex = if(isDelLastLine) endLineIndexInclusive else endExclusive
 
         val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = true)
-        val endIdxOfText = getIndexOfText(baseFields, endIndex, trueStartFalseEnd = !endLineIndexInclusiveIsLastIndex)
+        val endIdxOfText = getIndexOfText(baseFields, endIndex, trueStartFalseEnd = !isDelLastLine)
         if(startIdxOfText == -1 || endIdxOfText == -1) {
             return
         }
@@ -2162,31 +2162,31 @@ class TextEditorState private constructor(
         val start = CharPosition(startLineIndex, 0, startIdxOfText)
         // +1 for '\n'
         val lastLineLen = baseFields.getOrNull(endLineIndexInclusive)?.value?.text?.length ?: 0
-        val endColumn = if(endLineIndexInclusiveIsLastIndex) lastLineLen else 0
+        val endColumn = if(isDelLastLine) lastLineLen else 0
         val end = CharPosition(endIndex, endColumn, endIdxOfText)
 
         for(i in IntRange(startLineIndex, endLineIndexInclusive).reversed()) {
             baseFields.removeAt(i)
         }
 
-        println("baseFields[insertIndex].value.text: ${baseFields.getOrNull(end.line)?.value?.text}")
+        if(baseFields.isEmpty()) {
+            codeEditor?.analyze(newTextEditorState)
+            return
+        }
+
+//        println("baseFields[insertIndex].value.text: ${baseFields.getOrNull(end.line)?.value?.text}")
         println("ddddddddddddddddddddstart: $start")
         println("dddddddddddddddddend: $end")
 
         // style will update spans
-        if(stylesResult.styles.spans.lineCount > end.line) {
-            stylesResult.styles.adjustOnDelete(start, end)
-        }
+        stylesResult.styles.adjustOnDelete(start, end)
 
-        val selectedText = getSelectedText(IntRange(startLineIndex, endLineIndexInclusive).toList(), keepEndLineBreak = true)
+
+        val selectedText = getSelectedText(IntRange(startLineIndex, endLineIndexInclusive).toList(), keepEndLineBreak = !isDelLastLine)
         val lang = codeEditor?.myLang
         if(lang != null) {
             val act = {
-                if(baseFields.isEmpty()) {
-                    codeEditor.analyze(newTextEditorState)
-                }else {
-                    lang.analyzeManager.delete(start, end, selectedText)
-                }
+                lang.analyzeManager.delete(start, end, selectedText)
             }
 
             codeEditor.sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis, newTextEditorState, act))
@@ -2204,15 +2204,15 @@ class TextEditorState private constructor(
     ) {
         val needReRunAnalyze = baseFields.isEmpty()
 
+        if(needReRunAnalyze) {
+            codeEditor?.analyze(newTextEditorState)
+            return
+        }
+
         val rawInsertedContent = insertedContent
         var insertedContent = insertedContent
-//        val endLineIndexInclusive = startLineIndex
-        val rawStartIndex = startLineIndex
-        println("inseetrStartLine: $startLineIndex")
         //如果越界，可能最后一行已经删除了，这时追加内容到当前最后一行末尾；若索引有效，则追加到目标行的开头
-        val (startLineIndex, trueStartFalseEnd, columnIndex) = if(baseFields.isEmpty()) {
-            Triple(0, true, 0)
-        } else if(startLineIndex >= baseFields.size) {
+        val (startLineIndex, trueStartFalseEnd, columnIndex) = if(startLineIndex >= baseFields.lastIndex) {
             // 如果追加到最后一行末尾，需要前置个换行符
             insertedContent = "\n" + insertedContent
             Triple(baseFields.lastIndex, false, baseFields.last().value.text.length)
@@ -2234,17 +2234,17 @@ class TextEditorState private constructor(
 
 
         // 这个LineChangeType.NEW可有可无，因为这个baseFields实际不是textstate应用的state
-        var insertIndex = rawStartIndex
+        var insertIndex = startLineIndex
         rawInsertedContent.lines().forEachBetter {
             baseFields.add(insertIndex++, TextFieldState(value = TextFieldValue(it)))
         }
 
         val start = CharPosition(startLineIndex, columnIndex, startIdxOfText)
+
         insertIndex--
         val endAtLastLine = insertIndex == baseFields.lastIndex
         val endIndex = if(endAtLastLine) insertIndex else (insertIndex + 1);
         val endColumnIndex = if(endAtLastLine) baseFields.lastOrNull()?.value?.text?.length ?: 0 else 0
-        // +1 for '\n'
         val end = CharPosition(endIndex, endColumnIndex, startIdxOfText + insertedContent.length)
 //        val end = baseFields.getOrNull(insertIndex).let {
 //            if(it != null) {
@@ -2264,11 +2264,7 @@ class TextEditorState private constructor(
         val lang = codeEditor?.myLang
         if(lang != null) {
             val act = {
-                if(needReRunAnalyze) {
-                    codeEditor.analyze(newTextEditorState)
-                }else {
-                    lang.analyzeManager.insert(start, end, selectedText)
-                }
+                lang.analyzeManager.insert(start, end, selectedText)
             }
 
             println("newTextEditorState.fieldsId = ${newTextEditorState.fieldsId}")
