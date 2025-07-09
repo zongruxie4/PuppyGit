@@ -1,6 +1,20 @@
 {
   "languages": [
     {
+      "grammar": "textmate/go/syntaxes/go.tmLanguage.json",
+      "name": "go",
+      "scopeName": "source.go",
+      "languageConfiguration": "textmate/go/language-configuration.json"
+    },
+{
+      "grammar": "textmate/cpp/syntaxes/cpp.tmLanguage.json",
+      "name": "cpp",
+      "scopeName": "source.cpp",
+      "languageConfiguration": "textmate/cpp/language-configuration.json"
+    },
+
+
+    {
       "grammar": "textmate/java/syntaxes/java.tmLanguage.json",
       "name": "java",
       "scopeName": "source.java",
