@@ -97,6 +97,7 @@ class TextEditorState private constructor(
 ) {
     private val lock = Mutex()
 
+    private var stylesAppliedByView = false
 
     fun copy(
         fieldsId: String = this.fieldsId,
@@ -2026,8 +2027,9 @@ class TextEditorState private constructor(
                 val filedForCheckApplied = fields.getOrNull(0) ?: return@sl
 
                 val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
-                // already applied spans
+                // maybe already applied spans, but can't promise the view will refresh, so may need call onChange
                 if(sh?.get(filedForCheckApplied.syntaxHighlightId) != null) {
+                    // due to checked unique id at before, so will not re-apply same style
                     codeEditor?.editorState?.value?.let {
                         if(it.fieldsId == stylesResult.fieldsId) {
                             onChanged(it.copy(temporaryStyles = stylesResult), null, false)
@@ -2111,15 +2113,18 @@ class TextEditorState private constructor(
         val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
         val annotatedStringResult = sh?.get(raw.syntaxHighlightId)
         return if(annotatedStringResult == null || annotatedStringResult.inDarkTheme != Theme.inDarkTheme) {
-            // styles exists, but haven't annotated string, maybe styles not applied
-//            val stylesResult = tryGetStylesResult()
-//            if(stylesResult != null && stylesResult.inDarkTheme == Theme.inDarkTheme) {
-//                doJobThenOffLoading {
-//                    applySyntaxHighlighting(fieldsId, stylesResult)
-//                }
-//            }
+            if(stylesAppliedByView.not()) {
+                stylesAppliedByView = true
+                // styles exists, but haven't annotated string, maybe styles not applied
+                val stylesResult = tryGetStylesResult()
+                if(stylesResult != null && stylesResult.inDarkTheme == Theme.inDarkTheme) {
+                    doJobThenOffLoading {
+                        applySyntaxHighlighting(fieldsId, stylesResult)
+                    }
+                }
 
 //            MyLog.d(TAG, "#$funName: stylesResult.fieldsId=${stylesResult?.fieldsId}, spansCount=${stylesResult?.styles?.spans?.lineCount}")
+            }
 
             raw
         }else {
