@@ -24,7 +24,6 @@ import io.github.rosemoe.sora.text.ContentReference
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -55,23 +54,67 @@ class MyCodeEditor(
     fun genNewStyleDelegate(editorState: TextEditorState?) = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap, editorState)
 //    var editor: CodeEditor? = null
 
-    init {
-        try {
+    companion object {
+        var inited = false
 
-            setupTextmate(appContext)
+        // only need init once
+        fun doInit(appContext: Context) {
+            if(inited) {
+                return
+            }
 
-            colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
+            inited = true
 
-            colorScheme.applyDefault()
-
-            // for clear when Activity destroy
-            AppModel.editorCache.add(this)
-
-            analyze()
-        }catch (e: Exception) {
-            MyLog.e(TAG, "#init err: ${e.stackTraceToString()}")
+            try {
+                setupTextmate(appContext)
+            }catch (e: Exception) {
+                inited = false
+                MyLog.e(TAG, "$TAG#doInit err: ${e.stackTraceToString()}")
+            }
         }
+
+
+        /**
+         * Setup Textmate. Load our grammars and themes from assets
+         */
+        private fun setupTextmate(appContext: Context) {
+            // Add assets file provider so that files in assets can be loaded
+            FileProviderRegistry.getInstance().addFileProvider(
+                AssetsFileResolver(
+                    appContext.assets // use application context
+                )
+            )
+
+            PLTheme.loadDefaultTextMateThemes()
+            loadDefaultTextMateLanguages()
+        }
+
+
+
+        /**
+         * Load default languages from JSON configuration
+         *
+         * @see loadDefaultLanguagesWithDSL Load by Kotlin DSL
+         */
+        private /*suspend*/ fun loadDefaultTextMateLanguages() /*= withContext(Dispatchers.Main)*/ {
+            GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
+        }
+
     }
+
+    init {
+        doInit(appContext)
+
+        colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
+
+        colorScheme.applyDefault()
+
+        // for clear when Activity destroy
+        AppModel.editorCache.add(this)
+
+        analyze()
+    }
+
 
 //    override fun release() {
 //        super.release()
@@ -135,7 +178,6 @@ class MyCodeEditor(
 
         val scopeChanged = plScope != languageScope
         languageScope = plScope
-
 
 
         // invalid state, maybe just created, but never used
@@ -239,32 +281,6 @@ class MyCodeEditor(
 
 
 
-
-    /**
-     * Setup Textmate. Load our grammars and themes from assets
-     */
-    private fun setupTextmate(appContext: Context) {
-        // Add assets file provider so that files in assets can be loaded
-        FileProviderRegistry.getInstance().addFileProvider(
-            AssetsFileResolver(
-                appContext.assets // use application context
-            )
-        )
-
-        PLTheme.loadDefaultTextMateThemes()
-        loadDefaultTextMateLanguages()
-    }
-
-
-
-    /**
-     * Load default languages from JSON configuration
-     *
-     * @see loadDefaultLanguagesWithDSL Load by Kotlin DSL
-     */
-    private /*suspend*/ fun loadDefaultTextMateLanguages() /*= withContext(Dispatchers.Main)*/ {
-        GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
-    }
 
 
 

@@ -148,7 +148,7 @@ public class TextMateLanguage extends EmptyLanguage {
         var grammar = grammarRegistry.findGrammar(languageScopeName);
 
         if (grammar == null) {
-            throw new IllegalArgumentException(String.format("Language with %s scope name not found", grammarRegistry));
+            throw new IllegalArgumentException(String.format("Language with scope name '%s' not found", languageScopeName));
         }
 
         var languageConfiguration = grammarRegistry.findLanguageConfiguration(grammar.getScopeName());
