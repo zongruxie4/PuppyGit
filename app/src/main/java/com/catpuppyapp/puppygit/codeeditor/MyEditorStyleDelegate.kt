@@ -29,7 +29,7 @@ class MyEditorStyleDelegate(
 //            return
 //        }
 
-        if(editorState == null) {
+        if(editorState == null || editorState.fieldsId.isBlank()) {
             return
         }
 

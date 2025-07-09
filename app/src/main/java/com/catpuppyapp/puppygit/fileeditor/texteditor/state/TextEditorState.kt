@@ -2003,6 +2003,11 @@ class TextEditorState private constructor(
     suspend fun applySyntaxHighlighting(expectedFieldsId:String, stylesResult: StylesResult) {
         val funName = "applySyntaxHighlighting"
         MyLog.d(TAG, "#$funName: stylesResult expectedFieldsId=$expectedFieldsId")
+
+        if(expectedFieldsId.isBlank()) {
+            return
+        }
+
         val styles = stylesResult.styles
         val inDarkTheme = stylesResult.inDarkTheme
         val isForThisInstance = expectedFieldsId == fieldsId && inDarkTheme == Theme.inDarkTheme

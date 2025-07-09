@@ -287,7 +287,7 @@ data class StylesResult(
     val styles: Styles,
     val from: StylesResultFrom,
     val uniqueId: String = getRandomUUID(),
-    val fieldsId:String = "",
+    val fieldsId:String,
 )
 
 enum class StylesResultFrom {
