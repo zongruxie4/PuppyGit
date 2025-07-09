@@ -176,8 +176,8 @@ class MyCodeEditor(
 
         this.let {
 //            clearStylesChannel()
-            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = true, editorState, {}))
-            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
+//            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = true, editorState, {}))
+//            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
 
 
             val autoComplete = false
@@ -192,6 +192,7 @@ class MyCodeEditor(
 
             lang.analyzeManager.setReceiver(genNewStyleDelegate(editorState))
             lang.analyzeManager.reset(ContentReference(Content(text)), Bundle())
+            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
 
 //            it.setEditorLanguage(lang)
 //            it.setText(text)

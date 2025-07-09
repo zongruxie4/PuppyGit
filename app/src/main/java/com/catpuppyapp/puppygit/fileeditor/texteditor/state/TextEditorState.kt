@@ -2281,7 +2281,6 @@ class TextEditorState private constructor(
                 lang.analyzeManager.insert(start, end, selectedText)
             }
 
-            println("newTextEditorState.fieldsId = ${newTextEditorState.fieldsId}")
             codeEditor.sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis, newTextEditorState, act))
         }
     }
