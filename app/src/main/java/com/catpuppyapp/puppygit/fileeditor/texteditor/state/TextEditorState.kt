@@ -455,7 +455,7 @@ class TextEditorState private constructor(
                 focusingLineIdx = sfiRet.focusingLineIdx
             )
 
-            updateStyles { baseStyles, baseFields ->
+            updateStyles(newState) { baseStyles, baseFields ->
                 // delete current line
                 updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
 
@@ -611,7 +611,7 @@ class TextEditorState private constructor(
             )
 
             if(contentChanged) {
-                updateStyles { baseStyles, baseFields ->
+                updateStyles(newState) { baseStyles, baseFields ->
                     // delete current line
                     updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
 
@@ -634,8 +634,8 @@ class TextEditorState private constructor(
         }
     }
 
-    fun updateStyles(act: (baseStyles: StylesResult, baseFields: MutableList<TextFieldState>) -> Unit) {
-        val baseStyles = copyStyles()
+    fun updateStyles(nextState: TextEditorState, act: (baseStyles: StylesResult, baseFields: MutableList<TextFieldState>) -> Unit) {
+        val baseStyles = copyStyles(nextState)
         if(baseStyles != null) {
             act(baseStyles, fields.toMutableList())
         }
@@ -758,7 +758,7 @@ class TextEditorState private constructor(
 
             )
 
-            updateStyles { baseStyles, baseFields ->
+            updateStyles(newState) { baseStyles, baseFields ->
                 val insertIndex = if(trueAppendFalseReplace) {
                     targetIndex + 1
                 } else {
@@ -846,7 +846,7 @@ class TextEditorState private constructor(
 
 
 
-            updateStyles { baseStyles, baseFields ->
+            updateStyles(newState) { baseStyles, baseFields ->
                 // delete current and previous lines
                 updateStylesAfterDeleteLine(baseFields, baseStyles, toLineIdx, ignoreThis = true, newState, endLineIndexInclusive = targetIndex)
 
@@ -1415,7 +1415,7 @@ class TextEditorState private constructor(
             if(newFields.size <= indices.size) {
                 codeEditor?.analyze(newState)
             }else {
-                updateStyles { baseStyles, baseFields ->
+                updateStyles(newState) { baseStyles, baseFields ->
                     // 降序删除不用算索引偏移
                     // delete current line
                     val lastIdx = indices.size - 1
@@ -2143,12 +2143,12 @@ class TextEditorState private constructor(
     }
 
 
-    fun copyStyles(): StylesResult? {
+    fun copyStyles(nextState: TextEditorState): StylesResult? {
         val cachedStyle = tryGetStylesResult()
 //        if(cachedStyle == null || cachedStyle.fieldsId != fieldsId) {
         if(cachedStyle == null) {
-            MyLog.d(TAG, "cachedStyle is null, will re-run analyze")
-            codeEditor?.analyze()
+            MyLog.d(TAG, "cachedStyle is null, will re-run analyze for next state")
+            codeEditor?.analyze(nextState)
             return null
         }
 

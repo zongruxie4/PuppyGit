@@ -89,7 +89,6 @@ class MyCodeEditor(
     }
 
     fun obtainCachedStyles(): StylesResult? {
-        println("outter filesId: ${editorState.value.fieldsId}")
         val cachedStyles = stylesMap.get(editorState.value.fieldsId)
         return if(cachedStyles != null && cachedStyles.inDarkTheme == Theme.inDarkTheme) {
             cachedStyles
@@ -148,7 +147,7 @@ class MyCodeEditor(
         // 检查是否有cached styles，有则直接应用
         if(!force && !scopeChanged) {
             val cachedStyles = obtainCachedStyles()
-            if(cachedStyles != null && cachedStyles.inDarkTheme == Theme.inDarkTheme) {
+            if(cachedStyles != null && cachedStyles.fieldsId == editorState.fieldsId && cachedStyles.inDarkTheme == Theme.inDarkTheme) {
                 // 会在 style receiver收到之后立刻apply，所以这里正常不需要再apply了，但内部会检测，如果已经applied，则不会重复applied，所以这里调用也无妨
                 doJobThenOffLoading {
                     editorState.applySyntaxHighlighting(editorState.fieldsId, cachedStyles)
