@@ -2109,7 +2109,12 @@ class TextEditorState private constructor(
     }
 
     fun tryGetStylesResult(): StylesResult? {
-        return temporaryStyles ?: codeEditor?.stylesMap?.get(fieldsId)
+        val tmpStyle = temporaryStyles
+        return if(tmpStyle == null || tmpStyle.fieldsId != fieldsId) {
+            codeEditor?.stylesMap?.get(fieldsId)
+        }else {
+            tmpStyle
+        }
     }
 
     fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
@@ -2122,7 +2127,7 @@ class TextEditorState private constructor(
                 stylesAppliedByView = true
                 // styles exists, but haven't annotated string, maybe styles not applied
                 val stylesResult = tryGetStylesResult()
-                if(stylesResult != null && stylesResult.inDarkTheme == Theme.inDarkTheme) {
+                if(stylesResult != null && stylesResult.fieldsId == fieldsId && stylesResult.inDarkTheme == Theme.inDarkTheme) {
                     doJobThenOffLoading {
                         applySyntaxHighlighting(fieldsId, stylesResult)
                     }
@@ -2139,10 +2144,10 @@ class TextEditorState private constructor(
 
 
     fun copyStyles(): StylesResult? {
-        println("in fieldsId: ${fieldsId}")
         val cachedStyle = tryGetStylesResult()
 //        if(cachedStyle == null || cachedStyle.fieldsId != fieldsId) {
         if(cachedStyle == null) {
+            MyLog.d(TAG, "cachedStyle is null, will re-run analyze")
             codeEditor?.analyze()
             return null
         }
@@ -2163,6 +2168,7 @@ class TextEditorState private constructor(
         newTextEditorState: TextEditorState,
         endLineIndexInclusive: Int = startLineIndex,
     ) {
+        val funName = "updateStylesAfterDeleteLine"
         val isDelLastLine = endLineIndexInclusive >= baseFields.lastIndex
         val endExclusive =  endLineIndexInclusive + 1
         val endIndex = if(isDelLastLine) endLineIndexInclusive else endExclusive
@@ -2183,14 +2189,14 @@ class TextEditorState private constructor(
             baseFields.removeAt(i)
         }
 
+        MyLog.d(TAG, "#$funName: newState fields size=${newTextEditorState.fields.size}, baseFields.size=${baseFields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
         if(baseFields.isEmpty()) {
             codeEditor?.analyze(newTextEditorState)
             return
         }
 
 //        println("baseFields[insertIndex].value.text: ${baseFields.getOrNull(end.line)?.value?.text}")
-        println("ddddddddddddddddddddstart: $start")
-        println("dddddddddddddddddend: $end")
+        MyLog.d(TAG, "#$funName: will delete range: start=$start, end=$end")
 
         // style will update spans
         stylesResult.styles.adjustOnDelete(start, end)
