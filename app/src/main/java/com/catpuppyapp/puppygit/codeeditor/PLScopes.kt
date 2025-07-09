@@ -10,10 +10,12 @@ object PLScopes {
     val AUTO = "AUTO_DETECTED"
 
     val HTML = "text.html.basic"
+    val JAVA = "source.java"
 
     val SCOPES = listOf(
         NONE,
         HTML,
+        JAVA,
 
     )
 
@@ -21,6 +23,10 @@ object PLScopes {
     fun guessScope(fileName: String):String {
         if(fileName.endsWith(".html") || fileName.endsWith(".htm")) {
             return HTML
+        }
+
+        if(fileName.endsWith(".java")) {
+            return JAVA
         }
 
         return NONE
