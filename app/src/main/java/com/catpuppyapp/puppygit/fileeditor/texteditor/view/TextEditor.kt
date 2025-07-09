@@ -42,19 +42,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.isCtrlPressed
-import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -76,7 +71,6 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.SelectionOption
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.screen.functions.getClipboardText
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.FileEditedPos
@@ -88,7 +82,6 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PatchUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.appendCutSuffix
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
@@ -1084,6 +1077,7 @@ fun TextEditor(
                                 .then(modifier)
                         ) {
                             MyTextField(
+                                idx = index,
                                 scrollIfInvisible = {
                                     scrollIfIndexInvisible(index)
                                 },
@@ -1231,6 +1225,45 @@ fun TextEditor(
                                         }catch (e:Exception) {
                                             Msg.requireShowLongDuration("#onDownFocus err: "+e.localizedMessage)
                                             MyLog.e(TAG, "#onDownFocus err: "+e.stackTraceToString())
+                                        }
+                                    }
+
+                                },
+                                onLeftPressed = cb@{ it, idx, headOrTail ->
+                                    if (lastScrollEvent.value?.isConsumed == false) return@cb
+
+                                    doJobThenOffLoading {
+                                        try {
+                                            textEditorState.moveCursor(
+                                                trueToLeftFalseRight = true,
+                                                it,
+                                                idx,
+                                                headOrTail = headOrTail,
+                                            )
+                                            if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
+                                        }catch (e:Exception) {
+                                            Msg.requireShowLongDuration("#onLeftPressed err: "+e.localizedMessage)
+                                            MyLog.e(TAG, "#onLeftPressed err: "+e.stackTraceToString())
+                                        }
+                                    }
+
+                                },
+                                onRightPressed = cb@{ it, idx, headOrTail ->
+                                    if (lastScrollEvent.value?.isConsumed == false) return@cb
+
+                                    doJobThenOffLoading {
+                                        try {
+                                            textEditorState.moveCursor(
+                                                trueToLeftFalseRight = false,
+                                                it,
+                                                idx,
+                                                headOrTail = headOrTail,
+
+                                            )
+                                            if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
+                                        }catch (e:Exception) {
+                                            Msg.requireShowLongDuration("#onRightPressed err: "+e.localizedMessage)
+                                            MyLog.e(TAG, "#onRightPressed err: "+e.stackTraceToString())
                                         }
                                     }
 

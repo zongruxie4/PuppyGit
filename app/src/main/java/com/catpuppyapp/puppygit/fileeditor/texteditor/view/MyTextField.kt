@@ -2,9 +2,9 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.view
 
 import android.view.KeyEvent.KEYCODE_DEL
 import android.view.KeyEvent.KEYCODE_DPAD_DOWN
+import android.view.KeyEvent.KEYCODE_DPAD_LEFT
+import android.view.KeyEvent.KEYCODE_DPAD_RIGHT
 import android.view.KeyEvent.KEYCODE_DPAD_UP
-import android.view.KeyEvent.KEYCODE_ENTER
-import android.view.KeyEvent.KEYCODE_TAB
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
@@ -22,8 +22,12 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextRange
@@ -43,6 +47,7 @@ private const val TAG = "MyTextField"
 
 @Composable
 internal fun MyTextField(
+    idx: Int,
     scrollIfInvisible:()->Unit,
     disableSoftKb:Boolean,
     readOnly:Boolean,
@@ -56,6 +61,8 @@ internal fun MyTextField(
     onFocus: () -> Unit,
     onUpFocus: () -> Unit,
     onDownFocus: () -> Unit,
+    onLeftPressed: (current: TextFieldState, idx:Int, toHeadOrTail:Boolean) -> Unit,
+    onRightPressed: (TextFieldState, Int, toHeadOrTail:Boolean) -> Unit,
     modifier: Modifier = Modifier,
     needShowCursorHandle:MutableState<Boolean>,
     lastEditedColumnIndexState:MutableIntState,
@@ -147,6 +154,22 @@ internal fun MyTextField(
                         return@onPreviewKeyEvent true
                     }
 
+                    if (onPreviewLeftKeyEvent(event, textFieldState) { onLeftPressed(textFieldState, idx, false) }) {
+                        return@onPreviewKeyEvent true
+                    }
+
+                    if (onPreviewRightKeyEvent(event, textFieldState) { onRightPressed(textFieldState, idx, false) }) {
+                        return@onPreviewKeyEvent true
+                    }
+
+                    if (onPreviewHomeKeyEvent(event, textFieldState) { onLeftPressed(textFieldState, idx, true) }) {
+                        return@onPreviewKeyEvent true
+                    }
+
+                    if (onPreviewEndKeyEvent(event, textFieldState) { onRightPressed(textFieldState, idx, true) }) {
+                        return@onPreviewKeyEvent true
+                    }
+
                     // even disable this, when new line '\n' added to text filed, will still split new line, so this is unnecessary
 //                val b4 = onPreviewEnterKeyEvent(event) { onAddNewLine(currentTextField.copy(text = insertNewLineAtCursor(value))) }
 //                if (b4) return@onPreviewKeyEvent true
@@ -233,29 +256,80 @@ private fun onPreviewDownKeyEvent(
     return true
 }
 
-private fun onPreviewTabKeyEvent(
+private fun onPreviewLeftKeyEvent(
     event: KeyEvent,
+    field: TextFieldState,
     invoke: () -> Unit
 ): Boolean {
     val isKeyDown = event.type == KeyEventType.KeyDown
     if (!isKeyDown) return false
 
-    val isTabKey = event.nativeKeyEvent.keyCode == KEYCODE_TAB
-    if (!isTabKey) return false
+    val isDownKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_LEFT
+    if (!isDownKey) return false
+
+    if(event.isCtrlPressed || event.isShiftPressed) return false
+
+    if(field.value.selection.collapsed.not()) return false
 
     invoke()
     return true
 }
 
-private fun onPreviewEnterKeyEvent(
+private fun onPreviewRightKeyEvent(
     event: KeyEvent,
+    field: TextFieldState,
+
     invoke: () -> Unit
 ): Boolean {
     val isKeyDown = event.type == KeyEventType.KeyDown
     if (!isKeyDown) return false
 
-    val isEnterKey = event.nativeKeyEvent.keyCode == KEYCODE_ENTER
+    val isDownKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_RIGHT
+    if (!isDownKey) return false
+
+    if(event.isCtrlPressed || event.isShiftPressed) return false
+
+    if(field.value.selection.collapsed.not()) return false
+
+    invoke()
+    return true
+}
+
+private fun onPreviewHomeKeyEvent(
+    event: KeyEvent,
+    field: TextFieldState,
+
+    invoke: () -> Unit
+): Boolean {
+    val isKeyDown = event.type == KeyEventType.KeyDown
+    if (!isKeyDown) return false
+
+    //好像监听 home和end在模拟器不管用
+    val isEnterKey = event.key == Key.MoveHome
     if (!isEnterKey) return false
+
+    if(event.isCtrlPressed || event.isShiftPressed) return false
+    if(field.value.selection.collapsed.not()) return false
+
+    invoke()
+    return true
+}
+
+private fun onPreviewEndKeyEvent(
+    event: KeyEvent,
+    field: TextFieldState,
+
+    invoke: () -> Unit
+): Boolean {
+    val isKeyDown = event.type == KeyEventType.KeyDown
+    if (!isKeyDown) return false
+
+    val isEnterKey = event.key == Key.MoveEnd
+    if (!isEnterKey) return false
+
+    if(event.isCtrlPressed || event.isShiftPressed) return false
+    if(field.value.selection.collapsed.not()) return false
+
 
     invoke()
     return true

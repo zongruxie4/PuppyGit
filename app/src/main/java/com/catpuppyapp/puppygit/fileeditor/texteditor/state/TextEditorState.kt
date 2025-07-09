@@ -18,7 +18,6 @@ import com.catpuppyapp.puppygit.codeeditor.StylesResultFrom
 import com.catpuppyapp.puppygit.codeeditor.StylesUpdateRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.Ret
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState.Companion.create
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
@@ -44,7 +43,6 @@ import com.catpuppyapp.puppygit.utils.tabToSpaces
 import io.github.rosemoe.sora.lang.styling.Span
 import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.lang.styling.TextStyle
-import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.text.CharPosition
 import io.github.rosemoe.sora.util.RendererUtils
 import kotlinx.coroutines.runBlocking
@@ -1548,6 +1546,20 @@ class TextEditorState private constructor(
             isContentEdited?.value = true
             editorPageIsContentSnapshoted?.value = false
 
+            updateStyles(newState) { baseStyles, baseFields ->
+                // 降序删除不用算索引偏移
+                // delete current line
+                val lastIdx = selectedIndices.size - 1
+                selectedIndices.forEachIndexed { idx, lineIdxWillDel ->
+                    // 仅当删除最后一个条目时更新一次样式
+                    updateStylesAfterDeleteLine(baseFields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState, keepLine = true)
+                }
+
+                // set temporary styles to new state
+                newState.temporaryStyles = baseStyles
+            }
+
+
             onChanged(newState, true, true)
         }
     }
@@ -1777,9 +1789,9 @@ class TextEditorState private constructor(
         focusingLineIdx: Int?,
         temporaryStyles: StylesResult? = codeEditor?.stylesMap?.let { it.get(fieldsId) ?: it.get(this.fieldsId) ?: this.temporaryStyles },
     ): TextEditorState {
-        if(temporaryStyles != null) {
-            MyLog.d(TAG, "temporaryStyles is not null")
-        }
+//        if(temporaryStyles != null) {
+//            MyLog.d(TAG, "temporaryStyles is not null")
+//        }
 
         return TextEditorState(
             fieldsId= fieldsId,
@@ -1960,7 +1972,8 @@ class TextEditorState private constructor(
         lock.withLock {
             val fields = fields
             val newFields = mutableListOf<TextFieldState>()
-            val targetIndices = targetIndices.toMutableList()
+//            val targetIndices = targetIndices.toMutableList()
+            val targetIndices = targetIndices
 
             fields.forEachIndexedBetter { i, f ->
                 val newF = if(targetIndices.contains(i)) {
@@ -1995,6 +2008,19 @@ class TextEditorState private constructor(
             isContentEdited?.value = true
             editorPageIsContentSnapshoted?.value = false
 
+            updateStyles(newState) { baseStyles, baseFields ->
+                val lastIdx = targetIndices.lastIndex
+                targetIndices.sortedDescending().forEachIndexed { idx, targetIndex ->
+                    // delete current line
+                    updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
+
+                    // add new content to current line
+                    updateStylesAfterInsertLine(baseFields, baseStyles, targetIndex, ignoreThis = idx != lastIdx, newState.fields.get(targetIndex).value.text, newState)
+                }
+
+                // set temporary styles to new state
+                newState.temporaryStyles = baseStyles
+            }
 
             onChanged(newState, true, true)
         }
@@ -2167,6 +2193,9 @@ class TextEditorState private constructor(
         ignoreThis: Boolean,
         newTextEditorState: TextEditorState,
         endLineIndexInclusive: Int = startLineIndex,
+
+        // clear content but keep line (\n)
+        keepLine: Boolean = false,
     ) {
         val funName = "updateStylesAfterDeleteLine"
         val isDelLastLine = endLineIndexInclusive >= baseFields.lastIndex
@@ -2183,13 +2212,36 @@ class TextEditorState private constructor(
         // +1 for '\n'
         val lastLineLen = baseFields.getOrNull(endLineIndexInclusive)?.value?.text?.length ?: 0
         val endColumn = if(isDelLastLine) lastLineLen else 0
-        val end = CharPosition(endIndex, endColumn, endIdxOfText)
-
-        for(i in IntRange(startLineIndex, endLineIndexInclusive).reversed()) {
-            baseFields.removeAt(i)
+        val end = if(keepLine) {
+            val field = baseFields.getOrNull(startLineIndex)
+            if(field == null) {
+                MyLog.w(TAG, "#$funName: startLIneIndex invalid: $startLineIndex, fields.size: ${baseFields.size}")
+                return
+            }
+            CharPosition(startLineIndex, field.value.text.length, startIdxOfText + field.value.text.length)
+        } else {
+            CharPosition(endIndex, endColumn, endIdxOfText)
         }
 
-        MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fileds.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
+        if(start == end) {
+            MyLog.w(TAG, "#$funName: start == end: $start")
+            return
+        }
+
+        for(i in IntRange(startLineIndex, endLineIndexInclusive).reversed()) {
+            // the fields in the baseFields will
+            // not use as next state,
+            // it just emulate real action
+            // for later condition check
+            if(keepLine) {  // only clear field but keep the line
+                val f = baseFields.getOrNull(i) ?: continue
+                baseFields[i] = f.copy(value = f.value.copy(""))
+            } else {  // remove the line
+                baseFields.removeAt(i)
+            }
+        }
+
+        MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fields.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
 
         if(ignoreThis.not() && (baseFields.isEmpty() || (fields.size == 1 && fields[0].value.text.isBlank()))) {
             codeEditor?.analyze(newTextEditorState)
@@ -2272,8 +2324,14 @@ class TextEditorState private constructor(
 //            }
 //        }
 
-        MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fileds.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
 
+        MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fields.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
+
+
+        if(start == end) {
+            MyLog.w(TAG, "#$funName: start == end: $start")
+            return
+        }
 
         // style will update spans
         stylesResult.styles.adjustOnInsert(start, end)
@@ -2316,6 +2374,47 @@ class TextEditorState private constructor(
         return charIndex + (if(lineIdx == baseFields.lastIndex) -1 else 0)
     }
 
+    suspend fun moveCursor(
+        trueToLeftFalseRight: Boolean,
+        textFieldState: TextFieldState,
+        idx: Int,
+        headOrTail: Boolean
+    ) {
+        if(isMultipleSelectionMode) {
+            return
+        }
+
+        if(idx < 0 || idx >= fields.size) {
+            return
+        }
+
+        lock.withLock {
+            val textRange = textFieldState.value.selection
+            if(textRange.collapsed.not()) {
+                return
+            }
+
+            val newTextRange = if(trueToLeftFalseRight) {
+                if(headOrTail) TextRange(0) else TextRange((textRange.start-1).coerceAtLeast(0))
+            }else {
+                if(headOrTail) TextRange(textFieldState.value.text.length) else TextRange((textRange.start+1).coerceAtMost(textFieldState.value.text.length))
+            }
+
+            val newFields = fields.toMutableList()
+            newFields[idx] = newFields[idx].copy(value = textFieldState.value.copy(selection = newTextRange))
+
+            val newState = internalCreate(
+                fields = newFields,
+                fieldsId = fieldsId,
+                selectedIndices = selectedIndices,
+                isMultipleSelectionMode = isMultipleSelectionMode,
+                focusingLineIdx = focusingLineIdx
+            )
+
+            onChanged(newState, null, false)
+
+        }
+    }
 
 
     companion object {
