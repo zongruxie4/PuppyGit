@@ -12,8 +12,6 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getRandomUUID
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import io.github.rosemoe.sora.lang.EmptyLanguage
-import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
@@ -40,9 +38,6 @@ class MyCodeEditor(
     val appContext: Context,
     val plScope: MutableState<String>,
     val editorState: CustomStateSaveable<TextEditorState>,
-    //除非样式分析执行特别慢，否则队列不会满，也不会阻塞线程，如果真的特别慢，或许文件特别大，最好禁用语法高亮
-    // except styles analyze very slow, else, the channel queue will not fullfill and will not block thread，if really very slow, may have large file, better disable syntax highlighting
-    val stylesUpdateRequestChannel: Channel<StylesUpdateRequest> = Channel(2000),
     var colorScheme: EditorColorScheme = EditorColorScheme(),
     var latestStyles: StylesResult? = null,
 ) { // TODO 测试不继承CodeEditor是否会报错？
@@ -85,7 +80,7 @@ class MyCodeEditor(
 
     fun release() {
         clearCache()
-        clearStylesChannel()
+//        clearStylesChannel()
     }
 
     fun clearCache() {
@@ -118,7 +113,8 @@ class MyCodeEditor(
             }else {
                 stylesUpdateRequest.targetEditorState
             }
-            // 这个可能导致问题，想象一下：为textEditorState实例1设置了receiver，然后执行分析，
+            // updated: 修改了 sora editor相关代码，现在在执行操作前先设置styles receiver就可确保大概率收到新样式的是当前操作执行前设置的receiver
+            // x 这个可能导致问题，想象一下：为textEditorState实例1设置了receiver，然后执行分析，
             //   收到结果前，又为textEditorState实例2设置了receiver，
             //   这时，textEditorState实例2就可能会收到1的分析结果，这个分析结果就会错误绑定到实例2，实例1就没样式了
             //   但是，及时如此，也比用channel靠谱。
@@ -127,7 +123,6 @@ class MyCodeEditor(
             //   不对，好像还是无法解决哪个styles的结果和哪个editor state实例关联的问题。。。。。。。
             myLang?.analyzeManager?.setReceiver(genNewStyleDelegate(targetEditorState))
             stylesUpdateRequest.act()
-            stylesUpdateRequestChannel.trySend(stylesUpdateRequest)
         }
     }
 
@@ -180,7 +175,7 @@ class MyCodeEditor(
         PLTheme.applyTheme(Theme.inDarkTheme)
 
         this.let {
-            clearStylesChannel()
+//            clearStylesChannel()
             sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = true, editorState, {}))
             sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
 
@@ -204,11 +199,11 @@ class MyCodeEditor(
         }
     }
 
-    private fun clearStylesChannel() {
-        stylesRequestLock.withLock {
-            while (stylesUpdateRequestChannel.tryReceive().isSuccess) {}
-        }
-    }
+//    private fun clearStylesChannel() {
+////        stylesRequestLock.withLock {
+//////            while (stylesUpdateRequestChannel.tryReceive().isSuccess) {}
+////        }
+//    }
 
 //    override fun setEditorLanguage(lang: Language?) {
 //        var lang = lang
