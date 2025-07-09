@@ -44,6 +44,7 @@ import io.github.rosemoe.sora.lang.styling.SpanFactory;
 import io.github.rosemoe.sora.lang.styling.Spans;
 import io.github.rosemoe.sora.lang.styling.Styles;
 import io.github.rosemoe.sora.lang.util.BaseAnalyzeManager;
+import io.github.rosemoe.sora.ppgit.MsgObj;
 import io.github.rosemoe.sora.text.CharPosition;
 import io.github.rosemoe.sora.text.Content;
 import io.github.rosemoe.sora.util.IntPair;
@@ -84,7 +85,9 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
     public void insert(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence insertedText) {
         if (thread != null) {
             increaseRunCount();
-            thread.offerMessage(MSG_MOD, new TextModification(IntPair.pack(start.line, start.column), IntPair.pack(end.line, end.column), insertedText));
+            Object data = new TextModification(IntPair.pack(start.line, start.column), IntPair.pack(end.line, end.column), insertedText);
+
+            thread.offerMessage(MSG_MOD, new MsgObj(getReceiver(), data));
         }
     }
 
@@ -92,12 +95,14 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
     public void delete(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence deletedText) {
         if (thread != null) {
             increaseRunCount();
-            thread.offerMessage(MSG_MOD, new TextModification(IntPair.pack(start.line, start.column), IntPair.pack(end.line, end.column), null));
+            Object data = new TextModification(IntPair.pack(start.line, start.column), IntPair.pack(end.line, end.column), null);
+            thread.offerMessage(MSG_MOD, new MsgObj(getReceiver(), data));
         }
     }
 
     @Override
     public void rerun() {
+        StyleReceiver styleReceiver = getReceiver();
         if (thread != null) {
             if (thread.isAlive()) {
                 thread.interrupt();
@@ -111,9 +116,9 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
             text.setUndoEnabled(false);
             thread = new LooperThread();
             thread.setName("AsyncAnalyzer-" + nextThreadId());
-            thread.offerMessage(MSG_INIT, text);
+            thread.offerMessage(MSG_INIT, new MsgObj(styleReceiver, text));
             increaseRunCount();
-            sendNewStyles(null);
+            sendNewStyles(null, styleReceiver);
             thread.start();
         }
     }
@@ -156,17 +161,15 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
         super.destroy();
     }
 
-    private void sendNewStyles(Styles styles) {
-        final var r = getReceiver();
-        if (r != null) {
-            r.setStyles(this, styles);
+    private void sendNewStyles(Styles styles, StyleReceiver stylesReceiver) {
+        if (stylesReceiver != null) {
+            stylesReceiver.setStyles(this, styles);
         }
     }
 
-    private void sendUpdate(Styles styles, int startLine, int endLine) {
-        final var r = getReceiver();
-        if (r != null) {
-            r.updateStyles(this, styles, new SequenceUpdateRange(startLine, endLine));
+    private void sendUpdate(Styles styles, int startLine, int endLine, StyleReceiver styleReceiver) {
+        if (styleReceiver != null) {
+            styleReceiver.updateStyles(this, styles, new SequenceUpdateRange(startLine, endLine));
         }
     }
 
@@ -431,7 +434,7 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
         LockedSpans spans;
         CodeBlockAnalyzeDelegate delegate = new CodeBlockAnalyzeDelegate(this);
 
-        public void offerMessage(int what, @Nullable Object obj) {
+        public void offerMessage(int what, MsgObj obj) {
             var msg = Message.obtain();
             msg.what = what;
             msg.obj = obj;
@@ -444,7 +447,9 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
             messageQueue.offer(msg);
         }
 
-        private void initialize() {
+        private void initialize(StyleReceiver styleReceiver) {
+            // get receiver before action execute, that can make sure the act sent to expected receiver when reciver may ofthen change
+            // 在执行操作前先获取receiver，这样可在经常替换receiver时尽可能把样式发送给操作关联的receiver
             styles = new Styles(spans = new LockedSpans());
             S state = getInitialState();
             var mdf = spans.modify();
@@ -462,24 +467,27 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
             styles.finishBuilding();
 
             if (!abort)
-                sendNewStyles(styles);
+                sendNewStyles(styles, styleReceiver);
         }
 
         public boolean handleMessage(@NonNull Message msg) {
             try {
+                MsgObj msgObj = (MsgObj) msg.obj;
+                StyleReceiver styleReceiver = msgObj.getStyleReceiver();
+
                 myRunCount = runCount;
                 delegate.reset();
                 switch (msg.what) {
                     case MSG_INIT:
-                        shadowed = (Content) msg.obj;
+                        shadowed = (Content) msgObj.getData();
                         if (!abort && !isInterrupted()) {
-                            initialize();
+                            initialize(styleReceiver);
                         }
                         break;
                     case MSG_MOD:
                         int updateStart = 0, updateEnd = 0;
                         if (!abort && !isInterrupted()) {
-                            var mod = (TextModification) msg.obj;
+                            var mod = (TextModification) msgObj.getData();
                             int startLine = IntPair.getFirst(mod.start);
                             int endLine = IntPair.getFirst(mod.end);
 
@@ -565,7 +573,7 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
                             styles.setSuppressSwitch(delegate.suppressSwitch);
                         }
                         if (!abort) {
-                            sendUpdate(styles, updateStart, updateEnd);
+                            sendUpdate(styles, updateStart, updateEnd, styleReceiver);
                         }
                         break;
                 }

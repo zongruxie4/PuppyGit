@@ -2100,7 +2100,7 @@ class TextEditorState private constructor(
 
     fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
         val funName = "obtainHighlightedTextField"
-        MyLog.d(TAG, "#$funName: fieldsId=$fieldsId")
+//        MyLog.d(TAG, "#$funName: fieldsId=$fieldsId")
         val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
         val annotatedStringResult = sh?.get(raw.syntaxHighlightId)
         return if(annotatedStringResult == null || annotatedStringResult.inDarkTheme != Theme.inDarkTheme) {

@@ -169,9 +169,10 @@ class MyCodeEditor(
         //执行分析
         // 用editorState.getAllText()获取已\n结尾的文件，这里不要直接读取文件，避免 /r/n，可能导致解析出的索引与editor state实际使用的不匹配
         val text = editorState.getAllText()
-        if(text.isEmpty()) {
-            return
-        }
+        // even text is empty, still need create language object
+//        if(text.isEmpty()) {
+//            return
+//        }
 
 //        println("text: $text")
 
