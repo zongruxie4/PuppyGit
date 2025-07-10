@@ -16,6 +16,8 @@ import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.codeeditor.StylesResult
 import com.catpuppyapp.puppygit.codeeditor.StylesResultFrom
 import com.catpuppyapp.puppygit.codeeditor.StylesUpdateRequest
+import com.catpuppyapp.puppygit.codeeditor.scopeInvalid
+import com.catpuppyapp.puppygit.codeeditor.scopeMatched
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
@@ -633,6 +635,10 @@ class TextEditorState private constructor(
     }
 
     fun updateStyles(nextState: TextEditorState, act: (baseStyles: StylesResult, baseFields: MutableList<TextFieldState>) -> Unit) {
+        if(codeEditor.scopeInvalid()) {
+            return
+        }
+
         val baseStyles = copyStyles(nextState)
         if(baseStyles != null) {
             act(baseStyles, fields.toMutableList())
@@ -2135,15 +2141,25 @@ class TextEditorState private constructor(
     }
 
     fun tryGetStylesResult(): StylesResult? {
+        if(codeEditor.scopeInvalid()) {
+            return null
+        }
+
         val tmpStyle = temporaryStyles
-        return if(tmpStyle == null || tmpStyle.fieldsId != fieldsId) {
+        val retStyle =  if(tmpStyle == null || tmpStyle.fieldsId != fieldsId || codeEditor.scopeMatched(tmpStyle.languageScope.scope).not()) {
             codeEditor?.stylesMap?.get(fieldsId)
         }else {
             tmpStyle
         }
+
+        return if(codeEditor.scopeMatched(retStyle?.languageScope?.scope)) retStyle else null
     }
 
     fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
+        if(codeEditor.scopeInvalid()) {
+            return raw
+        }
+
         val funName = "obtainHighlightedTextField"
 //        MyLog.d(TAG, "#$funName: fieldsId=$fieldsId")
         val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
@@ -2153,7 +2169,7 @@ class TextEditorState private constructor(
                 stylesAppliedByView = true
                 // styles exists, but haven't annotated string, maybe styles not applied
                 val stylesResult = tryGetStylesResult()
-                if(stylesResult != null && stylesResult.fieldsId == fieldsId && stylesResult.inDarkTheme == Theme.inDarkTheme) {
+                if(stylesResult != null && stylesResult.fieldsId == fieldsId && stylesResult.inDarkTheme == Theme.inDarkTheme && codeEditor.scopeMatched(stylesResult.languageScope.scope)) {
                     doJobThenOffLoading {
                         applySyntaxHighlighting(fieldsId, stylesResult)
                     }
@@ -2172,14 +2188,16 @@ class TextEditorState private constructor(
     fun copyStyles(nextState: TextEditorState): StylesResult? {
         val cachedStyle = tryGetStylesResult()
 //        if(cachedStyle == null || cachedStyle.fieldsId != fieldsId) {
-        if(cachedStyle == null) {
+        return if(cachedStyle == null) {
             MyLog.d(TAG, "cachedStyle is null, will re-run analyze for next state")
             codeEditor?.analyze(nextState)
-            return null
+
+            null
+        }else {
+            cachedStyle.copy(styles = Styles(cachedStyle.styles.spans), from = StylesResultFrom.TEXT_STATE, uniqueId = getRandomUUID(), fieldsId = fieldsId)
         }
 
 //        return cachedStyle.copy(styles = Styles(cachedStyle.styles.spans).apply { indentCountMode = cachedStyle.styles.indentCountMode }, from = StylesResultFrom.TEXT_STATE)
-        return cachedStyle.copy(styles = Styles(cachedStyle.styles.spans), from = StylesResultFrom.TEXT_STATE, uniqueId = getRandomUUID(), fieldsId = fieldsId)
     }
 
 

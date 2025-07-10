@@ -50,8 +50,7 @@ class MyCodeEditor(
 
     val stylesRequestLock = ReentrantLock(true)
 
-    fun genNewStyleDelegate(editorState: TextEditorState?) = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap, editorState)
-//    var editor: CodeEditor? = null
+    private fun genNewStyleDelegate(editorState: TextEditorState?) = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap, editorState, languageScope)
 
     companion object {
         var inited = false
@@ -327,6 +326,7 @@ data class StylesResult(
     val from: StylesResultFrom,
     val uniqueId: String = getRandomUUID(),
     val fieldsId:String,
+    val languageScope: PLScope,
 )
 
 enum class StylesResultFrom {
@@ -346,3 +346,7 @@ class StylesUpdateRequest(
     val targetEditorState: TextEditorState,
     val act:()->Unit,
 )
+
+fun MyCodeEditor?.scopeInvalid() = this == null || PLScope.scopeInvalid(languageScope.scope)
+
+fun MyCodeEditor?.scopeMatched(scope: String?) = this != null && scope != null && languageScope.scope == scope && !this.scopeInvalid()

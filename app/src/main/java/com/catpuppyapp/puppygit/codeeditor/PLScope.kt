@@ -206,7 +206,13 @@ enum class PLScope(val scope: String) {
 
         private fun guessScope(fileName: String) = guessScopeType(fileName).scope
 
-        fun scopeInvalid(plScope: String) = plScope == NONE.scope || plScope == AUTO.scope || plScope.isBlank() || !SCOPES.contains(plScope)
+        fun scopeInvalid(plScope: String?) :Boolean {
+            return plScope == null
+                    || plScope == NONE.scope
+                    || plScope == AUTO.scope
+                    || plScope.isBlank()
+                    || !SCOPES.contains(plScope)
+        }
 
 
         fun updatePlScopeIfNeeded(plScope: MutableState<PLScope>, fileName: String) {
