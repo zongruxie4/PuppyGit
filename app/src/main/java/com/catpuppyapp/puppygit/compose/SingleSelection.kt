@@ -18,6 +18,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
+
+private val defaultMinHeight = MyStyleKt.RadioOptions.minHeight
+
+
 /**
  * 左边一个圆圈的那种单选列表，适合条目不太多的选项，条目太多建议用dropdown list
  */
@@ -30,7 +34,7 @@ fun <T> SingleSelection(
     beforeShowItem:((idx:Int, T)->Unit)? = null, // run for each item before it rendering
     skip:(idx:Int, T)->Boolean = {idx, item -> false }, // will not show item if skip return true
     itemDescContext: (@Composable (idx:Int, T) ->Unit)? = null,
-    minHeight:Dp = MyStyleKt.RadioOptions.minHeight
+    minHeight:Dp = defaultMinHeight
 ) {
     Column(
         modifier = Modifier.selectableGroup()
@@ -44,41 +48,64 @@ fun <T> SingleSelection(
 
             val selected = selected(idx, item)
 
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = minHeight)
-                    .selectable(
-                        selected = selected,
-                        onClick = {
-                            onClick(idx, item)
-                        },
-                        role = Role.RadioButton
-                    )
-                    .padding(horizontal = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = selected,
-                    onClick = null // null recommended for accessibility with screenreaders
-                )
-
-                MySelectionContainer {
-                    Column {
-                        ScrollableRow {
-                            Text(
-                                text = text(idx, item),
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(start = 10.dp)
-                            )
-                        }
-
-                        itemDescContext?.invoke(idx, item)
-                    }
-                }
-
-            }
+            SingleSelectionItem(
+                idx = idx,
+                item = item,
+                selected = selected,
+                text = text,
+                onClick = onClick,
+                itemDescContext = itemDescContext,
+                minHeight = minHeight,
+            )
         }
     }
 
+}
+
+
+
+@Composable
+fun <T> SingleSelectionItem(
+    idx: Int,
+    item: T,
+    selected: Boolean,
+    text: (Int, T) -> String,
+    onClick: (Int, T) -> Unit,
+    itemDescContext: @Composable ((Int, T) -> Unit)? = null,
+    minHeight: Dp = defaultMinHeight,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = minHeight)
+            .selectable(
+                selected = selected,
+                onClick = {
+                    onClick(idx, item)
+                },
+                role = Role.RadioButton
+            )
+            .padding(horizontal = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = null // null recommended for accessibility with screenreaders
+        )
+
+        MySelectionContainer {
+            Column {
+                ScrollableRow {
+                    Text(
+                        text = text(idx, item),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+                }
+
+                itemDescContext?.invoke(idx, item)
+            }
+        }
+
+    }
 }

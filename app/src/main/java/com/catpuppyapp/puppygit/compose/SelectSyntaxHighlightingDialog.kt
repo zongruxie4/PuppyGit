@@ -1,14 +1,18 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.codeeditor.PLScope
+import com.catpuppyapp.puppygit.utils.UIHelper
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
+private val itemList = PLScope.SCOPES_NO_AUTO
 
 @Composable
 fun SelectSyntaxHighlightingDialog(
@@ -17,22 +21,40 @@ fun SelectSyntaxHighlightingDialog(
     onOK: (selectedScope: PLScope) -> Unit,
 ) {
 
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
     PlainDialog(onClose = onCancel) {
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(vertical = 20.dp, horizontal = 10.dp)
+        LazyColumn(
+            contentPadding = PaddingValues(vertical = 20.dp, horizontal = 10.dp),
+            state = listState
         ) {
-            SingleSelection(
-                itemList = PLScope.SCOPES_NO_AUTO,
-                selected = { idx, it -> plScope == it },
-                text = { idx, it -> it.name },
-                onClick = { idx, it ->
-                    onCancel()
-                    onOK(it)
-                },
-                minHeight = 60.dp
-            )
+            itemList.forEachIndexed { idx, it ->
+                item {
+                    SingleSelectionItem(
+                        idx = idx,
+                        item = it,
+                        selected = plScope == it,
+                        minHeight = 60.dp,
+                        text = { idx, it -> it.name },
+                        onClick = { idx, it ->
+                            onCancel()
+                            onOK(it)
+                        },
+                    )
+                }
+            }
+        }
+    }
+
+
+    LaunchedEffect(Unit) {
+        scope.launch {
+            delay(500)
+            val indexOf = itemList.indexOf(plScope)
+            if(indexOf != -1) {
+                UIHelper.scrollToItem(scope, listState, indexOf-3)
+            }
         }
     }
 }
