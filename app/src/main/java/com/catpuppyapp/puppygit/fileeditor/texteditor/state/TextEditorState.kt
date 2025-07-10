@@ -634,14 +634,21 @@ class TextEditorState private constructor(
         }
     }
 
-    fun updateStyles(nextState: TextEditorState, act: (baseStyles: StylesResult, baseFields: MutableList<TextFieldState>) -> Unit) {
+    fun updateStyles(
+        nextState: TextEditorState,
+        baseFields: List<TextFieldState>? = null,
+        act: (baseStyles: StylesResult, baseFields: MutableList<TextFieldState>) -> Unit
+    ) {
         if(codeEditor.scopeInvalid()) {
             return
         }
 
-        val baseStyles = copyStyles(nextState)
-        if(baseStyles != null) {
-            act(baseStyles, fields.toMutableList())
+        val baseStyles = copyStyles()
+        if(baseStyles == null) {
+            MyLog.d(TAG, "#updateStyles: Styles of current field '$fieldsId' not found, maybe not exists or theme/languageScop are not matched, will re-run analyze for next state")
+            codeEditor?.analyze(nextState)
+        }else {
+            act(baseStyles, (baseFields ?: fields).toMutableList())
         }
     }
 
@@ -1419,7 +1426,7 @@ class TextEditorState private constructor(
             if(newFields.size <= indices.size) {
                 codeEditor?.analyze(newState)
             }else {
-                updateStyles(newState) { baseStyles, baseFields ->
+                updateStyles(newState, baseFields) { baseStyles, baseFields ->
                     // 降序删除不用算索引偏移
                     // delete current line
                     val lastIdx = indices.size - 1
@@ -2146,12 +2153,17 @@ class TextEditorState private constructor(
         }
 
         val tmpStyle = temporaryStyles
+        // first check
         val retStyle =  if(tmpStyle == null || tmpStyle.fieldsId != fieldsId || codeEditor.scopeMatched(tmpStyle.languageScope.scope).not()) {
             codeEditor?.stylesMap?.get(fieldsId)
         }else {
             tmpStyle
         }
 
+        // finally check
+        // when reached here, `fieldsId` must matched,
+        // and the scope match check included null-check,
+        // so the condition check less then first check
         return if(codeEditor.scopeMatched(retStyle?.languageScope?.scope)) retStyle else null
     }
 
@@ -2185,19 +2197,13 @@ class TextEditorState private constructor(
     }
 
 
-    fun copyStyles(nextState: TextEditorState): StylesResult? {
-        val cachedStyle = tryGetStylesResult()
-//        if(cachedStyle == null || cachedStyle.fieldsId != fieldsId) {
-        return if(cachedStyle == null) {
-            MyLog.d(TAG, "cachedStyle is null, will re-run analyze for next state")
-            codeEditor?.analyze(nextState)
-
-            null
-        }else {
-            cachedStyle.copy(styles = Styles(cachedStyle.styles.spans), from = StylesResultFrom.TEXT_STATE, uniqueId = getRandomUUID(), fieldsId = fieldsId)
-        }
-
-//        return cachedStyle.copy(styles = Styles(cachedStyle.styles.spans).apply { indentCountMode = cachedStyle.styles.indentCountMode }, from = StylesResultFrom.TEXT_STATE)
+    fun copyStyles(): StylesResult? = tryGetStylesResult()?.let {
+        it.copy(
+            styles = Styles(it.styles.spans),
+            from = StylesResultFrom.TEXT_STATE,
+            uniqueId = getRandomUUID(),
+            fieldsId = fieldsId
+        )
     }
 
 
