@@ -86,6 +86,20 @@
     },
 
     {
+      "grammar": "textmate/javascript/syntaxes/javascriptreact.tmLanguage.json",
+      "name": "javascriptreact",
+      "scopeName": "source.js.jsx",
+      "languageConfiguration": "textmate/javascript/javascriptreact.language-configuration.json"
+    },
+
+    {
+      "grammar": "textmate/javascript/syntaxes/source.js.regexp.tmLanguage.plist",
+      "name": "js.regexp",
+      "scopeName": "source.js.regexp",
+      "languageConfiguration": "textmate/javascript/language-configuration.json"
+    },
+
+    {
       "grammar": "textmate/json/syntaxes/json.tmLanguage.json",
       "name": "json",
       "scopeName": "source.json",
@@ -98,6 +112,13 @@
       "scopeName": "source.kotlin",
       "languageConfiguration": "textmate/kotlin/language-configuration.json"
     },
+    {
+      "grammar": "textmate/less/syntaxes/less.tmLanguage.json",
+      "name": "less",
+      "scopeName": "source.css.less",
+      "languageConfiguration": "textmate/less/language-configuration.json"
+    },
+
     {
       "grammar": "textmate/lua/syntaxes/lua.tmLanguage.json",
       "name": "lua",
@@ -113,10 +134,44 @@
     },
 
     {
+      "name": "markdown-math",
+      "scopeName": "text.html.markdown.math",
+      "grammar": "textmate/markdown/syntaxes/markdown-math.tmLanguage.json",
+      "languageConfiguration": "textmate/markdown/language-configuration.json"
+    },
+
+    {
+      "name": "markdown.math.block",
+      "scopeName": "markdown.math.block",
+      "grammar": "textmate/markdown/syntaxes/markdown.math.block.tmLanguage.json",
+      "languageConfiguration": "textmate/markdown/language-configuration.json"
+    },
+
+    {
+      "name": "markdown.math.codeblock",
+      "scopeName": "markdown.math.codeblock",
+      "grammar": "textmate/markdown/syntaxes/markdown.math.codeblock.tmLanguage.json",
+      "languageConfiguration": "textmate/markdown/language-configuration.json"
+    },
+
+    {
+      "name": "markdown.math.inline",
+      "scopeName": "markdown.math.inline",
+      "grammar": "textmate/markdown/syntaxes/markdown.math.inline.tmLanguage.json",
+      "languageConfiguration": "textmate/markdown/language-configuration.json"
+    },
+
+    {
       "grammar": "textmate/perl/syntaxes/perl.tmLanguage.json",
       "name": "perl",
       "scopeName": "source.perl",
       "languageConfiguration": "textmate/perl/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/make/syntaxes/makefile.tmLanguage.json",
+      "name": "makefile",
+      "scopeName": "source.makefile",
+      "languageConfiguration": "textmate/make/language-configuration.json"
     },
     {
       "grammar": "textmate/php/syntaxes/php.tmLanguage.json",
@@ -137,6 +192,12 @@
       "languageConfiguration": "textmate/python/language-configuration.json"
     },
     {
+      "grammar": "textmate/python/syntaxes/source.regexp.python.tmLanguage.json",
+      "name": "python.regexp",
+      "scopeName": "source.regexp.python",
+      "languageConfiguration": "textmate/python/language-configuration.json"
+    },
+    {
       "grammar": "textmate/ruby/syntaxes/ruby.tmLanguage.json",
       "name": "ruby",
       "scopeName": "source.ruby",
@@ -149,10 +210,28 @@
       "languageConfiguration": "textmate/rust/language-configuration.json"
     },
     {
+      "grammar": "textmate/scss/syntaxes/scss.tmLanguage.json",
+      "name": "scss",
+      "scopeName": "source.css.scss",
+      "languageConfiguration": "textmate/scss/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/scss/syntaxes/source.sassdoc.tmLanguage.json",
+      "name": "sassdoc",
+      "scopeName": "source.sassdoc",
+      "languageConfiguration": "textmate/scss/language-configuration.json"
+    },
+    {
       "grammar": "textmate/shell/syntaxes/shell.tmLanguage.json",
       "name": "shell",
       "scopeName": "source.shell",
       "languageConfiguration": "textmate/shell/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/sql/syntaxes/sql.tmLanguage.json",
+      "name": "sql",
+      "scopeName": "source.sql",
+      "languageConfiguration": "textmate/sql/language-configuration.json"
     },
     {
       "grammar": "textmate/swift/syntaxes/swift.tmLanguage.json",
