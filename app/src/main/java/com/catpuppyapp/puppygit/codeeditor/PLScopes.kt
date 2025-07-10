@@ -53,153 +53,152 @@ enum class PLScopes(val scope: String) {
     companion object {
 
         val SCOPES = PLScopes.entries.map { it.scope }
+        val SCOPES_NO_AUTO = PLScopes.entries.map { it != AUTO }
 
-
-        fun guessScope(fileName: String):String {
+        fun guessScopeType(fileName: String) : PLScopes {
             val fileName = fileName.lowercase()
 
-
             if(fileName.endsWith(".markdown") || fileName.endsWith(".md") || fileName.endsWith(".mdown")) {
-                return MARKDOWN.scope
+                return MARKDOWN
             }
 
             if(fileName.endsWith(".html") || fileName.endsWith(".htm")) {
-                return HTML.scope
+                return HTML
             }
 
             if(fileName.endsWith(".java")) {
-                return JAVA.scope
+                return JAVA
             }
 
             if(fileName.endsWith(".js") || fileName.endsWith(".javascript")) {
-                return JAVASCRIPT.scope
+                return JAVASCRIPT
             }
 
             if(fileName.endsWith(".jsx")) {
-                return JSX.scope
+                return JSX
             }
 
             if(fileName.endsWith(".json")) {
-                return JSON.scope
+                return JSON
             }
 
             if(fileName.endsWith(".less")) {
-                return LESS.scope
+                return LESS
             }
 
             if(fileName.endsWith(".lua")) {
-                return LUA.scope
+                return LUA
             }
 
             if(fileName.endsWith(".kotlin") || fileName.endsWith(".kt")) {
-                return KOTLIN.scope
+                return KOTLIN
             }
 
             if(fileName.endsWith(".go")) {
-                return GO.scope
+                return GO
             }
 
             if(fileName.endsWith(".cpp") || fileName.endsWith(".cc") || fileName.endsWith(".cxx") || fileName.endsWith(".c++")) {
-                return CPP.scope
+                return CPP
             }
 
             if(fileName.endsWith(".c")) {
-                return C.scope
+                return C
             }
 
 
             if(fileName.endsWith(".diff") || fileName.endsWith(".patch")) {
-                return DIFF.scope
+                return DIFF
             }
 
 
             if(fileName.endsWith(".bat")) {
-                return BAT.scope
+                return BAT
             }
 
             if(fileName.endsWith(".cs")) {
-                return CSHARP.scope
+                return CSHARP
             }
 
             if(fileName.endsWith(".css")) {
-                return CSS.scope
+                return CSS
             }
 
             if(fileName.endsWith(".dart")) {
-                return DART.scope
+                return DART
             }
 
             if(fileName == "dockerfile" || fileName.endsWith(".dockerfile")) {
-                return DOCKER_FILE.scope
+                return DOCKER_FILE
             }
 
             if(fileName.endsWith(".mdmath") || fileName.endsWith(".mdm") || fileName.endsWith(".mmd")) {
-                return MARKDOWN_MATH.scope
+                return MARKDOWN_MATH
             }
 
 
             if(fileName.endsWith(".perl")) {
-                return PERL.scope
+                return PERL
             }
 
             if(fileName.endsWith(".makefile")) {
-                return MAKE_FILE.scope
+                return MAKE_FILE
             }
 
             if(fileName.endsWith(".php")) {
-                return PHP.scope
+                return PHP
             }
 
             if(fileName.endsWith(".ps1")) {
-                return POWER_SHELL.scope
+                return POWER_SHELL
             }
 
             if(fileName.endsWith(".py") || fileName.endsWith(".python")) {
-                return PYTHON.scope
+                return PYTHON
             }
 
             if(fileName.endsWith(".rb") || fileName.endsWith(".ruby")) {
-                return RUBY.scope
+                return RUBY
             }
 
             if(fileName.endsWith(".rust")) {
-                return RUST.scope
+                return RUST
             }
 
             if(fileName.endsWith(".scss") || fileName.endsWith(".sass")) {
-                return SCSS.scope
+                return SCSS
             }
 
             if(fileName.endsWith(".sh")) {
-                return SHELL.scope
+                return SHELL
             }
 
             if(fileName.endsWith(".sql")) {
-                return SQL.scope
+                return SQL
             }
 
             if(fileName.endsWith(".swift")) {
-                return SWIFT.scope
+                return SWIFT
             }
 
             if(fileName.endsWith(".ts")) {
-                return TS.scope
+                return TS
             }
 
             if(fileName.endsWith(".xml")) {
-                return XML.scope
+                return XML
             }
 
             if(fileName.endsWith(".yml") || fileName.endsWith(".yaml")) {
-                return YAML.scope
+                return YAML
             }
 
-
-
-            return NONE.scope
+            return NONE
         }
 
-        fun scopeInvalid(plScope: String) = plScope == NONE.scope || plScope.isBlank() || !SCOPES.contains(plScope)
+        fun guessScope(fileName: String) = guessScopeType(fileName).scope
+
+        fun scopeInvalid(plScope: String) = plScope == NONE.scope || plScope == AUTO.scope || plScope.isBlank() || !SCOPES.contains(plScope)
 
 
     }

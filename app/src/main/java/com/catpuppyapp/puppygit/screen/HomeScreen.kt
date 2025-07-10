@@ -465,7 +465,7 @@ fun HomeScreen(
     val updatePlScopeIfNeeded = { fileName:String ->
         // if was detected language or selected by user, then will not update program language scope again
         if(plScope.value == PLScopes.AUTO) {
-            plScope.value = PLScopes.guessScope(fileName)
+            plScope.value = PLScopes.guessScopeType(fileName)
         }
     }
 
