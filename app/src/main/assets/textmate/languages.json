@@ -43,6 +43,13 @@
     },
 
     {
+      "grammar": "textmate/diff/syntaxes/diff.tmLanguage.json",
+      "name": "diff",
+      "scopeName": "source.diff",
+      "languageConfiguration": "textmate/diff/language-configuration.json"
+    },
+
+    {
       "grammar": "textmate/docker/syntaxes/docker.tmLanguage.json",
       "name": "docker",
       "scopeName": "source.dockerfile",
