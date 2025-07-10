@@ -2040,7 +2040,7 @@ class TextEditorState private constructor(
         val expectedFieldsId = stylesResult.fieldsId
 
         val funName = "applySyntaxHighlighting"
-        MyLog.d(TAG, "#$funName: stylesResult expectedFieldsId=$expectedFieldsId")
+        MyLog.d(TAG, "#$funName: StylesResult may will be apply: $stylesResult")
 
         // will not be null
         if(codeEditor == null) {
