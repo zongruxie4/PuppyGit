@@ -870,7 +870,10 @@ fun EditorInnerPage(
 
     val showSelectSyntaxHighlightDialog = rememberSaveable { mutableStateOf(false) }
     val initSelectSyntaxHighlightingDialog = {
-        showSelectSyntaxHighlightDialog.value = true
+        doJobThenOffLoading {
+            doSaveNoCoroutine()
+            showSelectSyntaxHighlightDialog.value = true
+        }
     }
     if(showSelectSyntaxHighlightDialog.value) {
         SelectSyntaxHighlightingDialog(
@@ -879,7 +882,13 @@ fun EditorInnerPage(
         ) {
             if(it != plScope.value) {
                 plScope.value = it
-                codeEditor.value.analyze(plScope = it)
+                // switch syntax will clear undo stack,
+                // else after user pressed undo,
+                // will use old syntax highlighting scheme,
+                // and maybe will cause many full text re-analyze,
+                // it will cause performance issue
+                undoStack.reset(editorPageShowingFilePath.value.ioPath)
+                forceReloadFile()
             }
         }
     }

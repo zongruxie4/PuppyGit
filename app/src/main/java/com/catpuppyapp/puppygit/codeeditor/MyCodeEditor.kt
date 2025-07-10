@@ -5,13 +5,13 @@ import android.os.Bundle
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
-import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getRandomUUID
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
@@ -39,8 +39,7 @@ class MyCodeEditor(
     val editorState: CustomStateSaveable<TextEditorState>,
     var colorScheme: EditorColorScheme = EditorColorScheme(),
     var latestStyles: StylesResult? = null,
-) { // TODO 测试不继承CodeEditor是否会报错？
-//): CodeEditor(appContext) {
+) {
 
     var languageScope: PLScope = PLScope.NONE
     var myLang: TextMateLanguage? = null
@@ -100,6 +99,17 @@ class MyCodeEditor(
             GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
         }
 
+
+
+        private fun setReceiverThenDoAct(
+            language: Language?,
+            receiver: MyEditorStyleDelegate,
+            act: ()->Unit,
+        ) {
+            language?.analyzeManager?.setReceiver(receiver)
+            act()
+        }
+
     }
 
     init {
@@ -155,6 +165,8 @@ class MyCodeEditor(
             }else {
                 stylesUpdateRequest.targetEditorState
             }
+
+
             // updated: 修改了 sora editor相关代码，现在在执行操作前先设置styles receiver就可确保大概率收到新样式的是当前操作执行前设置的receiver
             // x 这个可能导致问题，想象一下：为textEditorState实例1设置了receiver，然后执行分析，
             //   收到结果前，又为textEditorState实例2设置了receiver，
@@ -163,34 +175,37 @@ class MyCodeEditor(
             //   最好的解决方案：应该让receiver把执行分析时关联的text editor state实例绑定上，或者，只创建一个editor state实例，
             //   后者可以实现，但需要修改撤销机制，因为目前的撤销机制是直接存储整个editor实例，如果改成只存fields，就行了，
             //   不对，好像还是无法解决哪个styles的结果和哪个editor state实例关联的问题。。。。。。。
-            myLang?.analyzeManager?.setReceiver(genNewStyleDelegate(targetEditorState))
-            stylesUpdateRequest.act()
+            setReceiverThenDoAct(myLang, genNewStyleDelegate(targetEditorState), stylesUpdateRequest.act)
         }
     }
 
     fun analyze(
         editorState: TextEditorState = this.editorState.value,
         plScope: PLScope = this.plScope.value,
-        force: Boolean = false,
     ) {
-        // no highlights or not supported
-        if(SettingsUtil.isEditorSyntaxHighlightEnabled().not() || PLScope.scopeInvalid(plScope.scope)) {
-            release()
-            return
-        }
 
         val scopeChanged = plScope != languageScope
         languageScope = plScope
 
+        // no highlights or not supported
+//        if(SettingsUtil.isEditorSyntaxHighlightEnabled().not() || PLScope.scopeInvalid(plScope.scope)) {
+        if(PLScope.scopeInvalid(plScope.scope)) {
+            release()
+            return
+        }
 
         // invalid state, maybe just created, but never used
         if(editorState.fieldsId.isBlank()) {
             return
         }
 
+
+
         // has cached
         // 检查是否有cached styles，有则直接应用
-        if(!force && !scopeChanged) {
+        if(scopeChanged) {
+            release()
+        } else {
             val cachedStyles = obtainCachedStyles()
             if(cachedStyles != null && cachedStyles.fieldsId == editorState.fieldsId && cachedStyles.inDarkTheme == Theme.inDarkTheme) {
                 // 会在 style receiver收到之后立刻apply，所以这里正常不需要再apply了，但内部会检测，如果已经applied，则不会重复applied，所以这里调用也无妨
@@ -200,7 +215,6 @@ class MyCodeEditor(
                 return
             }
         }
-
 
 
 
@@ -215,7 +229,9 @@ class MyCodeEditor(
 
 //        println("text: $text")
 
-        MyLog.d(TAG, "will run full syntax highlighting analyze")
+        // if no bug, should not trigger full syntax analyze a lot
+        MyLog.w(TAG, "will run full syntax highlighting analyze")
+
         PLTheme.applyTheme(Theme.inDarkTheme)
 
         this.let {
@@ -231,12 +247,16 @@ class MyCodeEditor(
                 myLang!!
             }
 
+            // whatever, we don't use it's indent enter pressed feature
+            // 这些值用来计算缩进的，也可能会按回车有关，比如回车时自动补全注释星号，但我这里不用，所以无所谓，能关则关，减少执行无意义操作
             lang.isAutoCompleteEnabled = false
             lang.tabSize = 0
 
-            lang.analyzeManager.setReceiver(genNewStyleDelegate(editorState))
-            lang.analyzeManager.reset(ContentReference(Content(text)), Bundle())
-            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
+            // must set receiver, then do act, else the result will sent to unrelated editor state
+            setReceiverThenDoAct(lang, genNewStyleDelegate(editorState)) {
+                lang.analyzeManager.reset(ContentReference(Content(text)), Bundle())
+            }
+//            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
 
 //            it.setEditorLanguage(lang)
 //            it.setText(text)
