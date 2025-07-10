@@ -77,99 +77,93 @@ fun OpenAsDialog(
     val mimeTextWeight = FontWeight.Bold
     val mimeTypeFontSize = 12.sp
 
-    Dialog(onDismissRequest = { close() }) {
-        Card(
-            modifier = Modifier.fillMaxWidth()
+    PlainDialog(onClose = close) {
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp)  //这个padding可以有，而且就应该在滚动修饰符上面，不然文字靠近弹窗边框，难看
+            .verticalScroll(rememberScrollState())
             ,
-            shape = RoundedCornerShape(16.dp),
         ) {
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp)  //这个padding可以有，而且就应该在滚动修饰符上面，不然文字靠近弹窗边框，难看
-                .verticalScroll(rememberScrollState())
-                ,
-            ) {
-                Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-                //文本
-                //图像
-                //音频
-                //视频
-                //其他
-                //任意
-                //根据后缀名检测
-                if(showOpenInEditor) {
-                    Row(modifier = Modifier
+            //文本
+            //图像
+            //音频
+            //视频
+            //其他
+            //任意
+            //根据后缀名检测
+            if(showOpenInEditor) {
+                Row(modifier = Modifier
+                    .height(itemHeight)
+                    .fillMaxWidth()
+                    .clickable {
+                        val expectReadOnly = readOnly.value  //期望的readonly模式，若文件路径不属于app内置禁止编辑的目录，则使用此值作为readonly的初始值
+                        openInEditor(expectReadOnly)
+
+                        openSuccessCallback()
+                        close()
+                    }
+                    ,
+
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(text = stringResource(R.string.open_in_editor), fontWeight = mimeTextWeight)
+                }
+
+//                    Spacer(modifier = Modifier.height(10.dp))
+                //加这个分割线看着想标题，让人感觉不可点击，不好，所以去掉了
+//                    MyHorizontalDivider(color = color)
+
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            mimeTypeList.forEachBetter { (mimeType, text) ->
+                Row(
+                    modifier = Modifier
                         .height(itemHeight)
                         .fillMaxWidth()
                         .clickable {
-                            val expectReadOnly = readOnly.value  //期望的readonly模式，若文件路径不属于app内置禁止编辑的目录，则使用此值作为readonly的初始值
-                            openInEditor(expectReadOnly)
+                            val openSuccess = FsUtils.openFile(
+                                activityContext,
+                                File(filePath),
+                                mimeType,
+                                readOnly.value
+                            )
 
-                            openSuccessCallback()
+                            if (openSuccess) {
+                                openSuccessCallback()
+                            } else {
+                                Msg.requireShow(activityContext.getString(R.string.open_failed))
+                            }
+
                             close()
-                        }
-                        ,
-
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
+                        },
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Text(text = stringResource(R.string.open_in_editor), fontWeight = mimeTextWeight)
+                        Text(text(activityContext), fontWeight = mimeTextWeight)
+
+                        Text(mimeType, fontSize = mimeTypeFontSize)
                     }
 
-//                    Spacer(modifier = Modifier.height(10.dp))
-                    //加这个分割线看着想标题，让人感觉不可点击，不好，所以去掉了
-//                    MyHorizontalDivider(color = color)
-
                 }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                mimeTypeList.forEachBetter { (mimeType, text) ->
-                    Row(
-                        modifier = Modifier
-                            .height(itemHeight)
-                            .fillMaxWidth()
-                            .clickable {
-                                val openSuccess = FsUtils.openFile(
-                                    activityContext,
-                                    File(filePath),
-                                    mimeType,
-                                    readOnly.value
-                                )
-
-                                if (openSuccess) {
-                                    openSuccessCallback()
-                                } else {
-                                    Msg.requireShow(activityContext.getString(R.string.open_failed))
-                                }
-
-                                close()
-                            },
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text(text(activityContext), fontWeight = mimeTextWeight)
-
-                            Text(mimeType, fontSize = mimeTypeFontSize)
-                        }
-
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                MyCheckBox(stringResource(R.string.read_only), readOnly)
 
                 Spacer(modifier = Modifier.height(20.dp))
 
             }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            MyCheckBox(stringResource(R.string.read_only), readOnly)
+
+            Spacer(modifier = Modifier.height(20.dp))
+
         }
     }
 }

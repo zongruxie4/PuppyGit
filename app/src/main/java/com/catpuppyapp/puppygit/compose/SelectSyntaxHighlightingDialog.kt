@@ -1,8 +1,12 @@
 package com.catpuppyapp.puppygit.compose
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.codeeditor.PLScope
 
 
@@ -13,24 +17,22 @@ fun SelectSyntaxHighlightingDialog(
     onOK: (selectedScope: PLScope) -> Unit,
 ) {
 
-    val selectedPlScope = rememberSaveable { mutableStateOf(plScope) }
-
-    ConfirmDialog2(
-        requireShowTextCompose = true,
-        textCompose = {
-            ScrollableColumn {
-                SingleSelection(
-                    itemList = PLScope.SCOPES_NO_AUTO,
-                    selected = { idx, it -> selectedPlScope.value == it },
-                    text = { idx, it -> it.scope },
-                    onClick = { idx, it -> selectedPlScope.value = it },
-                )
-            }
-        },
-
-        onCancel = onCancel,
-    ) {
-        onOK(selectedPlScope.value)
+    PlainDialog(onClose = onCancel) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(vertical = 20.dp, horizontal = 10.dp)
+        ) {
+            SingleSelection(
+                itemList = PLScope.SCOPES_NO_AUTO,
+                selected = { idx, it -> plScope == it },
+                text = { idx, it -> it.name },
+                onClick = { idx, it ->
+                    onCancel()
+                    onOK(it)
+                },
+                minHeight = 60.dp
+            )
+        }
     }
-
 }
