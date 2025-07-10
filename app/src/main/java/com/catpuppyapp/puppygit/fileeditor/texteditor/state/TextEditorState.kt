@@ -2183,15 +2183,16 @@ class TextEditorState private constructor(
             return null
         }
 
-        // order is important
-        //顺序很重要，如果优先使用temporaryStyle字段，会在undo时报错，因为fields若没修改不会更新stack（这难道不是bug？
-        return codeEditor?.stylesMap?.get(fieldsId).let { tmpStyle ->
+        return temporaryStyles.let { tmpStyle ->
             if(isGoodStyles(tmpStyle)) {
                 tmpStyle
-            }else if(isGoodStyles(temporaryStyles)) {
-                temporaryStyles
-            } else {
-                null
+            }else {
+                val cachedStyles = codeEditor?.stylesMap?.get(fieldsId)
+                if(isGoodStyles(cachedStyles)) {
+                    cachedStyles
+                } else {
+                    null
+                }
             }
         }
     }
