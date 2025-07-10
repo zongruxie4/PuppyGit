@@ -11,24 +11,32 @@ object PLScopes {
 
     // order by a-z
     val CPP = "source.cpp"
+    val DIFF = "source.diff"
     val GO = "source.go"
     val HTML = "text.html.basic"
     val JAVA = "source.java"
     val KOTLIN = "source.kotlin"
+    val MARKDOWN = "text.html.markdown"
 
     val SCOPES = listOf(
         NONE,
         CPP,
+        DIFF,
         GO,
         HTML,
         JAVA,
         KOTLIN,
-
+        MARKDOWN
     )
 
 
     fun guessScope(fileName: String):String {
         val fileName = fileName.lowercase()
+
+
+        if(fileName.endsWith(".markdown") || fileName.endsWith(".md") || fileName.endsWith(".mdown")) {
+            return MARKDOWN
+        }
 
         if(fileName.endsWith(".html") || fileName.endsWith(".htm")) {
             return HTML
@@ -46,9 +54,16 @@ object PLScopes {
             return GO
         }
 
-        if(fileName.endsWith(".cpp") || fileName.endsWith(".cc") || fileName.endsWith(".cxx")) {
+        if(fileName.endsWith(".cpp") || fileName.endsWith(".cc") || fileName.endsWith(".cxx") || fileName.endsWith(".c++")) {
             return CPP
         }
+
+
+        if(fileName.endsWith(".diff") || fileName.endsWith(".patch")) {
+            return DIFF
+        }
+
+
 
         return NONE
     }
