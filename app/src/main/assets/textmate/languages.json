@@ -246,6 +246,12 @@
       "languageConfiguration": "textmate/typescript/language-configuration.json"
     },
     {
+      "grammar": "textmate/typescript/syntaxes/typescriptreact.tmLanguage.json",
+      "name": "typescriptreact",
+      "scopeName": "source.tsx",
+      "languageConfiguration": "textmate/typescript/typescriptreact.language-configuration.json"
+    },
+    {
       "grammar": "textmate/xml/syntaxes/xml.tmLanguage.json",
       "name": "xml",
       "scopeName": "text.xml",

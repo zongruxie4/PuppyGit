@@ -95,6 +95,7 @@ private val mimeTypeToIntentMimeTypeMap = listOf(
     "application/x-go" to "text/go",
     "application/x-kotlin" to "text/kotlin",
     "application/x-jsx" to "text/jsx",
+    "application/x-tsx" to "text/tsx",
     "application/typescript" to "text/typescript",
     "application/x-sh" to "text/x-shellscript",
     "application/x-shellscript" to "text/x-shellscript",

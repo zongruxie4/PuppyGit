@@ -44,6 +44,7 @@ enum class PLScopes(val scope: String) {
     SQL("source.sql"),
     SWIFT("source.swift"),
     TS("source.ts"),
+    TSX("source.tsx"),
     XML("text.xml"),
     YAML("text.yaml"),
 
@@ -76,6 +77,10 @@ enum class PLScopes(val scope: String) {
 
             if(fileName.endsWith(".jsx")) {
                 return JSX
+            }
+
+            if(fileName.endsWith(".tsx")) {
+                return TSX
             }
 
             if(fileName.endsWith(".json")) {
