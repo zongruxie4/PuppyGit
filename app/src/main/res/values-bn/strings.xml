@@ -1247,4 +1247,12 @@
     <string name="repo_state_is_rebase_but_no_rebase_head_found_plz_use_abort_rebase_to_clean_state">repo state is REBASE but no rebase head found, plz use abort rebase to clean state</string>
     <string name="repo_state_is_cherrypick_but_no_cherrypick_head_found_plz_use_abort_cherrypick_to_clean_state">repo state is CHERRYPICK but no cherrypick head found, plz use abort cherrypick to clean state</string>
 
+
+
+
+
+
+
+    <string name="syntax_highlighting">সিনট্যাক্স হাইলাইটিং</string>
+
 </resources>

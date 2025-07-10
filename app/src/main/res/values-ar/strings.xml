@@ -1178,4 +1178,5 @@
     <string name="leave_empty_to_use_global_settings">اتركه فارغًا لاستخدام الإعدادات العامة</string>
     <string name="software_keyboard">لوحة مفاتيح برمجية</string>
     <string name="dynamic_color_scheme">مخطط ألوان ديناميكي</string>
+    <string name="syntax_highlighting">تظليل الصياغة</string>
 </resources>

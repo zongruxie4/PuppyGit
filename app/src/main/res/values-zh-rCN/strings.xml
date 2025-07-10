@@ -1260,5 +1260,6 @@
     <string name="leave_empty_to_use_global_settings">留空以使用全局设置</string>
     <string name="software_keyboard">软键盘</string>
     <string name="dynamic_color_scheme">动态配色方案</string>
+    <string name="syntax_highlighting">语法高亮</string>
 
 </resources>

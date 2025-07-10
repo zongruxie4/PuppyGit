@@ -1283,5 +1283,6 @@
     <string name="leave_empty_to_use_global_settings">Leave empty to use global settings</string>
     <string name="software_keyboard">Software Keyboard</string>
     <string name="dynamic_color_scheme">Dynamic Color Scheme</string>
+    <string name="syntax_highlighting">Syntax Highlighting</string>
 
 </resources>
