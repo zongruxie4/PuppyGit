@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.codeeditor.PLScopes
+import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
@@ -61,6 +61,7 @@ import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.PageCenterIconButton
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.SelectSyntaxHighlightingDialog
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.SelectionRow
 import com.catpuppyapp.puppygit.compose.rememberFileChangeListenerState
@@ -110,7 +111,6 @@ import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -125,8 +125,7 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 fun EditorInnerPage(
     stateKeyTag:String,
 
-    updatePlScopeIfNeeded:(fileName:String) -> Unit,
-    resetPlScope: () -> Unit,
+    plScope: MutableState<PLScope>,
     codeEditor: CustomStateSaveable<MyCodeEditor>,
 
     disableSoftKb: MutableState<Boolean>,
@@ -458,6 +457,14 @@ fun EditorInnerPage(
             }
         }
     }
+
+
+    val resetPlScope = { PLScope.resetPlScope(plScope) }
+    val updatePlScopeIfNeeded = { fileName:String ->
+        PLScope.updatePlScopeIfNeeded(plScope, fileName)
+    }
+
+
 
     val closeFile = {
 //        showCloseDialog.value=false
@@ -861,6 +868,28 @@ fun EditorInnerPage(
     }
 
 
+    val showSelectSyntaxHighlightDialog = rememberSaveable { mutableStateOf(false) }
+    val initSelectSyntaxHighlightingDialog = {
+        showSelectSyntaxHighlightDialog.value = true
+    }
+    if(showSelectSyntaxHighlightDialog.value) {
+        SelectSyntaxHighlightingDialog(
+            plScope = plScope.value,
+            onCancel = { showSelectSyntaxHighlightDialog.value = false }
+        ) {
+            if(it != plScope.value) {
+                plScope.value = it
+                codeEditor.value.analyze(plScope = it)
+            }
+        }
+    }
+
+
+    if(requestFromParent.value == PageRequest.selectSyntaxHighlighting) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            initSelectSyntaxHighlightingDialog()
+        }
+    }
 
     if(requestFromParent.value == PageRequest.reloadRecentFileList) {
         PageRequest.clearStateThenDoAct(requestFromParent) {

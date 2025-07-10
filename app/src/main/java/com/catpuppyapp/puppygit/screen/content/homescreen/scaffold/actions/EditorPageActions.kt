@@ -380,6 +380,15 @@ fun EditorPageActions(
                 )
             }
 
+            DropdownMenuItem(
+                enabled = enableMenuItem,
+                text = { Text(stringResource(R.string.syntax_highlighting)) },
+                onClick = {
+                    editorPageRequest.value = PageRequest.selectSyntaxHighlighting
+                    closeMenu()
+                }
+            )
+
             if(UserUtil.isPro() && (dev_EnableUnTestedFeature || editorMergeModeTestPassed)){
                 DropdownMenuItem(
                     enabled = enableMenuItem,

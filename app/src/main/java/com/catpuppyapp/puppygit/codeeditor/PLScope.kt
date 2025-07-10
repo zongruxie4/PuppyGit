@@ -56,7 +56,7 @@ enum class PLScope(val scope: String) {
     companion object {
 
         val SCOPES = PLScope.entries.map { it.scope }
-        val SCOPES_NO_AUTO = PLScope.entries.map { it != AUTO }
+        val SCOPES_NO_AUTO = PLScope.entries.filter { it != AUTO }
 
         fun guessScopeType(fileName: String) : PLScope {
             val fileName = fileName.lowercase()

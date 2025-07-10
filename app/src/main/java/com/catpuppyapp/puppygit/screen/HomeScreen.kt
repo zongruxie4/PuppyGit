@@ -459,11 +459,6 @@ fun HomeScreen(
 
 
     val plScope = rememberSaveable { mutableStateOf(PLScope.AUTO) }
-    val resetPlScope = { PLScope.resetPlScope(plScope) }
-    val updatePlScopeIfNeeded = { fileName:String ->
-        PLScope.updatePlScopeIfNeeded(plScope, fileName)
-    }
-
     val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
         MyCodeEditor(
             appContext = AppModel.realAppContext,
@@ -1463,8 +1458,7 @@ fun HomeScreen(
 //                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
                     stateKeyTag = stateKeyTag,
 
-                    updatePlScopeIfNeeded = updatePlScopeIfNeeded,
-                    resetPlScope = resetPlScope,
+                    plScope = plScope,
                     codeEditor = codeEditor,
 
                     disableSoftKb = editorDisableSoftKb,
