@@ -2388,12 +2388,46 @@ class TextEditorState private constructor(
             return
         }
 
-        lock.withLock {
-            val textRange = textFieldState.value.selection
-            if(textRange.collapsed.not()) {
-                return
-            }
+        val textRange = textFieldState.value.selection
+        if(textRange.collapsed.not()) {
+            return
+        }
 
+        val atLineHead = textRange.start == 0
+        val atLineTail = textRange.start == textFieldState.value.text.length
+        val atFileHead = idx == 0
+        val atFileTail = idx == fields.lastIndex
+
+        if(atLineHead && atFileHead && trueToLeftFalseRight) {
+            return
+        }
+
+        if(atLineTail && atFileTail && !trueToLeftFalseRight) {
+            return
+        }
+
+        if(atLineHead && trueToLeftFalseRight) {
+            selectField(
+                targetIndex = idx - 1,
+                option = SelectionOption.LAST_POSITION
+            )
+            return
+        }
+
+
+        if(atLineTail && !trueToLeftFalseRight) {
+            selectField(
+                targetIndex = idx + 1,
+                option = SelectionOption.FIRST_POSITION
+            )
+            return
+        }
+
+
+
+
+        // move cursor at `idx` line
+        lock.withLock {
             val newTextRange = if(trueToLeftFalseRight) {
                 if(headOrTail) TextRange(0) else TextRange((textRange.start-1).coerceAtLeast(0))
             }else {
