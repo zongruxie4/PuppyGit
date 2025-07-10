@@ -635,7 +635,6 @@ class TextEditorState private constructor(
 
     fun updateStyles(
         nextState: TextEditorState,
-        baseFields: List<TextFieldState>? = null,
         act: (baseStyles: StylesResult, baseFields: MutableList<TextFieldState>) -> Unit
     ) {
         if(codeEditor.scopeInvalid()) {
@@ -647,11 +646,19 @@ class TextEditorState private constructor(
             MyLog.d(TAG, "#updateStyles: Styles of current field '$fieldsId' not found, maybe not exists or theme/languageScop are not matched, will re-run analyze for next state")
             codeEditor?.analyze(nextState)
         }else {
-            act(baseStyles, (baseFields ?: fields).toMutableList())
+            // even accept ours/theirs,
+            // fields still is what we want,
+            // because accept ours/theirs only
+            // changed baseFields LineChangeType
+            // for line number indicator color, the text value doesn't changed,
+            // and due to the baseStyles is based fields, so, if we use another
+            // fields which not matched with baseStyles, will casue an error
+            act(baseStyles, fields.toMutableList())
 
-            // apply styles
+            // apply styles for next state
             doJobThenOffLoading {
-                applySyntaxHighlighting(baseStyles)
+                // onChange will call after updateStyles() finished, so here no need call it again
+                nextState.applySyntaxHighlighting(baseStyles, requireCallOnChange = false)
             }
         }
     }
@@ -1430,7 +1437,7 @@ class TextEditorState private constructor(
             if(newFields.size <= indices.size) {
                 codeEditor?.analyze(newState)
             }else {
-                updateStyles(newState, baseFields) { baseStyles, baseFields ->
+                updateStyles(newState) { baseStyles, baseFields ->
                     // 降序删除不用算索引偏移
                     // delete current line
                     val lastIdx = indices.size - 1
@@ -2043,7 +2050,7 @@ class TextEditorState private constructor(
         }
     }
 
-    suspend fun applySyntaxHighlighting(stylesResult: StylesResult) {
+    suspend fun applySyntaxHighlighting(stylesResult: StylesResult, requireCallOnChange: Boolean = true) {
         val expectedFieldsId = stylesResult.fieldsId
 
         val funName = "applySyntaxHighlighting"
@@ -2074,7 +2081,11 @@ class TextEditorState private constructor(
             return
         }
 
-        temporaryStyles = stylesResult
+        // only styles sent from code editor can override bundled styles
+        // 只有来自code editor的styles能覆盖临时styles字段，反之不能，如果应用临时styles，应在外部调用此方法的地方决定是否应用temporaryStyles
+        if(stylesResult.from == StylesResultFrom.CODE_EDITOR) {
+            temporaryStyles = stylesResult
+        }
 
         lock.withLock {
 //                创建一个TextFieldState的highlighting cache map，根据field syntax highlight id把样式存上，
@@ -2093,10 +2104,12 @@ class TextEditorState private constructor(
 
 //                codeEditor?.stylesMap?.put(fieldsId, stylesResult)
 
-            val latestEditorState = codeEditor?.editorState?.value
-            // just for trigger re-render page
-            if(fieldsId == latestEditorState?.fieldsId) {
-                onChanged(latestEditorState.copy(temporaryStyles = stylesResult), null, false)
+            if(requireCallOnChange) {
+                val latestEditorState = codeEditor?.editorState?.value
+                // just for trigger re-render page
+                if(fieldsId == latestEditorState?.fieldsId) {
+                    onChanged(latestEditorState.copy(temporaryStyles = stylesResult), null, false)
+                }
             }
 
             // if no check, editor content will incorrect
