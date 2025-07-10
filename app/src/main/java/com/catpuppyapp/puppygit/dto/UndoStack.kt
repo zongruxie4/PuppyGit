@@ -84,30 +84,38 @@ class UndoStack(
      * @return true saved, false not saved
      */
     fun undoStackPush(state: TextEditorState):Boolean {
-        undoLock.withLock {
-            val now = getSecFromTime()
-            val snapshotLastSaveAt = undoLastSaveAt.longValue
-            //在时间间隔内只存一版
-            if(undoSaveIntervalInSec == 0 || snapshotLastSaveAt == 0L || (now - snapshotLastSaveAt) > undoSaveIntervalInSec) {
-                push(undoStack, state)
-                undoLastSaveAt.longValue = now
-
-                //若超过数量限制移除第一个
-                if(undoStack.size.let { it > 0 && it > sizeLimit }) {
-                    undoStack.removeAt(0)
-                }
-
-                return true
-            }
-
-            return false
+        return undoLock.withLock {
+            undoStackPushNoLock(state)
         }
     }
 
-    fun undoStackPop(): TextEditorState? {
-        undoLock.withLock {
-            return pop(undoStack)
+    private fun undoStackPushNoLock(state: TextEditorState):Boolean {
+        val now = getSecFromTime()
+        val snapshotLastSaveAt = undoLastSaveAt.longValue
+        //在时间间隔内只存一版
+        if(undoSaveIntervalInSec == 0 || snapshotLastSaveAt == 0L || (now - snapshotLastSaveAt) > undoSaveIntervalInSec) {
+            push(undoStack, state)
+            undoLastSaveAt.longValue = now
+
+            //若超过数量限制移除第一个
+            if(undoStack.size.let { it > 0 && it > sizeLimit }) {
+                undoStack.removeAt(0)
+            }
+
+            return true
         }
+
+        return false
+    }
+
+    fun undoStackPop(): TextEditorState? {
+        return undoLock.withLock {
+            undoStackPopNoLock()
+        }
+    }
+
+    private fun undoStackPopNoLock(): TextEditorState? {
+        return pop(undoStack)
     }
 
     /**
@@ -183,6 +191,18 @@ class UndoStack(
         }catch (e:Exception) {
             null
         }
+    }
+
+    fun updateUndoHeadIfNeed(latestState: TextEditorState) {
+        if(undoStack.isEmpty()) {
+            return
+        }
+
+        undoLock.withLock {
+            undoStackPopNoLock()
+            undoStackPushNoLock(latestState)
+        }
+
     }
 
 }
