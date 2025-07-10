@@ -37,7 +37,6 @@ import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.CoroutineScope
-import java.io.File
 
 private const val TAG = "ScreenHelper"
 

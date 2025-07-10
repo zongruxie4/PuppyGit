@@ -51,7 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.codeeditor.PLScopes
+import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
@@ -63,7 +63,6 @@ import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.constants.SingleSendHandleMethod
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
-import com.catpuppyapp.puppygit.dev.soraEditorComposeTestPassed
 import com.catpuppyapp.puppygit.dto.FileDetail
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
@@ -97,7 +96,6 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleT
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.functions.getFilesGoToPath
 import com.catpuppyapp.puppygit.screen.functions.getInitTextEditorState
-import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
@@ -460,13 +458,10 @@ fun HomeScreen(
 
 
 
-    val plScope = rememberSaveable { mutableStateOf(PLScopes.AUTO) }
-    val resetPlScope = { plScope.value = PLScopes.AUTO }
+    val plScope = rememberSaveable { mutableStateOf(PLScope.AUTO) }
+    val resetPlScope = { PLScope.resetPlScope(plScope) }
     val updatePlScopeIfNeeded = { fileName:String ->
-        // if was detected language or selected by user, then will not update program language scope again
-        if(plScope.value == PLScopes.AUTO) {
-            plScope.value = PLScopes.guessScopeType(fileName)
-        }
+        PLScope.updatePlScopeIfNeeded(plScope, fileName)
     }
 
     val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {

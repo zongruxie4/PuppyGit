@@ -22,7 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.codeeditor.PLScopes
+import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.SmallFab
@@ -138,13 +138,10 @@ fun SubPageEditor(
     val editorPageSnapshotedFileInfo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSnapshotedFileInfo",FileSimpleDto() )
 
 
-    val plScope = rememberSaveable { mutableStateOf(PLScopes.AUTO) }
-    val resetPlScope = { plScope.value = PLScopes.AUTO }
+    val plScope = rememberSaveable { mutableStateOf(PLScope.AUTO) }
+    val resetPlScope = { PLScope.resetPlScope(plScope) }
     val updatePlScopeIfNeeded = { fileName:String ->
-        // if was detected language or selected by user, then will not update program language scope again
-        if(plScope.value == PLScopes.AUTO) {
-            plScope.value = PLScopes.guessScopeType(fileName)
-        }
+        PLScope.updatePlScopeIfNeeded(plScope, fileName)
     }
 
     val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {

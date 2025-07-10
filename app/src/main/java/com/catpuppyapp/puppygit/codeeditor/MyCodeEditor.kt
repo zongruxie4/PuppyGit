@@ -35,14 +35,14 @@ private const val TAG = "MyCodeEditor"
 
 class MyCodeEditor(
     val appContext: Context,
-    val plScope: MutableState<PLScopes>,
+    val plScope: MutableState<PLScope>,
     val editorState: CustomStateSaveable<TextEditorState>,
     var colorScheme: EditorColorScheme = EditorColorScheme(),
     var latestStyles: StylesResult? = null,
 ) { // TODO 测试不继承CodeEditor是否会报错？
 //): CodeEditor(appContext) {
 
-    var languageScope: PLScopes = PLScopes.NONE
+    var languageScope: PLScope = PLScope.NONE
     var myLang: TextMateLanguage? = null
     //{fieldsId: syntaxHighlightId: AnnotatedString}
     val highlightMap: MutableMap<String, Map<String, AnnotatedStringResult>> = ConcurrentMap()
@@ -171,7 +171,7 @@ class MyCodeEditor(
     fun analyze(editorState: TextEditorState = this.editorState.value, force: Boolean = false) {
         val plScope = plScope.value
         // no highlights or not supported
-        if(SettingsUtil.isEditorSyntaxHighlightEnabled().not() || PLScopes.scopeInvalid(plScope.scope)) {
+        if(SettingsUtil.isEditorSyntaxHighlightEnabled().not() || PLScope.scopeInvalid(plScope.scope)) {
             release()
             return
         }

@@ -1,8 +1,10 @@
 package com.catpuppyapp.puppygit.codeeditor
 
+import androidx.compose.runtime.MutableState
+
 //PL is "Program Language"
 
-enum class PLScopes(val scope: String) {
+enum class PLScope(val scope: String) {
 
     // init value for state
     AUTO("AUTO_DETECTED"),
@@ -53,10 +55,10 @@ enum class PLScopes(val scope: String) {
 
     companion object {
 
-        val SCOPES = PLScopes.entries.map { it.scope }
-        val SCOPES_NO_AUTO = PLScopes.entries.map { it != AUTO }
+        val SCOPES = PLScope.entries.map { it.scope }
+        val SCOPES_NO_AUTO = PLScope.entries.map { it != AUTO }
 
-        fun guessScopeType(fileName: String) : PLScopes {
+        fun guessScopeType(fileName: String) : PLScope {
             val fileName = fileName.lowercase()
 
             if(fileName.endsWith(".markdown") || fileName.endsWith(".md") || fileName.endsWith(".mdown")) {
@@ -205,6 +207,17 @@ enum class PLScopes(val scope: String) {
 
         fun scopeInvalid(plScope: String) = plScope == NONE.scope || plScope == AUTO.scope || plScope.isBlank() || !SCOPES.contains(plScope)
 
+
+        fun updatePlScopeIfNeeded(plScope: MutableState<PLScope>, fileName: String) {
+            // if was detected language or selected by user, then will not update program language scope again
+            if(plScope.value == AUTO) {
+                plScope.value = PLScope.guessScopeType(fileName)
+            }
+        }
+
+        fun resetPlScope(plScope: MutableState<PLScope>) {
+            plScope.value = AUTO
+        }
 
     }
 }
