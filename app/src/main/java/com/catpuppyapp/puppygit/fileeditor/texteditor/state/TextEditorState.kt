@@ -53,7 +53,6 @@ import kotlinx.coroutines.sync.withLock
 import java.io.OutputStream
 
 
-private val stylesApplyLock = Mutex()
 private const val TAG = "TextEditorState"
 private const val lb = "\n"
 private const val tab = "\t"
@@ -97,7 +96,7 @@ class TextEditorState private constructor(
 ) {
     private val lock = Mutex()
 
-    private var stylesAppliedByView = false
+//    private var stylesAppliedByView = false
 
     fun copy(
         fieldsId: String = this.fieldsId,
@@ -643,12 +642,17 @@ class TextEditorState private constructor(
             return
         }
 
-        val baseStyles = copyStyles()
+        val baseStyles = copyStyles(nextState)
         if(baseStyles == null) {
             MyLog.d(TAG, "#updateStyles: Styles of current field '$fieldsId' not found, maybe not exists or theme/languageScop are not matched, will re-run analyze for next state")
             codeEditor?.analyze(nextState)
         }else {
             act(baseStyles, (baseFields ?: fields).toMutableList())
+
+            // apply styles
+            doJobThenOffLoading {
+                applySyntaxHighlighting(baseStyles)
+            }
         }
     }
 
@@ -2039,9 +2043,18 @@ class TextEditorState private constructor(
         }
     }
 
-    suspend fun applySyntaxHighlighting(expectedFieldsId:String, stylesResult: StylesResult) {
+    suspend fun applySyntaxHighlighting(stylesResult: StylesResult) {
+        val expectedFieldsId = stylesResult.fieldsId
+
         val funName = "applySyntaxHighlighting"
         MyLog.d(TAG, "#$funName: stylesResult expectedFieldsId=$expectedFieldsId")
+
+        // will not be null
+        if(codeEditor == null) {
+            MyLog.w(TAG, "#$funName: codeEditor is null, will not apply styles")
+
+            return
+        }
 
         if(expectedFieldsId.isBlank()) {
             return
@@ -2063,55 +2076,55 @@ class TextEditorState private constructor(
 
         temporaryStyles = stylesResult
 
-        // 加锁，处理styles，按行分割（检查一下：最后分割出的行数应和fields size一样）
-        // 创建新 state，调用onChange （测试：如果不创建state也可触发页面刷新，则无需创建新state）
-        stylesApplyLock.withLock sl@{
-            // only check for editor request, so that callbakc can override TextEditorState bundled styles(usually temporary)
-            if(stylesResult.from == StylesResultFrom.TEXT_STATE) {
-                val filedForCheckApplied = fields.getOrNull(0) ?: return@sl
-
-                val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
-                // maybe already applied spans, but can't promise the view will refresh, so may need call onChange
-                if(sh?.get(filedForCheckApplied.syntaxHighlightId) != null) {
-                    // due to checked unique id at before, so will not re-apply same style
-                    codeEditor?.editorState?.value?.let {
-                        if(it.fieldsId == stylesResult.fieldsId) {
-                            onChanged(it.copy(temporaryStyles = stylesResult), null, false)
-                        }
-                    }
-
-                    return@sl
-                }
-            }
-
-            lock.withLock {
-//                创建一个TextFieldState的highlighting cache map，根据field syntax hight id把样式存上，
+        lock.withLock {
+//                创建一个TextFieldState的highlighting cache map，根据field syntax highlight id把样式存上，
 //                遍历text field时，根据其id取annotated string，
 //                若无，使用原text field，若有，使用缓存的带语法高亮的text field
 
-                val shMap = mutableMapOf<String, AnnotatedStringResult>()
-                val spansReader = styles.spans.read()
-                fields.forEachIndexedBetter { idx, value ->
-                    val spans = spansReader.getSpansOnLine(idx)
-                    val annotatedString = generateAnnotatedStringForLine(value, spans)
-                    shMap.put(value.syntaxHighlightId, AnnotatedStringResult(inDarkTheme, annotatedString))
-                }
+            val shMap = mutableMapOf<String, AnnotatedStringResult>()
+            val spansReader = styles.spans.read()
+            fields.forEachIndexedBetter { idx, value ->
+                val spans = spansReader.getSpansOnLine(idx)
+                val annotatedString = generateAnnotatedStringForLine(value, spans)
+                shMap.put(value.syntaxHighlightId, AnnotatedStringResult(inDarkTheme, annotatedString))
+            }
 
-                codeEditor?.putSyntaxHighlight(fieldsId, shMap)
+            codeEditor?.putSyntaxHighlight(fieldsId, shMap)
 
 //                codeEditor?.stylesMap?.put(fieldsId, stylesResult)
 
-                val latestEditorState = codeEditor?.editorState?.value
-                // just for trigger re-render page
-                if(fieldsId == latestEditorState?.fieldsId) {
-                    onChanged(latestEditorState.copy(temporaryStyles = stylesResult), null, false)
-                }
-
-                // if no check, editor content will incorrect
-                // 如果不检查fieldsId，editor内容会出错，例如你输入了123，然后应用了上个状态，导致内容变成没有123时的状态，这种错误是不可接受的
-//                onChanged(copy(temporaryStyles = stylesResult), null, false)
+            val latestEditorState = codeEditor?.editorState?.value
+            // just for trigger re-render page
+            if(fieldsId == latestEditorState?.fieldsId) {
+                onChanged(latestEditorState.copy(temporaryStyles = stylesResult), null, false)
             }
+
+            // if no check, editor content will incorrect
+            // 如果不检查fieldsId，editor内容会出错，例如你输入了123，然后应用了上个状态，导致内容变成没有123时的状态，这种错误是不可接受的
+//                onChanged(copy(temporaryStyles = stylesResult), null, false)
         }
+
+        // 加锁，处理styles，按行分割（检查一下：最后分割出的行数应和fields size一样）
+        // 创建新 state，调用onChange （测试：如果不创建state也可触发页面刷新，则无需创建新state）
+//        codeEditor.stylesApplyLock.withLock sl@{
+            // only check for editor request, so that callback can override TextEditorState bundled styles(usually temporary)
+//            if(stylesResult.from == StylesResultFrom.TEXT_STATE) {
+//                val filedForCheckApplied = fields.getOrNull(0) ?: return@sl
+//
+//                val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
+//                // maybe already applied spans, but can't promise the view will refresh, so may need call onChange
+//                if(sh?.get(filedForCheckApplied.syntaxHighlightId) != null) {
+//                    // due to checked unique id at before, so will not re-apply same style
+//                    codeEditor?.editorState?.value?.let {
+//                        if(it.fieldsId == stylesResult.fieldsId) {
+//                            onChanged(it.copy(temporaryStyles = stylesResult), null, false)
+//                        }
+//                    }
+//
+//                    return@sl
+//                }
+//            }
+//        }
     }
 
     // 在MyTextField应调用此方法获得AnnotatedString
@@ -2152,19 +2165,20 @@ class TextEditorState private constructor(
             return null
         }
 
-        val tmpStyle = temporaryStyles
         // first check
-        val retStyle =  if(tmpStyle == null || tmpStyle.fieldsId != fieldsId || codeEditor.scopeMatched(tmpStyle.languageScope.scope).not()) {
-            codeEditor?.stylesMap?.get(fieldsId)
-        }else {
-            tmpStyle
+        val retStyle =  temporaryStyles.let { tmpStyle ->
+            if(tmpStyle == null || tmpStyle.fieldsId != fieldsId || tmpStyle.inDarkTheme != Theme.inDarkTheme || !codeEditor.scopeMatched(tmpStyle.languageScope.scope)) {
+                codeEditor?.stylesMap?.get(fieldsId)
+            }else {
+                tmpStyle
+            }
         }
 
         // finally check
         // when reached here, `fieldsId` must matched,
         // and the scope match check included null-check,
         // so the condition check less then first check
-        return if(codeEditor.scopeMatched(retStyle?.languageScope?.scope)) retStyle else null
+        return if(retStyle == null || retStyle.inDarkTheme != Theme.inDarkTheme || !codeEditor.scopeMatched(retStyle.languageScope.scope)) null else retStyle
     }
 
     fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
@@ -2177,18 +2191,18 @@ class TextEditorState private constructor(
         val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
         val annotatedStringResult = sh?.get(raw.syntaxHighlightId)
         return if(annotatedStringResult == null || annotatedStringResult.inDarkTheme != Theme.inDarkTheme) {
-            if(stylesAppliedByView.not()) {
-                stylesAppliedByView = true
-                // styles exists, but haven't annotated string, maybe styles not applied
-                val stylesResult = tryGetStylesResult()
-                if(stylesResult != null && stylesResult.fieldsId == fieldsId && stylesResult.inDarkTheme == Theme.inDarkTheme && codeEditor.scopeMatched(stylesResult.languageScope.scope)) {
-                    doJobThenOffLoading {
-                        applySyntaxHighlighting(fieldsId, stylesResult)
-                    }
-                }
-
-//            MyLog.d(TAG, "#$funName: stylesResult.fieldsId=${stylesResult?.fieldsId}, spansCount=${stylesResult?.styles?.spans?.lineCount}")
-            }
+//            if(stylesAppliedByView.not()) {
+//                stylesAppliedByView = true
+//                // styles exists, but haven't annotated string, maybe styles not applied
+//                val stylesResult = tryGetStylesResult()
+//                if(stylesResult != null) {
+//                    doJobThenOffLoading {
+//                        applySyntaxHighlighting(stylesResult)
+//                    }
+//                }
+//
+////            MyLog.d(TAG, "#$funName: stylesResult.fieldsId=${stylesResult?.fieldsId}, spansCount=${stylesResult?.styles?.spans?.lineCount}")
+//            }
 
             raw
         }else {
@@ -2197,12 +2211,12 @@ class TextEditorState private constructor(
     }
 
 
-    fun copyStyles(): StylesResult? = tryGetStylesResult()?.let {
+    fun copyStyles(nextState: TextEditorState): StylesResult? = tryGetStylesResult()?.let {
         it.copy(
             styles = Styles(it.styles.spans),
             from = StylesResultFrom.TEXT_STATE,
             uniqueId = getRandomUUID(),
-            fieldsId = fieldsId
+            fieldsId = nextState.fieldsId,
         )
     }
 

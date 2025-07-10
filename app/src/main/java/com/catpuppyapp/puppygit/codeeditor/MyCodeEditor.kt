@@ -50,6 +50,7 @@ class MyCodeEditor(
 
     val stylesRequestLock = ReentrantLock(true)
     val analyzeLock = ReentrantLock(true)
+//    val stylesApplyLock = ReentrantLock(true)
 
     private fun genNewStyleDelegate(editorState: TextEditorState?) = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap, editorState, languageScope)
 
@@ -218,7 +219,7 @@ class MyCodeEditor(
             if(cachedStyles != null && cachedStyles.fieldsId == editorState.fieldsId && cachedStyles.inDarkTheme == Theme.inDarkTheme) {
                 // 会在 style receiver收到之后立刻apply，所以这里正常不需要再apply了，但内部会检测，如果已经applied，则不会重复applied，所以这里调用也无妨
                 doJobThenOffLoading {
-                    editorState.applySyntaxHighlighting(editorState.fieldsId, cachedStyles)
+                    editorState.applySyntaxHighlighting(cachedStyles)
                 }
                 return
             }

@@ -49,10 +49,10 @@ class MyEditorStyleDelegate(
         codeEditor.latestStyles = stylesResult
         if(inDarkTheme == Theme.inDarkTheme) {
 //            val targetEditorState = requester.targetEditorState
-            val targetEditorState = editorState
-            stylesMap.put(targetEditorState.fieldsId, stylesResult)
+//            val targetEditorState = editorState
+            stylesMap.put(editorState.fieldsId, stylesResult)
             doJobThenOffLoading {
-                targetEditorState.applySyntaxHighlighting(targetEditorState.fieldsId, stylesResult)
+                editorState.applySyntaxHighlighting(stylesResult)
             }
         }
     }
