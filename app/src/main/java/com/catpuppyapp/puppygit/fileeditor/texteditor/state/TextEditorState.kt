@@ -2065,10 +2065,10 @@ class TextEditorState private constructor(
         }
 
         // already applied
-        if(stylesResult.from == StylesResultFrom.CODE_EDITOR && stylesResult.uniqueId == temporaryStyles?.uniqueId) {
-            MyLog.d(TAG, "already applied styles (from code editor), uniqueId=${stylesResult.uniqueId}")
-            return
-        }
+//        if(stylesResult.from == StylesResultFrom.CODE_EDITOR && stylesResult.uniqueId == temporaryStyles?.uniqueId) {
+//            MyLog.d(TAG, "already applied styles (from code editor), uniqueId=${stylesResult.uniqueId}")
+//            return
+//        }
 
         // only styles sent from code editor can override bundled styles
         // 只有来自code editor的styles能覆盖临时styles字段，反之不能，如果应用临时styles，应在外部调用此方法的地方决定是否应用temporaryStyles
@@ -2171,25 +2171,29 @@ class TextEditorState private constructor(
         }
     }
 
+
+    private fun isGoodStyles(stylesResult: StylesResult?):Boolean {
+        return !(stylesResult == null || stylesResult.fieldsId != fieldsId || stylesResult.inDarkTheme != Theme.inDarkTheme || !codeEditor.scopeMatched(stylesResult.languageScope.scope))
+    }
+
     fun tryGetStylesResult(): StylesResult? {
+        // if scope is invalid, will not use any styles
+        // 如果 scope无效，代表用户选择了NONE或无效语法高亮语言，这时不应用任何语法高亮，即使已经存在也不用
         if(codeEditor.scopeInvalid()) {
             return null
         }
 
-        // first check
-        val retStyle =  temporaryStyles.let { tmpStyle ->
-            if(tmpStyle == null || tmpStyle.fieldsId != fieldsId || tmpStyle.inDarkTheme != Theme.inDarkTheme || !codeEditor.scopeMatched(tmpStyle.languageScope.scope)) {
-                codeEditor?.stylesMap?.get(fieldsId)
-            }else {
+        // order is important
+        //顺序很重要，如果优先使用temporaryStyle字段，会在undo时报错，因为fields若没修改不会更新stack（这难道不是bug？
+        return codeEditor?.stylesMap?.get(fieldsId).let { tmpStyle ->
+            if(isGoodStyles(tmpStyle)) {
                 tmpStyle
+            }else if(isGoodStyles(temporaryStyles)) {
+                temporaryStyles
+            } else {
+                null
             }
         }
-
-        // finally check
-        // when reached here, `fieldsId` must matched,
-        // and the scope match check included null-check,
-        // so the condition check less then first check
-        return if(retStyle == null || retStyle.inDarkTheme != Theme.inDarkTheme || !codeEditor.scopeMatched(retStyle.languageScope.scope)) null else retStyle
     }
 
     fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
