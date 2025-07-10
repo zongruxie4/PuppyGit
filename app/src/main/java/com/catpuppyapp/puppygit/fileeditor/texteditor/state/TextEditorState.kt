@@ -51,6 +51,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.OutputStream
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 private const val TAG = "TextEditorState"
@@ -2075,6 +2076,15 @@ class TextEditorState private constructor(
             temporaryStyles = stylesResult
         }
 
+
+        // 比锁轻量且能保证几乎没问题，够用了
+        if(!stylesResult.applied.compareAndSet(false, true)) {
+            MyLog.d(TAG, "styles already applied, uniqueId=${stylesResult.uniqueId}")
+            return
+        }
+
+
+
         lock.withLock {
 //                创建一个TextFieldState的highlighting cache map，根据field syntax highlight id把样式存上，
 //                遍历text field时，根据其id取annotated string，
@@ -2218,6 +2228,7 @@ class TextEditorState private constructor(
             from = StylesResultFrom.TEXT_STATE,
             uniqueId = getRandomUUID(),
             fieldsId = nextState.fieldsId,
+            applied = AtomicBoolean(false)
         )
     }
 

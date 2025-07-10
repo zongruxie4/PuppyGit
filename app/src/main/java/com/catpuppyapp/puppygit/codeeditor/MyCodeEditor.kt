@@ -24,6 +24,7 @@ import io.github.rosemoe.sora.text.ContentReference
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -337,6 +338,7 @@ data class StylesResult(
     val uniqueId: String = getRandomUUID(),
     val fieldsId:String,
     val languageScope: PLScope,
+    val applied: AtomicBoolean = AtomicBoolean(false)
 )
 
 enum class StylesResultFrom {
