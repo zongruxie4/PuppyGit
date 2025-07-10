@@ -25,7 +25,9 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isAltPressed
 import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
@@ -146,11 +148,11 @@ internal fun MyTextField(
                         return@onPreviewKeyEvent true
                     }
 
-                    if (onPreviewDownKeyEvent(event, value) { onDownFocus() }) {
+                    if (onPreviewDownKeyEvent(event) { onDownFocus() }) {
                         return@onPreviewKeyEvent true
                     }
 
-                    if (onPreviewUpKeyEvent(event, selection) { onUpFocus() }) {
+                    if (onPreviewUpKeyEvent(event) { onUpFocus() }) {
                         return@onPreviewKeyEvent true
                     }
 
@@ -196,6 +198,33 @@ internal fun MyTextField(
 }
 
 
+
+private fun onPreviewHomeKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+    return onPreviewHomeOrEndKeyEvent(event, textFieldState, trueHomeFalseEnd = true, invoke)
+}
+
+private fun onPreviewEndKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+    return onPreviewHomeOrEndKeyEvent(event, textFieldState, trueHomeFalseEnd = false, invoke)
+}
+
+private fun onPreviewLeftKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+    return onPreviewLeftOrRightKeyEvent(event, textFieldState, trueLeftFalseRight = true, invoke)
+}
+
+private fun onPreviewRightKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+    return onPreviewLeftOrRightKeyEvent(event, textFieldState, trueLeftFalseRight = false, invoke)
+}
+
+private fun onPreviewUpKeyEvent(event: KeyEvent, invoke: () -> Unit): Boolean {
+    return onPreviewUpOrDownKeyEvent(event, trueUpFalseDown = true, invoke)
+}
+
+private fun onPreviewDownKeyEvent(event: KeyEvent, invoke: () -> Unit): Boolean {
+    return onPreviewUpOrDownKeyEvent(event, trueUpFalseDown = false, invoke)
+}
+
+
+
 private fun onPreviewDelKeyEvent(
     event: KeyEvent,
     selection: TextRange,
@@ -219,16 +248,20 @@ private fun onPreviewDelKeyEvent(
     return true
 }
 
-private fun onPreviewUpKeyEvent(
+private fun onPreviewUpOrDownKeyEvent(
     event: KeyEvent,
-    selection: TextRange,
-    invoke: () -> Unit
+
+    trueUpFalseDown: Boolean,
+    invoke: () -> Unit,
 ): Boolean {
+    if(event.isCtrlPressed || event.isShiftPressed || event.isAltPressed || event.isMetaPressed) return false
+
     val isKeyDown = event.type == KeyEventType.KeyDown
     if (!isKeyDown) return false
 
-    val isUpKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_UP
-    if (!isUpKey) return false
+    val expectedKey = if (trueUpFalseDown) KEYCODE_DPAD_UP else KEYCODE_DPAD_DOWN
+    val isExpectedKey = event.nativeKeyEvent.keyCode == expectedKey
+    if (!isExpectedKey) return false
 
 //    val atStartOfLine = selection == TextRange.Zero
 //    if (!atStartOfLine) return false
@@ -237,103 +270,51 @@ private fun onPreviewUpKeyEvent(
     return true
 }
 
-private fun onPreviewDownKeyEvent(
-    event: KeyEvent,
-    value: TextFieldValue,
-    invoke: () -> Unit
-): Boolean {
-    val isKeyDown = event.type == KeyEventType.KeyDown
-    if (!isKeyDown) return false
-
-    val isDownKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_DOWN
-    if (!isDownKey) return false
-
-    // 仅当在行末尾才响应按键，这样的效果是按一下 down ，切换到行末尾，再按一下，切换到下一行
-//    val atEndOfLine = value.selection == TextRange(value.text.count())
-//    if (!atEndOfLine) return false
-
-    invoke()
-    return true
-}
-
-private fun onPreviewLeftKeyEvent(
+private fun onPreviewLeftOrRightKeyEvent(
     event: KeyEvent,
     field: TextFieldState,
-    invoke: () -> Unit
+    trueLeftFalseRight: Boolean,
+    invoke: () -> Unit,
 ): Boolean {
+    if(event.isCtrlPressed || event.isShiftPressed || event.isAltPressed || event.isMetaPressed || field.value.selection.collapsed.not()) return false
+
     val isKeyDown = event.type == KeyEventType.KeyDown
     if (!isKeyDown) return false
 
-    val isDownKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_LEFT
-    if (!isDownKey) return false
+    val expectedKey = if(trueLeftFalseRight) KEYCODE_DPAD_LEFT else KEYCODE_DPAD_RIGHT
+    val isExceptedKey = event.nativeKeyEvent.keyCode == expectedKey
+    if (!isExceptedKey) return false
 
-    if(event.isCtrlPressed || event.isShiftPressed) return false
-
-    if(field.value.selection.collapsed.not()) return false
 
     invoke()
+
     return true
 }
 
-private fun onPreviewRightKeyEvent(
+
+private fun onPreviewHomeOrEndKeyEvent(
     event: KeyEvent,
     field: TextFieldState,
-
-    invoke: () -> Unit
+    trueHomeFalseEnd: Boolean,
+    invoke: () -> Unit,
 ): Boolean {
+    if(event.isShiftPressed || event.isAltPressed || event.isMetaPressed || field.value.selection.collapsed.not()) return false
+
     val isKeyDown = event.type == KeyEventType.KeyDown
     if (!isKeyDown) return false
 
-    val isDownKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_RIGHT
-    if (!isDownKey) return false
+    val expectedKey = if(trueHomeFalseEnd) Key.MoveHome else Key.MoveEnd
+    val isExpectedKey = event.key == expectedKey
+    if (!isExpectedKey) return false
 
-    if(event.isCtrlPressed || event.isShiftPressed) return false
-
-    if(field.value.selection.collapsed.not()) return false
+    val pos = field.value.selection.start
+    if((event.isCtrlPressed && (pos != 0 && pos != field.value.text.length))) return false
 
     invoke()
     return true
 }
 
-private fun onPreviewHomeKeyEvent(
-    event: KeyEvent,
-    field: TextFieldState,
 
-    invoke: () -> Unit
-): Boolean {
-    val isKeyDown = event.type == KeyEventType.KeyDown
-    if (!isKeyDown) return false
-
-    //好像监听 home和end在模拟器不管用
-    val isEnterKey = event.key == Key.MoveHome
-    if (!isEnterKey) return false
-
-    if(event.isCtrlPressed || event.isShiftPressed) return false
-    if(field.value.selection.collapsed.not()) return false
-
-    invoke()
-    return true
-}
-
-private fun onPreviewEndKeyEvent(
-    event: KeyEvent,
-    field: TextFieldState,
-
-    invoke: () -> Unit
-): Boolean {
-    val isKeyDown = event.type == KeyEventType.KeyDown
-    if (!isKeyDown) return false
-
-    val isEnterKey = event.key == Key.MoveEnd
-    if (!isEnterKey) return false
-
-    if(event.isCtrlPressed || event.isShiftPressed) return false
-    if(field.value.selection.collapsed.not()) return false
-
-
-    invoke()
-    return true
-}
 
 private fun insertNewLineAtCursor(textFieldValue: TextFieldValue):String {
     val splitPosition = textFieldValue.selection.start  //光标位置，有可能在行末尾，这时和text.length相等，并不会越界
