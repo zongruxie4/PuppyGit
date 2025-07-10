@@ -49,6 +49,7 @@ class MyCodeEditor(
 //    val editorStateMap: MutableMap<String, TextEditorState> = ConcurrentMap()
 
     val stylesRequestLock = ReentrantLock(true)
+    val analyzeLock = ReentrantLock(true)
 
     private fun genNewStyleDelegate(editorState: TextEditorState?) = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap, editorState, languageScope)
 
@@ -182,7 +183,15 @@ class MyCodeEditor(
         editorState: TextEditorState = this.editorState.value,
         plScope: PLScope = this.plScope.value,
     ) {
+        analyzeLock.withLock {
+            doAnalyzeNoLock(editorState, plScope)
+        }
+    }
 
+    private fun doAnalyzeNoLock(
+        editorState: TextEditorState,
+        plScope: PLScope,
+    ) {
         val scopeChanged = plScope != languageScope
         languageScope = plScope
 
