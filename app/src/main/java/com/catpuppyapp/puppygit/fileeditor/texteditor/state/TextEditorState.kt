@@ -1313,14 +1313,14 @@ class TextEditorState private constructor(
             val range = if(direction == FindDirection.UP) {
                 val endIndex = if(includeStartIndex) startIndex else (startIndex-1)
                 if(!isGoodIndexForList(endIndex, list)) {
-                    throw RuntimeException("bad index range")
+                    throw RuntimeException("bad endIndex: $endIndex , list.size: ${list.size}")
                 }
 
                 (0..endIndex).reversed()
             }else {
                 val tempStartIndex =if(includeStartIndex) startIndex else (startIndex+1)
                 if(!isGoodIndexForList(tempStartIndex, list)) {
-                    throw RuntimeException("bad index range")
+                    throw RuntimeException("bad tempStartIndex: $tempStartIndex , list.size: ${list.size}")
                 }
 
                 tempStartIndex..list.lastIndex
