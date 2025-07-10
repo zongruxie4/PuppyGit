@@ -37,13 +37,11 @@ import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.getNextIndentByCurrentStr
-import com.catpuppyapp.puppygit.utils.getRandomUUID
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import com.catpuppyapp.puppygit.utils.isStartInclusiveEndExclusiveRangeValid
 import com.catpuppyapp.puppygit.utils.tabToSpaces
 import io.github.rosemoe.sora.lang.styling.Span
-import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.lang.styling.TextStyle
 import io.github.rosemoe.sora.text.CharPosition
 import io.github.rosemoe.sora.util.RendererUtils
@@ -51,7 +49,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.OutputStream
-import java.util.concurrent.atomic.AtomicBoolean
 
 
 private const val TAG = "TextEditorState"
@@ -2073,7 +2070,7 @@ class TextEditorState private constructor(
         // only styles sent from code editor can override bundled styles
         // 只有来自code editor的styles能覆盖临时styles字段，反之不能，如果应用临时styles，应在外部调用此方法的地方决定是否应用temporaryStyles
         if(stylesResult.from == StylesResultFrom.CODE_EDITOR) {
-            temporaryStyles = stylesResult
+            temporaryStyles = stylesResult.copyWithDeepCopyStyles()
         }
 
 
@@ -2227,15 +2224,7 @@ class TextEditorState private constructor(
     }
 
 
-    fun copyStyles(nextState: TextEditorState): StylesResult? = tryGetStylesResult()?.let {
-        it.copy(
-            styles = Styles(it.styles.spans),
-            from = StylesResultFrom.TEXT_STATE,
-            uniqueId = getRandomUUID(),
-            fieldsId = nextState.fieldsId,
-            applied = AtomicBoolean(false)
-        )
-    }
+    fun copyStyles(nextState: TextEditorState): StylesResult? = tryGetStylesResult()?.copyForEditorState(newFieldsId = nextState.fieldsId)
 
 
     // 增删内容需要调用 spans的after change，然后调用lang.analyzeManager()的insert/ delete重新执行分析

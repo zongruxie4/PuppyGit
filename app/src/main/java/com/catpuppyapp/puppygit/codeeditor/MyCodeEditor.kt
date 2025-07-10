@@ -339,11 +339,21 @@ data class StylesResult(
     val fieldsId:String,
     val languageScope: PLScope,
     val applied: AtomicBoolean = AtomicBoolean(false)
-)
+) {
+    fun copyForEditorState(newFieldsId: String) = copy(
+        styles = styles.copy(),
+        from = StylesResultFrom.TEXT_EDITOR_STATE,
+        uniqueId = getRandomUUID(),
+        fieldsId = newFieldsId,
+        applied = AtomicBoolean(false)
+    )
+
+    fun copyWithDeepCopyStyles() = copy(styles = this.styles.copy())
+}
 
 enum class StylesResultFrom {
     CODE_EDITOR,
-    TEXT_STATE,
+    TEXT_EDITOR_STATE,
 }
 
 
