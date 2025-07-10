@@ -460,8 +460,6 @@ class TextEditorState private constructor(
 
                 // add new content to current line
                 updateStylesAfterInsertLine(baseFields, baseStyles, targetIndex, ignoreThis = false, splitFieldValues.joinToString("\n") { it.text }, newState)
-                // set temporary styles to new state
-                newState.temporaryStyles = baseStyles
             }
 
             onChanged(newState, true, true)
@@ -616,8 +614,6 @@ class TextEditorState private constructor(
 
                     // add new content to current line
                     updateStylesAfterInsertLine(baseFields, baseStyles, targetIndex, ignoreThis = false, textFieldValue.text, newState)
-                    // set temporary styles to new state
-                    newState.temporaryStyles = baseStyles
                 }
             }
 
@@ -654,6 +650,7 @@ class TextEditorState private constructor(
             // and due to the baseStyles is based fields, so, if we use another
             // fields which not matched with baseStyles, will casue an error
             act(baseStyles, fields.toMutableList())
+            nextState.temporaryStyles = baseStyles
 
             // apply styles for next state
             doJobThenOffLoading {
@@ -792,8 +789,6 @@ class TextEditorState private constructor(
                 // add new content to previous line
                 updateStylesAfterInsertLine(baseFields, baseStyles, insertIndex, ignoreThis = false, text, newState)
 
-                // set temporary styles to new state
-                newState.temporaryStyles = baseStyles
             }
 
             //更新状态
@@ -874,8 +869,6 @@ class TextEditorState private constructor(
 
                 // add new content to previous line
                 updateStylesAfterInsertLine(baseFields, baseStyles, toLineIdx, ignoreThis = false, toTextFieldState.value.text, newState)
-                // set temporary styles to new state
-                newState.temporaryStyles = baseStyles
             }
 
 
@@ -1446,8 +1439,6 @@ class TextEditorState private constructor(
                         updateStylesAfterDeleteLine(baseFields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState)
                     }
 
-                    // set temporary styles to new state
-                    newState.temporaryStyles = baseStyles
                 }
             }
 
@@ -1579,8 +1570,6 @@ class TextEditorState private constructor(
                     updateStylesAfterDeleteLine(baseFields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState, keepLine = true)
                 }
 
-                // set temporary styles to new state
-                newState.temporaryStyles = baseStyles
             }
 
 
@@ -1811,7 +1800,6 @@ class TextEditorState private constructor(
         selectedIndices: List<Int>,
         isMultipleSelectionMode: Boolean,
         focusingLineIdx: Int?,
-        temporaryStyles: StylesResult? = codeEditor?.stylesMap?.let { it.get(fieldsId) ?: it.get(this.fieldsId) ?: this.temporaryStyles },
     ): TextEditorState {
 //        if(temporaryStyles != null) {
 //            MyLog.d(TAG, "temporaryStyles is not null")
@@ -1829,7 +1817,9 @@ class TextEditorState private constructor(
             isContentEdited = isContentEdited,
             editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
             onChanged = onChanged,
-            temporaryStyles = temporaryStyles,
+
+            // temp styles will update after styles updated, so here just set to null
+            temporaryStyles = null,
         )
     }
 
@@ -2042,8 +2032,6 @@ class TextEditorState private constructor(
                     updateStylesAfterInsertLine(baseFields, baseStyles, targetIndex, ignoreThis = idx != lastIdx, newState.fields.get(targetIndex).value.text, newState)
                 }
 
-                // set temporary styles to new state
-                newState.temporaryStyles = baseStyles
             }
 
             onChanged(newState, true, true)
@@ -2076,8 +2064,8 @@ class TextEditorState private constructor(
         }
 
         // already applied
-        if(stylesResult.uniqueId == temporaryStyles?.uniqueId) {
-            MyLog.d(TAG, "already applied styles, uniqueId=${stylesResult.uniqueId}")
+        if(stylesResult.from == StylesResultFrom.CODE_EDITOR && stylesResult.uniqueId == temporaryStyles?.uniqueId) {
+            MyLog.d(TAG, "already applied styles (from code editor), uniqueId=${stylesResult.uniqueId}")
             return
         }
 
