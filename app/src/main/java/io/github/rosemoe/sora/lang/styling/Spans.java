@@ -33,6 +33,8 @@ import io.github.rosemoe.sora.widget.schemes.EditorColorScheme;
  */
 public interface Spans {
 
+    Spans copy();
+
     /**
      * Adjust spans on insert.
      * Must be implemented.

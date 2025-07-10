@@ -141,6 +141,18 @@ public class CodeBlock {
      */
     public boolean toBottomOfEndLine;
 
+
+    public CodeBlock copy() {
+        CodeBlock newCodeBlock = new CodeBlock();
+        newCodeBlock.startLine = this.startLine;
+        newCodeBlock.startColumn = this.startColumn;
+        newCodeBlock.endLine = this.endLine;
+        newCodeBlock.endColumn = this.endColumn;
+        newCodeBlock.toBottomOfEndLine = this.toBottomOfEndLine;
+
+        return newCodeBlock;
+    }
+
     public void clear() {
         startColumn = startLine = endLine = endColumn = 0;
         toBottomOfEndLine = false;

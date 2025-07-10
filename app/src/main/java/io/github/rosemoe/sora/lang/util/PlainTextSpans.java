@@ -41,6 +41,13 @@ public class PlainTextSpans implements Spans {
         this.lineCount = lineCount;
     }
 
+
+    @Override
+    public Spans copy() {
+        return new PlainTextSpans(lineCount);
+    }
+
+
     public void setLineCount(int lineCount) {
         this.lineCount = lineCount;
     }

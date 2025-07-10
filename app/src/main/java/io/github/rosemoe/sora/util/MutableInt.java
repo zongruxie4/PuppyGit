@@ -39,4 +39,7 @@ public class MutableInt {
         value++;
     }
 
+    public MutableInt copy() {
+        return new MutableInt((value));
+    }
 }

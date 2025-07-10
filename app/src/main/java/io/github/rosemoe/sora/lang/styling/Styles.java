@@ -287,4 +287,35 @@ public class Styles {
         }
     }
 
+
+    public Styles copy() {
+        Styles newStyles = new Styles();
+        newStyles.spans = this.spans.copy();
+        newStyles.lineStyles = new ArrayList<>(this.lineStyles.size());
+        for (LineStyles ls : this.lineStyles) {
+            newStyles.lineStyles.add(ls.copy());
+        }
+
+        newStyles.styleTypeCount = new ConcurrentHashMap<>(this.styleTypeCount.size());
+        for (Map.Entry<Class<?>, MutableInt> entry : this.styleTypeCount.entrySet()) {
+            newStyles.styleTypeCount.put(entry.getKey(), entry.getValue().copy());
+        }
+
+        newStyles.suppressSwitch = this.suppressSwitch;
+        newStyles.indentCountMode = this.indentCountMode;
+
+        newStyles.blocks = new ArrayList<>(this.blocks.size());
+        for(CodeBlock cb : this.blocks) {
+            newStyles.blocks.add(cb.copy());
+        }
+
+        newStyles.blocksByStart = new ArrayList<>(this.blocksByStart.size());
+        for(CodeBlock cb : this.blocksByStart) {
+            newStyles.blocksByStart.add(cb.copy());
+        }
+
+
+        return newStyles;
+    }
+
 }

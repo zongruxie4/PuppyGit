@@ -200,6 +200,28 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
             lock = new ReentrantLock();
         }
 
+        public LockedSpans(List<Line> lines) {
+            this.lines = lines;
+            lock = new ReentrantLock();
+        }
+
+
+        @Override
+        public Spans copy() {
+            ArrayList<Line> newLines = new ArrayList<>(this.lines.size());
+
+            for(Line line : this.lines) {
+                ArrayList<Span> newSpans = new ArrayList<>(line.spans.size());
+                for (Span span : line.spans) {
+                    newSpans.add(span.copy());
+                }
+                newLines.add(new Line(newSpans));
+            }
+
+            return new LockedSpans(newLines);
+        }
+
+
         @Override
         public void adjustOnDelete(CharPosition start, CharPosition end) {
 

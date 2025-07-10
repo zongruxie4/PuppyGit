@@ -46,6 +46,21 @@ public class MappedSpans implements Spans {
     }
 
     @Override
+    public Spans copy() {
+        ArrayList<List<Span>> newSpanMap = new ArrayList<>(spanMap.size());
+
+        for(List<Span> embedList : spanMap) {
+            ArrayList<Span> newEmbedList = new ArrayList<>(embedList.size());
+            for (Span span : embedList) {
+                newEmbedList.add(span.copy());
+            }
+            newSpanMap.add(newEmbedList);
+        }
+
+        return new MappedSpans(newSpanMap);
+    }
+
+    @Override
     public void adjustOnInsert(CharPosition start, CharPosition end) {
         var startLine = start.line;
         var endLine = end.line;

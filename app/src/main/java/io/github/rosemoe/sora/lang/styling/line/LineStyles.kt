@@ -33,6 +33,13 @@ class LineStyles(override var line: Int) : LineAnchorStyle(line) {
 
     private val styles = mutableListOf<LineAnchorStyle>()
 
+    fun copy() : LineStyles {
+        val outterThis = this
+        return LineStyles(line).apply {
+            this.styles.addAll(outterThis.styles)
+        }
+    }
+
     /**
      * Add a new style object. Note that style object of a given class is allowed to add once.
      * eg. You can not add two [LineBackground] objects even when they are exactly the same
