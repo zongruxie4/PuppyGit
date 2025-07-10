@@ -66,6 +66,9 @@ val MimeType.icon: MimeTypeIcon
 
 // See also https://mimesniff.spec.whatwg.org/#mime-type-groups
 private val mimeTypeToIconMap = mapOf(
+    "application/x-go" to MimeTypeIcon.CODE,
+    "application/x-kotlin" to MimeTypeIcon.CODE,
+
     "application/vnd.android.package-archive" to MimeTypeIcon.APK,
     "application/gzip" to MimeTypeIcon.ARCHIVE,
     // Not in IANA list, but Mozilla and Wikipedia say so.
