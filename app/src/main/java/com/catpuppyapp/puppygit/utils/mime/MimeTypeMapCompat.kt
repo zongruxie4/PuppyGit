@@ -264,6 +264,7 @@ private val extensionToMimeTypeMap = mapOf(
     "kotlin" to "application/x-kotlin",
 
     "go" to "application/x-go", // 也是我加的
+    "jsx" to "application/x-jsx", // 也是我加的
 
     "kwd" to "application/x-kword",
     "kwt" to "application/x-kword",
