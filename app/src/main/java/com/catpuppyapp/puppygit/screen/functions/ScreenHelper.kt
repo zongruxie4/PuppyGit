@@ -378,6 +378,8 @@ fun getEditorStateOnChange(
 //                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
                 //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
                 if(clearRedoStack) {
+                    // after undo, then changed content, re-analyze for syntax highlighting
+                    newState.codeEditor?.analyze(newState)
                     undoStack.redoStackClear()
                 }
 
