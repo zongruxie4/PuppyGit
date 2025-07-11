@@ -863,10 +863,7 @@ class TextEditorState private constructor(
 
             updateStyles(newState) { baseStyles, baseFields ->
                 // delete current and previous lines
-                updateStylesAfterDeleteLine(baseFields, baseStyles, toLineIdx, ignoreThis = true, newState, endLineIndexInclusive = targetIndex)
-
-                // add new content to previous line
-                updateStylesAfterInsertLine(baseFields, baseStyles, toLineIdx, ignoreThis = false, toTextFieldState.value.text, newState)
+                updateStylesAfterDeletedLineBreak(baseFields, baseStyles, toLineIdx, ignoreThis = false, newState)
             }
 
 
@@ -1560,7 +1557,7 @@ class TextEditorState private constructor(
             editorPageIsContentSnapshoted?.value = false
 
             updateStyles(newState) { baseStyles, baseFields ->
-                // 降序删除不用算索引偏移
+                // 这个是clear行内容，但保留空行，所以不需要处理索引（降序或正序递减1）
                 // delete current line
                 val lastIdx = selectedIndices.size - 1
                 selectedIndices.forEachIndexed { idx, lineIdxWillDel ->
@@ -2238,15 +2235,91 @@ class TextEditorState private constructor(
 //    fun copyStyles(nextState: TextEditorState): StylesResult? = tryGetStylesResult()
 
 
+
+    // only remove line break
+    private fun updateStylesAfterDeletedLineBreak(
+        baseFields: MutableList<TextFieldState>,
+        stylesResult: StylesResult,
+        startLineIndex: Int,
+        ignoreThis: Boolean,
+        newTextEditorState: TextEditorState
+    ) {
+        val funName = "updateStylesAfterDeletedLineBreak"
+        MyLog.d(TAG, "$funName: $stylesResult")
+
+        // 删除某行逻辑是从上一行的末尾到这一行的末尾
+        val endLineIndexInclusive = startLineIndex + 1
+        if(!isGoodIndexForList(startLineIndex, baseFields) || !isGoodIndexForList(endLineIndexInclusive, baseFields)) {
+            MyLog.d(TAG, "$funName: bad index: start=$startLineIndex, end=$endLineIndexInclusive, list.size=${baseFields.size}")
+            return
+        }
+
+        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = false)
+        val endIdxOfText = startIdxOfText + 1
+        if(startIdxOfText == -1 || endIdxOfText == -1) {
+            return
+        }
+
+        val start = CharPosition(startLineIndex, baseFields[startLineIndex].value.text.length, startIdxOfText)
+        val end = CharPosition(endLineIndexInclusive, 0, endIdxOfText)
+
+
+        if(start == end) {
+            MyLog.w(TAG, "#$funName: start == end: $start, nothing need to delete")
+            return
+        }
+
+        val isDelLastLine = endLineIndexInclusive == baseFields.lastIndex
+
+        // end line idx greater than start line index, so remove first then set is ok
+        val removedLineContent = baseFields.removeAt(endLineIndexInclusive)
+        val lastLineContent = baseFields.get(startLineIndex)
+        baseFields.set(startLineIndex, lastLineContent.copy(value = lastLineContent.value.copy(lastLineContent.value.text + removedLineContent.value.text)))
+
+
+        MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fields.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
+
+        // 如果删完了，就重新执行分析
+        if(ignoreThis.not() && (baseFields.isEmpty() || (fields.size == 1 && fields[0].value.text.isBlank()))) {
+            codeEditor?.analyze(newTextEditorState)
+            return
+        }
+
+//        println("baseFields[insertIndex].value.text: ${baseFields.getOrNull(end.line)?.value?.text}")
+//        MyLog.d(TAG, "#$funName: will delete range: start=$start, end=$end")
+
+        // style will update spans
+        stylesResult.styles.adjustOnDelete(start, end)
+        MyLog.d(TAG, "#$funName: adjusted on delete, spans.lineCount = ${stylesResult.styles.spans.lineCount}, baseFields.size = ${baseFields.size}")
+
+
+        val selectedText = "\n"
+        val lang = codeEditor?.myLang
+        if(lang != null) {
+            val act = {
+                lang.analyzeManager.delete(start, end, selectedText)
+            }
+
+            codeEditor.sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis, newTextEditorState, act))
+        }
+
+    }
+
+
     // 增删内容需要调用 spans的after change，然后调用lang.analyzeManager()的insert/ delete重新执行分析
     //  其中需要用到 char position，有3个字段，line为行索引，column为列索引，均为0开始，index为文本在全文中的索引
-    //  如果删除多行，需要把行排序，然后逐行删除，每删一行把后面的索引减1
-    fun updateStylesAfterDeleteLine(
+    //  如果删除多行，需要把行排序，然后逐行删除，每删一行把后面的索引减1（倒序删除就不需要减1了）
+    //删除一行：上行length到这行length，不考虑 \n
+    //添加一行：和删除一样
+    //index是包含\n的
+    private fun updateStylesAfterDeleteLine(
         baseFields: MutableList<TextFieldState>,
         stylesResult: StylesResult,
         startLineIndex: Int,
         ignoreThis: Boolean,
         newTextEditorState: TextEditorState,
+
+        // is a continuously lines span with `startLineIndex`
         endLineIndexInclusive: Int = startLineIndex,
 
         // clear content but keep line (\n)
@@ -2255,35 +2328,29 @@ class TextEditorState private constructor(
         val funName = "updateStylesAfterDeleteLine"
         MyLog.d(TAG, "$funName: $stylesResult")
 
-        val isDelLastLine = endLineIndexInclusive >= baseFields.lastIndex
-        val endExclusive =  endLineIndexInclusive + 1
-        val endIndex = if(isDelLastLine) endLineIndexInclusive else endExclusive
+        // 删除某行逻辑是从上一行的末尾到这一行的末尾
+        val startLineIndex = if(keepLine) startLineIndex else (startLineIndex-1).coerceAtLeast(0)
+        if(!isGoodIndexForList(startLineIndex, baseFields) || !isGoodIndexForList(endLineIndexInclusive, baseFields)) {
+            MyLog.d(TAG, "$funName: bad index: start=$startLineIndex, end=$endLineIndexInclusive, list.size=${baseFields.size}")
+            return
+        }
 
-        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = true)
-        val endIdxOfText = getIndexOfText(baseFields, endIndex, trueStartFalseEnd = !isDelLastLine)
+        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = keepLine)
+        val endIdxOfText = getIndexOfText(baseFields, endLineIndexInclusive, trueStartFalseEnd = false)
         if(startIdxOfText == -1 || endIdxOfText == -1) {
             return
         }
 
-        val start = CharPosition(startLineIndex, 0, startIdxOfText)
-        // +1 for '\n'
-        val lastLineLen = baseFields.getOrNull(endLineIndexInclusive)?.value?.text?.length ?: 0
-        val endColumn = if(isDelLastLine) lastLineLen else 0
-        val end = if(keepLine) {
-            val field = baseFields.getOrNull(startLineIndex)
-            if(field == null) {
-                MyLog.w(TAG, "#$funName: startLIneIndex invalid: $startLineIndex, fields.size: ${baseFields.size}")
-                return
-            }
-            CharPosition(startLineIndex, field.value.text.length, startIdxOfText + field.value.text.length)
-        } else {
-            CharPosition(endIndex, endColumn, endIdxOfText)
-        }
+        val start = CharPosition(startLineIndex, if(keepLine) 0 else baseFields[startLineIndex].value.text.length, startIdxOfText)
+        val end = CharPosition(endLineIndexInclusive, baseFields[endLineIndexInclusive].value.text.length, endIdxOfText)
+
 
         if(start == end) {
-            MyLog.w(TAG, "#$funName: start == end: $start")
+            MyLog.w(TAG, "#$funName: start == end: $start, nothing need to delete")
             return
         }
+
+        val isDelLastLine = endLineIndexInclusive == baseFields.lastIndex
 
         for(i in IntRange(startLineIndex, endLineIndexInclusive).reversed()) {
             // the fields in the baseFields will
@@ -2300,6 +2367,7 @@ class TextEditorState private constructor(
 
         MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fields.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
 
+        // 如果删完了，就重新执行分析
         if(ignoreThis.not() && (baseFields.isEmpty() || (fields.size == 1 && fields[0].value.text.isBlank()))) {
             codeEditor?.analyze(newTextEditorState)
             return
@@ -2325,38 +2393,29 @@ class TextEditorState private constructor(
 
     }
 
-    fun updateStylesAfterInsertLine(
+    private fun updateStylesAfterInsertLine(
         baseFields: MutableList<TextFieldState>,
         stylesResult: StylesResult,
         startLineIndex: Int,
         ignoreThis: Boolean,
         insertedContent: String,
-        newTextEditorState: TextEditorState
+        newTextEditorState: TextEditorState,
+        wasDeletedLinesCountBefore: Int = 1,
     ) {
         val funName = "updateStylesAfterInsertLine"
+        val startLineIndex = (startLineIndex - wasDeletedLinesCountBefore).coerceAtLeast(0)
         MyLog.d(TAG, "$funName: startLineIndex=$startLineIndex, baseFields.size=${baseFields.size}, $stylesResult")
+
 
         if(ignoreThis.not() && (baseFields.isEmpty() || (fields.size == 1 && fields[0].value.text.isBlank()))) {
             codeEditor?.analyze(newTextEditorState)
             return
         }
 
-        val rawInsertedContent = insertedContent
-        var insertedContent = insertedContent
-        //如果越界，可能最后一行已经删除了，这时追加内容到当前最后一行末尾；若索引有效，则追加到目标行的开头
-        val (startLineIndex, trueStartFalseEnd, columnIndex) = if(startLineIndex > baseFields.lastIndex) {
-            // 如果追加到最后一行末尾，需要前置个换行符
-            insertedContent = "\n" + insertedContent
-            Triple(baseFields.lastIndex, false, baseFields.last().value.text.length)
-        }else {
-            insertedContent = insertedContent + "\n"
-            Triple(startLineIndex, true, 0)
-        }
 
-        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd)
-//        val endIdxOfText = getIndexOfText(baseFields, endLineIndexInclusive, trueStartFalseEnd = false)
+        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, true)
         if(startIdxOfText < 0) {
-            MyLog.w(TAG, "`startIndexOfText` invalid")
+            MyLog.w(TAG, "`startIndexOfText` invalid: $startIdxOfText")
             return
         }
 
@@ -2364,31 +2423,20 @@ class TextEditorState private constructor(
 
         // 这个LineChangeType.NEW可有可无，因为这个baseFields实际不是textstate应用的state
         var insertIndex = startLineIndex
-        rawInsertedContent.lines().forEachBetter {
+        insertedContent.lines().forEach {
             baseFields.add(insertIndex++, TextFieldState(value = TextFieldValue(it)))
         }
 
-        val start = CharPosition(startLineIndex, columnIndex, startIdxOfText)
+        val start = CharPosition(startLineIndex, 0, startIdxOfText)
+        val end = CharPosition(insertIndex, 0, startIdxOfText + insertedContent.length)
 
-        insertIndex--
-        val endAtLastLine = insertIndex == baseFields.lastIndex
-        val endIndex = if(endAtLastLine) insertIndex else (insertIndex + 1);
-        val endColumnIndex = if(endAtLastLine) baseFields.lastOrNull()?.value?.text?.length ?: 0 else 0
-        val end = CharPosition(endIndex, endColumnIndex, startIdxOfText + insertedContent.length)
-//        val end = baseFields.getOrNull(insertIndex).let {
-//            if(it != null) {
-//                CharPosition(insertIndex, columnIndex + it.value.text.length, startIdxOfText + insertedContent.length)
-//            }else {
-//                CharPosition(insertIndex, columnIndex + it.value.text.length, startIdxOfText + insertedContent.length)
-//            }
-//        }
 
 
         MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fields.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
 
 
         if(start == end) {
-            MyLog.w(TAG, "#$funName: start == end: $start")
+            MyLog.w(TAG, "#$funName: start == end: $start, nothing need to insert")
             return
         }
 
@@ -2415,6 +2463,10 @@ class TextEditorState private constructor(
     ):Int {
         if(baseFields.isEmpty()) {
             return 0
+        }
+
+        if(lineIdx >= baseFields.size) {
+            return baseFields.sumOf { it.value.text.length }
         }
 
         val lineIdx = if(trueStartFalseEnd) lineIdx - 1 else lineIdx
