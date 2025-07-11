@@ -164,7 +164,7 @@ enum class PLScope(val scope: String) {
                 return PYTHON
             }
 
-            if(fileName.endsWith(".rust")) {
+            if(fileName.endsWith(".rs") || fileName.endsWith(".rust")) {
                 return RUST
             }
 
