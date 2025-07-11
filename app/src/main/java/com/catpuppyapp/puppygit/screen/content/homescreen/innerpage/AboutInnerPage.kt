@@ -82,6 +82,7 @@ private val openSourceList = listOf(
     OpenSource(projectName = "libssh2", projectLink = "https://github.com/libssh2/libssh2", licenseLink = "https://raw.githubusercontent.com/libssh2/libssh2/refs/heads/master/COPYING"),
     OpenSource(projectName = "compose-markdown", projectLink = "https://github.com/jeziellago/compose-markdown", licenseLink = "https://github.com/jeziellago/compose-markdown/blob/main/LICENSE"),
     OpenSource(projectName = "swipe", projectLink = "https://github.com/saket/swipe", licenseLink = "https://github.com/saket/swipe/blob/trunk/LICENSE.txt"),
+    OpenSource(projectName = "sora-editor", projectLink = "https://github.com/Rosemoe/sora-editor", licenseLink = "https://github.com/Rosemoe/sora-editor/blob/main/LICENSE"),
 )
 
 
