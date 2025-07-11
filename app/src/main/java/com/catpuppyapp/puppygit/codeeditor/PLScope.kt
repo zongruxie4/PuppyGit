@@ -121,7 +121,7 @@ enum class PLScope(val scope: String) {
                 return LUA
             }
 
-            if(fileName.endsWith(".kotlin") || fileName.endsWith(".kt")) {
+            if(fileName.endsWith(".kotlin") || fileName.endsWith(".kt") || fileName.endsWith(".kts")) {
                 return KOTLIN
             }
 
