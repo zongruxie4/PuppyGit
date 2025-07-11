@@ -726,6 +726,7 @@ object AppModel {
                 it.release()
             }
         }
+        editorCache.clear()
     }
 
 

@@ -134,11 +134,7 @@ class MyCodeEditor(
 //    }
 
     fun release() {
-        clearCache()
-//        clearStylesChannel()
-    }
-
-    fun clearCache() {
+        cleanLanguage()
         highlightMap.clear()
         stylesMap.clear()
     }
@@ -252,16 +248,7 @@ class MyCodeEditor(
 
 
             // Destroy old one
-            latestStyles = null
-            val old: Language? = myLang
-            if (old != null) {
-                val formatter = old.getFormatter()
-                formatter.setReceiver(null)
-                formatter.destroy()
-                old.getAnalyzeManager().setReceiver(null)
-                old.getAnalyzeManager().destroy()
-                old.destroy()
-            }
+            cleanLanguage()
 
 
             // run new analyze
@@ -286,6 +273,19 @@ class MyCodeEditor(
 //            it.setEditorLanguage(lang)
 //            it.setText(text)
 
+        }
+    }
+
+    private fun cleanLanguage() {
+        latestStyles = null
+        val old: Language? = myLang
+        if (old != null) {
+            val formatter = old.getFormatter()
+            formatter.setReceiver(null)
+            formatter.destroy()
+            old.getAnalyzeManager().setReceiver(null)
+            old.getAnalyzeManager().destroy()
+            old.destroy()
         }
     }
 
@@ -342,8 +342,12 @@ class MyCodeEditor(
         return highlightMap.get(fieldsId)
     }
 
+    fun releaseAndRemoveSelfFromCache() {
+        release()
+        AppModel.editorCache.remove(this)
+    }
 
-    // TODO 添加修改行和删除行的函数，外部调用 code editor重新执行语法分析，然后应用style到调用的那个state
+
 }
 
 data class StylesResult(

@@ -87,8 +87,6 @@ fun SubPageEditor(
 
 
 
-
-
     val navController = AppModel.navController
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 //    val appContext = AppModel.appContext  //这个获取不了Activity!
@@ -145,6 +143,12 @@ fun SubPageEditor(
             plScope = plScope,
             editorState = editorPageTextEditorState
         )
+    }
+
+
+    val naviUp = {
+        codeEditor.value.releaseAndRemoveSelfFromCache()
+        naviUp()
     }
 
 
