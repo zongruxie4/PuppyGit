@@ -14,10 +14,8 @@ import androidx.compose.ui.text.withStyle
 import com.catpuppyapp.puppygit.codeeditor.AnnotatedStringResult
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.codeeditor.StylesResult
-import com.catpuppyapp.puppygit.codeeditor.StylesResultFrom
 import com.catpuppyapp.puppygit.codeeditor.StylesUpdateRequest
 import com.catpuppyapp.puppygit.codeeditor.scopeInvalid
-import com.catpuppyapp.puppygit.codeeditor.scopeMatched
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
@@ -32,7 +30,6 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
-import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.generateRandomString
@@ -779,7 +776,6 @@ class TextEditorState private constructor(
                 val insertIndex = if(trueAppendFalseReplace) {
                     targetIndex + 1
                 } else {
-                    // delete current and previous lines
                     updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
                     targetIndex
                 }
@@ -1431,7 +1427,7 @@ class TextEditorState private constructor(
                     val lastIdx = indices.size - 1
                     indices.sortedDescending().forEachIndexed { idx, lineIdxWillDel ->
                         // 仅当删除最后一个条目时更新一次样式
-                        updateStylesAfterDeleteLine(baseFields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState)
+                        updateStylesAfterDeleteLine(baseFields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState, keepLine = false)
                     }
 
                 }
@@ -1562,7 +1558,7 @@ class TextEditorState private constructor(
                 val lastIdx = selectedIndices.size - 1
                 selectedIndices.forEachIndexed { idx, lineIdxWillDel ->
                     // 仅当删除最后一个条目时更新一次样式
-                    updateStylesAfterDeleteLine(baseFields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState, keepLine = true)
+                    updateStylesAfterDeleteLine(baseFields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState)
                 }
 
             }
@@ -2264,12 +2260,13 @@ class TextEditorState private constructor(
         val end = CharPosition(endLineIndexInclusive, 0, endIdxOfText)
 
 
-        if(start == end) {
-            MyLog.w(TAG, "#$funName: start == end: $start, nothing need to delete")
-            return
-        }
-
-        val isDelLastLine = endLineIndexInclusive == baseFields.lastIndex
+        // even same, still need call adjustAfterDelete for received a new styles to re-render the view
+//        if(start == end) {
+//            MyLog.w(TAG, "#$funName: start == end: $start, nothing need to delete")
+//            return
+//        }
+//
+//        val isDelLastLine = endLineIndexInclusive == baseFields.lastIndex
 
         // end line idx greater than start line index, so remove first then set is ok
         val removedLineContent = baseFields.removeAt(endLineIndexInclusive)
@@ -2323,7 +2320,7 @@ class TextEditorState private constructor(
         endLineIndexInclusive: Int = startLineIndex,
 
         // clear content but keep line (\n)
-        keepLine: Boolean = false,
+        keepLine: Boolean = true,
     ) {
         val funName = "updateStylesAfterDeleteLine"
         MyLog.d(TAG, "$funName: $stylesResult")
@@ -2345,10 +2342,10 @@ class TextEditorState private constructor(
         val end = CharPosition(endLineIndexInclusive, baseFields[endLineIndexInclusive].value.text.length, endIdxOfText)
 
 
-        if(start == end) {
-            MyLog.w(TAG, "#$funName: start == end: $start, nothing need to delete")
-            return
-        }
+//        if(start == end) {
+//            MyLog.w(TAG, "#$funName: start == end: $start, nothing need to delete")
+//            return
+//        }
 
         val isDelLastLine = endLineIndexInclusive == baseFields.lastIndex
 
@@ -2400,10 +2397,8 @@ class TextEditorState private constructor(
         ignoreThis: Boolean,
         insertedContent: String,
         newTextEditorState: TextEditorState,
-        wasDeletedLinesCountBefore: Int = 1,
     ) {
         val funName = "updateStylesAfterInsertLine"
-        val startLineIndex = (startLineIndex - wasDeletedLinesCountBefore).coerceAtLeast(0)
         MyLog.d(TAG, "$funName: startLineIndex=$startLineIndex, baseFields.size=${baseFields.size}, $stylesResult")
 
         //start line must valid
@@ -2428,11 +2423,15 @@ class TextEditorState private constructor(
 
         // 这个LineChangeType.NEW可有可无，因为这个baseFields实际不是textstate应用的state
         var insertIndex = startLineIndex
-        insertedContent.lines().forEach {
-            baseFields.add(++insertIndex, TextFieldState(value = TextFieldValue(it)))
+        insertedContent.lines().forEachIndexed { idx, it ->
+            if(idx == 0) {
+                baseFields.set(startLineIndex, TextFieldState(value = TextFieldValue(it)))
+            }else {
+                baseFields.add(++insertIndex, TextFieldState(value = TextFieldValue(it)))
+            }
         }
 
-        val start = CharPosition(startLineIndex, baseFields[startLineIndex].value.text.length, startIdxOfText)
+        val start = CharPosition(startLineIndex, 0, startIdxOfText)
         val end = CharPosition(insertIndex, 0, startIdxOfText + insertedContent.length)
 
 
@@ -2440,10 +2439,10 @@ class TextEditorState private constructor(
         MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fields.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
 
 
-        if(start == end) {
-            MyLog.w(TAG, "#$funName: start == end: $start, nothing need to insert")
-            return
-        }
+//        if(start == end) {
+//            MyLog.w(TAG, "#$funName: start == end: $start, nothing need to insert")
+//            return
+//        }
 
         // style will update spans
         stylesResult.styles.adjustOnInsert(start, end)
