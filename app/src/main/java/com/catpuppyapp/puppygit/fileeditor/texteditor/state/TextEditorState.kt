@@ -2304,7 +2304,7 @@ class TextEditorState private constructor(
 
         // style will update spans
         stylesResult.styles.adjustOnDelete(start, end)
-        MyLog.d(TAG, "#$funName: adjusted on delete, spans count = ${stylesResult.styles.spans.lineCount}")
+        MyLog.d(TAG, "#$funName: adjusted on delete, spans.lineCount = ${stylesResult.styles.spans.lineCount}, baseFields.size = ${baseFields.size}")
 
 
         val selectedText = getSelectedText(IntRange(startLineIndex, endLineIndexInclusive).toList(), keepEndLineBreak = !isDelLastLine)
@@ -2387,7 +2387,7 @@ class TextEditorState private constructor(
 
         // style will update spans
         stylesResult.styles.adjustOnInsert(start, end)
-        MyLog.d(TAG, "#$funName: adjusted on insert, spans count = ${stylesResult.styles.spans.lineCount}")
+        MyLog.d(TAG, "#$funName: adjusted on insert, spans.lineCount = ${stylesResult.styles.spans.lineCount}, baseFields.size = ${baseFields.size}")
 
         val selectedText = insertedContent
         val lang = codeEditor?.myLang
