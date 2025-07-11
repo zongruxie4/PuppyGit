@@ -2429,7 +2429,7 @@ class TextEditorState private constructor(
         // 这个LineChangeType.NEW可有可无，因为这个baseFields实际不是textstate应用的state
         var insertIndex = startLineIndex
         insertedContent.lines().forEach {
-            baseFields.add(insertIndex++, TextFieldState(value = TextFieldValue(it)))
+            baseFields.add(++insertIndex, TextFieldState(value = TextFieldValue(it)))
         }
 
         val start = CharPosition(startLineIndex, baseFields[startLineIndex].value.text.length, startIdxOfText)
