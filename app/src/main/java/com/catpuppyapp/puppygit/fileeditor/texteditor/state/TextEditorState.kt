@@ -2406,6 +2406,11 @@ class TextEditorState private constructor(
         val startLineIndex = (startLineIndex - wasDeletedLinesCountBefore).coerceAtLeast(0)
         MyLog.d(TAG, "$funName: startLineIndex=$startLineIndex, baseFields.size=${baseFields.size}, $stylesResult")
 
+        //start line must valid
+        if(startLineIndex >= baseFields.size) {
+            MyLog.d(TAG, "$funName: startLineIndex '$startLineIndex' is invalid, baseFields.size=${baseFields.size}")
+            return
+        }
 
         if(ignoreThis.not() && (baseFields.isEmpty() || (fields.size == 1 && fields[0].value.text.isBlank()))) {
             codeEditor?.analyze(newTextEditorState)
@@ -2413,7 +2418,7 @@ class TextEditorState private constructor(
         }
 
 
-        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, true)
+        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, false)
         if(startIdxOfText < 0) {
             MyLog.w(TAG, "`startIndexOfText` invalid: $startIdxOfText")
             return
@@ -2427,7 +2432,7 @@ class TextEditorState private constructor(
             baseFields.add(insertIndex++, TextFieldState(value = TextFieldValue(it)))
         }
 
-        val start = CharPosition(startLineIndex, 0, startIdxOfText)
+        val start = CharPosition(startLineIndex, baseFields[startLineIndex].value.text.length, startIdxOfText)
         val end = CharPosition(insertIndex, 0, startIdxOfText + insertedContent.length)
 
 
