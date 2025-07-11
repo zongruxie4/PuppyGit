@@ -361,6 +361,16 @@ fun getEditorStateOnChange(
         editorPageTextEditorState.value = newState
 
         val lastState = lastTextEditorState.value
+
+        // 在点击undo然后编辑内容后 或者 增量分析出错时，重新执行全量分析
+        // after "clicked undo then changed content" or incremental syntax highlighting thrown an err, do a full text re-analyze
+        newState.codeEditor?.let { codeEditor ->
+            if(codeEditor.latestStyles?.fieldsId.let { it.isNullOrBlank().not() && it != newState.fieldsId && it != lastState.fieldsId}) {
+                codeEditor.analyze(newState)
+            }
+        }
+
+
         // last state == null || 不等于新state的filesId，则入栈
         //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
         if(lastState.maybeNotEquals(newState)) {
@@ -378,13 +388,6 @@ fun getEditorStateOnChange(
 //                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
                 //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
                 if(clearRedoStack) {
-                    // after undo, then changed content for the very first time,
-                    //   need re-analyze for syntax highlighting,
-                    //   before analyze task may throw an err (only throw once), that's fine
-                    if(undoStack.redoStackIsEmpty().not()) {
-                        newState.codeEditor?.analyze(newState)
-                    }
-
                     undoStack.redoStackClear()
                 }
 
