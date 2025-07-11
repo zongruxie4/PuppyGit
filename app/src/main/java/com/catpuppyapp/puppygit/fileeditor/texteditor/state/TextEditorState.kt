@@ -89,7 +89,7 @@ class TextEditorState private constructor(
     val codeEditor: MyCodeEditor?,
 
     // temporary use when syntax highlighting analyzing
-    var temporaryStyles: StylesResult? = null,
+//    var temporaryStyles: StylesResult? = null,
 
 ) {
     private val lock = Mutex()
@@ -106,7 +106,7 @@ class TextEditorState private constructor(
         editorPageIsContentSnapshoted:MutableState<Boolean> = this.editorPageIsContentSnapshoted,
         onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit = this.onChanged,
         codeEditor: MyCodeEditor? = this.codeEditor,
-        temporaryStyles: StylesResult? = this.temporaryStyles,
+//        temporaryStyles: StylesResult? = this.temporaryStyles,
     ):TextEditorState = create(
         fieldsId = fieldsId,
         fields = fields,
@@ -117,7 +117,7 @@ class TextEditorState private constructor(
         editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
         onChanged = onChanged,
         codeEditor = codeEditor,
-        temporaryStyles = temporaryStyles,
+//        temporaryStyles = temporaryStyles,
     )
 
 
@@ -646,15 +646,15 @@ class TextEditorState private constructor(
             // changed baseFields LineChangeType
             // for line number indicator color, the text value doesn't changed,
             // and due to the baseStyles is based fields, so, if we use another
-            // fields which not matched with baseStyles, will casue an error
+            // fields which not matched with baseStyles, will cause an error
             act(baseStyles, fields.toMutableList())
-            nextState.temporaryStyles = baseStyles
+//            nextState.temporaryStyles = baseStyles
 
             // apply styles for next state
-            doJobThenOffLoading {
-                // onChange will call after updateStyles() finished, so here no need call it again
-                nextState.applySyntaxHighlighting(baseStyles, requireCallOnChange = false)
-            }
+//            doJobThenOffLoading {
+//                // onChange will call after updateStyles() finished, so here no need call it again
+//                nextState.applySyntaxHighlighting(baseStyles, requireCallOnChange = false)
+//            }
         }
     }
 
@@ -1817,7 +1817,7 @@ class TextEditorState private constructor(
             onChanged = onChanged,
 
             // temp styles will update after styles updated, so here just set to null
-            temporaryStyles = null,
+//            temporaryStyles = null,
         )
     }
 
@@ -2069,9 +2069,9 @@ class TextEditorState private constructor(
 
         // only styles sent from code editor can override bundled styles
         // 只有来自code editor的styles能覆盖临时styles字段，反之不能，如果应用临时styles，应在外部调用此方法的地方决定是否应用temporaryStyles
-        if(stylesResult.from == StylesResultFrom.CODE_EDITOR) {
-            temporaryStyles = stylesResult.copyWithDeepCopyStyles()
-        }
+//        if(stylesResult.from == StylesResultFrom.CODE_EDITOR) {
+//            temporaryStyles = stylesResult.copyWithDeepCopyStyles()
+//        }
 
 
         // 比锁轻量且能保证几乎没问题，够用了
@@ -2103,7 +2103,7 @@ class TextEditorState private constructor(
                 val latestEditorState = codeEditor?.editorState?.value
                 // just for trigger re-render page
                 if(fieldsId == latestEditorState?.fieldsId) {
-                    onChanged(latestEditorState.copy(temporaryStyles = stylesResult), null, false)
+                    codeEditor?.editorState?.value?.let { onChanged(it, null, false) }
                 }
             }
 
@@ -2180,18 +2180,25 @@ class TextEditorState private constructor(
             return null
         }
 
-        return temporaryStyles.let { tmpStyle ->
-            if(isGoodStyles(tmpStyle)) {
-                tmpStyle
-            }else {
-                val cachedStyles = codeEditor?.stylesMap?.get(fieldsId)
-                if(isGoodStyles(cachedStyles)) {
-                    cachedStyles
-                } else {
-                    null
-                }
-            }
+        val cachedStyles = codeEditor?.stylesMap?.get(fieldsId)
+        return if(isGoodStyles(cachedStyles)) {
+            cachedStyles
+        } else {
+            null
         }
+
+//        return temporaryStyles.let { tmpStyle ->
+//            if(isGoodStyles(tmpStyle)) {
+//                tmpStyle
+//            }else {
+//                val cachedStyles = codeEditor?.stylesMap?.get(fieldsId)
+//                if(isGoodStyles(cachedStyles)) {
+//                    cachedStyles
+//                } else {
+//                    null
+//                }
+//            }
+//        }
     }
 
     fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
@@ -2507,7 +2514,7 @@ class TextEditorState private constructor(
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
             codeEditor: MyCodeEditor?,
-            temporaryStyles: StylesResult?,
+//            temporaryStyles: StylesResult?,
         ): TextEditorState {
             return create(
                 lines = text.lines(),
@@ -2518,7 +2525,7 @@ class TextEditorState private constructor(
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
                 onChanged = onChanged,
                 codeEditor = codeEditor,
-                temporaryStyles = temporaryStyles
+//                temporaryStyles = temporaryStyles
             )
         }
 
@@ -2531,7 +2538,7 @@ class TextEditorState private constructor(
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
             codeEditor: MyCodeEditor?,
-            temporaryStyles: StylesResult?,
+//            temporaryStyles: StylesResult?,
         ): TextEditorState {
             return create(
                 fields = createInitTextFieldStates(lines),
@@ -2543,7 +2550,7 @@ class TextEditorState private constructor(
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
                 onChanged = onChanged,
                 codeEditor = codeEditor,
-                temporaryStyles = temporaryStyles
+//                temporaryStyles = temporaryStyles
 
             )
         }
@@ -2557,7 +2564,7 @@ class TextEditorState private constructor(
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
             codeEditor: MyCodeEditor?,
-            temporaryStyles: StylesResult?,
+//            temporaryStyles: StylesResult?,
         ): TextEditorState {
             //这里`addNewLineIfFileEmpty`必须传true，以确保和String.lines()行为一致，不然若文件末尾有空行，读取出来会少一行
             return create(
@@ -2569,7 +2576,7 @@ class TextEditorState private constructor(
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
                 onChanged = onChanged,
                 codeEditor = codeEditor,
-                temporaryStyles = temporaryStyles,
+//                temporaryStyles = temporaryStyles,
             )
         }
 
@@ -2583,7 +2590,7 @@ class TextEditorState private constructor(
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
             codeEditor: MyCodeEditor?,
-            temporaryStyles: StylesResult?,
+//            temporaryStyles: StylesResult?,
         ): TextEditorState {
             return TextEditorState(
                 fieldsId= fieldsId,
@@ -2595,7 +2602,7 @@ class TextEditorState private constructor(
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
                 onChanged = onChanged,
                 codeEditor = codeEditor,
-                temporaryStyles = temporaryStyles,
+//                temporaryStyles = temporaryStyles,
             )
         }
 
