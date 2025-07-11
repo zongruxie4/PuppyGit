@@ -25,7 +25,10 @@ enum class PLScope(val scope: String) {
     DIFF("source.diff"),
     DOCKER_FILE("source.dockerfile"),
     GO("source.go"),
+    GIT_IGNORE("source.ignore"),
+    GIT_REBASE("text.git-rebase"),
     HTML("text.html.basic"),
+    INI("source.ini"),
     JAVA("source.java"),
     JAVASCRIPT("source.js"),
     JSX("source.js.jsx"),
@@ -61,6 +64,18 @@ enum class PLScope(val scope: String) {
 
         private fun guessScopeType(fileName: String) : PLScope {
             val fileName = fileName.lowercase()
+
+            if(fileName.endsWith(".gitignore")) {
+                return GIT_IGNORE
+            }
+
+            if(fileName.endsWith(".rebase") || fileName.endsWith(".git-rebase") || fileName.endsWith(".gitrebase")) {
+                return GIT_REBASE
+            }
+
+            if(fileName.endsWith(".ini")) {
+                return INI
+            }
 
             if(fileName.endsWith(".markdown") || fileName.endsWith(".md") || fileName.endsWith(".mdown")) {
                 return MARKDOWN
