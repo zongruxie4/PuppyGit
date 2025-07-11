@@ -73,12 +73,16 @@ enum class PLScope(val scope: String) {
                 return GIT_IGNORE
             }
 
-            if(fileName.endsWith(".rebase") || fileName.endsWith(".git-rebase") || fileName.endsWith(".gitrebase")) {
-                return GIT_REBASE
+            if(fileName.endsWith(".ts")) {
+                return TS
             }
 
-            if(fileName.endsWith(".ini") || fileName == "config" || fileName.endsWith(".gitconfig") || fileName.endsWith(".gitmodules")) {
-                return INI
+            if(fileName.endsWith(".xml")) {
+                return XML
+            }
+
+            if(fileName.endsWith(".yml") || fileName.endsWith(".yaml")) {
+                return YAML
             }
 
             if(fileName.endsWith(".markdown") || fileName.endsWith(".md") || fileName.endsWith(".mdown")) {
@@ -87,6 +91,10 @@ enum class PLScope(val scope: String) {
 
             if(fileName.endsWith(".html") || fileName.endsWith(".htm")) {
                 return HTML
+            }
+
+            if(fileName.endsWith(".json")) {
+                return JSON
             }
 
             if(fileName.endsWith(".java")) {
@@ -105,12 +113,8 @@ enum class PLScope(val scope: String) {
                 return TSX
             }
 
-            if(fileName.endsWith(".json")) {
-                return JSON
-            }
-
-            if(fileName.endsWith(".less")) {
-                return LESS
+            if(fileName.endsWith(".ini") || fileName == "config" || fileName.endsWith(".gitconfig") || fileName.endsWith(".gitmodules")) {
+                return INI
             }
 
             if(fileName.endsWith(".lua")) {
@@ -125,12 +129,12 @@ enum class PLScope(val scope: String) {
                 return GO
             }
 
-            if(fileName.endsWith(".cpp") || fileName.endsWith(".cc") || fileName.endsWith(".cxx") || fileName.endsWith(".c++")) {
-                return CPP
-            }
-
             if(fileName.endsWith(".c")) {
                 return C
+            }
+
+            if(fileName.endsWith(".cpp") || fileName.endsWith(".cc") || fileName.endsWith(".cxx") || fileName.endsWith(".c++")) {
+                return CPP
             }
 
 
@@ -147,20 +151,49 @@ enum class PLScope(val scope: String) {
                 return CSHARP
             }
 
-            if(fileName.endsWith(".css")) {
-                return CSS
-            }
-
             if(fileName.endsWith(".dart")) {
                 return DART
+            }
+
+            if(fileName.endsWith(".php")) {
+                return PHP
+            }
+
+            if(fileName.endsWith(".py") || fileName.endsWith(".python")) {
+                return PYTHON
+            }
+
+            if(fileName.endsWith(".rust")) {
+                return RUST
             }
 
             if(fileName == "dockerfile" || fileName.endsWith(".dockerfile")) {
                 return DOCKER_FILE
             }
 
-            if(fileName.endsWith(".mdmath") || fileName.endsWith(".mdm") || fileName.endsWith(".mmd")) {
-                return MARKDOWN_MATH
+            if(fileName.endsWith(".sh")) {
+                return SHELL
+            }
+
+            if(fileName.endsWith(".makefile")) {
+                return MAKE_FILE
+            }
+
+            if(fileName.endsWith(".css")) {
+                return CSS
+            }
+
+            if(fileName.endsWith(".less")) {
+                return LESS
+            }
+
+
+            if(fileName.endsWith(".ps1")) {
+                return POWER_SHELL
+            }
+
+            if(fileName.endsWith(".rb") || fileName.endsWith(".ruby")) {
+                return RUBY
             }
 
 
@@ -168,36 +201,8 @@ enum class PLScope(val scope: String) {
                 return PERL
             }
 
-            if(fileName.endsWith(".makefile")) {
-                return MAKE_FILE
-            }
-
-            if(fileName.endsWith(".php")) {
-                return PHP
-            }
-
-            if(fileName.endsWith(".ps1")) {
-                return POWER_SHELL
-            }
-
-            if(fileName.endsWith(".py") || fileName.endsWith(".python")) {
-                return PYTHON
-            }
-
-            if(fileName.endsWith(".rb") || fileName.endsWith(".ruby")) {
-                return RUBY
-            }
-
-            if(fileName.endsWith(".rust")) {
-                return RUST
-            }
-
             if(fileName.endsWith(".scss") || fileName.endsWith(".sass")) {
                 return SCSS
-            }
-
-            if(fileName.endsWith(".sh")) {
-                return SHELL
             }
 
             if(fileName.endsWith(".sql")) {
@@ -208,16 +213,12 @@ enum class PLScope(val scope: String) {
                 return SWIFT
             }
 
-            if(fileName.endsWith(".ts")) {
-                return TS
+            if(fileName.endsWith(".mdmath") || fileName.endsWith(".mdm") || fileName.endsWith(".mmd")) {
+                return MARKDOWN_MATH
             }
 
-            if(fileName.endsWith(".xml")) {
-                return XML
-            }
-
-            if(fileName.endsWith(".yml") || fileName.endsWith(".yaml")) {
-                return YAML
+            if(fileName.endsWith(".rebase") || fileName.endsWith(".git-rebase") || fileName.endsWith(".gitrebase")) {
+                return GIT_REBASE
             }
 
             return NONE
