@@ -262,7 +262,10 @@ private val extensionToMimeTypeMap = mapOf(
     // start: I add
     //kotlin这个是我(Bandeapart1964)添加的，目前没有kotlin文件的mime type，先用java的凑合吧
     "kt" to "application/x-kotlin",
+    "kts" to "application/x-kotlin",
     "kotlin" to "application/x-kotlin",
+    "groovy" to "application/x-groovy",
+    "gradle" to "application/x-groovy",
 
     "go" to "application/x-go",
     "jsx" to "application/x-jsx",
