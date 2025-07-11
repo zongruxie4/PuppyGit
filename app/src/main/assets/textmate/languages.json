@@ -57,6 +57,19 @@
     },
 
     {
+      "grammar": "textmate/git-base/syntaxes/ignore.tmLanguage.json",
+      "name": "gitignore",
+      "scopeName": "source.ignore",
+      "languageConfiguration": "textmate/git-base/ignore.language-configuration.json"
+    },
+
+    {
+      "grammar": "textmate/git-base/syntaxes/git-rebase.tmLanguage.json",
+      "name": "git-rebase",
+      "scopeName": "text.git-rebase",
+      "languageConfiguration": "textmate/git-base/git-rebase.language-configuration.json"
+    },
+    {
       "grammar": "textmate/go/syntaxes/go.tmLanguage.json",
       "name": "go",
       "scopeName": "source.go",
@@ -68,6 +81,13 @@
       "name": "html",
       "scopeName": "text.html.basic",
       "languageConfiguration": "textmate/html/language-configuration.json"
+    },
+
+    {
+      "grammar": "textmate/ini/syntaxes/ini.tmLanguage.json",
+      "name": "ini",
+      "scopeName": "source.ini",
+      "languageConfiguration": "textmate/ini/ini.language-configuration.json"
     },
 
     {
