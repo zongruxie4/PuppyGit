@@ -94,7 +94,7 @@
       "grammar": "textmate/ini/syntaxes/ini.tmLanguage.json",
       "name": "ini",
       "scopeName": "source.ini",
-      "languageConfiguration": "textmate/ini/ini.language-configuration.json"
+      "languageConfiguration": "textmate/ini/language-configuration.json"
     },
 
     {
