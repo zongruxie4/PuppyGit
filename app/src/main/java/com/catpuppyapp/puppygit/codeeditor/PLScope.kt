@@ -25,6 +25,7 @@ enum class PLScope(val scope: String) {
     DIFF("source.diff"),
     DOCKER_FILE("source.dockerfile"),
     GO("source.go"),
+    GROOVY("source.groovy"),
     GIT_IGNORE("source.ignore"),
     GIT_REBASE("text.git-rebase"),
     HTML("text.html.basic"),
@@ -165,6 +166,10 @@ enum class PLScope(val scope: String) {
 
             if(fileName.endsWith(".rust")) {
                 return RUST
+            }
+
+            if(fileName.endsWith(".gradle") || fileName.endsWith(".groovy")) {
+                return GROOVY
             }
 
             if(fileName == "dockerfile" || fileName.endsWith(".dockerfile")) {

@@ -77,6 +77,13 @@
     },
 
     {
+      "grammar": "textmate/groovy/syntaxes/groovy.tmLanguage.json",
+      "name": "groovy",
+      "scopeName": "source.groovy",
+      "languageConfiguration": "textmate/groovy/language-configuration.json"
+    },
+
+    {
       "grammar": "textmate/html/syntaxes/html.tmLanguage.json",
       "name": "html",
       "scopeName": "text.html.basic",
