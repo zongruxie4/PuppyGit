@@ -81,7 +81,7 @@ class TextEditorState private constructor(
     val isContentEdited: MutableState<Boolean>,  // old name `isContentChanged`
     val editorPageIsContentSnapshoted:MutableState<Boolean>,
 
-    val onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
+    private val onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
 
     val codeEditor: MyCodeEditor?,
 
