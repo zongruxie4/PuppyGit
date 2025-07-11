@@ -473,7 +473,7 @@ fun EditorInnerPage(
 
         // start: reset syntax highlighting related vars
         runCatching {
-            codeEditor.value.clearCache()
+            codeEditor.value.release()
         }
 
         resetPlScope()
@@ -1964,7 +1964,7 @@ private suspend fun doInit(
                 undoStack.reset(requireOpenFilePath)
 
                 // clear editor cache
-                codeEditor.clearCache()
+                codeEditor.release()
                 // reset syntax highlighting language to auto detect
                 resetPlScope()
             }
