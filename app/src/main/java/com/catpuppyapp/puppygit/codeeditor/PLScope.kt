@@ -77,7 +77,7 @@ enum class PLScope(val scope: String) {
                 return GIT_REBASE
             }
 
-            if(fileName.endsWith(".ini")) {
+            if(fileName.endsWith(".ini") || fileName == "config" || fileName.endsWith(".gitconfig") || fileName.endsWith(".gitmodules")) {
                 return INI
             }
 
