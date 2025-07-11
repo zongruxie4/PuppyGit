@@ -2047,7 +2047,7 @@ class TextEditorState private constructor(
     }
 
     // 在MyTextField应调用此方法获得AnnotatedString
-    fun generateAnnotatedStringForLine(textFieldState: TextFieldState, spans:List<Span>): AnnotatedString {
+    private fun generateAnnotatedStringForLine(textFieldState: TextFieldState, spans:List<Span>): AnnotatedString {
         val colorScheme = codeEditor?.colorScheme
         if(colorScheme == null) {
             return AnnotatedString(textFieldState.value.text)
@@ -2069,10 +2069,10 @@ class TextEditorState private constructor(
                 val style = curSpan.style
                 val foregroundColor = Color(RendererUtils.getForegroundColor(curSpan, colorScheme))
 //                println("forecolor = ${RendererUtils.getForegroundColor(curSpan, colorScheme)}")
-//                val backgroundColor = Color(RendererUtils.getBackgroundColor(curSpan, obtainColorScheme()))
+                val backgroundColor = Color(RendererUtils.getBackgroundColor(curSpan, colorScheme))
                 val fontWeight = if(TextStyle.isBold(style)) FontWeight.Bold else null
                 val fontStyle = if(TextStyle.isItalics(style)) FontStyle.Italic else null
-                withStyle(SpanStyle(color = foregroundColor, fontStyle = fontStyle, fontWeight = fontWeight)) {
+                withStyle(SpanStyle(color = foregroundColor, fontStyle = fontStyle, fontWeight = fontWeight, background = backgroundColor)) {
                     append(rawText.substring(textRange))
                 }
             }
@@ -2120,7 +2120,7 @@ class TextEditorState private constructor(
             return raw
         }
 
-        val funName = "obtainHighlightedTextField"
+//        val funName = "obtainHighlightedTextField"
 //        MyLog.d(TAG, "#$funName: fieldsId=$fieldsId")
         val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
         val annotatedStringResult = sh?.get(raw.syntaxHighlightId)
