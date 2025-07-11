@@ -657,137 +657,15 @@ class TextEditorState private constructor(
 
 
     suspend fun appendOrReplaceFields(targetIndex: Int, text: String, trueAppendFalseReplace:Boolean) {
-        lock.withLock {
-            if(targetIndex < 0) {
-                return
-            }
-
-            val currentFiled = fields.getOrNull(targetIndex)
-            if(currentFiled == null) {
-                return
-            }
-
-
-
-
-            //  if is append, need prepend indent of current line; if is replace, just add new content as-is
-            val autoIndentSpacesCount = if(trueAppendFalseReplace) {
-                getNextIndentByCurrentStr(currentFiled.value.text, SettingsUtil.editorTabIndentCount())
-            } else {
-                ""
-            }
-
-            // 创建对象并更新 change type
-            //changeType: 先全初始化为new，如果是replace，首行状态后面会和旧行比较来判断是修改还是新增还是没变
-            val textFiledStates = mutableListOf<TextFieldState>()
-            text.lines().forEachBetter {
-                textFiledStates.add(
-                    TextFieldState(
-                        value = TextFieldValue(text = autoIndentSpacesCount + it),
-                        changeType = LineChangeType.NEW
-                    )
-                )
-            }
-
-
-
-            //若超过size，追加到末尾
-            val targetIndex = if(trueAppendFalseReplace) targetIndex+1 else targetIndex
-
-            var targetLineSelected = false
-
-            val newFields = fields.toMutableList()
-
-            val targetIndexOverSize = targetIndex >= newFields.size
-            //若超过有效索引则追加到末尾；否则追加到目标行（原本的目标行会后移）
-            if(targetIndexOverSize) {
-                newFields.addAll(textFiledStates)
-            }else {
-                //如果是replace，保留之前行的选择状态
-                //到这才能确定索引没越界，所以在这取而不是在if else之前取
-                if(trueAppendFalseReplace.not()) {
-                    //replace: 保留旧行选择状态，后面会恢复旧行选择状态
-                    val oldFirstLine = newFields[targetIndex]
-                    targetLineSelected = oldFirstLine.isSelected
-
-                    //replace: 如果新旧首行相同，维持旧行changeType；否则更新为UPDATED
-                    val newFirstLine = textFiledStates.first()
-                    textFiledStates[0] = newFirstLine.copy(changeType = if(oldFirstLine.value.text == newFirstLine.value.text) oldFirstLine.changeType else LineChangeType.UPDATED)
-                }
-
-                newFields.addAll(targetIndex, textFiledStates)
-            }
-
-            //若是replace则移除之前的当前行
-            if(trueAppendFalseReplace.not()) {
-                //更新目标行的选择状态使其和旧行一致
-                if(targetLineSelected) {
-                    newFields[targetIndex] = newFields[targetIndex].copy(isSelected = true)
-                }
-
-                //粘贴之后，之前的目标行会被顶到当前要粘贴的内容后面，如果是replace，则把这行删除
-                newFields.removeAt(targetIndex + textFiledStates.size)
-            }
-
-            var newFocusingLineIdx = targetIndex
-            val newSelectedIndices = selectedIndices.toMutableList()
-
-            //如果目标索引没超过原集合大小，则判断下是否需要更新选中索引列表；否则不用判断，因为超过大小的话，等于无效索引，肯定不会在已选中列表
-            if(targetIndexOverSize.not()) {
-                val selectedIndexOffsetValue = textFiledStates.size.let {if(trueAppendFalseReplace) it else (it-1)}
-                val indexNeedOffset:(selectedIdx:Int)->Boolean = if(trueAppendFalseReplace){{ it >= targetIndex }} else {{ it > targetIndex }}
-
-                val focusIndex = newFocusingLineIdx
-                // 更新聚焦行索引
-                if(focusIndex != null && indexNeedOffset(focusIndex)) {
-                    newFocusingLineIdx = focusIndex+selectedIndexOffsetValue
-                }
-
-                //更新已选中索引
-                if(newSelectedIndices.isNotEmpty()) {
-                    //更新选中索引集合
-                    for((i, selectedIndex) in newSelectedIndices.withIndex()) {
-                        if(indexNeedOffset(selectedIndex)) {
-                            newSelectedIndices[i] = selectedIndex + selectedIndexOffsetValue
-                        }
-                    }
-                }
-            }
-
-
-
-            //通知页面状态变化
-            isContentEdited?.value = true
-            editorPageIsContentSnapshoted?.value = false
-
-            EditCache.writeToFile(text)
-
-
-            val newState = internalCreate(
-                fields = newFields,
-                fieldsId = newId(),
-                selectedIndices = newSelectedIndices,
-                isMultipleSelectionMode = isMultipleSelectionMode,
-                focusingLineIdx = newFocusingLineIdx
-
-            )
-
-            updateStyles(newState) { baseStyles, baseFields ->
-                val insertIndex = if(trueAppendFalseReplace) {
-                    targetIndex + 1
-                } else {
-                    updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
-                    targetIndex
-                }
-
-                // add new content to previous line
-                updateStylesAfterInsertLine(baseFields, baseStyles, insertIndex, ignoreThis = false, text, newState)
-
-            }
-
-            //更新状态
-            onChanged(newState, true, true)
+        if(!isGoodIndexForList(targetIndex, fields)) {
+            MyLog.d(TAG, "#appendOrReplaceFields(): invalid index: $targetIndex, list.size=${fields.size}")
+            return
         }
+
+        splitNewLine(
+            targetIndex,
+            TextFieldValue(if(trueAppendFalseReplace) fields[targetIndex].value.text + lb + text else text)
+        )
     }
 
     suspend fun deleteNewLine(targetIndex: Int) {
