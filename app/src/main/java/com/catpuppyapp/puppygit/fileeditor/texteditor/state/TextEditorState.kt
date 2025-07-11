@@ -662,10 +662,15 @@ class TextEditorState private constructor(
             return
         }
 
-        splitNewLine(
-            targetIndex,
-            TextFieldValue(if(trueAppendFalseReplace) fields[targetIndex].value.text + lb + text else text)
-        )
+        if(trueAppendFalseReplace) {
+            splitNewLine(targetIndex, TextFieldValue(fields[targetIndex].value.text + lb + text))
+        }else {
+            if(text.contains(lb)) {
+                splitNewLine(targetIndex, TextFieldValue(text))
+            }else {
+                updateField(targetIndex, TextFieldValue(text))
+            }
+        }
     }
 
     suspend fun deleteNewLine(targetIndex: Int) {
