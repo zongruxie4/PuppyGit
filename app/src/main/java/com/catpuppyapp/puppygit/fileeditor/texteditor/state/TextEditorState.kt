@@ -333,7 +333,13 @@ class TextEditorState private constructor(
     }
 
 
-    suspend fun splitNewLine(targetIndex: Int, textFieldValue: TextFieldValue) {
+    suspend fun splitNewLine(
+        targetIndex: Int,
+        textFieldValue: TextFieldValue,
+
+        // do some changes for new text field states, will call it after new fields added to newFields
+        updater:((newLinesRange: IntRange, newFields: MutableList<TextFieldState>, newSelectedIndices: MutableList<Int>) -> Unit)? = null
+    ) {
         lock.withLock {
             try {
                 targetIndexValidOrThrow(targetIndex, fields.size)
@@ -362,7 +368,7 @@ class TextEditorState private constructor(
             val oldLine = newFields[targetIndex]
             //这里加oldLine text 非空判断是为了使旧行为空时按回车让旧行changeType保持不变，追加的行为新增
             val newLineAtOldLineHead = oldLine.value.text.isNotEmpty() && splitFirstLine.text.isEmpty()
-            newFields[targetIndex] = oldLine.copy(value = splitFirstLine, isSelected = false).apply {
+            newFields[targetIndex] = oldLine.copy(value = splitFirstLine).apply {
                 if(newLineAtOldLineHead) {  //在旧行头部添加了一换行符
                     // 如果新行开头是空行，必然是新行，所以强制更新而不用if none则更新
                     updateLineChangeType(LineChangeType.NEW)
@@ -394,6 +400,7 @@ class TextEditorState private constructor(
             //addAll若待插入值，最大值是size，不会越界，若超过就越了
             newFields.addAll(targetIndex + 1, newSplitFieldStates)
 
+
             //追加行后的目标索引，实际对应的是 newSplitFieldValues 最后一个元素在当前文件的所有行中的位置
             val lastNewSplitFieldIndex = targetIndex + newSplitFieldValues.count()
 
@@ -405,11 +412,13 @@ class TextEditorState private constructor(
             val newTargetFirstText = splitFirstLine.text  //分割后的第一行对应旧的目标行
             val newTargetLastText = splitFieldValues.last().text  //分割后的最后一行，光标会focus到此行，此行与 newSplitFieldValues 的最后一个元素相同，因为 newSplitFieldValues 是 splitFieldValues 的一个sub list
 
+            val newSelectedIndices = selectedIndices.toMutableList()
+
             val sfiRet = selectFieldInternal(
                 init_fields = newFields,
-                init_selectedIndices = selectedIndices,
+                init_selectedIndices = newSelectedIndices,
                 isMutableFields = true,
-                isMutableSelectedIndices = false,
+                isMutableSelectedIndices = true,
                 targetIndex = lastNewSplitFieldIndex,
 
                 // 如果自定义位置有bug，就禁用下面的改用这个，注释option和columnStartIndexInclusive
@@ -433,6 +442,9 @@ class TextEditorState private constructor(
                     nl
                 },
             )
+
+            updater?.invoke(IntRange(targetIndex, targetIndex + newSplitFieldStates.size), newFields, newSelectedIndices)
+
 
 
             //更新状态变量
@@ -543,7 +555,12 @@ class TextEditorState private constructor(
 //    }
 
 
-    suspend fun updateField(targetIndex: Int, textFieldValue: TextFieldValue, requireLock:Boolean = true) {
+    suspend fun updateField(
+        targetIndex: Int,
+        textFieldValue: TextFieldValue,
+        requireLock:Boolean = true,
+        updater:((newLinesRange: IntRange, newFields: MutableList<TextFieldState>, newSelectedIndices: MutableList<Int>) -> Unit)? = null
+    ) {
         val act =  p@{
             try {
                 targetIndexValidOrThrow(targetIndex, fields.size)
@@ -591,16 +608,19 @@ class TextEditorState private constructor(
 
 
 
+            val newSelectedIndices = selectedIndices.toMutableList()
             val newState = internalCreate(
                 fields = newFields,
                 fieldsId = maybeNewId,
-                selectedIndices = selectedIndices,
+                selectedIndices = newSelectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = targetIndex,
                 // -1 to skip focusing, cause `onFocus` callback of `com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextField` already focused target line, usually the onFocus call `selectField()` of this class
                 // 传 -1 跳过聚焦某行，因为onFocus()已经聚焦了，另外，通常onFocus()会调用这里的selectField()
                 focusingLineIdx = -1,
             )
+
+            updater?.invoke(IntRange(targetIndex, targetIndex), newFields, newSelectedIndices)
 
             if(contentChanged) {
                 updateStyles(newState) { baseStyles, baseFields ->
@@ -662,13 +682,28 @@ class TextEditorState private constructor(
             return
         }
 
+        // unselect all but new lines
+        // 选中所有新行并取消选中所有非新行
+        val updater = { newLinesRange: IntRange, newFields: MutableList<TextFieldState>, newSelectedIndices: MutableList<Int> ->
+            newSelectedIndices.clear()
+
+            for(i in newFields.indices) {
+                if(((trueAppendFalseReplace && i <= newLinesRange.start) || (trueAppendFalseReplace.not() && i < newLinesRange.start)) || i > newLinesRange.endInclusive) {
+                    newFields[i] = newFields[i].copy(isSelected = false)
+                }else {
+                    newFields[i] = newFields[i].copy(isSelected = true)
+                    newSelectedIndices.add(i)
+                }
+            }
+        }
+
         if(trueAppendFalseReplace) {
-            splitNewLine(targetIndex, TextFieldValue(fields[targetIndex].value.text + lb + text))
+            splitNewLine(targetIndex, TextFieldValue(fields[targetIndex].value.text + lb + text), updater = updater)
         }else {
             if(text.contains(lb)) {
-                splitNewLine(targetIndex, TextFieldValue(text))
+                splitNewLine(targetIndex, TextFieldValue(text), updater = updater)
             }else {
-                updateField(targetIndex, TextFieldValue(text))
+                updateField(targetIndex, TextFieldValue(text), updater = updater)
             }
         }
     }
@@ -1569,7 +1604,7 @@ class TextEditorState private constructor(
         //selectedIndices里存的是fields的索引，若是无效索引，直接返回
         val lastSelectedIndexOfLine = selectedIndices.last()
         if(lastSelectedIndexOfLine < 0 || lastSelectedIndexOfLine >= fields.size) {
-            MyLog.w(TAG, "#appendTextToLastSelectedLine: invalid index `$lastSelectedIndexOfLine` of `_fields`")
+            MyLog.w(TAG, "#appendTextToLastSelectedLine: invalid index '$lastSelectedIndexOfLine' of `fields`")
             return
         }
 
