@@ -2231,7 +2231,8 @@ class TextEditorState private constructor(
     }
 
 
-    fun copyStyles(nextState: TextEditorState): StylesResult? = tryGetStylesResult()?.copyForEditorState(newFieldsId = nextState.fieldsId)
+    // note: this was a copy method, but then changed behavior, this method maybe remove in the future
+    fun copyStyles(nextState: TextEditorState): StylesResult? = tryGetStylesResult()
 
 
     // 增删内容需要调用 spans的after change，然后调用lang.analyzeManager()的insert/ delete重新执行分析
@@ -2249,6 +2250,8 @@ class TextEditorState private constructor(
         keepLine: Boolean = false,
     ) {
         val funName = "updateStylesAfterDeleteLine"
+        MyLog.d(TAG, "$funName: $stylesResult")
+
         val isDelLastLine = endLineIndexInclusive >= baseFields.lastIndex
         val endExclusive =  endLineIndexInclusive + 1
         val endIndex = if(isDelLastLine) endLineIndexInclusive else endExclusive
@@ -2328,6 +2331,7 @@ class TextEditorState private constructor(
         newTextEditorState: TextEditorState
     ) {
         val funName = "updateStylesAfterInsertLine"
+        MyLog.d(TAG, "$funName: $stylesResult")
 
         if(ignoreThis.not() && (baseFields.isEmpty() || (fields.size == 1 && fields[0].value.text.isBlank()))) {
             codeEditor?.analyze(newTextEditorState)

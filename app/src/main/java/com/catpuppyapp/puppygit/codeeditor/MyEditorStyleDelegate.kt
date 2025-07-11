@@ -48,7 +48,7 @@ class MyEditorStyleDelegate(
         if(inDarkTheme == Theme.inDarkTheme) {
 //            val targetEditorState = requester.targetEditorState
 //            val targetEditorState = editorState
-            stylesMap.put(editorState.fieldsId, stylesResult)
+            stylesMap.put(editorState.fieldsId, stylesResult.copyWithDeepCopyStyles())
             doJobThenOffLoading {
                 editorState.applySyntaxHighlighting(stylesResult)
             }
