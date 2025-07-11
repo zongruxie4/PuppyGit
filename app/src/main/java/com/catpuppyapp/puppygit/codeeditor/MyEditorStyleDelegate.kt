@@ -48,9 +48,11 @@ class MyEditorStyleDelegate(
         if(inDarkTheme == Theme.inDarkTheme) {
 //            val targetEditorState = requester.targetEditorState
 //            val targetEditorState = editorState
-            stylesMap.put(editorState.fieldsId, stylesResult.copyWithDeepCopyStyles())
+            val copiedStyles = stylesResult.copyWithDeepCopyStyles()
+            stylesMap.put(editorState.fieldsId, copiedStyles)
             doJobThenOffLoading {
-                editorState.applySyntaxHighlighting(stylesResult)
+                // apply copied for editor state to avoid styles changed when applying
+                editorState.applySyntaxHighlighting(copiedStyles)
             }
         }
     }

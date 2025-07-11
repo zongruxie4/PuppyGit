@@ -143,9 +143,9 @@ class MyCodeEditor(
         stylesMap.clear()
     }
 
-    fun obtainCachedStyles(): StylesResult? {
-        val cachedStyles = stylesMap.get(editorState.value.fieldsId)
-        return if(cachedStyles != null && cachedStyles.inDarkTheme == Theme.inDarkTheme) {
+    fun obtainCachedStyles(targetFieldsId: String): StylesResult? {
+        val cachedStyles = stylesMap.get(targetFieldsId)
+        return if(isGoodStyles(cachedStyles, targetFieldsId)) {
             cachedStyles
         }else {
             // when switched theme, maybe need remove another themes cached styles, if not clear is ok too,
@@ -216,8 +216,8 @@ class MyCodeEditor(
         if(scopeChanged) {
             release()
         } else {
-            val cachedStyles = obtainCachedStyles()
-            if(cachedStyles != null && cachedStyles.fieldsId == editorState.fieldsId && cachedStyles.inDarkTheme == Theme.inDarkTheme) {
+            val cachedStyles = obtainCachedStyles(editorState.fieldsId)
+            if(cachedStyles != null) {
                 // 会在 style receiver收到之后立刻apply，所以这里正常不需要再apply了，但内部会检测，如果已经applied，则不会重复applied，所以这里调用也无妨
                 doJobThenOffLoading {
                     editorState.applySyntaxHighlighting(cachedStyles)
@@ -250,6 +250,21 @@ class MyCodeEditor(
 //            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
 
 
+
+            // Destroy old one
+            latestStyles = null
+            val old: Language? = myLang
+            if (old != null) {
+                val formatter = old.getFormatter()
+                formatter.setReceiver(null)
+                formatter.destroy()
+                old.getAnalyzeManager().setReceiver(null)
+                old.getAnalyzeManager().destroy()
+                old.destroy()
+            }
+
+
+            // run new analyze
             val autoComplete = false
             val lang = if(myLang == null || scopeChanged) {
                 TextMateLanguage.create(plScope.scope, autoComplete).let { myLang = it; it }
@@ -372,3 +387,7 @@ class StylesUpdateRequest(
 fun MyCodeEditor?.scopeInvalid() = this == null || PLScope.scopeInvalid(languageScope.scope)
 
 fun MyCodeEditor?.scopeMatched(scope: String?) = this != null && scope != null && languageScope.scope == scope && !this.scopeInvalid()
+
+fun MyCodeEditor?.isGoodStyles(stylesResult: StylesResult?, targetFieldsId: String):Boolean {
+    return !(this == null || stylesResult == null || stylesResult.fieldsId != targetFieldsId || stylesResult.inDarkTheme != Theme.inDarkTheme || !this.scopeMatched(stylesResult.languageScope.scope))
+}

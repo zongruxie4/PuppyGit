@@ -635,7 +635,7 @@ class TextEditorState private constructor(
             return
         }
 
-        val baseStyles = copyStyles(nextState)
+        val baseStyles = tryGetStylesResult()
         if(baseStyles == null) {
             MyLog.d(TAG, "#updateStyles: Styles of current field '$fieldsId' not found, maybe not exists or theme/languageScop are not matched, will re-run analyze for next state")
             codeEditor?.analyze(nextState)
@@ -2169,9 +2169,7 @@ class TextEditorState private constructor(
     }
 
 
-    private fun isGoodStyles(stylesResult: StylesResult?):Boolean {
-        return !(stylesResult == null || stylesResult.fieldsId != fieldsId || stylesResult.inDarkTheme != Theme.inDarkTheme || !codeEditor.scopeMatched(stylesResult.languageScope.scope))
-    }
+
 
     fun tryGetStylesResult(): StylesResult? {
         // if scope is invalid, will not use any styles
@@ -2180,12 +2178,17 @@ class TextEditorState private constructor(
             return null
         }
 
-        val cachedStyles = codeEditor?.stylesMap?.get(fieldsId)
-        return if(isGoodStyles(cachedStyles)) {
-            cachedStyles
-        } else {
-            null
-        }
+        // have a little bug (its acceptable, no fix still ok): if users clicked undo/redo, then change content,
+        // here will still return the expired latestStyles and do last once afterDelete/afterInsert,
+        // even it doesn't make sense, because a new full analyze will run in soon after
+        return codeEditor?.latestStyles
+
+//        val cachedStyles = codeEditor?.stylesMap?.get(fieldsId)
+//        return if(isGoodStyles(cachedStyles)) {
+//            cachedStyles
+//        } else {
+//            null
+//        }
 
 //        return temporaryStyles.let { tmpStyle ->
 //            if(isGoodStyles(tmpStyle)) {
@@ -2232,7 +2235,7 @@ class TextEditorState private constructor(
 
 
     // note: this was a copy method, but then changed behavior, this method maybe remove in the future
-    fun copyStyles(nextState: TextEditorState): StylesResult? = tryGetStylesResult()
+//    fun copyStyles(nextState: TextEditorState): StylesResult? = tryGetStylesResult()
 
 
     // 增删内容需要调用 spans的after change，然后调用lang.analyzeManager()的insert/ delete重新执行分析
@@ -2331,7 +2334,7 @@ class TextEditorState private constructor(
         newTextEditorState: TextEditorState
     ) {
         val funName = "updateStylesAfterInsertLine"
-        MyLog.d(TAG, "$funName: $stylesResult")
+        MyLog.d(TAG, "$funName: startLineIndex=$startLineIndex, baseFields.size=${baseFields.size}, $stylesResult")
 
         if(ignoreThis.not() && (baseFields.isEmpty() || (fields.size == 1 && fields[0].value.text.isBlank()))) {
             codeEditor?.analyze(newTextEditorState)
@@ -2341,7 +2344,7 @@ class TextEditorState private constructor(
         val rawInsertedContent = insertedContent
         var insertedContent = insertedContent
         //如果越界，可能最后一行已经删除了，这时追加内容到当前最后一行末尾；若索引有效，则追加到目标行的开头
-        val (startLineIndex, trueStartFalseEnd, columnIndex) = if(startLineIndex >= baseFields.lastIndex) {
+        val (startLineIndex, trueStartFalseEnd, columnIndex) = if(startLineIndex > baseFields.lastIndex) {
             // 如果追加到最后一行末尾，需要前置个换行符
             insertedContent = "\n" + insertedContent
             Triple(baseFields.lastIndex, false, baseFields.last().value.text.length)
