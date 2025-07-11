@@ -65,6 +65,10 @@ enum class PLScope(val scope: String) {
         private fun guessScopeType(fileName: String) : PLScope {
             val fileName = fileName.lowercase()
 
+            if(fileName.endsWith(".txt") || fileName.endsWith(".text")) {
+                return NONE
+            }
+
             if(fileName.endsWith(".gitignore")) {
                 return GIT_IGNORE
             }
