@@ -2316,9 +2316,6 @@ class TextEditorState private constructor(
         ignoreThis: Boolean,
         newTextEditorState: TextEditorState,
 
-        // is a continuously lines span with `startLineIndex`
-        endLineIndexInclusive: Int = startLineIndex,
-
         // clear content but keep line (\n)
         keepLine: Boolean = true,
     ) {
@@ -2326,20 +2323,22 @@ class TextEditorState private constructor(
         MyLog.d(TAG, "$funName: $stylesResult")
 
         // 删除某行逻辑是从上一行的末尾到这一行的末尾
-        val startLineIndex = if(keepLine) startLineIndex else (startLineIndex-1).coerceAtLeast(0)
-        if(!isGoodIndexForList(startLineIndex, baseFields) || !isGoodIndexForList(endLineIndexInclusive, baseFields)) {
-            MyLog.d(TAG, "$funName: bad index: start=$startLineIndex, end=$endLineIndexInclusive, list.size=${baseFields.size}")
+        val startLineIndex = if(keepLine) startLineIndex else (startLineIndex - 1).coerceAtLeast(0)
+        val endLineIndex = if(keepLine) startLineIndex else (startLineIndex + 1).coerceAtMost(baseFields.lastIndex)
+        MyLog.d(TAG, "$funName: startLineIndex: $startLineIndex, endLineIndex=$endLineIndex, list.size=${baseFields.size}")
+        if(!isGoodIndexForList(startLineIndex, baseFields) || !isGoodIndexForList(endLineIndex, baseFields)) {
+            MyLog.d(TAG, "$funName: bad range: startLineIndex: $startLineIndex, endLineIndex=$endLineIndex, list.size=${baseFields.size}")
             return
         }
 
         val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = keepLine)
-        val endIdxOfText = getIndexOfText(baseFields, endLineIndexInclusive, trueStartFalseEnd = false)
+        val endIdxOfText = getIndexOfText(baseFields, endLineIndex, trueStartFalseEnd = false)
         if(startIdxOfText == -1 || endIdxOfText == -1) {
             return
         }
 
         val start = CharPosition(startLineIndex, if(keepLine) 0 else baseFields[startLineIndex].value.text.length, startIdxOfText)
-        val end = CharPosition(endLineIndexInclusive, baseFields[endLineIndexInclusive].value.text.length, endIdxOfText)
+        val end = CharPosition(endLineIndex, baseFields[endLineIndex].value.text.length, endIdxOfText)
 
 
 //        if(start == end) {
@@ -2347,19 +2346,16 @@ class TextEditorState private constructor(
 //            return
 //        }
 
-        val isDelLastLine = endLineIndexInclusive == baseFields.lastIndex
 
-        for(i in IntRange(startLineIndex, endLineIndexInclusive).reversed()) {
-            // the fields in the baseFields will
-            // not use as next state,
-            // it just emulate real action
-            // for later condition check
-            if(keepLine) {  // only clear field but keep the line
-                val f = baseFields.getOrNull(i) ?: continue
-                baseFields[i] = f.copy(value = f.value.copy(""))
-            } else {  // remove the line
-                baseFields.removeAt(i)
-            }
+        // the fields in the baseFields will
+        // not use as next state,
+        // it just emulate real action
+        // for later condition check
+        val deletedContent = if(keepLine) {  // only clear field but keep the line
+            baseFields.set(startLineIndex, TextFieldState(TextFieldValue("")))
+            ""
+        } else {  // remove the line
+            baseFields.removeAt(endLineIndex).value.text
         }
 
         MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fields.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
@@ -2378,11 +2374,11 @@ class TextEditorState private constructor(
         MyLog.d(TAG, "#$funName: adjusted on delete, spans.lineCount = ${stylesResult.styles.spans.lineCount}, baseFields.size = ${baseFields.size}")
 
 
-        val selectedText = getSelectedText(IntRange(startLineIndex, endLineIndexInclusive).toList(), keepEndLineBreak = !isDelLastLine)
+        val deletedText = deletedContent + (if(keepLine) "" else "\n")
         val lang = codeEditor?.myLang
         if(lang != null) {
             val act = {
-                lang.analyzeManager.delete(start, end, selectedText)
+                lang.analyzeManager.delete(start, end, deletedText)
             }
 
             codeEditor.sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis, newTextEditorState, act))
