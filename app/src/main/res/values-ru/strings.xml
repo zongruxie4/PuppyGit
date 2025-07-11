@@ -1283,5 +1283,8 @@
     <string name="software_keyboard">Программная клавиатура</string>
     <string name="dynamic_color_scheme">Динамическая цветовая схема</string>
     <string name="syntax_highlighting">Подсветка синтаксиса</string>
+    <string name="use_system_fonts">Использовать системные шрифты</string>
+
+
 
 </resources>

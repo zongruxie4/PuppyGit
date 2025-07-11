@@ -1284,5 +1284,6 @@
     <string name="software_keyboard">Software Keyboard</string>
     <string name="dynamic_color_scheme">Dynamic Color Scheme</string>
     <string name="syntax_highlighting">Syntax Highlighting</string>
+    <string name="use_system_fonts">Use System Fonts</string>
 
 </resources>

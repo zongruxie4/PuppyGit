@@ -73,4 +73,9 @@ data class Editor (
 
 
     var syntaxHighlightEnabled:Boolean = true,
+
+    /**
+     * true to use system fonts, else will use app bundled fonts
+     */
+    var useSystemFonts: Boolean = false,
 )

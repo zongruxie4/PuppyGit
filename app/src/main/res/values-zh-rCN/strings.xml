@@ -1261,5 +1261,7 @@
     <string name="software_keyboard">软键盘</string>
     <string name="dynamic_color_scheme">动态配色方案</string>
     <string name="syntax_highlighting">语法高亮</string>
+    <string name="use_system_fonts">使用系统字体</string>
+
 
 </resources>

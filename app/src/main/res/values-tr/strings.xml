@@ -1189,5 +1189,7 @@
     <string name="software_keyboard">Yazılım Klavyesi</string>
     <string name="dynamic_color_scheme">Dinamik Renk Şeması</string>
     <string name="syntax_highlighting">Sözdizimi Vurgulama</string>
+    <string name="use_system_fonts">Sistem Yazı Tiplerini Kullan</string>
+
 
 </resources>

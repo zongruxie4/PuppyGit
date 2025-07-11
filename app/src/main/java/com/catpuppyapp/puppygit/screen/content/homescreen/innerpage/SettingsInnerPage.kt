@@ -146,6 +146,7 @@ fun SettingsInnerPage(
     val enableEditCache = rememberSaveable { mutableStateOf(settingsState.value.editor.editCacheEnable) }
     val showNaviButtons = rememberSaveable { mutableStateOf(settingsState.value.showNaviButtons) }
     val syntaxHighlightEnabled = rememberSaveable { mutableStateOf(settingsState.value.editor.syntaxHighlightEnabled) }
+    val useSystemFonts = rememberSaveable { mutableStateOf(settingsState.value.editor.useSystemFonts) }
     val devModeOn = rememberSaveable { mutableStateOf(PrefUtil.getDevMode(activityContext)) }
     val enableSnapshot_File = rememberSaveable { mutableStateOf(settingsState.value.editor.enableFileSnapshot) }
     val enableSnapshot_Content = rememberSaveable { mutableStateOf(settingsState.value.editor.enableContentSnapshot) }
@@ -1026,6 +1027,27 @@ fun SettingsInnerPage(
                 syntaxHighlightEnabled.value = newValue
                 SettingsUtil.update {
                     it.editor.syntaxHighlightEnabled = newValue
+                }
+            }
+        )
+
+        SettingsContentSwitcher(
+            left = {
+                Text(stringResource(R.string.use_system_fonts), fontSize = itemFontSize)
+            },
+            right = {
+                Switch(
+                    checked = useSystemFonts.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                val newValue = !useSystemFonts.value
+
+                //save
+                useSystemFonts.value = newValue
+                SettingsUtil.update {
+                    it.editor.useSystemFonts = newValue
                 }
             }
         )

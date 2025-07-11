@@ -1179,4 +1179,6 @@
     <string name="software_keyboard">لوحة مفاتيح برمجية</string>
     <string name="dynamic_color_scheme">مخطط ألوان ديناميكي</string>
     <string name="syntax_highlighting">تظليل الصياغة</string>
+    <string name="use_system_fonts">استخدام خطوط النظام</string>
+
 </resources>

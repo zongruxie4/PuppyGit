@@ -124,7 +124,7 @@ internal fun MyTextField(
                 fontSize = fontSize.sp,
                 color = fontColor,
                 background = bgColor,
-                fontFamily = PLFont.codeFont,
+                fontFamily = PLFont.editorCodeFont(),
             ),
             //光标颜色
             cursorBrush = SolidColor(if(inDarkTheme) Color.LightGray else Color.Black),

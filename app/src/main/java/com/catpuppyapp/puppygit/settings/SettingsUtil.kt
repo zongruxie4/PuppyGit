@@ -304,4 +304,5 @@ object SettingsUtil {
     fun editorTabIndentCount() = appSettings.editor.tabIndentSpacesCount
     fun isEditorSyntaxHighlightEnabled() = appSettings.editor.syntaxHighlightEnabled
     fun obtainLastQuitHomeScreen() = appSettings.lastQuitHomeScreen
+    fun isEditorUseSystemFonts() = appSettings.editor.useSystemFonts
 }
