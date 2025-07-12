@@ -90,7 +90,8 @@ android {
             isShrinkResources = !project.hasProperty("disableShrinkRes")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
+                "gson.pro"
             )
         }
     }

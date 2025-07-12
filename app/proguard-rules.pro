@@ -20,6 +20,26 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+# BEGIN: sora editor
+# If class has fields with `@SerializedName` annotation keep its constructors (from: https://github.com/google/gson/issues/2401)
+-if class * {
+  @com.google.gson.annotations.SerializedName <fields>;
+}
+-keep class <1> {
+  <init>(...);
+}
+-keepclasseswithmembers class * {
+  <init>(...);
+  @com.google.gson.annotations.SerializedName <fields>;
+}
+-keep class org.eclipse.tm4e.languageconfiguration.internal.model.** { *; }
+-keep class org.eclipse.jdt.** { *; }
+-keep @org.eclipse.jdt.** class * { *; }
+-keep class org.joni.** { *; }
+-keep @org.joni.** class * { *; }
+# END: sora editor
+
+
 # 保留jni包的东西，有可能在c里用，所以不能精简，要不然变量名就找不到了
 -keep class com.catpuppyapp.puppygit.jni.** { *; }
 
