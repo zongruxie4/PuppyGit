@@ -288,10 +288,12 @@ class MyCodeEditor(
                 myLang!!
             }
 
-            // whatever, we don't use it's indent enter pressed feature
-            // 这些值用来计算缩进的，也可能会按回车有关，比如回车时自动补全注释星号，但我这里不用，所以无所谓，能关则关，减少执行无意义操作
-            lang.isAutoCompleteEnabled = false
-            lang.tabSize = 0
+            //BEGIN: don't enable these lines, may cause parse err
+            // x wrong) whatever, we don't use it's indent enter pressed feature
+            // x 理解错了好像) 这些值用来计算缩进的，也可能会按回车有关，比如回车时自动补全注释星号，但我这里不用，所以无所谓，能关则关，减少执行无意义操作
+//            lang.isAutoCompleteEnabled = false
+//            lang.tabSize = 0
+            //END: don't enable these lines, may cause parse err
 
             // must set receiver, then do act, else the result will sent to unrelated editor state
             sendUpdateStylesRequest(
