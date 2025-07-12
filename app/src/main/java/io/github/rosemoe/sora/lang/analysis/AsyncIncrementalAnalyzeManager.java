@@ -83,20 +83,22 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
 
     @Override
     public void insert(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence insertedText) {
+        StyleReceiver styleReceiver = getReceiver();
         if (thread != null) {
             increaseRunCount();
             Object data = new TextModification(IntPair.pack(start.line, start.column), IntPair.pack(end.line, end.column), insertedText);
 
-            thread.offerMessage(MSG_MOD, new MsgObj(getReceiver(), data));
+            thread.offerMessage(MSG_MOD, new MsgObj(styleReceiver, data));
         }
     }
 
     @Override
     public void delete(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence deletedText) {
+        StyleReceiver styleReceiver = getReceiver();
         if (thread != null) {
             increaseRunCount();
             Object data = new TextModification(IntPair.pack(start.line, start.column), IntPair.pack(end.line, end.column), null);
-            thread.offerMessage(MSG_MOD, new MsgObj(getReceiver(), data));
+            thread.offerMessage(MSG_MOD, new MsgObj(styleReceiver, data));
         }
     }
 
