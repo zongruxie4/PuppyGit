@@ -160,7 +160,7 @@ class MyCodeEditor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun sendUpdateStylesRequest(stylesUpdateRequest: StylesUpdateRequest) {
+    fun sendUpdateStylesRequest(stylesUpdateRequest: StylesUpdateRequest, language: Language? = myLang) {
         stylesRequestLock.withLock {
             val targetEditorState = if(stylesUpdateRequest.ignoreThis) {
                 null
@@ -177,7 +177,7 @@ class MyCodeEditor(
             //   最好的解决方案：应该让receiver把执行分析时关联的text editor state实例绑定上，或者，只创建一个editor state实例，
             //   后者可以实现，但需要修改撤销机制，因为目前的撤销机制是直接存储整个editor实例，如果改成只存fields，就行了，
             //   不对，好像还是无法解决哪个styles的结果和哪个editor state实例关联的问题。。。。。。。
-            setReceiverThenDoAct(myLang, genNewStyleDelegate(targetEditorState), stylesUpdateRequest.act)
+            setReceiverThenDoAct(language, genNewStyleDelegate(targetEditorState), stylesUpdateRequest.act)
         }
     }
 
@@ -273,9 +273,14 @@ class MyCodeEditor(
             lang.tabSize = 0
 
             // must set receiver, then do act, else the result will sent to unrelated editor state
-            setReceiverThenDoAct(lang, genNewStyleDelegate(editorState)) {
-                lang.analyzeManager.reset(ContentReference(Content(text)), Bundle())
-            }
+            sendUpdateStylesRequest(
+                stylesUpdateRequest = StylesUpdateRequest(
+                    ignoreThis = false,
+                    targetEditorState = editorState,
+                    act = { lang.analyzeManager.reset(ContentReference(Content(text)), Bundle()) }
+                ),
+                language = lang
+            )
 //            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
 
 //            it.setEditorLanguage(lang)
