@@ -9,6 +9,7 @@ import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ClipboardManager
+import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -415,20 +416,16 @@ fun getEditorStateOnChange(
 }
 
 //初始状态值随便填，只是为了帮助泛型确定类型并且避免使用null作为初始值而已，具体的值在打开文件后会重新创建
-fun getInitTextEditorState():TextEditorState {
-    return TextEditorState.create(
-        codeEditor = null,
-        text = "",
-        fieldsId = "",
-        isContentEdited = mutableStateOf(false),
-        editorPageIsContentSnapshoted = mutableStateOf(false),
-        isMultipleSelectionMode = false,
-        focusingLineIdx = null,
-        onChanged = { i1, i2, i3->},
-//        temporaryStyles = null,
-
-    )
-}
+fun getInitTextEditorState() = TextEditorState(
+    codeEditor = MyCodeEditor(),
+    fields = listOf(),
+    fieldsId = "",
+    isContentEdited = mutableStateOf(false),
+    editorPageIsContentSnapshoted = mutableStateOf(false),
+    isMultipleSelectionMode = false,
+    focusingLineIdx = null,
+    onChanged = { i1, i2, i3->},
+)
 
 suspend fun goToStashPage(repoId:String) {
     withMainContext {

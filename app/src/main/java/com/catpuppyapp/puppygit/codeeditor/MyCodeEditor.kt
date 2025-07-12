@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.codeeditor
 import android.content.Context
 import android.os.Bundle
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -24,6 +25,7 @@ import io.github.rosemoe.sora.text.ContentReference
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.sync.Mutex
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -35,9 +37,9 @@ private const val TAG = "MyCodeEditor"
 
 
 class MyCodeEditor(
-    val appContext: Context,
-    val plScope: MutableState<PLScope>,
-    val editorState: CustomStateSaveable<TextEditorState>,
+    val appContext: Context = AppModel.realAppContext,
+    val plScope: MutableState<PLScope> = mutableStateOf(PLScope.AUTO),
+    val editorState: (CustomStateSaveable<TextEditorState>)? = null,
     var colorScheme: EditorColorScheme = EditorColorScheme(),
     var latestStyles: StylesResult? = null,
 ) {
@@ -52,6 +54,8 @@ class MyCodeEditor(
     val stylesRequestLock = ReentrantLock(true)
     val analyzeLock = ReentrantLock(true)
 //    val stylesApplyLock = ReentrantLock(true)
+
+    val textEditorStateOnChangeLock = Mutex()
 
     private fun genNewStyleDelegate(editorState: TextEditorState?) = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap, editorState, languageScope)
 
@@ -178,9 +182,13 @@ class MyCodeEditor(
     }
 
     fun analyze(
-        editorState: TextEditorState = this.editorState.value,
+        editorState: TextEditorState? = this.editorState?.value,
         plScope: PLScope = this.plScope.value,
     ) {
+        if(editorState == null) {
+            return
+        }
+
         analyzeLock.withLock {
             doAnalyzeNoLock(editorState, plScope)
         }

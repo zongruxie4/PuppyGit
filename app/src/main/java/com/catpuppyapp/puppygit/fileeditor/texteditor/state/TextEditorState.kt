@@ -62,19 +62,19 @@ private fun targetIndexValidOrThrow(targetIndex:Int, listSize:Int) {
 
 //不实现equals，直接比较指针地址，反而性能可能更好，不过状态更新可能并不准确，例如fields没更改的情况也会触发页面刷新
 @Immutable
-class TextEditorState private constructor(
+class TextEditorState(
 
 
     /**
-     the `fieldsId` only about fields, same fieldsId should has same fields，but isn't enforce (但不强制要求)
+     the `fieldsId` only about fields, same fieldsId should has same fields
      */
-    val fieldsId: String,
-    val fields: List<TextFieldState>,
+    val fieldsId: String = newId(),
+    val fields: List<TextFieldState> = listOf(),
 
-    val selectedIndices: List<Int>,
-    val isMultipleSelectionMode: Boolean,
+    val selectedIndices: List<Int> = listOf(),
+    val isMultipleSelectionMode: Boolean = false,
 
-    val focusingLineIdx: Int?,
+    val focusingLineIdx: Int? = null,
 
     //话说这几个状态如果改变是否会触发重组？不过就算重组也不会创建新数据拷贝，性能影响应该不大
     //这个东西可以每个状态独有，但会增加额外拷贝，也可所有状态共享，但无法判断每个状态是否已经创建快照或者是否有未保存修改，目前采用方案2，所有Editor状态共享相同的指示内容是否修改的状态
@@ -83,7 +83,7 @@ class TextEditorState private constructor(
 
     private val onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
 
-    val codeEditor: MyCodeEditor?,
+    val codeEditor: MyCodeEditor,
 
     // temporary use when syntax highlighting analyzing
 //    var temporaryStyles: StylesResult? = null,
@@ -102,9 +102,9 @@ class TextEditorState private constructor(
         isContentEdited: MutableState<Boolean> = this.isContentEdited,
         editorPageIsContentSnapshoted:MutableState<Boolean> = this.editorPageIsContentSnapshoted,
         onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit = this.onChanged,
-        codeEditor: MyCodeEditor? = this.codeEditor,
+        codeEditor: MyCodeEditor = this.codeEditor,
 //        temporaryStyles: StylesResult? = this.temporaryStyles,
-    ):TextEditorState = create(
+    ) = TextEditorState(
         fieldsId = fieldsId,
         fields = fields,
         selectedIndices = selectedIndices,
@@ -2490,106 +2490,12 @@ class TextEditorState private constructor(
 
 
     companion object {
-        fun create(
-            text: String,
-            fieldsId: String,
-            isMultipleSelectionMode:Boolean,
-            focusingLineIdx:Int?,
-            isContentEdited: MutableState<Boolean>,
-            editorPageIsContentSnapshoted:MutableState<Boolean>,
-            onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
-            codeEditor: MyCodeEditor?,
-//            temporaryStyles: StylesResult?,
-        ): TextEditorState {
-            return create(
-                lines = text.lines(),
-                fieldsId= fieldsId,
-                isMultipleSelectionMode = isMultipleSelectionMode,
-                focusingLineIdx = focusingLineIdx,
-                isContentEdited = isContentEdited,
-                editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-                onChanged = onChanged,
-                codeEditor = codeEditor,
-//                temporaryStyles = temporaryStyles
-            )
-        }
+        fun linesToFields(lines: List<String>) = createInitTextFieldStates(lines)
 
-        fun create(
-            lines: List<String>,
-            fieldsId: String,
-            isMultipleSelectionMode:Boolean,
-            focusingLineIdx:Int?,
-            isContentEdited: MutableState<Boolean>,
-            editorPageIsContentSnapshoted:MutableState<Boolean>,
-            onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
-            codeEditor: MyCodeEditor?,
-//            temporaryStyles: StylesResult?,
-        ): TextEditorState {
-            return create(
-                fields = createInitTextFieldStates(lines),
-                fieldsId= fieldsId,
-                selectedIndices = listOf(),
-                isMultipleSelectionMode = isMultipleSelectionMode,
-                focusingLineIdx = focusingLineIdx,
-                isContentEdited = isContentEdited,
-                editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-                onChanged = onChanged,
-                codeEditor = codeEditor,
-//                temporaryStyles = temporaryStyles
+        fun fuckSafFileToFields(file: FuckSafFile) = linesToFields(FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true))
 
-            )
-        }
+        fun textToFields(text: String) = linesToFields(text.lines())
 
-        fun create(
-            file: FuckSafFile,
-            fieldsId: String,
-            isMultipleSelectionMode:Boolean,
-            focusingLineIdx:Int?,
-            isContentEdited: MutableState<Boolean>,
-            editorPageIsContentSnapshoted:MutableState<Boolean>,
-            onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
-            codeEditor: MyCodeEditor?,
-//            temporaryStyles: StylesResult?,
-        ): TextEditorState {
-            //这里`addNewLineIfFileEmpty`必须传true，以确保和String.lines()行为一致，不然若文件末尾有空行，读取出来会少一行
-            return create(
-                lines = FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true),
-                fieldsId= fieldsId,
-                isMultipleSelectionMode = isMultipleSelectionMode,
-                focusingLineIdx = focusingLineIdx,
-                isContentEdited = isContentEdited,
-                editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-                onChanged = onChanged,
-                codeEditor = codeEditor,
-//                temporaryStyles = temporaryStyles,
-            )
-        }
-
-        fun create(
-            fields: List<TextFieldState>,
-            fieldsId: String,
-            selectedIndices: List<Int>,
-            isMultipleSelectionMode: Boolean,
-            focusingLineIdx: Int?,
-            isContentEdited: MutableState<Boolean>,
-            editorPageIsContentSnapshoted:MutableState<Boolean>,
-            onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
-            codeEditor: MyCodeEditor?,
-//            temporaryStyles: StylesResult?,
-        ): TextEditorState {
-            return TextEditorState(
-                fieldsId= fieldsId,
-                fields = fields,
-                selectedIndices = selectedIndices,
-                isMultipleSelectionMode = isMultipleSelectionMode,
-                focusingLineIdx = focusingLineIdx,
-                isContentEdited = isContentEdited,
-                editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-                onChanged = onChanged,
-                codeEditor = codeEditor,
-//                temporaryStyles = temporaryStyles,
-            )
-        }
 
         fun newId():String {
             return generateRandomString(20)

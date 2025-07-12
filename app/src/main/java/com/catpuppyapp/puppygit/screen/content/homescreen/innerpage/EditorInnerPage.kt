@@ -2072,10 +2072,10 @@ private suspend fun doInit(
             if(soraEditorComposeTestPassed) {
 //                codeEditorState!!.content.value = Content(file.bufferedReader().use { it.readText() })
             }else {
-                val newState = TextEditorState.create(
+                val newState = TextEditorState(
                     codeEditor = codeEditor,
 
-                    file = file,
+                    fields = TextEditorState.fuckSafFileToFields(file),
                     fieldsId = TextEditorState.newId(),
                     isContentEdited = isEdited,
                     editorPageIsContentSnapshoted = isContentSnapshoted,
