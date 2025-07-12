@@ -82,8 +82,9 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
     }
 
     @Override
-    public void insert(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence insertedText) {
-        StyleReceiver styleReceiver = getReceiver();
+    public void insert(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence insertedText, @Nullable StyleReceiver receiver) {
+        StyleReceiver styleReceiver = (receiver == null) ? getReceiver() : receiver;
+
         if (thread != null) {
             increaseRunCount();
             Object data = new TextModification(IntPair.pack(start.line, start.column), IntPair.pack(end.line, end.column), insertedText);
@@ -93,8 +94,9 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
     }
 
     @Override
-    public void delete(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence deletedText) {
-        StyleReceiver styleReceiver = getReceiver();
+    public void delete(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence deletedText, @Nullable StyleReceiver receiver) {
+        StyleReceiver styleReceiver = (receiver == null) ? getReceiver() : receiver;
+
         if (thread != null) {
             increaseRunCount();
             Object data = new TextModification(IntPair.pack(start.line, start.column), IntPair.pack(end.line, end.column), null);
@@ -103,8 +105,9 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
     }
 
     @Override
-    public void rerun() {
-        StyleReceiver styleReceiver = getReceiver();
+    public void rerun(@Nullable StyleReceiver receiver) {
+        StyleReceiver styleReceiver = (receiver == null) ? getReceiver() : receiver;
+
         if (thread != null) {
             if (thread.isAlive()) {
                 thread.interrupt();

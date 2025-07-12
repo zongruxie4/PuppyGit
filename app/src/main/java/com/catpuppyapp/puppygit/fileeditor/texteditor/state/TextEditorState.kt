@@ -2213,11 +2213,13 @@ class TextEditorState(
         val selectedText = "\n"
         val lang = codeEditor?.myLang
         if(lang != null) {
-            val act = {
-                lang.analyzeManager.delete(start, end, selectedText)
-            }
-
-            codeEditor.sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis, newTextEditorState, act))
+            codeEditor.sendUpdateStylesRequest(
+                StylesUpdateRequest(
+                    ignoreThis = ignoreThis,
+                    targetEditorState = newTextEditorState,
+                    act = { lang.analyzeManager.delete(start, end, selectedText, it) }
+                )
+            )
         }
 
     }
@@ -2297,11 +2299,13 @@ class TextEditorState(
         val deletedText = deletedContent + (if(keepLine) "" else "\n")
         val lang = codeEditor?.myLang
         if(lang != null) {
-            val act = {
-                lang.analyzeManager.delete(start, end, deletedText)
-            }
-
-            codeEditor.sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis, newTextEditorState, act))
+            codeEditor.sendUpdateStylesRequest(
+                StylesUpdateRequest(
+                    ignoreThis = ignoreThis,
+                    targetEditorState = newTextEditorState,
+                    act = { lang.analyzeManager.delete(start, end, deletedText, it) }
+                )
+            )
         }
 
     }
@@ -2367,11 +2371,15 @@ class TextEditorState(
         val selectedText = insertedContent
         val lang = codeEditor?.myLang
         if(lang != null) {
-            val act = {
-                lang.analyzeManager.insert(start, end, selectedText)
-            }
-
-            codeEditor.sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis, newTextEditorState, act))
+            codeEditor.sendUpdateStylesRequest(
+                StylesUpdateRequest(
+                    ignoreThis = ignoreThis,
+                    targetEditorState = newTextEditorState,
+                    act = {
+                        lang.analyzeManager.insert(start, end, selectedText, it)
+                    }
+                )
+            )
         }
     }
 

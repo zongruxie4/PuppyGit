@@ -28,6 +28,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.eclipse.tm4e.core.grammar.IGrammar;
 import org.eclipse.tm4e.core.internal.grammar.tokenattrs.EncodedTokenAttributes;
@@ -45,6 +46,7 @@ import java.util.List;
 import java.util.Objects;
 
 import io.github.rosemoe.sora.lang.analysis.AsyncIncrementalAnalyzeManager;
+import io.github.rosemoe.sora.lang.analysis.StyleReceiver;
 import io.github.rosemoe.sora.lang.brackets.BracketsProvider;
 import io.github.rosemoe.sora.lang.brackets.OnlineBracketsMatcher;
 import io.github.rosemoe.sora.lang.completion.IdentifierAutoComplete;
@@ -276,8 +278,8 @@ public class TextMateAnalyzer extends AsyncIncrementalAnalyzeManager<MyState, Sp
     }
 
     @Override
-    public void reset(@NonNull ContentReference content, @NonNull Bundle extraArguments) {
-        super.reset(content, extraArguments);
+    public void reset(@NonNull ContentReference content, @NonNull Bundle extraArguments, @Nullable StyleReceiver receiver) {
+        super.reset(content, extraArguments, (receiver == null) ? getReceiver() : receiver);
         syncIdentifiers.clear();
     }
 

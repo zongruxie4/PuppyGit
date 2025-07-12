@@ -66,24 +66,24 @@ public abstract class SimpleAnalyzeManager<V> implements AnalyzeManager {
     }
 
     @Override
-    public void reset(@NonNull ContentReference content, @NonNull Bundle extraArguments) {
+    public void reset(@NonNull ContentReference content, @NonNull Bundle extraArguments, @Nullable StyleReceiver receiver) {
         this.ref = content;
         this.extraArguments = extraArguments;
-        rerun();
+        rerun(receiver);
     }
 
     @Override
-    public void insert(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence insertedContent) {
-        rerun();
+    public void insert(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence insertedContent, @Nullable StyleReceiver receiver) {
+        rerun(receiver);
     }
 
     @Override
-    public void delete(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence deletedContent) {
-        rerun();
+    public void delete(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence deletedContent, @Nullable StyleReceiver receiver) {
+        rerun(receiver);
     }
 
     @Override
-    public synchronized void rerun() {
+    public synchronized void rerun(@Nullable StyleReceiver receiver) {
         newestRequestId++;
         if (thread == null || !thread.isAlive()) {
             // Create new thread

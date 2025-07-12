@@ -77,10 +77,10 @@ public abstract class BaseAnalyzeManager implements AnalyzeManager {
 
     @Override
     @CallSuper
-    public void reset(@NonNull ContentReference content, @NonNull Bundle extraArguments) {
+    public void reset(@NonNull ContentReference content, @NonNull Bundle extraArguments, @Nullable StyleReceiver receiver) {
         this.extraArguments = extraArguments;
         this.contentRef = content;
-        rerun();
+        rerun((receiver == null) ? getReceiver() : receiver);
     }
 
     @Override
