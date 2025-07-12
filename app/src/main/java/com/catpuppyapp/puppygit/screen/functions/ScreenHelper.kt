@@ -365,7 +365,20 @@ fun getEditorStateOnChange(
         // 在点击undo然后编辑内容后 或者 增量分析出错时，重新执行全量分析
         // after "clicked undo then changed content" or incremental syntax highlighting thrown an err, do a full text re-analyze
         newState.codeEditor?.let { codeEditor ->
+            // if latestStyles.fieldsId != newState.fieldsId is true, that means new state are still analyzing or have an err broken the procedure
+            // if latestStyles.fieldsId != lastState.fieldsId is true, that means new state already analyzed and the fieldsId updated to new state fieldsId,
+            //   or analyze thread just broken by an err.
+            // so, if latestStyles.fieldsId != newState/lastState.fieldsId are true, that means current text editor state
+            //   is detached the syntax highlighting, so we need restart the analyze. else, will show text with wrong style.
             if(codeEditor.latestStyles?.fieldsId.let { it.isNullOrBlank().not() && it != newState.fieldsId && it != lastState.fieldsId}) {
+                // if haven't undo, the incremental syntax highlighting should working, so need not do a full text analyzing,
+                //   that means the program shouldn't reach here, if happened,
+                //   maybe something wrong, usually is TextEditorState's afterDelete/afterInsert/afterDeleteALineBreak methods err,
+                //   maybe just calculated a wrong CharPosition? idk, should check the code.
+                if(undoStack.redoStackIsEmpty()) {
+                    MyLog.w(TAG, "Detected the redo stack is empty, so maybe you haven't did an undo action? but now we need re-analyze full text for syntax highlighting, if you are not changed the syntax highlighting language or haven't reload the file, maybe the incremental syntax highlighting got some errs, please check the log and search keyword 'AsyncAnalyzer-' to find any err.")
+                }
+
                 codeEditor.analyze(newState)
             }
         }
