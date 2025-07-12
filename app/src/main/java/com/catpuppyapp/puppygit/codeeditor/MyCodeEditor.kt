@@ -282,11 +282,8 @@ class MyCodeEditor(
 
             // run new analyze
             val autoComplete = false
-            val lang = if(myLang == null || scopeChanged) {
-                TextMateLanguage.create(plScope.scope, autoComplete).let { myLang = it; it }
-            }else {
-                myLang!!
-            }
+            val lang = TextMateLanguage.create(plScope.scope, autoComplete)
+            myLang = lang
 
             //BEGIN: don't enable these lines, may cause parse err
             // x wrong) whatever, we don't use it's indent enter pressed feature
@@ -315,6 +312,8 @@ class MyCodeEditor(
     private fun cleanLanguage() {
         latestStyles = null
         val old: Language? = myLang
+        myLang = null
+
         if (old != null) {
             val formatter = old.getFormatter()
             formatter.setReceiver(null)
