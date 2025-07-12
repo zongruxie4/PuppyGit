@@ -830,41 +830,28 @@ fun FileEditor(
                         Unit
                     }
                     val iconList = listOf(
-                        Icons.Filled.CleaningServices,  // clear line content
                         Icons.AutoMirrored.Filled.FormatIndentDecrease,  // shift + tab
                         Icons.AutoMirrored.Filled.FormatIndentIncrease,  // tab
-                        Icons.AutoMirrored.Filled.KeyboardReturn,  // append a line
                         Icons.Filled.Delete,
                         Icons.Filled.ContentCut,
                         Icons.Filled.ContentCopy,
                         Icons.Filled.ContentPaste,
+                        Icons.Filled.CleaningServices,  // clear line content
+                        Icons.AutoMirrored.Filled.KeyboardReturn,  // append a line
                         Icons.Filled.SelectAll
                     )
                     val iconTextList = listOf(
-                        stringResource(R.string.clear),
                         "Shift + Tab",
                         "Tab",
-                        stringResource(R.string.append_a_line),
                         stringResource(R.string.delete),
                         stringResource(R.string.cut),
                         stringResource(R.string.copy),
                         stringResource(R.string.paste),
+                        stringResource(R.string.clear),
+                        stringResource(R.string.append_a_line),
                         stringResource(R.string.select_all),
                     )
                     val iconOnClickList = listOf(
-                        onClear@{
-                            if (readOnlyMode) {
-                                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
-                                return@onClear
-                            }
-
-                            //不用确认，直接清空，若后悔可用undo撤销
-                            doJobThenOffLoading {
-                                textEditorState.value.clearSelectedFields()
-                            }
-
-                            Unit
-                        },
                         onShiftTab@{
                             doJobThenOffLoading {
                                 textEditorState.value.let { it.indentLines(settings.editor.tabIndentSpacesCount, it.selectedIndices, trueTabFalseShiftTab = false) }
@@ -875,18 +862,6 @@ fun FileEditor(
                         onTab@{
                             doJobThenOffLoading {
                                 textEditorState.value.let { it.indentLines(settings.editor.tabIndentSpacesCount, it.selectedIndices, trueTabFalseShiftTab = true) }
-                            }
-
-                            Unit
-                        },
-                        onAppendALine@{
-                            if (readOnlyMode) {
-                                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
-                                return@onAppendALine
-                            }
-
-                            doJobThenOffLoading {
-                                textEditorState.value.appendTextToLastSelectedLine("")
                             }
 
                             Unit
@@ -947,6 +922,31 @@ fun FileEditor(
                             Unit
                         },
 
+                        onClear@{
+                            if (readOnlyMode) {
+                                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
+                                return@onClear
+                            }
+
+                            //不用确认，直接清空，若后悔可用undo撤销
+                            doJobThenOffLoading {
+                                textEditorState.value.clearSelectedFields()
+                            }
+
+                            Unit
+                        },
+                        onAppendALine@{
+                            if (readOnlyMode) {
+                                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
+                                return@onAppendALine
+                            }
+
+                            doJobThenOffLoading {
+                                textEditorState.value.appendTextToLastSelectedLine("")
+                            }
+
+                            Unit
+                        },
                         onSelectAll@{
                             doJobThenOffLoading {
                                 textEditorState.value.createSelectAllState()
@@ -960,15 +960,14 @@ fun FileEditor(
                     val hasLineSelected = selectedLines > 0
                     val hasLineSelectedAndNotReadOnly = hasLineSelected && readOnlyMode.not()
                     val iconEnableList = listOf(
-                        onClear@{ hasLineSelectedAndNotReadOnly },  // clear
-                        onShiftTab@{ hasLineSelected },
-                        onTab@{ hasLineSelected },
-//                        onPaste@{ hasLineSelectedAndNotReadOnly && clipboardManager.hasText() },  // paste，必须 "剪贴板非空 且 选中某行" 才启用
-                        onAppendALine@{ hasLineSelectedAndNotReadOnly },  // append a line
+                        onShiftTab@{ hasLineSelected },  // outdent
+                        onTab@{ hasLineSelected },  // indent
                         onDelete@{ hasLineSelectedAndNotReadOnly },  // delete
                         onCut@{ hasLineSelectedAndNotReadOnly },  // cut
                         onCopy@{ hasLineSelected },  // copy
                         onPaste@{ hasLineSelectedAndNotReadOnly },  // paste，只要 "选中某行" 就启用，执行时再检查剪贴板是否为空
+                        onClear@{ hasLineSelectedAndNotReadOnly },  // clear the line
+                        onAppendALine@{ hasLineSelectedAndNotReadOnly },  // append a line
                         onSelectAll@{ true },  // select all
                     )
                     // BottomBar params block end
