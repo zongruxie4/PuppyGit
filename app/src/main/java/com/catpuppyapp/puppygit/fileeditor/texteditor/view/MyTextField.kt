@@ -88,7 +88,7 @@ internal fun MyTextField(
 
     DisableSoftKeyboard(disableSoftKb) {
         BasicTextField(
-            value = textFieldState.value,
+            value = currentTextField,
             readOnly = readOnly,
             enabled = enabled,
             onValueChange = {
@@ -141,7 +141,7 @@ internal fun MyTextField(
                     }
                 }
                 .onPreviewKeyEvent { event ->
-                    val value = textFieldState.value
+//                    val value = textFieldState.value
                     val selection = currentTextField.selection
 
                     if (onPreviewDelKeyEvent(event, selection) { onDeleteNewLine() }) {

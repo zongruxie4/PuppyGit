@@ -81,10 +81,13 @@ class TextEditorState(
     val isContentEdited: MutableState<Boolean>,  // old name `isContentChanged`
     val editorPageIsContentSnapshoted:MutableState<Boolean>,
 
-    private val onChanged: suspend TextEditorState.(newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
+    // caller from: 正常来说是null，其他类型参见枚举类
+    // caller from: usually is null, other types see that enum class
+    private val onChanged: suspend (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean, caller: TextEditorState, from: EditorStateOnChangeCallerFrom?) -> Unit,
 
     val codeEditor: MyCodeEditor,
 
+//    val uniId: String = newId(),
     // temporary use when syntax highlighting analyzing
 //    var temporaryStyles: StylesResult? = null,
 
@@ -101,8 +104,9 @@ class TextEditorState(
         focusingLineIdx: Int? = this.focusingLineIdx,
         isContentEdited: MutableState<Boolean> = this.isContentEdited,
         editorPageIsContentSnapshoted:MutableState<Boolean> = this.editorPageIsContentSnapshoted,
-        onChanged: suspend TextEditorState.(newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit = this.onChanged,
+        onChanged: suspend (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean, caller: TextEditorState, from: EditorStateOnChangeCallerFrom?) -> Unit = this.onChanged,
         codeEditor: MyCodeEditor = this.codeEditor,
+//        uniId: String = this.uniId,
 //        temporaryStyles: StylesResult? = this.temporaryStyles,
     ) = TextEditorState(
         fieldsId = fieldsId,
@@ -114,6 +118,7 @@ class TextEditorState(
         editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
         onChanged = onChanged,
         codeEditor = codeEditor,
+//        uniId = uniId,
 //        temporaryStyles = temporaryStyles,
     )
 
@@ -137,7 +142,7 @@ class TextEditorState(
                 //无论执行redo还是undo，都不需要清redoStack，所以这里此值传false
                 val clearRedoStack = false
                 // 第2个值需要取反，因为执行redo的时候期望更新undoStack，执行undo的时候期望更新redoStack
-                onChanged(lastState, !trueUndoFalseRedo, clearRedoStack)
+                onChanged(lastState, !trueUndoFalseRedo, clearRedoStack, this, null)
             }
         }
     }
@@ -469,7 +474,7 @@ class TextEditorState(
                 updateStylesAfterInsertLine(baseFields, baseStyles, targetIndex, ignoreThis = false, splitFieldValues.joinToString("\n") { it.text }, newState)
             }
 
-            onChanged(newState, true, true)
+            onChanged(newState, true, true, this, null)
         }
     }
 
@@ -632,7 +637,7 @@ class TextEditorState(
                 }
             }
 
-            onChanged(newState, if(contentChanged) true else null, contentChanged)
+            onChanged(newState, if(contentChanged) true else null, contentChanged, this, null)
         }
 
         if(requireLock) {
@@ -654,8 +659,8 @@ class TextEditorState(
 
         val baseStyles = tryGetStylesResult()
         if(baseStyles == null) {
-            MyLog.d(TAG, "#updateStyles: Styles of current field '$fieldsId' not found, maybe not exists or theme/languageScop are not matched, will re-run analyze for next state")
-            codeEditor?.analyze(nextState)
+            MyLog.d(TAG, "#updateStyles: Styles of current field '$fieldsId' not found, maybe not exists or theme/languageScop are not matched, will re-run analyze after user stop input for a while")
+            codeEditor.startAnalyzeWhenUserStopInputForAWhile(nextState)
         }else {
             // even accept ours/theirs,
             // fields still is what we want,
@@ -782,7 +787,7 @@ class TextEditorState(
 
 
 
-            onChanged(newState, true, true)
+            onChanged(newState, true, true, this, null)
         }
     }
 
@@ -828,7 +833,7 @@ class TextEditorState(
                 focusingLineIdx = sfiRet.focusingLineIdx
             )
 
-            onChanged(newState, null, false)
+            onChanged(newState, null, false, this, null)
         }
 
         if(requireLock) {
@@ -893,7 +898,7 @@ class TextEditorState(
                 focusingLineIdx = sfiRet?.focusingLineIdx ?: focusingLineIdx
             )
 
-            onChanged(newState, null, false)
+            onChanged(newState, null, false, this, null)
         }
     }
 
@@ -951,7 +956,7 @@ class TextEditorState(
                 focusingLineIdx = sfiRet.focusingLineIdx
             )
 
-            onChanged(newState, null, false)
+            onChanged(newState, null, false, this, null)
         }
     }
 
@@ -1351,7 +1356,7 @@ class TextEditorState(
                 }
             }
 
-            onChanged(newState, true, true)
+            onChanged(newState, true, true, this, null)
         }
     }
 
@@ -1382,7 +1387,7 @@ class TextEditorState(
 
             )
 
-            onChanged(newState, null, false)
+            onChanged(newState, null, false, this, null)
         }
 
     }
@@ -1425,7 +1430,7 @@ class TextEditorState(
 
             )
 
-            onChanged(newState, null, false)
+            onChanged(newState, null, false, this, null)
         }
     }
 
@@ -1482,7 +1487,7 @@ class TextEditorState(
             }
 
 
-            onChanged(newState, true, true)
+            onChanged(newState, true, true, this, null)
         }
     }
 
@@ -1497,7 +1502,7 @@ class TextEditorState(
 
             )
 
-            onChanged(newState, null, false)
+            onChanged(newState, null, false, this, null)
         }
     }
 
@@ -1754,7 +1759,7 @@ class TextEditorState(
                 focusingLineIdx = sfiRet.focusingLineIdx
             )
 
-            onChanged(newState, null, false)
+            onChanged(newState, null, false, this, null)
         }
     }
 
@@ -1782,7 +1787,7 @@ class TextEditorState(
                     focusingLineIdx = focusingLineIdx
                 )
 
-                onChanged(newState, null, false)
+                onChanged(newState, null, false, this, null)
             }
 
             return newFields
@@ -1943,22 +1948,32 @@ class TextEditorState(
 
             }
 
-            onChanged(newState, true, true)
+            onChanged(newState, true, true, this, null)
         }
     }
 
     suspend fun applySyntaxHighlighting(stylesResult: StylesResult, requireCallOnChange: Boolean = true) {
-        val expectedFieldsId = stylesResult.fieldsId
-
         val funName = "applySyntaxHighlighting"
-        MyLog.d(TAG, "#$funName: StylesResult may will be apply: $stylesResult")
+
+        val spansLineCount = stylesResult.styles.spans.lineCount
+        MyLog.d(TAG, "#$funName: StylesResult may will be apply: $stylesResult, spans.LineCount=$spansLineCount, fields.size=${fields.size}")
 
         // will not be null
-        if(codeEditor == null) {
-            MyLog.w(TAG, "#$funName: codeEditor is null, will not apply styles")
+//        if(codeEditor == null) {
+//            MyLog.w(TAG, "#$funName: codeEditor is null, will not apply styles")
+//
+//            return
+//        }
 
-            return
-        }
+
+        // already checked before apply, no more check needed at here
+//        if(spansLineCount != fields.size) {
+//            MyLog.w(TAG, "#$funName: will not apply stylesResult, because spans.lineCount doesn't match the fields.size: spans.lineCount=$spansLineCount, fields.size=${fields.size}")
+//            // will re-run analyze in the onChanged, nothing need to do at here
+//            return
+//        }
+
+        val expectedFieldsId = stylesResult.fieldsId
 
         if(expectedFieldsId.isBlank()) {
             return
@@ -1999,11 +2014,16 @@ class TextEditorState(
 //                若无，使用原text field，若有，使用缓存的带语法高亮的text field
 
             val shMap = mutableMapOf<String, AnnotatedStringResult>()
-            val spansReader = styles.spans.read()
-            fields.forEachIndexedBetter { idx, value ->
-                val spans = spansReader.getSpansOnLine(idx)
-                val annotatedString = generateAnnotatedStringForLine(value, spans)
-                shMap.put(value.syntaxHighlightId, AnnotatedStringResult(inDarkTheme, annotatedString))
+            try {
+                val spansReader = styles.spans.read()
+                fields.forEachIndexedBetter { idx, value ->
+                    val spans = spansReader.getSpansOnLine(idx)
+                    val annotatedString = generateAnnotatedStringForLine(value, spans)
+                    shMap.put(value.syntaxHighlightId, AnnotatedStringResult(inDarkTheme, annotatedString))
+                }
+            }catch (e: Exception) {
+                MyLog.e(TAG, "#$funName: apply styles err: stylesResult=$stylesResult, err=${e.localizedMessage}")
+                return
             }
 
             codeEditor?.putSyntaxHighlight(fieldsId, shMap)
@@ -2017,7 +2037,7 @@ class TextEditorState(
             //   如果想解决，可给每个editor state加时间戳，但太麻烦，
             //   不如直接禁用在这里调on change，反正用户点屏幕或滚动或输入后，就会触发页面刷新
             if(requireCallOnChange) {
-                onChanged(copy(), null, false)
+                onChanged(copy(), null, false, this, EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING)
             }
 
             // if no check, editor content will incorrect
@@ -2064,9 +2084,10 @@ class TextEditorState(
                 val nextSpan = spans.getOrNull(spanIdx++)
                 val endExclusive = nextSpan?.column ?: rawText.length
                 val textRange = IntRange(start, endExclusive - 1)
-                if(textRange.start < 0 || textRange.endInclusive >= rawText.length) {
-                    continue
-                }
+                // don't check, let'em throw if have any err
+//                if(textRange.start < 0 || textRange.endInclusive >= rawText.length) {
+//                    continue
+//                }
                 start = endExclusive
                 val style = curSpan.style
                 val foregroundColor = Color(RendererUtils.getForegroundColor(curSpan, colorScheme))
@@ -2094,7 +2115,7 @@ class TextEditorState(
         // have a little bug (its acceptable, no fix still ok): if users clicked undo/redo, then change content,
         // here will still return the expired latestStyles and do last once afterDelete/afterInsert,
         // even it doesn't make sense, because a new full analyze will run in soon after
-        return codeEditor?.latestStyles
+        return codeEditor.getLatestStylesResultIfMatch(this)
 
 //        val cachedStyles = codeEditor?.stylesMap?.get(fieldsId)
 //        return if(isGoodStyles(cachedStyles)) {
@@ -2485,7 +2506,7 @@ class TextEditorState(
                 focusingLineIdx = focusingLineIdx
             )
 
-            onChanged(newState, null, false)
+            onChanged(newState, null, false, this, null)
 
         }
     }
@@ -2541,3 +2562,11 @@ private data class HandleTabRet(
     val newSelection: TextRange,
     val changed: Boolean
 )
+
+enum class EditorStateOnChangeCallerFrom {
+    // if onChanged called by a normal action(e.g. user input),
+    // the param will be null, so here don't need a NONE type yet
+//    NONE,
+
+    APPLY_SYNTAX_HIGHLIGHTING,
+}

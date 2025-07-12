@@ -11,6 +11,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getRandomUUID
+import com.catpuppyapp.puppygit.utils.isLocked
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.lang.analysis.StyleReceiver
@@ -26,10 +27,13 @@ import io.github.rosemoe.sora.text.ContentReference
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
+import kotlin.math.absoluteValue
 
 
 private const val TAG = "MyCodeEditor"
@@ -55,6 +59,8 @@ class MyCodeEditor(
     val stylesRequestLock = ReentrantLock(true)
     val analyzeLock = ReentrantLock(true)
 //    val stylesApplyLock = ReentrantLock(true)
+
+    val delayAnalyzingTaskLock = Mutex()
 
     val textEditorStateOnChangeLock = Mutex()
 
@@ -113,8 +119,14 @@ class MyCodeEditor(
             receiver: MyEditorStyleDelegate,
             act: (StyleReceiver)->Unit,
         ) {
-            language?.analyzeManager?.setReceiver(receiver)
-            act(receiver)
+            try {
+                language?.analyzeManager?.setReceiver(receiver)
+                act(receiver)
+            }catch (e: Exception) {
+                // maybe will got NPE, if language changed to null by a new analyze
+                MyLog.e(TAG, "#setReceiverThenDoAct() err: targetFieldsId=${receiver.editorState?.fieldsId}, err=${e.stackTraceToString()}")
+
+            }
         }
 
     }
@@ -144,9 +156,10 @@ class MyCodeEditor(
         stylesMap.clear()
     }
 
-    fun obtainCachedStyles(targetFieldsId: String): StylesResult? {
+    fun obtainCachedStyles(editorState: TextEditorState): StylesResult? {
+        val targetFieldsId = editorState.fieldsId
         val cachedStyles = stylesMap.get(targetFieldsId)
-        return if(isGoodStyles(cachedStyles, targetFieldsId)) {
+        return if(isGoodStyles(cachedStyles, editorState)) {
             cachedStyles
         }else {
             // when switched theme, maybe need remove another themes cached styles, if not clear is ok too,
@@ -182,6 +195,13 @@ class MyCodeEditor(
         }
     }
 
+    fun getLatestStylesResultIfMatch(editorState: TextEditorState) = if(isGoodStyles(latestStyles, editorState)) latestStyles else null
+
+    // bug: if user input very fast, and the analyzing very slow, will trigger
+    //   full text analyzing till user stop input and wait the
+    //   last analyzing finished, usually happened when user open a large file.
+    // 有缺陷，如果用户输入很快，软件响应很慢，增量更新会跟不上，然后无限触发全量更新，直到用户停下来，等待一次完整分析结束，
+    //   这种情况一般会在用户打开大文件时发生
     fun analyze(
         editorState: TextEditorState? = this.editorState?.value,
         plScope: PLScope = this.plScope.value,
@@ -221,7 +241,7 @@ class MyCodeEditor(
         if(scopeChanged) {
             release()
         } else {
-            val cachedStyles = obtainCachedStyles(editorState.fieldsId)
+            val cachedStyles = obtainCachedStyles(editorState)
             if(cachedStyles != null) {
                 // 会在 style receiver收到之后立刻apply，所以这里正常不需要再apply了，但内部会检测，如果已经applied，则不会重复applied，所以这里调用也无妨
                 doJobThenOffLoading {
@@ -361,6 +381,30 @@ class MyCodeEditor(
         AppModel.editorCache.remove(this)
     }
 
+    // user stop input after `delayInSec`, will start a syntax highlighting analyze
+    // set checkTimes to control check how many times, that should not too large, else may have many tasks, that's bad
+    fun startAnalyzeWhenUserStopInputForAWhile(initState: TextEditorState, delayInSec: Int = 2, checkTimes: Int = 5) {
+        doJobThenOffLoading task@{
+            if(isLocked(delayAnalyzingTaskLock)) {
+                return@task
+            }
+
+            delayAnalyzingTaskLock.withLock {
+                var initState = initState
+                var count = 0
+                while (count++ < checkTimes) {
+                    delay(delayInSec * 1000L)
+                    if(editorState != null && editorState.value.fieldsId.let { it.isNotBlank() && it == initState.fieldsId }) {
+                        analyze(editorState.value)
+                        break
+                    }else {
+                        initState = editorState?.value ?: break
+                    }
+                }
+            }
+        }
+    }
+
 
 }
 
@@ -406,6 +450,16 @@ fun MyCodeEditor?.scopeInvalid() = this == null || PLScope.scopeInvalid(language
 
 fun MyCodeEditor?.scopeMatched(scope: String?) = this != null && scope != null && languageScope.scope == scope && !this.scopeInvalid()
 
-fun MyCodeEditor?.isGoodStyles(stylesResult: StylesResult?, targetFieldsId: String):Boolean {
-    return !(this == null || stylesResult == null || stylesResult.fieldsId != targetFieldsId || stylesResult.inDarkTheme != Theme.inDarkTheme || !this.scopeMatched(stylesResult.languageScope.scope))
+fun MyCodeEditor?.isGoodStyles(stylesResult: StylesResult?, editorState: TextEditorState):Boolean {
+    return !(this == null || stylesResult == null || stylesResult.fieldsId != editorState.fieldsId
+            || stylesResult.inDarkTheme != Theme.inDarkTheme
+
+            // this check is a guess-check, maybe something wrong, or may not, but,
+            // usually lineCount and fields.size's difference count should less than 3,
+            // and, if have some deadly bug, it will fault when apply,
+            // then a re-analyzing will start when TextEditorState aware it
+            || (stylesResult.styles.spans.lineCount - editorState.fields.size).absoluteValue > 5
+
+            || !this.scopeMatched(stylesResult.languageScope.scope)
+    )
 }

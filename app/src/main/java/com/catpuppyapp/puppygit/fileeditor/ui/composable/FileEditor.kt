@@ -960,8 +960,8 @@ fun FileEditor(
                     val hasLineSelected = selectedLines > 0
                     val hasLineSelectedAndNotReadOnly = hasLineSelected && readOnlyMode.not()
                     val iconEnableList = listOf(
-                        onShiftTab@{ hasLineSelected },  // outdent
-                        onTab@{ hasLineSelected },  // indent
+                        onShiftTab@{ hasLineSelectedAndNotReadOnly },  // outdent
+                        onTab@{ hasLineSelectedAndNotReadOnly },  // indent
                         onDelete@{ hasLineSelectedAndNotReadOnly },  // delete
                         onCut@{ hasLineSelectedAndNotReadOnly },  // cut
                         onCopy@{ hasLineSelected },  // copy

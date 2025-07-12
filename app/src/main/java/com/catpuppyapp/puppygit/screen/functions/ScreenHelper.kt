@@ -15,6 +15,7 @@ import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dto.UndoStack
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.EditorStateOnChangeCallerFrom
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.git.DiffableItem
 import com.catpuppyapp.puppygit.play.pro.R
@@ -354,42 +355,47 @@ fun getEditorStateOnChange(
     lastTextEditorState:CustomStateSaveable<TextEditorState>,
     undoStack:UndoStack,
     resetLastCursorAtColumn:()->Unit,
-): suspend TextEditorState.(newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit {
-    return { newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean ->
-        this.codeEditor.textEditorStateOnChangeLock.withLock w@{
-            // the caller is not latest state, ignore, this maybe happened when appy highlighting style, but the editor state already updated by next state
-            // 调用者不是最新状态，忽略即可，可能在应用语法高亮时发生这种情况，例如，用户正在输入，state不停变化，这时插进来一个应用语法高亮发起的onchange，两个id就会不匹配
-            if(editorPageTextEditorState.value.fieldsId != this.fieldsId) {
+): suspend (newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean, caller: TextEditorState, from: EditorStateOnChangeCallerFrom?) -> Unit {
+    return { newState, trueSaveToUndoFalseRedoNullNoSave, clearRedoStack, caller, from ->
+        caller.codeEditor.textEditorStateOnChangeLock.withLock w@{
+            if(from == EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING && editorPageTextEditorState.value.let { caller.fieldsId.isNotBlank() && it.fieldsId != caller.fieldsId }) {
+                //这个操作是editor state的apply syntax highlighting的方法调用的，但如今状态已经变化，这个状态并不是给最新的editor state准备的，所以取消应用，直接返回即可
+                MyLog.d(TAG, "editor state already changed, ignore style update request by previous style's apply syntax highlighting method")
                 return@w
             }
 
-            //如果新state的focusingLineIdx为负数，使用上个state的fucusingLineIdx，这样是为了避免 updateField 更新索引，不然会和 selectField 更新索引冲突，有时会定位错
+            //如果新state的focusingLineIdx为负数，使用上个state的focusingLineIdx，这样是为了避免 updateField 更新索引，不然会和 selectField 更新索引冲突，有时会定位错
             val newState = if(newState.focusingLineIdx.let { it == null || it >= 0 }) newState else newState.copy(focusingLineIdx = editorPageTextEditorState.value.focusingLineIdx)
 
             editorPageTextEditorState.value = newState
 
             val lastState = lastTextEditorState.value
 
+            // BEGIN: check whether need re analyzing the code syntax highlighting
             // 在点击undo然后编辑内容后 或者 增量分析出错时，重新执行全量分析
             // after "clicked undo then changed content" or incremental syntax highlighting thrown an err, do a full text re-analyze
-            newState.codeEditor?.let { codeEditor ->
-                // if latestStyles.fieldsId != newState.fieldsId is true, that means new state are still analyzing or have an err broken the procedure
-                // if latestStyles.fieldsId != lastState.fieldsId is true, that means new state already analyzed and the fieldsId updated to new state fieldsId,
-                //   or analyze thread just broken by an err.
-                // so, if latestStyles.fieldsId != newState/lastState.fieldsId are true, that means current text editor state
-                //   is detached the syntax highlighting, so we need restart the analyze. else, will show text with wrong style.
-                if(codeEditor.latestStyles?.fieldsId.let { it.isNullOrBlank().not() && it != newState.fieldsId && it != lastState.fieldsId}) {
-                    // if haven't undo, the incremental syntax highlighting should working, so need not do a full text analyzing,
-                    //   that means the program shouldn't reach here, if happened,
-                    //   maybe something wrong, usually is TextEditorState's afterDelete/afterInsert/afterDeleteALineBreak methods err,
-                    //   maybe just calculated a wrong CharPosition? idk, should check the code.
-                    if(undoStack.redoStackIsEmpty()) {
-                        MyLog.w(TAG, "Detected the redo stack is empty, so maybe you haven't did an undo action? but now we need re-analyze full text for syntax highlighting, if you are not changed the syntax highlighting language or haven't reload the file, maybe the incremental syntax highlighting got some errs, please check the log and search keyword 'AsyncAnalyzer-' to find any err.")
-                    }
-
-                    codeEditor.analyze(newState)
-                }
-            }
+//            val codeEditor = newState.codeEditor
+//            val stylesMap = codeEditor.stylesMap
+//            val latestStylesFieldsId = codeEditor.latestStyles?.fieldsId
+//
+//            // if true, the styles of syntax highlighting already detached, need re run the analyzing
+//            if(latestStylesFieldsId != null && latestStylesFieldsId != caller.fieldsId && latestStylesFieldsId != newState.fieldsId && latestStylesFieldsId != lastState.fieldsId
+//                && stylesMap.get(caller.fieldsId) == null && stylesMap.get(newState.fieldsId) == null && stylesMap.get(lastState.fieldsId) == null
+//            ) {
+//                // if haven't undo, the incremental syntax highlighting should working, so need not do a full text analyzing,
+//                //   that means the program shouldn't reach here, if happened,
+//                //   maybe something wrong, usually is TextEditorState's afterDelete/afterInsert/afterDeleteALineBreak methods err,
+//                //   maybe just calculated a wrong CharPosition? idk, should check the code.
+//                if(undoStack.redoStackIsEmpty()) {
+//                    MyLog.w(TAG, "Detected the redo stack is empty, so maybe you haven't did an undo action? but now we need re-analyze full text for syntax highlighting, if you are not changed the syntax highlighting language or haven't reload the file, maybe the incremental syntax highlighting got some errs, please check the log and search keyword 'AsyncAnalyzer-' to find any err.")
+//                    // if latest fields id doesn't matched any of last/current/next, maybe have some bugs
+//                    MyLog.w(TAG, "latestStylesFieldsId: ${codeEditor.latestStyles?.fieldsId}, lastFieldsId: ${lastState.fieldsId}, currentFieldsId: ${caller.fieldsId}, nextFieldsId: ${newState.fieldsId}, from=$from")
+//                }
+//
+//
+//                codeEditor.analyze(newState)
+//            }
+            // END: check whether need re analyzing the code syntax highlighting
 
 
             // last state == null || 不等于新state的filesId，则入栈
@@ -426,6 +432,7 @@ fun getEditorStateOnChange(
 
 //初始状态值随便填，只是为了帮助泛型确定类型并且避免使用null作为初始值而已，具体的值在打开文件后会重新创建
 fun getInitTextEditorState() = TextEditorState(
+//    uniId = "",
     codeEditor = MyCodeEditor(),
     fields = listOf(),
     fieldsId = "",
@@ -433,7 +440,7 @@ fun getInitTextEditorState() = TextEditorState(
     editorPageIsContentSnapshoted = mutableStateOf(false),
     isMultipleSelectionMode = false,
     focusingLineIdx = null,
-    onChanged = { i1, i2, i3->},
+    onChanged = { i1, i2, i3, _, _ ->},
 )
 
 suspend fun goToStashPage(repoId:String) {

@@ -890,8 +890,10 @@ fun EditorInnerPage(
                 // and maybe will cause many full text re-analyze,
                 // it will cause performance issue
 //                undoStack.reset(editorPageShowingFilePath.value.ioPath)
-
-                forceReloadFile()
+                doJobThenOffLoading {
+                    doSaveNoCoroutine()
+                    forceReloadFile()
+                }
             }
         }
     }
@@ -1793,8 +1795,8 @@ fun EditorInnerPage(
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         appPaused.value = false
 
-        updatePlScopeIfNeeded(editorPageShowingFileDto.value.name)
-        codeEditor.value.analyze()
+//        updatePlScopeIfNeeded(editorPageShowingFileDto.value.name)
+//        codeEditor.value.analyze()
 
         //检查，如果 Activity 的on resume事件刚被触发，说明用户刚从后台把app调出来，这时调用软重载文件（会检测变化若判断很可能无变化则不重载）
         doActIfIsExpectLifeCycle(MainActivityLifeCycle.ON_RESUME) {
@@ -2076,7 +2078,6 @@ private suspend fun doInit(
                     codeEditor = codeEditor,
 
                     fields = TextEditorState.fuckSafFileToFields(file),
-                    fieldsId = TextEditorState.newId(),
                     isContentEdited = isEdited,
                     editorPageIsContentSnapshoted = isContentSnapshoted,
                     isMultipleSelectionMode = false,
@@ -2089,7 +2090,6 @@ private suspend fun doInit(
                     ),
 //                    temporaryStyles = null,
                 )
-
                 editorPageTextEditorState.value = newState
                 lastTextEditorState.value = newState
 

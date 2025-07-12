@@ -1,7 +1,7 @@
 package com.catpuppyapp.puppygit.codeeditor
 
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
-import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import io.github.rosemoe.sora.lang.analysis.AnalyzeManager
 import io.github.rosemoe.sora.lang.analysis.StyleReceiver
@@ -10,6 +10,7 @@ import io.github.rosemoe.sora.lang.brackets.BracketsProvider
 import io.github.rosemoe.sora.lang.diagnostic.DiagnosticsContainer
 import io.github.rosemoe.sora.lang.styling.Styles
 
+private const val TAG = "MyEditorStyleDelegate"
 
 class MyEditorStyleDelegate(
     val codeEditor: MyCodeEditor,
@@ -44,16 +45,17 @@ class MyEditorStyleDelegate(
 
         // cache只有一个实例，需要并发安全，key为fieldsId，全局唯一
         val stylesResult = StylesResult(inDarkTheme, styles, StylesResultFrom.CODE_EDITOR, fieldsId = editorState.fieldsId, languageScope = languageScope)
+        if(codeEditor.isGoodStyles(stylesResult, editorState).not()) {
+            MyLog.w(TAG, "stylesResult doesn't match with editor state: stylesResult=$stylesResult, styles.spans.lineCount=${styles.spans.lineCount}, editorState.fields.size=${editorState.fields.size}")
+            return
+        }
+
         codeEditor.latestStyles = stylesResult
-        if(inDarkTheme == Theme.inDarkTheme) {
-//            val targetEditorState = requester.targetEditorState
-//            val targetEditorState = editorState
-            val copiedStyles = stylesResult.copyWithDeepCopyStyles()
-            stylesMap.put(editorState.fieldsId, copiedStyles)
-            doJobThenOffLoading {
-                // apply copied for editor state to avoid styles changed when applying
-                editorState.applySyntaxHighlighting(copiedStyles)
-            }
+        val copiedStyles = stylesResult.copyWithDeepCopyStyles()
+        stylesMap.put(editorState.fieldsId, copiedStyles)
+        doJobThenOffLoading {
+            // apply copied for editor state to avoid styles changed when applying
+            editorState.applySyntaxHighlighting(copiedStyles)
         }
     }
 
