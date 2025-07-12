@@ -2016,15 +2016,9 @@ class TextEditorState(
             //   结果状态可能变会ab，用户会看到abc的c出现又消失，
             //   如果想解决，可给每个editor state加时间戳，但太麻烦，
             //   不如直接禁用在这里调on change，反正用户点屏幕或滚动或输入后，就会触发页面刷新
-//            if(requireCallOnChange) {
-//                val latestEditorState = codeEditor?.editorState?.value
-//                // just for trigger re-render page
-//                if(fieldsId == latestEditorState?.fieldsId) {
-                      // 如果不拷贝，同样的地址赋值给state变量可能会失败，因为state赋值会检测，若equals返回真，其实不会赋值
-                      // (所以之前启用这段代码时也经常需要点下屏幕才能看到语法高亮，因为那时没调用copy())
-//                    codeEditor?.editorState?.value?.let { onChanged(it.copy(), null, false) }
-//                }
-//            }
+            if(requireCallOnChange) {
+                onChanged(copy(), null, false)
+            }
 
             // if no check, editor content will incorrect
             // 如果不检查fieldsId，editor内容会出错，例如你输入了123，然后应用了上个状态，导致内容变成没有123时的状态，这种错误是不可接受的

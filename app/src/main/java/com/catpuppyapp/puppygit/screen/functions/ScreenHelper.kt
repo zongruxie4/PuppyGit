@@ -356,64 +356,70 @@ fun getEditorStateOnChange(
     resetLastCursorAtColumn:()->Unit,
 ): suspend TextEditorState.(newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit {
     return { newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean ->
-        this.codeEditor.textEditorStateOnChangeLock.withLock {
-
-        }
-        //如果新state的focusingLineIdx为负数，使用上个state的fucusingLineIdx，这样是为了避免 updateField 更新索引，不然会和 selectField 更新索引冲突，有时会定位错
-        val newState = if(newState.focusingLineIdx.let { it == null || it >= 0 }) newState else newState.copy(focusingLineIdx = editorPageTextEditorState.value.focusingLineIdx)
-
-        editorPageTextEditorState.value = newState
-
-        val lastState = lastTextEditorState.value
-
-        // 在点击undo然后编辑内容后 或者 增量分析出错时，重新执行全量分析
-        // after "clicked undo then changed content" or incremental syntax highlighting thrown an err, do a full text re-analyze
-        newState.codeEditor?.let { codeEditor ->
-            // if latestStyles.fieldsId != newState.fieldsId is true, that means new state are still analyzing or have an err broken the procedure
-            // if latestStyles.fieldsId != lastState.fieldsId is true, that means new state already analyzed and the fieldsId updated to new state fieldsId,
-            //   or analyze thread just broken by an err.
-            // so, if latestStyles.fieldsId != newState/lastState.fieldsId are true, that means current text editor state
-            //   is detached the syntax highlighting, so we need restart the analyze. else, will show text with wrong style.
-            if(codeEditor.latestStyles?.fieldsId.let { it.isNullOrBlank().not() && it != newState.fieldsId && it != lastState.fieldsId}) {
-                // if haven't undo, the incremental syntax highlighting should working, so need not do a full text analyzing,
-                //   that means the program shouldn't reach here, if happened,
-                //   maybe something wrong, usually is TextEditorState's afterDelete/afterInsert/afterDeleteALineBreak methods err,
-                //   maybe just calculated a wrong CharPosition? idk, should check the code.
-                if(undoStack.redoStackIsEmpty()) {
-                    MyLog.w(TAG, "Detected the redo stack is empty, so maybe you haven't did an undo action? but now we need re-analyze full text for syntax highlighting, if you are not changed the syntax highlighting language or haven't reload the file, maybe the incremental syntax highlighting got some errs, please check the log and search keyword 'AsyncAnalyzer-' to find any err.")
-                }
-
-                codeEditor.analyze(newState)
+        this.codeEditor.textEditorStateOnChangeLock.withLock w@{
+            // the caller is not latest state, ignore, this maybe happened when appy highlighting style, but the editor state already updated by next state
+            // 调用者不是最新状态，忽略即可，可能在应用语法高亮时发生这种情况，例如，用户正在输入，state不停变化，这时插进来一个应用语法高亮发起的onchange，两个id就会不匹配
+            if(editorPageTextEditorState.value.fieldsId != this.fieldsId) {
+                return@w
             }
-        }
+
+            //如果新state的focusingLineIdx为负数，使用上个state的fucusingLineIdx，这样是为了避免 updateField 更新索引，不然会和 selectField 更新索引冲突，有时会定位错
+            val newState = if(newState.focusingLineIdx.let { it == null || it >= 0 }) newState else newState.copy(focusingLineIdx = editorPageTextEditorState.value.focusingLineIdx)
+
+            editorPageTextEditorState.value = newState
+
+            val lastState = lastTextEditorState.value
+
+            // 在点击undo然后编辑内容后 或者 增量分析出错时，重新执行全量分析
+            // after "clicked undo then changed content" or incremental syntax highlighting thrown an err, do a full text re-analyze
+            newState.codeEditor?.let { codeEditor ->
+                // if latestStyles.fieldsId != newState.fieldsId is true, that means new state are still analyzing or have an err broken the procedure
+                // if latestStyles.fieldsId != lastState.fieldsId is true, that means new state already analyzed and the fieldsId updated to new state fieldsId,
+                //   or analyze thread just broken by an err.
+                // so, if latestStyles.fieldsId != newState/lastState.fieldsId are true, that means current text editor state
+                //   is detached the syntax highlighting, so we need restart the analyze. else, will show text with wrong style.
+                if(codeEditor.latestStyles?.fieldsId.let { it.isNullOrBlank().not() && it != newState.fieldsId && it != lastState.fieldsId}) {
+                    // if haven't undo, the incremental syntax highlighting should working, so need not do a full text analyzing,
+                    //   that means the program shouldn't reach here, if happened,
+                    //   maybe something wrong, usually is TextEditorState's afterDelete/afterInsert/afterDeleteALineBreak methods err,
+                    //   maybe just calculated a wrong CharPosition? idk, should check the code.
+                    if(undoStack.redoStackIsEmpty()) {
+                        MyLog.w(TAG, "Detected the redo stack is empty, so maybe you haven't did an undo action? but now we need re-analyze full text for syntax highlighting, if you are not changed the syntax highlighting language or haven't reload the file, maybe the incremental syntax highlighting got some errs, please check the log and search keyword 'AsyncAnalyzer-' to find any err.")
+                    }
+
+                    codeEditor.analyze(newState)
+                }
+            }
 
 
-        // last state == null || 不等于新state的filesId，则入栈
-        //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
-        if(lastState.maybeNotEquals(newState)) {
-            // if content changed, reset remembered last cursor at column，then next time navigate line by Down/Up key will update the column to the expect value
-            // 如果内容改变，重置记录的光标所在列，这样下次按键盘上下键导航的位置就会重新更新为期望的值
-            resetLastCursorAtColumn()
+            // last state == null || 不等于新state的filesId，则入栈
+            //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
+            if(lastState.maybeNotEquals(newState)) {
+                // if content changed, reset remembered last cursor at column，then next time navigate line by Down/Up key will update the column to the expect value
+                // 如果内容改变，重置记录的光标所在列，这样下次按键盘上下键导航的位置就会重新更新为期望的值
+                resetLastCursorAtColumn()
 //                    if(lastTextEditorState.value?.fields != newState.fields) {
-            //true或null，存undo; false存redo。null本来是在选择行之类的场景的，没改内容，可以不存，但我后来感觉存上比较好
-            if(trueSaveToUndoFalseRedoNullNoSave == null) {
-                // fields has not changed, but maybe other state changed, so need update
-                undoStack.updateUndoHeadIfNeed(newState)
-            } else if(trueSaveToUndoFalseRedoNullNoSave) {  // null or true
-                // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
-                // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
+                //true或null，存undo; false存redo。null本来是在选择行之类的场景的，没改内容，可以不存，但我后来感觉存上比较好
+                if(trueSaveToUndoFalseRedoNullNoSave == null) {
+                    // fields has not changed, but maybe other state changed, so need update
+                    undoStack.updateUndoHeadIfNeed(newState)
+                } else if(trueSaveToUndoFalseRedoNullNoSave) {  // null or true
+                    // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
+                    // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
 //                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
-                //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
-                if(clearRedoStack) {
-                    undoStack.redoStackClear()
+                    //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
+                    if(clearRedoStack) {
+                        undoStack.redoStackClear()
+                    }
+
+                    undoStack.undoStackPush(lastState)
+                }else {  // false
+                    undoStack.redoStackPush(lastState)
                 }
 
-                undoStack.undoStackPush(lastState)
-            }else {  // false
-                undoStack.redoStackPush(lastState)
+                lastTextEditorState.value = newState
             }
 
-            lastTextEditorState.value = newState
         }
     }
 }
