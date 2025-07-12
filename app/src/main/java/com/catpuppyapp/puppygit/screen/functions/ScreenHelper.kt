@@ -38,6 +38,7 @@ import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.sync.withLock
 
 private const val TAG = "ScreenHelper"
 
@@ -353,9 +354,11 @@ fun getEditorStateOnChange(
     lastTextEditorState:CustomStateSaveable<TextEditorState>,
     undoStack:UndoStack,
     resetLastCursorAtColumn:()->Unit,
-):(newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit {
-
+): suspend TextEditorState.(newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit {
     return { newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean ->
+        this.codeEditor.textEditorStateOnChangeLock.withLock {
+
+        }
         //如果新state的focusingLineIdx为负数，使用上个state的fucusingLineIdx，这样是为了避免 updateField 更新索引，不然会和 selectField 更新索引冲突，有时会定位错
         val newState = if(newState.focusingLineIdx.let { it == null || it >= 0 }) newState else newState.copy(focusingLineIdx = editorPageTextEditorState.value.focusingLineIdx)
 

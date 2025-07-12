@@ -81,7 +81,7 @@ class TextEditorState(
     val isContentEdited: MutableState<Boolean>,  // old name `isContentChanged`
     val editorPageIsContentSnapshoted:MutableState<Boolean>,
 
-    private val onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
+    private val onChanged: suspend TextEditorState.(newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
 
     val codeEditor: MyCodeEditor,
 
@@ -101,7 +101,7 @@ class TextEditorState(
         focusingLineIdx: Int? = this.focusingLineIdx,
         isContentEdited: MutableState<Boolean> = this.isContentEdited,
         editorPageIsContentSnapshoted:MutableState<Boolean> = this.editorPageIsContentSnapshoted,
-        onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit = this.onChanged,
+        onChanged: suspend TextEditorState.(newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit = this.onChanged,
         codeEditor: MyCodeEditor = this.codeEditor,
 //        temporaryStyles: StylesResult? = this.temporaryStyles,
     ) = TextEditorState(
@@ -561,7 +561,7 @@ class TextEditorState(
         requireLock:Boolean = true,
         updater:((newLinesRange: IntRange, newFields: MutableList<TextFieldState>, newSelectedIndices: MutableList<Int>) -> Unit)? = null
     ) {
-        val act =  p@{
+        val act = suspend p@{
             try {
                 targetIndexValidOrThrow(targetIndex, fields.size)
             }catch (e: Exception) { // will throw when line dost, maybe changed by external or other cases, but it's fine, no need throw exception
@@ -800,7 +800,7 @@ class TextEditorState(
 
     ) {
 
-        val act = {
+        val act = suspend {
 //            val newFields = fields.toMutableList()
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
 //            val newSelectedIndices = selectedIndices.toMutableList()
