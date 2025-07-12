@@ -198,11 +198,14 @@ class UndoStack(
             return
         }
 
+        undoStackPopThenPush(latestState)
+    }
+
+    private fun undoStackPopThenPush(state: TextEditorState) {
         undoLock.withLock {
             undoStackPopNoLock()
-            undoStackPushNoLock(latestState)
+            undoStackPushNoLock(state)
         }
-
     }
 
 }
