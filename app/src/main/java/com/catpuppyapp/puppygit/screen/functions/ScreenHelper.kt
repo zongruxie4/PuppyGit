@@ -406,10 +406,13 @@ fun getEditorStateOnChange(
                 resetLastCursorAtColumn()
 //                    if(lastTextEditorState.value?.fields != newState.fields) {
                 //true或null，存undo; false存redo。null本来是在选择行之类的场景的，没改内容，可以不存，但我后来感觉存上比较好
-                if(trueSaveToUndoFalseRedoNullNoSave == null) {
-                    // fields has not changed, but maybe other state changed, so need update
-                    undoStack.updateUndoHeadIfNeed(newState)
-                } else if(trueSaveToUndoFalseRedoNullNoSave) {  // null or true
+//                if(trueSaveToUndoFalseRedoNullNoSave == null) {
+//                    //之前存这个是因为text editor state携带了语法高亮数据，后来改成用fieldsId关联外部数据了，
+//                    //  所以不需要再更新undo stack head了，就算携带数据，如果共享同一个对象实例，editor state只存引用，也不需要更新undo stack head
+//                    // fields has not changed, but maybe other state changed, so need update
+//                    undoStack.updateUndoHeadIfNeed(newState)
+//                } else
+                val saved = if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
                     // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
                     // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
 //                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
@@ -423,7 +426,9 @@ fun getEditorStateOnChange(
                     undoStack.redoStackPush(lastState)
                 }
 
-                lastTextEditorState.value = newState
+                if(saved) {
+                    lastTextEditorState.value = newState
+                }
             }
 
         }
