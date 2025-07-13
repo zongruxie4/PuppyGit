@@ -1795,8 +1795,11 @@ fun EditorInnerPage(
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         appPaused.value = false
 
-//        updatePlScopeIfNeeded(editorPageShowingFileDto.value.name)
-//        codeEditor.value.analyze()
+        // if need will re-analyze, if need not, will do nothing
+        //   this check is necessary, else, after you changed theme dark/light,
+        //   the syntax highlighting will not update automatically
+        updatePlScopeIfNeeded(editorPageShowingFileDto.value.name)
+        codeEditor.value.analyze()
 
         //检查，如果 Activity 的on resume事件刚被触发，说明用户刚从后台把app调出来，这时调用软重载文件（会检测变化若判断很可能无变化则不重载）
         doActIfIsExpectLifeCycle(MainActivityLifeCycle.ON_RESUME) {
