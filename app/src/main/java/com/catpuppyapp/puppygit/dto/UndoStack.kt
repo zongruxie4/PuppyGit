@@ -1,7 +1,5 @@
 package com.catpuppyapp.puppygit.dto
 
-import androidx.compose.runtime.MutableLongState
-import androidx.compose.runtime.mutableLongStateOf
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.getSecFromTime
@@ -12,6 +10,7 @@ import kotlin.concurrent.withLock
 private const val TAG = "UndoStack"
 
 private const val defaultSizeLimit = 100
+private const val defaultSaveIntervalInSec = 2
 
 class UndoStack(
     /**
@@ -26,14 +25,12 @@ class UndoStack(
     /**
      * 保存间隔，秒数，为0则不限只要状态变化就立即存一版
      */
-//    val undoSaveIntervalInSec:Int = 5,
-    //5秒的用户体验并不好，有可能漏选，用0秒了
-    var undoSaveIntervalInSec:Int = 0,
+    var undoSaveIntervalInSec:Int = defaultSaveIntervalInSec,
 
     /**
      * utc秒数，上次保存时间，用来和时间间隔配合实现在几秒内只保存一次，若为0，无视时间间隔，立即存一版本，然后更新时间为当前秒数
      */
-    val undoLastSaveAt:MutableLongState = mutableLongStateOf(0),
+    var undoLastSaveAt: Long = 0L,
 
 
     private var undoStack:LinkedList<TextEditorState> = LinkedList(),
@@ -49,8 +46,8 @@ class UndoStack(
 
         this.filePath = filePath
         sizeLimit = defaultSizeLimit
-        undoSaveIntervalInSec = 0
-        undoLastSaveAt.longValue = 0L
+        undoSaveIntervalInSec = defaultSaveIntervalInSec
+        undoLastSaveAt = 0L
         undoStack = LinkedList()
         redoStack = LinkedList()
         undoLock = ReentrantLock(true)
@@ -61,7 +58,7 @@ class UndoStack(
         filePath = other.filePath
         sizeLimit = other.sizeLimit
         undoSaveIntervalInSec = other.undoSaveIntervalInSec
-        undoLastSaveAt.longValue = other.undoLastSaveAt.longValue
+        undoLastSaveAt = other.undoLastSaveAt
         undoStack = other.undoStack
         redoStack = other.redoStack
         undoLock = other.undoLock
@@ -94,12 +91,17 @@ class UndoStack(
     }
 
     private fun undoStackPushNoLock(state: TextEditorState):Boolean {
+        val headState = peek(undoStack)
+        // first time save or switched multi selection mode, save without interval check
+        val selectModeChanged = headState == null || headState.isMultipleSelectionMode != state.isMultipleSelectionMode
+
         val now = getSecFromTime()
-        val snapshotLastSaveAt = undoLastSaveAt.longValue
+
+        val snapshotLastSaveAt = undoLastSaveAt
         //在时间间隔内只存一版
-        if(undoSaveIntervalInSec == 0 || snapshotLastSaveAt == 0L || (now - snapshotLastSaveAt) > undoSaveIntervalInSec) {
+        if(selectModeChanged || undoSaveIntervalInSec == 0 || snapshotLastSaveAt == 0L || (now - snapshotLastSaveAt) > undoSaveIntervalInSec) {
             push(undoStack, state)
-            undoLastSaveAt.longValue = now
+            undoLastSaveAt = now
 
             //若超过数量限制移除第一个
             if(undoStack.size.let { it > 0 && it > sizeLimit }) {
@@ -135,8 +137,8 @@ class UndoStack(
     fun redoStackPop(): TextEditorState? {
         redoLock.withLock {
             undoLock.withLock {
-                //为使弹窗的状态可立刻被undo stack存上，所以将上次存储时间清0
-                undoLastSaveAt.longValue = 0
+                //为使弹出的状态可立刻被undo stack存上，所以将上次存储时间清0
+                undoLastSaveAt = 0
             }
 
 //            remainOnceRedoStackCount()
@@ -145,6 +147,9 @@ class UndoStack(
 //            redoLastPop.value = last
 //            return last
 
+            // 这里只需pop redoStack，不需push undoStack，
+            // editor state会在执行pop后触发一次onChanged，
+            // 会在其中执行push undoStack，配合上面的存储时间清0，就可立刻将pop的redo状态入undo栈
             return pop(redoStack)
         }
     }
