@@ -1261,7 +1261,7 @@ fun HomeScreen(
                     ) {
                         editorPageRequestFromParent.value = PageRequest.requireSave
                     }
-                }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && editorInRecentFilesPage.value) {
+                }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && editorInRecentFilesPage.value && editorRecentListScrolled.value) {
                     GoToTopAndGoToBottomFab(
                         filterModeOn = editorFilterRecentListOn.value,
                         scope = scope,
@@ -1458,6 +1458,7 @@ fun HomeScreen(
 
                     codeEditor = codeEditor,
 
+                    editorRecentListScrolled = editorRecentListScrolled,
                     disableSoftKb = editorDisableSoftKb,
                     recentFileList = editorRecentFileList,
                     selectedRecentFileList = editorSelectedRecentFileList,

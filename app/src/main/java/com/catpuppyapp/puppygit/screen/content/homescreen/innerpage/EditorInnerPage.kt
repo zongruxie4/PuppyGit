@@ -128,6 +128,7 @@ fun EditorInnerPage(
     codeEditor: CustomStateSaveable<MyCodeEditor>,
 
     disableSoftKb: MutableState<Boolean>,
+    editorRecentListScrolled: MutableState<Boolean>,
 
     recentFileList: CustomStateListSaveable<FileDetail>,
     selectedRecentFileList: CustomStateListSaveable<FileDetail>,
@@ -241,6 +242,7 @@ fun EditorInnerPage(
     val settings = remember(isPreviewModeOn.value) {
         val s = SettingsUtil.getSettingsSnapshot()
         previewPageScrolled.value = s.showNaviButtons
+        editorRecentListScrolled.value = s.showNaviButtons
         s
     }
 

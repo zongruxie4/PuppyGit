@@ -194,16 +194,40 @@ object UIHelper {
         }
     }
 
-    fun scrollToItem(coroutineScope: CoroutineScope, listState: LazyListState, index:Int)  {
-        coroutineScope.launch { listState.scrollToItem(Math.max(0, index)) }
+    fun scrollToItem(coroutineScope: CoroutineScope, listState: LazyListState, index:Int, animation:Boolean = false) {
+        val index = index.coerceAtLeast(0)
+
+        coroutineScope.launch {
+            if(animation) {
+                listState.animateScrollToItem(index)
+            }else {
+                listState.scrollToItem(index)
+            }
+        }
     }
 
-    fun scrollToItem(coroutineScope: CoroutineScope, listState: LazyStaggeredGridState, index:Int)  {
-        coroutineScope.launch { listState.scrollToItem(Math.max(0, index)) }
+    fun scrollToItem(coroutineScope: CoroutineScope, listState: LazyStaggeredGridState, index:Int, animation:Boolean = false) {
+        val index = index.coerceAtLeast(0)
+
+        coroutineScope.launch {
+            if(animation) {
+                listState.animateScrollToItem(index)
+            }else {
+                listState.scrollToItem(index)
+            }
+        }
     }
 
-    fun scrollTo(coroutineScope: CoroutineScope, listState: ScrollState, index:Int)  {
-        coroutineScope.launch { listState.scrollTo(Math.max(0, index)) }
+    fun scrollTo(coroutineScope: CoroutineScope, listState: ScrollState, index:Int, animation:Boolean = false) {
+        val index = index.coerceAtLeast(0)
+
+        coroutineScope.launch {
+            if(animation) {
+                listState.animateScrollTo(index)
+            }else {
+                listState.scrollTo(index)
+            }
+        }
     }
 
     /**

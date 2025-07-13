@@ -470,7 +470,7 @@ fun SubPageEditor(
                 ) {
                     editorPageRequestFromParent.value = PageRequest.requireSave
                 }
-            }else if(editorInRecentFilesPage.value) {
+            }else if(editorInRecentFilesPage.value && editorRecentListScrolled.value) {
                 GoToTopAndGoToBottomFab(
                     filterModeOn = editorFilterRecentListOn.value,
                     scope = scope,
@@ -500,6 +500,7 @@ fun SubPageEditor(
             codeEditor = codeEditor,
 
             disableSoftKb = editorDisableSoftKb,
+            editorRecentListScrolled = editorRecentListScrolled,
             recentFileList = editorRecentFileList,
             selectedRecentFileList = editorSelectedRecentFileList,
             recentFileListSelectionMode = editorRecentFileListSelectionMode,

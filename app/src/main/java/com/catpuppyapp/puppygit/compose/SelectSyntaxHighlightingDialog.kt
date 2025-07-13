@@ -50,10 +50,10 @@ fun SelectSyntaxHighlightingDialog(
 
     LaunchedEffect(Unit) {
         scope.launch {
-            delay(500)
+            delay(200)
             val indexOf = itemList.indexOf(plScope)
             if(indexOf != -1) {
-                UIHelper.scrollToItem(scope, listState, indexOf-3)
+                UIHelper.scrollToItem(scope, listState, indexOf-3, animation = true)
             }
         }
     }
