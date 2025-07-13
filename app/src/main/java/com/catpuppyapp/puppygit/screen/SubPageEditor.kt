@@ -472,7 +472,7 @@ fun SubPageEditor(
                 }
             }else if(editorInRecentFilesPage.value && editorRecentListScrolled.value) {
                 GoToTopAndGoToBottomFab(
-                    filterModeOn = editorFilterRecentListOn.value,
+                    filterModeOn = editorEnableRecentListFilter.value,
                     scope = scope,
                     filterListState = editorFilterRecentListState,
                     listState = editorRecentListState,

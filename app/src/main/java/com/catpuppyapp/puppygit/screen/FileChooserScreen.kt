@@ -307,7 +307,7 @@ fun FileChooserScreen(
                     )
                 }else {
                     GoToTopAndGoToBottomFab(
-                        filterModeOn = filesPageSimpleFilterOn.value,
+                        filterModeOn = filesPageEnableFilterState.value,
                         scope = scope,
                         filterListState = filesFilterListState,
                         listState = filesPageListState.value,

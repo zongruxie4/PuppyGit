@@ -221,7 +221,7 @@ fun IndexScreen(
                     )
                 }else {
                     GoToTopAndGoToBottomFab(
-                        filterModeOn = changeListPageFilterModeOn.value,
+                        filterModeOn = changeListPageEnableFilterState.value,
                         scope = scope,
                         filterListState = changelistFilterListState,
                         listState = changeListPageItemListState,

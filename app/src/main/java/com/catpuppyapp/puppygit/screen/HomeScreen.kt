@@ -1263,7 +1263,7 @@ fun HomeScreen(
                     }
                 }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && editorInRecentFilesPage.value && editorRecentListScrolled.value) {
                     GoToTopAndGoToBottomFab(
-                        filterModeOn = editorFilterRecentListOn.value,
+                        filterModeOn = editorEnableRecentListFilter.value,
                         scope = scope,
                         filterListState = editorFilterRecentListState,
                         listState = editorRecentListState,
@@ -1282,7 +1282,7 @@ fun HomeScreen(
                         )
                     }else {
                         GoToTopAndGoToBottomFab(
-                            filterModeOn = changeListPageFilterModeOn.value,
+                            filterModeOn = changeListPageEnableFilterState.value,
                             scope = scope,
                             filterListState = changelistFilterListState,
                             listState = changeListPageItemListState,
@@ -1294,7 +1294,7 @@ fun HomeScreen(
 
                 }else if(currentHomeScreen.intValue == Cons.selectedItem_Repos && repoPageScrolled.value) {
                     GoToTopAndGoToBottomFab(
-                        filterModeOn = repoPageFilterModeOn.value,
+                        filterModeOn = repoPageEnableFilterState.value,
                         scope = scope,
                         filterListState = repoFilterListState,
                         listState = repoPageListState,
@@ -1313,7 +1313,7 @@ fun HomeScreen(
                         )
                     }else {
                         GoToTopAndGoToBottomFab(
-                            filterModeOn = filesPageSimpleFilterOn.value,
+                            filterModeOn = filesPageEnableFilterState.value,
                             scope = scope,
                             filterListState = filesFilterListState,
                             listState = filesPageListState.value,
