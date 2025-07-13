@@ -13,9 +13,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.encodeToStream
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.locks.ReadWriteLock
-import java.util.concurrent.locks.ReentrantReadWriteLock
-import kotlin.concurrent.withLock
 
 object SettingsUtil {
     private const val TAG = "SettingsUtil"
@@ -30,14 +27,14 @@ object SettingsUtil {
     private val saveChannel = Channel<AppSettings>(capacity = channelBufferSize, onBufferOverflow = BufferOverflow.SUSPEND)
     private val saveJobStarted = AtomicBoolean(false)
 
-    private val appSettingsRwLock: ReadWriteLock = ReentrantReadWriteLock()
+//    private val appSettingsRwLock: ReadWriteLock = ReentrantReadWriteLock()
     // have an user said he was got appSettings NPE err, I am not sure, maybe is concurrency problem, so I add a RW lock for appSettings.
     private var appSettings:AppSettings = AppSettings()
-        get() = appSettingsRwLock.readLock().withLock { field }
-        set(value) = appSettingsRwLock.writeLock().withLock { field = value }
+//        get() = appSettingsRwLock.readLock().withLock { field }
+//        set(value) = appSettingsRwLock.writeLock().withLock { field = value }
 
     // if only need read some fields, better use this no-lock instance
-    private var appSettingsReadOnly: AppSettings = AppSettings()
+//    private var appSettingsReadOnly: AppSettings = AppSettings()
 
     private lateinit var settingsFile:File
     private lateinit var settingsBakFile:File
@@ -104,7 +101,7 @@ object SettingsUtil {
 
                         //更新类里的配置项
                         appSettings = newSettings
-                        appSettingsReadOnly = newSettings.copy()
+//                        appSettingsReadOnly = newSettings.copy()
                         //json保存到bak文件 和 拷贝bak到原始文件 若目标文件不存在都会自动创建文件，
                         // 所以这里不需要判断文件是否存在，直接写入就行。（就算不是其实也无所谓，顶多崩溃，重启app就解决了，所以问题不大）
                         //更新配置文件
@@ -153,7 +150,7 @@ object SettingsUtil {
             //新建对象，然后写入文件
             val newSettings = getNewSettings()
             appSettings = newSettings
-            appSettingsReadOnly = newSettings.copy()
+//            appSettingsReadOnly = newSettings.copy()
             //新创建的肯定不用迁移，直接保存即可
             doJobThenOffLoading {
                 saveChannel.send(newSettings)
@@ -161,7 +158,7 @@ object SettingsUtil {
         }else {  //文件若存在，读取即可
             val newSettings = JsonUtil.j.decodeFromString<AppSettings>(settingsStr)
             appSettings = newSettings
-            appSettingsReadOnly = newSettings.copy()
+//            appSettingsReadOnly = newSettings.copy()
             //检查是否需要迁移，如果需要，会执行迁移，并对appSettings重新赋值
             migrateIfNeed()
         }
@@ -309,8 +306,8 @@ object SettingsUtil {
         }
     }
 
-    fun obtainLastQuitHomeScreen() = appSettingsReadOnly.lastQuitHomeScreen
-    fun editorTabIndentCount() = appSettingsReadOnly.editor.tabIndentSpacesCount
-    fun isEditorSyntaxHighlightEnabled() = appSettingsReadOnly.editor.syntaxHighlightEnabled
-    fun isEditorUseSystemFonts() = appSettingsReadOnly.editor.useSystemFonts
+    fun obtainLastQuitHomeScreen() = appSettings.lastQuitHomeScreen
+    fun editorTabIndentCount() = appSettings.editor.tabIndentSpacesCount
+    fun isEditorSyntaxHighlightEnabled() = appSettings.editor.syntaxHighlightEnabled
+    fun isEditorUseSystemFonts() = appSettings.editor.useSystemFonts
 }
