@@ -42,7 +42,11 @@ class UndoStack(
     private var redoLock: ReentrantLock = ReentrantLock(true),
 ) {
 
-    fun reset(filePath:String) {
+    fun reset(filePath:String, force:Boolean) {
+        if(force.not() && filePath == this.filePath) {
+            return
+        }
+
         this.filePath = filePath
         sizeLimit = defaultSizeLimit
         undoSaveIntervalInSec = 0

@@ -1947,11 +1947,9 @@ private suspend fun doInit(
 
         //读取文件内容
         try {
-            //file changed
-            if(requireOpenFilePath != undoStack.filePath) {
-                //reset undo stack
-                undoStack.reset(requireOpenFilePath)
-            }
+
+            //reset undo stack if needed
+            undoStack.reset(requireOpenFilePath, force = false)
 
 
             // reset if needed
