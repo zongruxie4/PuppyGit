@@ -136,11 +136,9 @@ fun SubPageEditor(
     val editorPageSnapshotedFileInfo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSnapshotedFileInfo",FileSimpleDto() )
 
 
-    val plScope = rememberSaveable { mutableStateOf(PLScope.AUTO) }
     val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
         MyCodeEditor(
             appContext = AppModel.realAppContext,
-            plScope = plScope,
             editorState = editorPageTextEditorState
         )
     }
@@ -499,7 +497,6 @@ fun SubPageEditor(
 //            stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
             stateKeyTag = stateKeyTag,
 
-            plScope = plScope,
             codeEditor = codeEditor,
 
             disableSoftKb = editorDisableSoftKb,

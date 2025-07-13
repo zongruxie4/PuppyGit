@@ -6,6 +6,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.screen.shared.FilePath
+import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -43,11 +45,16 @@ private const val TAG = "MyCodeEditor"
 
 class MyCodeEditor(
     val appContext: Context = AppModel.realAppContext,
-    val plScope: MutableState<PLScope> = mutableStateOf(PLScope.AUTO),
     val editorState: (CustomStateSaveable<TextEditorState>)? = null,
-    var colorScheme: EditorColorScheme = EditorColorScheme(),
-    var latestStyles: StylesResult? = null,
 ) {
+    private var file: FuckSafFile = FuckSafFile(appContext, FilePath(""))
+
+    var colorScheme: EditorColorScheme = EditorColorScheme()
+        private set
+
+    internal var latestStyles: StylesResult? = null
+
+    private val plScope: MutableState<PLScope> = mutableStateOf(PLScope.AUTO)
 
     var languageScope: PLScope = PLScope.NONE
     var myLang: TextMateLanguage? = null
@@ -56,11 +63,11 @@ class MyCodeEditor(
     val stylesMap: MutableMap<String, StylesResult> = ConcurrentMap()
 //    val editorStateMap: MutableMap<String, TextEditorState> = ConcurrentMap()
 
-    val stylesRequestLock = ReentrantLock(true)
-    val analyzeLock = ReentrantLock(true)
+    private val stylesRequestLock = ReentrantLock(true)
+    private val analyzeLock = ReentrantLock(true)
 //    val stylesApplyLock = ReentrantLock(true)
 
-    val delayAnalyzingTaskLock = Mutex()
+    private val delayAnalyzingTaskLock = Mutex()
 
     val textEditorStateOnChangeLock = Mutex()
 
@@ -145,15 +152,37 @@ class MyCodeEditor(
     }
 
 
-//    override fun release() {
-//        super.release()
-//        clearCache()
-//    }
+    fun resetPlScope() {
+        PLScope.resetPlScope(plScope)
+    }
+
+    fun updatePlScopeThenAnalyze() {
+        PLScope.updatePlScopeIfNeeded(plScope, file.name)
+        // call this is safe, if have cached styles, will not re-analyze
+        analyze()
+    }
+
+    fun updatePlScope(newScope: PLScope) {
+        plScope.value = newScope
+    }
+
+    fun currentPlScope() = plScope.value
 
     fun release() {
         cleanLanguage()
         highlightMap.clear()
         stylesMap.clear()
+    }
+
+
+    fun reset(newFile: FuckSafFile) {
+        resetPlScope()
+        resetFile(newFile)
+        release()
+    }
+
+    private fun resetFile(newFile: FuckSafFile) {
+        file = newFile
     }
 
     fun obtainCachedStyles(editorState: TextEditorState): StylesResult? {

@@ -125,7 +125,6 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 fun EditorInnerPage(
     stateKeyTag:String,
 
-    plScope: MutableState<PLScope>,
     codeEditor: CustomStateSaveable<MyCodeEditor>,
 
     disableSoftKb: MutableState<Boolean>,
@@ -459,27 +458,12 @@ fun EditorInnerPage(
     }
 
 
-    val resetPlScope = { PLScope.resetPlScope(plScope) }
-    val updatePlScopeIfNeeded = { fileName:String ->
-        PLScope.updatePlScopeIfNeeded(plScope, fileName)
-    }
+
 
 
 
     val closeFile = {
 //        showCloseDialog.value=false
-
-
-
-        // start: reset syntax highlighting related vars
-        runCatching {
-            codeEditor.value.release()
-        }
-
-        resetPlScope()
-        // end: reset syntax highlighting related vars
-
-
 
         isEdited.value = false
         isSaving.value=false
@@ -487,10 +471,15 @@ fun EditorInnerPage(
         //存上当前文件路径，要不然reOpen时还得从配置文件查，当然，app销毁后，此变量作废，依然需要从配置文件查
         saveLastOpenPath(editorPageShowingFilePath.value.ioPath)
 
-        editorPageShowingFilePath.value = FilePath("")
+        val emptyPath = FilePath("")
+        editorPageShowingFilePath.value = emptyPath
         editorPageShowingFileDto.value.fullPath=""
         editorPageClearShowingFileErrWhenLoading()  //关闭文件清除错误，不然文件标题变了，错误还在显示
         editorPageShowingFileIsReady.value = false
+
+        // start: reset syntax highlighting related vars
+        codeEditor.value.reset(FuckSafFile(AppModel.realAppContext, emptyPath))
+        // end: reset syntax highlighting related vars
 
 //        undoStack.value.reset(filePath = "")
 //        changeStateTriggerRefreshPage(needRefreshEditorPage)
@@ -879,11 +868,11 @@ fun EditorInnerPage(
     }
     if(showSelectSyntaxHighlightDialog.value) {
         SelectSyntaxHighlightingDialog(
-            plScope = plScope.value,
+            plScope = codeEditor.value.currentPlScope(),
             onCancel = { showSelectSyntaxHighlightDialog.value = false }
         ) {
-            if(it != plScope.value) {
-                plScope.value = it
+            if(it != codeEditor.value.currentPlScope()) {
+                codeEditor.value.updatePlScope(it)
                 // (fixed, no need clear undo stack anymore) switch syntax will clear undo stack,
                 // else after user pressed undo,
                 // will use old syntax highlighting scheme,
@@ -1798,8 +1787,7 @@ fun EditorInnerPage(
         // if need will re-analyze, if need not, will do nothing
         //   this check is necessary, else, after you changed theme dark/light,
         //   the syntax highlighting will not update automatically
-        updatePlScopeIfNeeded(editorPageShowingFileDto.value.name)
-        codeEditor.value.analyze()
+        codeEditor.value.updatePlScopeThenAnalyze()
 
         //检查，如果 Activity 的on resume事件刚被触发，说明用户刚从后台把app调出来，这时调用软重载文件（会检测变化若判断很可能无变化则不重载）
         doActIfIsExpectLifeCycle(MainActivityLifeCycle.ON_RESUME) {
@@ -1809,7 +1797,7 @@ fun EditorInnerPage(
                 val force = false
                 refreshPreviewPage(previewPath, force)
 
-                MyLog.d(TAG, "#Lifecycle.Event.ON_RESUME: Preview Mode is On, will reload file: ${previewPath}")
+                MyLog.d(TAG, "#Lifecycle.Event.ON_RESUME: Preview Mode is On, will reload file: $previewPath")
 
             }
         }
@@ -1826,8 +1814,6 @@ fun EditorInnerPage(
 
                 doActWithLockIfFree(loadLock, "EditorInnerPage#Init#${needRefreshEditorPage.value}#${editorPageShowingFilePath.value.ioPath}") {
                     doInit(
-                        updatePlScopeIfNeeded = updatePlScopeIfNeeded,
-                        resetPlScope = resetPlScope,
                         codeEditor = codeEditor.value,
                         resetLastCursorAtColumn = resetLastCursorAtColumn,
                         requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
@@ -1894,8 +1880,6 @@ fun EditorInnerPage(
 }
 
 private suspend fun doInit(
-    updatePlScopeIfNeeded:(fileName:String) -> Unit,
-    resetPlScope: () -> Unit,
     codeEditor: MyCodeEditor,
     resetLastCursorAtColumn: ()->Unit,
     requirePreviewScrollToEditorCurPos: MutableState<Boolean>,
@@ -1969,9 +1953,7 @@ private suspend fun doInit(
                 undoStack.reset(requireOpenFilePath)
 
                 // clear editor cache
-                codeEditor.release()
-                // reset syntax highlighting language to auto detect
-                resetPlScope()
+                codeEditor.reset(FuckSafFile(AppModel.realAppContext, FilePath(requireOpenFilePath)))
             }
 
 
@@ -2097,8 +2079,7 @@ private suspend fun doInit(
                 lastTextEditorState.value = newState
 
                 // syntax highlightings
-                updatePlScopeIfNeeded(file.name)
-                codeEditor.analyze()
+                codeEditor.updatePlScopeThenAnalyze()
             }
 
 

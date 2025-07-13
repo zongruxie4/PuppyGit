@@ -458,11 +458,9 @@ fun HomeScreen(
 
 
 
-    val plScope = rememberSaveable { mutableStateOf(PLScope.AUTO) }
     val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
         MyCodeEditor(
             appContext = AppModel.realAppContext,
-            plScope = plScope,
             editorState = editorPageTextEditorState
         )
     }
@@ -1458,7 +1456,6 @@ fun HomeScreen(
 //                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
                     stateKeyTag = stateKeyTag,
 
-                    plScope = plScope,
                     codeEditor = codeEditor,
 
                     disableSoftKb = editorDisableSoftKb,
