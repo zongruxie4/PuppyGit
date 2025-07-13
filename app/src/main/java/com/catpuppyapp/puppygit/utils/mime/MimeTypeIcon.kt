@@ -74,6 +74,18 @@ private val mimeTypeToIconMap = mapOf(
     "application/x-batchfile" to MimeTypeIcon.CODE,
     "application/x-powershell" to MimeTypeIcon.CODE,
 
+    "application/x-less" to MimeTypeIcon.CODE,
+    "application/x-scss" to MimeTypeIcon.CODE,
+    "application/x-rust" to MimeTypeIcon.CODE,
+    "application/x-coffee" to MimeTypeIcon.CODE,
+    "application/x-lua" to MimeTypeIcon.CODE,
+    "application/x-php" to MimeTypeIcon.CODE,
+    "application/x-r" to MimeTypeIcon.CODE,
+    "application/x-sql" to MimeTypeIcon.CODE,
+    "application/x-swift" to MimeTypeIcon.CODE,
+    "application/x-vb" to MimeTypeIcon.CODE,
+
+
     "application/vnd.android.package-archive" to MimeTypeIcon.APK,
     "application/gzip" to MimeTypeIcon.ARCHIVE,
     // Not in IANA list, but Mozilla and Wikipedia say so.

@@ -272,6 +272,19 @@ private val extensionToMimeTypeMap = mapOf(
     "tsx" to "application/x-tsx",
     "bat" to "application/x-batchfile",
     "ps1" to "application/x-powershell",
+
+    "less" to "application/x-less",
+    "scss" to "application/x-scss",
+    "sass" to "application/x-scss",
+    "rs" to "application/x-rust",
+    "rust" to "application/x-rust",
+    "coffee" to "application/x-coffee",
+    "lua" to "application/x-lua",
+    "php" to "application/x-php",
+    "r" to "application/x-r",
+    "sql" to "application/x-sql",
+    "swift" to "application/x-swift",
+    "vb" to "application/x-vb",
     // end: I add
 
     "kwd" to "application/x-kword",
