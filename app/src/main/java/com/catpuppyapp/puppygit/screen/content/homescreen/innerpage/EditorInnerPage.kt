@@ -2068,7 +2068,7 @@ private suspend fun doInit(
                     focusingLineIdx = null,
                     onChanged = getEditorStateOnChange(
                         editorPageTextEditorState = editorPageTextEditorState,
-                        lastTextEditorState = lastTextEditorState,
+//                        lastTextEditorState = lastTextEditorState,
                         undoStack = undoStack,
                         resetLastCursorAtColumn = resetLastCursorAtColumn,
                     ),

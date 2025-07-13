@@ -352,7 +352,7 @@ fun getFilesScreenTitle(currentPath:String, activityContext: Context):String {
 
 fun getEditorStateOnChange(
     editorPageTextEditorState:CustomStateSaveable<TextEditorState>,
-    lastTextEditorState:CustomStateSaveable<TextEditorState>,
+//    lastTextEditorState:CustomStateSaveable<TextEditorState>,
     undoStack:UndoStack,
     resetLastCursorAtColumn:()->Unit,
 ): suspend (newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean, caller: TextEditorState, from: EditorStateOnChangeCallerFrom?) -> Unit {
@@ -367,9 +367,10 @@ fun getEditorStateOnChange(
             //如果新state的focusingLineIdx为负数，使用上个state的focusingLineIdx，这样是为了避免 updateField 更新索引，不然会和 selectField 更新索引冲突，有时会定位错
             val newState = if(newState.focusingLineIdx.let { it == null || it >= 0 }) newState else newState.copy(focusingLineIdx = editorPageTextEditorState.value.focusingLineIdx)
 
+            val lastState = editorPageTextEditorState.value
             editorPageTextEditorState.value = newState
 
-            val lastState = lastTextEditorState.value
+//            val lastState = lastTextEditorState.value
 
             // BEGIN: check whether need re analyzing the code syntax highlighting
             // 在点击undo然后编辑内容后 或者 增量分析出错时，重新执行全量分析
@@ -426,9 +427,9 @@ fun getEditorStateOnChange(
                     undoStack.redoStackPush(lastState)
                 }
 
-                if(saved) {
-                    lastTextEditorState.value = newState
-                }
+//                if(saved) {
+//                    lastTextEditorState.value = newState
+//                }
             }
 
         }
