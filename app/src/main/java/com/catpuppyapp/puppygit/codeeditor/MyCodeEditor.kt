@@ -74,7 +74,7 @@ class MyCodeEditor(
     private fun genNewStyleDelegate(editorState: TextEditorState?) = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap, editorState, languageScope)
 
     companion object {
-        var inited = false
+        private var inited = false
 
         // only need init once
         fun doInit(appContext: Context) {
