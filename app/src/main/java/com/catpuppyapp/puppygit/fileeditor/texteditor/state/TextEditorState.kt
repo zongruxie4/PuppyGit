@@ -2184,6 +2184,14 @@ class TextEditorState(
         val funName = "updateStylesAfterDeletedLineBreak"
         MyLog.d(TAG, "$funName: $stylesResult")
 
+
+        // 如果删完了，就重新执行分析
+        if(reAnalyzeBetterThanIncremental(newTextEditorState.fields, ignoreThis)) {
+            codeEditor?.analyze(newTextEditorState)
+            return
+        }
+
+
         // 删除某行逻辑是从上一行的末尾到这一行的末尾
         val endLineIndexInclusive = startLineIndex + 1
         if(!isGoodIndexForList(startLineIndex, baseFields) || !isGoodIndexForList(endLineIndexInclusive, baseFields)) {
@@ -2216,12 +2224,6 @@ class TextEditorState(
 
 
         MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fields.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
-
-        // 如果删完了，就重新执行分析
-        if(ignoreThis.not() && (baseFields.isEmpty() || (fields.size == 1 && fields[0].value.text.isBlank()))) {
-            codeEditor?.analyze(newTextEditorState)
-            return
-        }
 
 //        println("baseFields[insertIndex].value.text: ${baseFields.getOrNull(end.line)?.value?.text}")
 //        MyLog.d(TAG, "#$funName: will delete range: start=$start, end=$end")
@@ -2265,6 +2267,13 @@ class TextEditorState(
         val funName = "updateStylesAfterDeleteLine"
         MyLog.d(TAG, "$funName: $stylesResult")
 
+        // 如果删完了，就重新执行分析
+        if(reAnalyzeBetterThanIncremental(newTextEditorState.fields, ignoreThis)) {
+            codeEditor?.analyze(newTextEditorState)
+            return
+        }
+
+
         // 删除某行逻辑是从上一行的末尾到这一行的末尾
         val startLineIndex = if(keepLine) startLineIndex else (startLineIndex - 1).coerceAtLeast(0)
         val endLineIndex = if(keepLine) startLineIndex else (startLineIndex + 1).coerceAtMost(baseFields.lastIndex)
@@ -2303,11 +2312,6 @@ class TextEditorState(
 
         MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fields.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
 
-        // 如果删完了，就重新执行分析
-        if(ignoreThis.not() && (baseFields.isEmpty() || (fields.size == 1 && fields[0].value.text.isBlank()))) {
-            codeEditor?.analyze(newTextEditorState)
-            return
-        }
 
 //        println("baseFields[insertIndex].value.text: ${baseFields.getOrNull(end.line)?.value?.text}")
 //        MyLog.d(TAG, "#$funName: will delete range: start=$start, end=$end")
@@ -2342,14 +2346,14 @@ class TextEditorState(
         val funName = "updateStylesAfterInsertLine"
         MyLog.d(TAG, "$funName: startLineIndex=$startLineIndex, baseFields.size=${baseFields.size}, $stylesResult")
 
-        //start line must valid
-        if(startLineIndex >= baseFields.size) {
-            MyLog.d(TAG, "$funName: startLineIndex '$startLineIndex' is invalid, baseFields.size=${baseFields.size}")
+        if(reAnalyzeBetterThanIncremental(newTextEditorState.fields, ignoreThis)) {
+            codeEditor?.analyze(newTextEditorState)
             return
         }
 
-        if(ignoreThis.not() && (baseFields.isEmpty() || (fields.size == 1 && fields[0].value.text.isBlank()))) {
-            codeEditor?.analyze(newTextEditorState)
+        //start line must valid
+        if(startLineIndex >= baseFields.size) {
+            MyLog.d(TAG, "$funName: startLineIndex '$startLineIndex' is invalid, baseFields.size=${baseFields.size}")
             return
         }
 
@@ -2402,6 +2406,10 @@ class TextEditorState(
                 )
             )
         }
+    }
+
+    private fun reAnalyzeBetterThanIncremental(baseFields: List<TextFieldState>, ignoreThis: Boolean) : Boolean {
+        return ignoreThis.not() && (baseFields.isEmpty() || (baseFields.size == 1 && baseFields[0].value.text.isBlank()))
     }
 
     // lineIdx is index(since 0), not line number(since 1)
