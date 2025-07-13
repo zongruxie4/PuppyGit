@@ -103,6 +103,7 @@ private val mimeTypeToIntentMimeTypeMap = listOf(
     "application/x-scss" to "text/x-scss",
     "application/x-rust" to "text/x-rust",
     "application/x-coffee" to "text/x-coffee",
+    "application/x-clojure" to "text/x-clojure",
     "application/x-lua" to "text/x-lua",
     "application/x-php" to "text/x-php",
     "application/x-r" to "text/x-r",

@@ -18,6 +18,8 @@ enum class PLScope(val scope: String) {
     // order by a-z
     BAT("source.batchfile"),
     C("source.c"),
+    CLOJURE("source.clojure"),
+    COFFEE_SCRIPT("source.coffee"),
     CPP("source.cpp"),
     CSHARP("source.cs"),
     CSS("source.css"),
@@ -202,12 +204,20 @@ enum class PLScope(val scope: String) {
             }
 
 
-            if(fileName.endsWith(".perl")) {
+            if(fileName.endsWith(".pl") || fileName.endsWith(".perl")) {
                 return PERL
             }
 
             if(fileName.endsWith(".scss") || fileName.endsWith(".sass")) {
                 return SCSS
+            }
+
+            if(fileName.endsWith(".clj") || fileName.endsWith(".cljs")) {
+                return CLOJURE
+            }
+
+            if(fileName.endsWith(".coffee")) {
+                return COFFEE_SCRIPT
             }
 
             if(fileName.endsWith(".sql")) {

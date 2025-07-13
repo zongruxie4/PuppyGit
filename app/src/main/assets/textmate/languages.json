@@ -14,6 +14,20 @@
       "languageConfiguration": "textmate/c/language-configuration.json"
     },
 
+     {
+      "grammar": "textmate/clojure/syntaxes/clojure.tmLanguage.json",
+      "name": "clojure",
+      "scopeName": "source.clojure",
+      "languageConfiguration": "textmate/clojure/language-configuration.json"
+    },
+
+    {
+      "grammar": "textmate/coffeescript/syntaxes/coffeescript.tmLanguage.json",
+      "name": "coffeescript",
+      "scopeName": "source.coffee",
+      "languageConfiguration": "textmate/coffeescript/language-configuration.json"
+    },
+
     {
       "grammar": "textmate/cpp/syntaxes/cpp.tmLanguage.json",
       "name": "cpp",
@@ -106,7 +120,7 @@
 
 
     {
-      "grammar": "textmate/javascript/syntaxes/JavaScript.tmLanguage.json",
+      "grammar": "textmate/javascript/syntaxes/javascript.tmLanguage.json",
       "name": "javascript",
       "scopeName": "source.js",
       "languageConfiguration": "textmate/javascript/language-configuration.json"

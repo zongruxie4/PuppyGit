@@ -279,6 +279,8 @@ private val extensionToMimeTypeMap = mapOf(
     "rs" to "application/x-rust",
     "rust" to "application/x-rust",
     "coffee" to "application/x-coffee",
+    "clj" to "application/x-clojure",
+    "cljs" to "application/x-clojure",
     "lua" to "application/x-lua",
     "php" to "application/x-php",
     "r" to "application/x-r",

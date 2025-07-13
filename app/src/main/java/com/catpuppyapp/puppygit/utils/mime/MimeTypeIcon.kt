@@ -78,6 +78,7 @@ private val mimeTypeToIconMap = mapOf(
     "application/x-scss" to MimeTypeIcon.CODE,
     "application/x-rust" to MimeTypeIcon.CODE,
     "application/x-coffee" to MimeTypeIcon.CODE,
+    "application/x-clojure" to MimeTypeIcon.CODE,
     "application/x-lua" to MimeTypeIcon.CODE,
     "application/x-php" to MimeTypeIcon.CODE,
     "application/x-r" to MimeTypeIcon.CODE,
