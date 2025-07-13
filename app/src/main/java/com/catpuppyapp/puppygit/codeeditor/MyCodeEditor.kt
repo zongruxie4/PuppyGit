@@ -175,7 +175,11 @@ class MyCodeEditor(
     }
 
 
-    fun reset(newFile: FuckSafFile) {
+    fun reset(newFile: FuckSafFile, force: Boolean) {
+        if(force.not() && newFile.path.ioPath == file.path.ioPath) {
+            return
+        }
+
         resetPlScope()
         resetFile(newFile)
         release()

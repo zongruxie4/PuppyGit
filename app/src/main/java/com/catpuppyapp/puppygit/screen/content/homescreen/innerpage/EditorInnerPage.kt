@@ -478,7 +478,7 @@ fun EditorInnerPage(
         editorPageShowingFileIsReady.value = false
 
         // start: reset syntax highlighting related vars
-        codeEditor.value.reset(FuckSafFile(AppModel.realAppContext, emptyPath))
+        codeEditor.value.reset(FuckSafFile(AppModel.realAppContext, emptyPath), force = true)
         // end: reset syntax highlighting related vars
 
 //        undoStack.value.reset(filePath = "")
@@ -1951,10 +1951,11 @@ private suspend fun doInit(
             if(requireOpenFilePath != undoStack.filePath) {
                 //reset undo stack
                 undoStack.reset(requireOpenFilePath)
-
-                // clear editor cache
-                codeEditor.reset(FuckSafFile(AppModel.realAppContext, FilePath(requireOpenFilePath)))
             }
+
+
+            // reset if needed
+            codeEditor.reset(FuckSafFile(AppModel.realAppContext, FilePath(requireOpenFilePath)), force = false)
 
 
 
