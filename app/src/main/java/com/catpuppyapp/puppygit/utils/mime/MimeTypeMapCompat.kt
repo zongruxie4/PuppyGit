@@ -270,6 +270,8 @@ private val extensionToMimeTypeMap = mapOf(
     "go" to "application/x-go",
     "jsx" to "application/x-jsx",
     "tsx" to "application/x-tsx",
+    "bat" to "application/x-batchfile",
+    "ps1" to "application/x-powershell",
     // end: I add
 
     "kwd" to "application/x-kword",

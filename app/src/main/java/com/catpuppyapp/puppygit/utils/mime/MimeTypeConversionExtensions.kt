@@ -96,6 +96,8 @@ private val mimeTypeToIntentMimeTypeMap = listOf(
     "application/x-kotlin" to "text/kotlin",
     "application/x-groovy" to "text/groovy",
     "application/x-jsx" to "text/jsx",
+    "application/x-batchfile" to "text/batchfile",
+    "application/x-powershell" to "text/powershell",
     "application/x-tsx" to "text/tsx",
     "application/typescript" to "text/typescript",
     "application/x-sh" to "text/x-shellscript",
