@@ -322,6 +322,13 @@
     },
 
     {
+      "grammar": "textmate/xml/syntaxes/xsl.tmLanguage.json",
+      "name": "xsl",
+      "scopeName": "text.xml.xsl",
+      "languageConfiguration": "textmate/xml/xsl.language-configuration.json"
+    },
+
+    {
       "grammar": "textmate/yaml/syntaxes/yaml.tmLanguage.json",
       "name": "yaml",
       "scopeName": "source.yaml",

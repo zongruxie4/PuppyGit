@@ -26,5 +26,6 @@ object SettingsCons {
         ".gitattributes",
         "dockerfile",
         "makefile",
+        "*.xsl",
     )
 }

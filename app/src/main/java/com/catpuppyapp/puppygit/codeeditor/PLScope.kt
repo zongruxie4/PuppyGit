@@ -58,6 +58,7 @@ enum class PLScope(val scope: String) {
     TSX("source.tsx"),
     VB("source.asp.vb.net"),
     XML("text.xml"),
+    XSL("text.xml.xsl"),
     YAML("source.yaml"),
 
     ;
@@ -243,6 +244,10 @@ enum class PLScope(val scope: String) {
 
             if(fileName.endsWith(".swift")) {
                 return SWIFT
+            }
+
+            if(fileName.endsWith(".xsl")) {
+                return XSL
             }
 
             if(fileName.endsWith(".mdmath") || fileName.endsWith(".mdm") || fileName.endsWith(".mmd")) {
