@@ -30,6 +30,14 @@ private fun doActOrClearIgnoreOnce(state: MutableState<FileChangeListenerState>,
 @Parcelize
 data class FileChangeListenerState(
     internal val ignoreOnceState: Boolean = false,
+
+    // interval for check file change, not used for saf uri.
+    // decrease this value will not help content uri listener to get new changed notify early,
+    //   but welp for absolute file path got changed notify early
+    val intervalInMillSec: Long = 1000L,
+
+    var lastModified: Long? = null,
+    var lastLength:Long? = null,
 ) : Parcelable {
     companion object {
         fun ignoreOnce(state: MutableState<FileChangeListenerState>) = state.apply { value = value.copy(ignoreOnceState = true) }
@@ -49,11 +57,6 @@ fun FileChangeListener(
     context: Context,
     path: String,
 
-    // interval for check file change, not used for saf uri.
-    // decrease this value will not help content uri listener to get new changed notify early,
-    //   but welp for absolute file path got changed notify early
-    intervalInMillSec: Long = 1000,
-
     onChange:()->Unit,
 ) {
     // use state to avoid lambda catching copy of values
@@ -71,7 +74,7 @@ fun FileChangeListener(
         stopListen()
 
         val result = runCatching {
-            fileObserver.value = file.value.createChangeListener(intervalInMillSec) {
+            fileObserver.value = file.value.createChangeListener(state.value) {
                 doActOrClearIgnoreOnce(state, onChange)
             }
         }

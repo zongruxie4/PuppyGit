@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.screen.shared
 import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
+import com.catpuppyapp.puppygit.compose.FileChangeListenerState
 import com.catpuppyapp.puppygit.etc.PathType
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -155,22 +156,32 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
         return canonicalPath
     }
 
-    fun createChangeListener(intervalInMillSec:Long, taskName: String? = null, onChange:()->Unit):Job? {
+    fun createChangeListener(
+        fileChangeListenerState: FileChangeListenerState,
+        taskName: String? = null,
+        onChange:()->Unit
+    ):Job? {
         if(path.ioPathType == PathType.INVALID) {
             return null
         }
 
-        val taskName = taskName ?: "FileChangeListener(fileName: $name): "
+        val taskName = taskName ?: "FileChangeListener(fileName: $name)"
+
+        val intervalInMillSec = fileChangeListenerState.intervalInMillSec
 
         return doJobThenOffLoading {
             try {
-                var oldFileLen = length()
-                var oldFileModified = lastModified()
+                // restore last file length and modified time when app on resumed(come back from background)
+                // 在app从后台切回来时恢复上次记录的状态
+                var oldFileLen = fileChangeListenerState.lastLength ?: length()
+                var oldFileModified = fileChangeListenerState.lastModified ?: lastModified()
                 while (true) {
                     delay(intervalInMillSec)
 
                     val newFileLen = length()
                     val newFileModified = lastModified()
+                    fileChangeListenerState.lastLength = newFileLen
+                    fileChangeListenerState.lastModified = newFileModified
                     MyLog.v(TAG, "$taskName: oldFileLen=$oldFileLen, newFileLen=$newFileLen, oldFileModified=$oldFileModified, newFileModified=$newFileModified")
                     if (oldFileLen != newFileLen || oldFileModified != newFileModified) {
                         oldFileLen = newFileLen
@@ -184,7 +195,7 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
                 // task may be canceled normally, just ignore
 
             } catch (e: Exception) {
-                MyLog.d(TAG, "$taskName: listen change of file err: filePath='${path.ioPath}', err=${e.stackTraceToString()}")
+                MyLog.d(TAG, "$taskName: listen change of file err: fileName='$name', filePath='${path.ioPath}', err=${e.stackTraceToString()}")
             }
         }
     }
