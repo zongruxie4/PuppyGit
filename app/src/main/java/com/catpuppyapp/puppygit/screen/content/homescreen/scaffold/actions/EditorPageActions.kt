@@ -356,6 +356,23 @@ fun EditorPageActions(
                 }
             )
 
+
+            if(!isSubPageMode) {
+                DropdownMenuItem(
+                    //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
+                    enabled = enableMenuItem,
+                    text = { Text(stringResource(R.string.show_in_files)) },
+                    onClick = {
+                        editorPageRequest.value = PageRequest.showInFiles
+
+                        closeMenu()
+                    }
+
+                )
+
+            }
+
+
             DropdownMenuItem(
                 enabled = enableMenuItem,
                 text = { Text(stringResource(R.string.go_to_line)) },
@@ -412,21 +429,6 @@ fun EditorPageActions(
                 }
 
             )
-
-            if(!isSubPageMode) {
-                DropdownMenuItem(
-                    //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
-                    enabled = enableMenuItem,
-                    text = { Text(stringResource(R.string.show_in_files)) },
-                    onClick = {
-                        editorPageRequest.value = PageRequest.showInFiles
-
-                        closeMenu()
-                    }
-
-                )
-
-            }
 
 
             DropdownMenuItem(
