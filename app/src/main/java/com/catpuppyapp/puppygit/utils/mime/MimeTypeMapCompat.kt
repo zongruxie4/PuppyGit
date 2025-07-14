@@ -294,6 +294,10 @@ private val extensionToMimeTypeMap = mapOf(
     "rakudoc" to "application/x-raku",
     "rakumod" to "application/x-raku",
     "toml" to "application/x-toml",
+    "dart" to "application/x-dart",
+    "dockerfile" to "application/x-dockerfile",
+    "makefile" to "application/x-makefile",
+
 
     // end: I add
 

@@ -110,6 +110,10 @@ private val mimeTypeToIntentMimeTypeMap = listOf(
     "application/x-sql" to "text/x-sql",
     "application/x-swift" to "text/x-swift",
     "application/x-vb" to "text/x-vb",
+    "application/x-dart" to "text/x-dart",
+    "application/x-dockerfile" to "text/x-dockerfile",
+    "application/x-makefile" to "text/x-makefile",
+    "application/x-ruby" to "text/x-ruby",
 
     "application/x-tsx" to "text/x-tsx",
     "application/typescript" to "text/typescript",

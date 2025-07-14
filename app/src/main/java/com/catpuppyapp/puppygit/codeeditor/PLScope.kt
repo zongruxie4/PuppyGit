@@ -190,7 +190,7 @@ enum class PLScope(val scope: String) {
                 return TOML
             }
 
-            if(fileName.endsWith(".makefile")) {
+            if(fileName == "makefile" || fileName.endsWith(".makefile")) {
                 return MAKE_FILE
             }
 
