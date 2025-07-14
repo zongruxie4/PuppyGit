@@ -1353,7 +1353,7 @@ private fun appendIndentForUnClosedSignPair(current: String, sb: StringBuilder, 
                     // e.g. for html xml, if only has "open" sign without "close", add indent
                     // if has pair open+close, then it should mod 2 equals to 0,
                     // else, means have not enough close sign, so we should add indent
-                    || (it.countSub("<") % it.countSub("</")) != 2
+                    || it.pairClosed("<", "</").not()
     }) {
         sb.append(tabToSpaces(aTabToNSpaces))
     }

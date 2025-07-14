@@ -42,3 +42,21 @@ fun SoftwareKeyboardController.hideForAWhile(timeoutInMillSec: Long = 200L) {
 fun String.appendCutSuffix() = "$this (CUT)"
 
 fun String.countSub(sub: String) = this.split(sub).size - 1
+
+// used to calculate indent
+fun String.pairClosed(openSign: String, closeSign:String) = (this.countSub(openSign).let { open ->
+    this.countSub(closeSign).let { close ->
+        if(open == 0) {
+            true
+        }else if(close == 0) {
+            false
+        }else if(closeSign.contains(openSign)) {
+            // e.g. in html, openSign is "<", closeSign is "</", then the closeSign included openSign
+            // open 是 close 的2倍，代表关闭了
+            open == close || open / close == 2
+        }else {
+            open == close
+        }
+    }
+})
+
