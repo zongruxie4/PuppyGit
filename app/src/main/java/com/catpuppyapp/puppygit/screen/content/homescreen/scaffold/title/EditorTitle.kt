@@ -75,6 +75,12 @@ fun EditorTitle(
     editorSearchKeyword: CustomStateSaveable<TextFieldValue>,
     editorPageMergeMode: MutableState<Boolean>,
     readOnly: MutableState<Boolean>,
+
+    editorPageShowingFileIsReady: MutableState<Boolean>,
+    isSaving: MutableState<Boolean>,
+    isEdited: MutableState<Boolean>,
+    showReloadDialog: MutableState<Boolean>,
+    showCloseDialog: MutableState<Boolean>,
 ) {
     val haptic = LocalHapticFeedback.current
     val activityContext = LocalContext.current
@@ -205,6 +211,39 @@ fun EditorTitle(
             expanded = dropDownMenuExpandState.value,
             onDismissRequest = { closeMenu() }
         ) {
+
+            DropdownMenuItem(
+                enabled = enableMenuItem,
+
+                text = { Text(stringResource(R.string.close)) },
+                onClick = {
+                    showCloseDialog.value=true
+
+                    closeMenu()
+                }
+            )
+
+            DropdownMenuItem(
+                enabled = enableMenuItem,
+
+                text = { Text(stringResource(R.string.reload_file)) },
+                onClick = {
+                    showReloadDialog.value = true
+
+                    closeMenu()
+                }
+            )
+
+            DropdownMenuItem(
+                enabled = enableMenuItem && editorPageShowingFileIsReady.value && isEdited.value && !isSaving.value && !readOnly.value,  //文件未就绪时不能保存,
+
+                text = { Text(stringResource(R.string.save)) },
+                onClick = {
+                    editorPageRequestFromParent.value = PageRequest.requireSave
+
+                    closeMenu()
+                }
+            )
 
             if(UserUtil.isPro() && (dev_EnableUnTestedFeature || editorMergeModeTestPassed)){
                 DropdownMenuItem(

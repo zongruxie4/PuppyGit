@@ -1034,6 +1034,12 @@ fun HomeScreen(
                                 editorSearchKeyword = editorPageSearchKeyword,
                                 editorPageMergeMode = editorPageMergeMode,
                                 readOnly = editorReadOnlyMode,
+
+                                editorPageShowingFileIsReady = editorPageShowingFileIsReady,
+                                isSaving = editorPageIsSaving,
+                                isEdited = editorPageIsEdited,
+                                showReloadDialog = showReloadDialog,
+                                showCloseDialog = editorPageShowCloseDialog,
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
                             if(changeListPageFilterModeOn.value) {

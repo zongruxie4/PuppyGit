@@ -345,6 +345,12 @@ fun SubPageEditor(
                         editorSearchKeyword = editorPageSearchKeyword,
                         editorPageMergeMode = editorPageMergeMode,
                         readOnly = editorReadOnlyMode,
+
+                        editorPageShowingFileIsReady = editorPageShowingFileIsReady,
+                        isSaving = editorPageIsSaving,
+                        isEdited = editorPageIsEdited,
+                        showReloadDialog = showReloadDialog,
+                        showCloseDialog = showCloseDialog,
                     )
 
                 },
