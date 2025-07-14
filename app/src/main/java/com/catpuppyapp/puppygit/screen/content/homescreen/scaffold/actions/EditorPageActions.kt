@@ -388,59 +388,6 @@ fun EditorPageActions(
                 }
             )
 
-            if(UserUtil.isPro() && (dev_EnableUnTestedFeature || editorMergeModeTestPassed)){
-                DropdownMenuItem(
-                    enabled = enableMenuItem,
-                    text = { Text(stringResource(R.string.merge_mode)) },
-                    trailingIcon = {
-                        SimpleCheckBox(editorPageMergeMode.value)
-                    },
-                    onClick = {
-                        editorPageMergeMode.value = !editorPageMergeMode.value
-
-//                        closeMenu()
-                    }
-
-                )
-            }
-
-            DropdownMenuItem(
-                enabled = enableMenuItem,
-                text = { Text(stringResource(R.string.patch_mode)) },
-                trailingIcon = {
-                    SimpleCheckBox(editorPagePatchMode.value)
-                },
-                onClick = {
-                    val newValue = !editorPagePatchMode.value
-                    editorPagePatchMode.value = newValue
-
-                    //更新配置文件
-                    SettingsUtil.update {
-                        it.editor.patchModeOn = newValue
-                    }
-
-//                    closeMenu()
-                }
-
-            )
-
-            DropdownMenuItem(
-                //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
-//                enabled = enableMenuItem && !FsUtils.isReadOnlyDir(editorPageShowingFilePath.value),
-                enabled = enableMenuItem,
-                text = { Text(stringResource(R.string.read_only)) },
-                trailingIcon = {
-                    SimpleCheckBox(readOnlyMode.value)
-                },
-                onClick = {
-                    //如果是从非readonly mode切换到readonly mode，则执行一次保存，然后再切换readonly mode
-                    editorPageRequest.value = PageRequest.doSaveIfNeedThenSwitchReadOnly
-
-//                    closeMenu()
-                }
-
-            )
-
             DropdownMenuItem(
                 //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
 //                enabled = enableMenuItem && !FsUtils.isReadOnlyDir(editorPageShowingFilePath.value),
@@ -553,22 +500,6 @@ fun EditorPageActions(
                 )
             }
 
-
-            DropdownMenuItem(
-                //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
-                enabled = enableMenuItem,
-                text = { Text(stringResource(R.string.software_keyboard)) },
-                trailingIcon = {
-                    // checked if not disabled
-                    SimpleCheckBox(disableSoftKb.value.not())
-                },
-                onClick = {
-//                    closeMenu()
-
-                    EditorSettingsUtil.updateDisableSoftKb(disableSoftKb.value.not(), disableSoftKb)
-                }
-
-            )
 
         }
     }
