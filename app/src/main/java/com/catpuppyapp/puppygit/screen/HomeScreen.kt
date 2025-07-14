@@ -976,6 +976,8 @@ fun HomeScreen(
         val changeListErrScrollState = rememberScrollState()
         val changeListHasErr = rememberSaveable { mutableStateOf(false) }
 
+        //文件未就绪时没有打开，所以不能保存
+        val editorNeedSave = editorPageShowingFileIsReady.value && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value
 
         Scaffold(
             modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -1040,6 +1042,7 @@ fun HomeScreen(
                                 isEdited = editorPageIsEdited,
                                 showReloadDialog = showReloadDialog,
                                 showCloseDialog = editorPageShowCloseDialog,
+                                editorNeedSave = editorNeedSave,
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
                             if(changeListPageFilterModeOn.value) {
@@ -1210,7 +1213,8 @@ fun HomeScreen(
                                     adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
                                     showLineNum = editorShowLineNum,
                                     undoStack = editorUndoStack.value,
-                                    showUndoRedo = editorShowUndoRedo
+                                    showUndoRedo = editorShowUndoRedo,
+                                    editorNeedSave = editorNeedSave,
                                 )
                             }
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {

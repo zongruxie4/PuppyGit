@@ -315,6 +315,8 @@ fun SubPageEditor(
 
     val editorRecentListScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
 
+    val editorNeedSave = editorPageShowingFileIsReady.value && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value
+
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -351,6 +353,8 @@ fun SubPageEditor(
                         isEdited = editorPageIsEdited,
                         showReloadDialog = showReloadDialog,
                         showCloseDialog = showCloseDialog,
+
+                        editorNeedSave = editorNeedSave,
                     )
 
                 },
@@ -453,7 +457,10 @@ fun SubPageEditor(
                                 adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
                                 showLineNum = editorShowLineNum,
                                 undoStack = editorUndoStack.value,
-                                showUndoRedo = editorShowUndoRedo
+                                showUndoRedo = editorShowUndoRedo,
+
+                                editorNeedSave = editorNeedSave,
+
                             )
                         }
                     }

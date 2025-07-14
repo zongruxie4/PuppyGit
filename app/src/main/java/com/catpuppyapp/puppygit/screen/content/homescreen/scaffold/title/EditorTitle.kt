@@ -81,6 +81,8 @@ fun EditorTitle(
     isEdited: MutableState<Boolean>,
     showReloadDialog: MutableState<Boolean>,
     showCloseDialog: MutableState<Boolean>,
+
+    editorNeedSave: Boolean,
 ) {
     val haptic = LocalHapticFeedback.current
     val activityContext = LocalContext.current
@@ -235,7 +237,7 @@ fun EditorTitle(
             )
 
             DropdownMenuItem(
-                enabled = enableMenuItem && editorPageShowingFileIsReady.value && isEdited.value && !isSaving.value && !readOnly.value,  //文件未就绪时不能保存,
+                enabled = enableMenuItem && editorNeedSave,
 
                 text = { Text(stringResource(R.string.save)) },
                 onClick = {
