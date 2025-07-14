@@ -1255,8 +1255,9 @@
 
     <string name="syntax_highlighting">সিনট্যাক্স হাইলাইটিং</string>
     <string name="use_system_fonts">সিস্টেম ফন্ট ব্যবহার করুন</string>
-    <string name="tab_size">Tab Size</string>
-    <string name="set_tab_size_note"><![CDATA[<=0 to use real tab, else will replace tab to spaces]]></string>
+
+    <string name="tab_size">ট্যাবের আকার</string>
+    <string name="set_tab_size_note"><![CDATA[<=0 আসল ট্যাব ব্যবহার করুন, অন্যথায় ট্যাব স্পেস দ্বারা প্রতিস্থাপিত হবে]]></string>
 
 
 </resources>

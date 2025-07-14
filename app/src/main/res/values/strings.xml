@@ -1285,6 +1285,7 @@
     <string name="dynamic_color_scheme">Dynamic Color Scheme</string>
     <string name="syntax_highlighting">Syntax Highlighting</string>
     <string name="use_system_fonts">Use System Fonts</string>
+
     <string name="tab_size">Tab Size</string>
 <!--    if you are translating now, must keep the "CDATA" block, the result should like: <![CDATA[Your Translation at Here]]> -->
     <string name="set_tab_size_note"><![CDATA[<=0 to use real tab, else will replace tab to spaces]]></string>

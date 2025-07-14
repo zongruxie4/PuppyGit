@@ -1180,8 +1180,8 @@
     <string name="dynamic_color_scheme">مخطط ألوان ديناميكي</string>
     <string name="syntax_highlighting">تظليل الصياغة</string>
     <string name="use_system_fonts">استخدام خطوط النظام</string>
-    <string name="tab_size">Tab Size</string>
-    <string name="set_tab_size_note"><![CDATA[<=0 to use real tab, else will replace tab to spaces]]></string>
 
+    <string name="tab_size">حجم علامة الجدولة</string>
+    <string name="set_tab_size_note"><![CDATA[<=0 لاستخدام الجدولة الحقيقية، وإلا سيتم استبدال الجدولة بمسافات]]></string>
 
 </resources>

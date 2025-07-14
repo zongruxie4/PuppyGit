@@ -1262,8 +1262,9 @@
     <string name="dynamic_color_scheme">动态配色方案</string>
     <string name="syntax_highlighting">语法高亮</string>
     <string name="use_system_fonts">使用系统字体</string>
-    <string name="tab_size">Tab Size</string>
-    <string name="set_tab_size_note"><![CDATA[<=0 to use real tab, else will replace tab to spaces]]></string>
+
+    <string name="tab_size">制表符大小</string>
+    <string name="set_tab_size_note"><![CDATA[<=0 使用真实的制表符，否则将制表符替换为空格]]></string>
 
 
 

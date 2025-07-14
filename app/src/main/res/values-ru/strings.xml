@@ -1284,8 +1284,8 @@
     <string name="dynamic_color_scheme">Динамическая цветовая схема</string>
     <string name="syntax_highlighting">Подсветка синтаксиса</string>
     <string name="use_system_fonts">Использовать системные шрифты</string>
-    <string name="tab_size">Tab Size</string>
-    <string name="set_tab_size_note"><![CDATA[<=0 to use real tab, else will replace tab to spaces]]></string>
+    <string name="tab_size">Размер табуляции</string>
+    <string name="set_tab_size_note"><![CDATA[<=0 использовать настоящий табулятор, иначе заменить табуляцию на пробелы]]></string>
 
 
 
