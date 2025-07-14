@@ -155,10 +155,12 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
         return canonicalPath
     }
 
-    fun createChangeListener(intervalInMillSec:Long, onChange:()->Unit):Job? {
+    fun createChangeListener(intervalInMillSec:Long, taskName: String? = null, onChange:()->Unit):Job? {
         if(path.ioPathType == PathType.INVALID) {
             return null
         }
+
+        val taskName = taskName ?: "FileChangeListener(fileName: $name): "
 
         return doJobThenOffLoading {
             try {
@@ -169,9 +171,11 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
 
                     val newFileLen = length()
                     val newFileModified = lastModified()
+                    MyLog.v(TAG, "$taskName: oldFileLen=$oldFileLen, newFileLen=$newFileLen, oldFileModified=$oldFileModified, newFileModified=$newFileModified")
                     if (oldFileLen != newFileLen || oldFileModified != newFileModified) {
                         oldFileLen = newFileLen
                         oldFileModified = newFileModified
+                        MyLog.d(TAG, "$taskName: file changed, will call `onChange()`")
 
                         onChange()
                     }
@@ -180,7 +184,7 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
                 // task may be canceled normally, just ignore
 
             } catch (e: Exception) {
-                MyLog.d(TAG, "listen change of file err: filePath='${path.ioPath}', err=${e.stackTraceToString()}")
+                MyLog.d(TAG, "$taskName: listen change of file err: filePath='${path.ioPath}', err=${e.stackTraceToString()}")
             }
         }
     }
