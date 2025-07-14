@@ -71,19 +71,6 @@
     },
 
     {
-      "grammar": "textmate/git-base/syntaxes/ignore.tmLanguage.json",
-      "name": "gitignore",
-      "scopeName": "source.ignore",
-      "languageConfiguration": "textmate/git-base/ignore.language-configuration.json"
-    },
-
-    {
-      "grammar": "textmate/git-base/syntaxes/git-rebase.tmLanguage.json",
-      "name": "git-rebase",
-      "scopeName": "text.git-rebase",
-      "languageConfiguration": "textmate/git-base/git-rebase.language-configuration.json"
-    },
-    {
       "grammar": "textmate/go/syntaxes/go.tmLanguage.json",
       "name": "go",
       "scopeName": "source.go",
@@ -97,6 +84,19 @@
       "languageConfiguration": "textmate/groovy/language-configuration.json"
     },
 
+    {
+      "grammar": "textmate/git-base/syntaxes/ignore.tmLanguage.json",
+      "name": "gitignore",
+      "scopeName": "source.ignore",
+      "languageConfiguration": "textmate/git-base/ignore.language-configuration.json"
+    },
+
+    {
+      "grammar": "textmate/git-base/syntaxes/git-rebase.tmLanguage.json",
+      "name": "git-rebase",
+      "scopeName": "text.git-rebase",
+      "languageConfiguration": "textmate/git-base/git-rebase.language-configuration.json"
+    },
     {
       "grammar": "textmate/html/syntaxes/html.tmLanguage.json",
       "name": "html",
@@ -167,6 +167,14 @@
       "languageConfiguration": "textmate/lua/language-configuration.json"
     },
 
+
+    {
+      "grammar": "textmate/make/syntaxes/makefile.tmLanguage.json",
+      "name": "makefile",
+      "scopeName": "source.makefile",
+      "languageConfiguration": "textmate/make/language-configuration.json"
+    },
+
     {
       "name": "markdown",
       "scopeName": "text.html.markdown",
@@ -209,12 +217,6 @@
       "languageConfiguration": "textmate/perl/language-configuration.json"
     },
     {
-      "grammar": "textmate/make/syntaxes/makefile.tmLanguage.json",
-      "name": "makefile",
-      "scopeName": "source.makefile",
-      "languageConfiguration": "textmate/make/language-configuration.json"
-    },
-    {
       "grammar": "textmate/php/syntaxes/php.tmLanguage.json",
       "name": "php",
       "scopeName": "source.php",
@@ -237,6 +239,13 @@
       "name": "python.regexp",
       "scopeName": "source.regexp.python",
       "languageConfiguration": "textmate/python/language-configuration.json"
+    },
+
+    {
+      "grammar": "textmate/raku/syntaxes/raku.tmLanguage.json",
+      "name": "raku",
+      "scopeName": "source.perl.6",
+      "languageConfiguration": "textmate/raku/language-configuration.json"
     },
     {
       "grammar": "textmate/ruby/syntaxes/ruby.tmLanguage.json",
@@ -281,6 +290,12 @@
       "languageConfiguration": "textmate/swift/language-configuration.json"
     },
     {
+      "grammar": "textmate/toml/syntaxes/toml.tmLanguage.json",
+      "name": "toml",
+      "scopeName": "source.toml",
+      "languageConfiguration": "textmate/toml/language-configuration.json"
+    },
+    {
       "grammar": "textmate/typescript/syntaxes/typescript.tmLanguage.json",
       "name": "typescript",
       "scopeName": "source.ts",
@@ -292,6 +307,13 @@
       "scopeName": "source.tsx",
       "languageConfiguration": "textmate/typescript/typescriptreact.language-configuration.json"
     },
+    {
+      "grammar": "textmate/vb/syntaxes/vb.tmLanguage.json",
+      "name": "vb",
+      "scopeName": "source.asp.vb.net",
+      "languageConfiguration": "textmate/vb/language-configuration.json"
+    },
+
     {
       "grammar": "textmate/xml/syntaxes/xml.tmLanguage.json",
       "name": "xml",

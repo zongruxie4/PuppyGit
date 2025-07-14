@@ -261,6 +261,8 @@ private val extensionToMimeTypeMap = mapOf(
 
     // start: I add
     //kotlin这个是我(Bandeapart1964)添加的，目前没有kotlin文件的mime type，先用java的凑合吧
+    "iml" to "text/xml",
+    "mdown" to "text/markdown",
     "kt" to "application/x-kotlin",
     "kts" to "application/x-kotlin",
     "kotlin" to "application/x-kotlin",
@@ -287,6 +289,12 @@ private val extensionToMimeTypeMap = mapOf(
     "sql" to "application/x-sql",
     "swift" to "application/x-swift",
     "vb" to "application/x-vb",
+    "pl6" to "application/x-raku",
+    "raku" to "application/x-raku",
+    "rakudoc" to "application/x-raku",
+    "rakumod" to "application/x-raku",
+    "toml" to "application/x-toml",
+
     // end: I add
 
     "kwd" to "application/x-kword",

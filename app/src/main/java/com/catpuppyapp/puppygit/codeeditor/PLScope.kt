@@ -46,16 +46,19 @@ enum class PLScope(val scope: String) {
     PHP("source.php"),
     POWER_SHELL("source.powershell"),
     PYTHON("source.python"),
+    RAKU("source.perl.6"),
     RUBY("source.ruby"),
     RUST("source.rust"),
     SCSS("source.css.scss"),
     SHELL("source.shell"),
     SQL("source.sql"),
     SWIFT("source.swift"),
+    TOML("source.toml"),
     TS("source.ts"),
     TSX("source.tsx"),
+    VB("source.asp.vb.net"),
     XML("text.xml"),
-    YAML("text.yaml"),
+    YAML("source.yaml"),
 
     ;
 
@@ -80,7 +83,8 @@ enum class PLScope(val scope: String) {
                 return TS
             }
 
-            if(fileName.endsWith(".xml")) {
+            // iml is jetbrains config file extension, it use xml format
+            if(fileName.endsWith(".xml") || fileName.endsWith(".iml")) {
                 return XML
             }
 
@@ -182,6 +186,10 @@ enum class PLScope(val scope: String) {
                 return SHELL
             }
 
+            if(fileName.endsWith(".toml")) {
+                return TOML
+            }
+
             if(fileName.endsWith(".makefile")) {
                 return MAKE_FILE
             }
@@ -199,6 +207,10 @@ enum class PLScope(val scope: String) {
                 return POWER_SHELL
             }
 
+            if(fileName.endsWith(".vb")) {
+                return VB
+            }
+
             if(fileName.endsWith(".rb") || fileName.endsWith(".ruby")) {
                 return RUBY
             }
@@ -206,6 +218,11 @@ enum class PLScope(val scope: String) {
 
             if(fileName.endsWith(".pl") || fileName.endsWith(".perl")) {
                 return PERL
+            }
+
+
+            if(fileName.endsWith(".pl6") || fileName.endsWith(".raku") || fileName.endsWith(".rakudoc") || fileName.endsWith(".rakumod")) {
+                return RAKU
             }
 
             if(fileName.endsWith(".scss") || fileName.endsWith(".sass")) {
