@@ -1334,20 +1334,27 @@ fun getNextIndentByCurrentStr(current:String?, aTabToNSpaces:Int):String {
         }
     }
 
+    //Disabled reason: it will cause pasted content have wrong intent, so disabled
     // append extras spaces for block start
-    if(current.trim().let {
-        it.endsWith("{")
-                || it.endsWith("(")
-                || it.endsWith("[")
+//    appendIndentForUnClosedSignPair(current, sb, aTabToNSpaces)
 
-                // e.g. for yml
-                || it.endsWith(":")
+    return sb.toString()
+}
 
-                // e.g. for html xml ，如果标签在一行内闭合，缩进就错了，懒得判断，直接禁用算了
-//                || it.startsWith("<")
+private fun appendIndentForUnClosedSignPair(current: String, sb: StringBuilder, aTabToNSpaces: Int) {
+    if (current.trim().let {
+            it.endsWith("{")
+                    || it.endsWith("(")
+                    || it.endsWith("[")
+
+                    // e.g. for yml
+                    || it.endsWith(":")
+
+                    // e.g. for html xml, if only has "open" sign without "close", add indent
+                    // if has pair open+close, then it should mod 2 equals to 0,
+                    // else, means have not enough close sign, so we should add indent
+                    || (it.countSub("<") % it.countSub("</")) != 2
     }) {
         sb.append(tabToSpaces(aTabToNSpaces))
     }
-
-    return sb.toString()
 }

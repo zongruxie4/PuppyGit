@@ -140,36 +140,42 @@ internal fun MyTextField(
                         onFocus()
                     }
                 }
-                .onPreviewKeyEvent { event ->
+                .onPreviewKeyEvent opke@{ event ->
+                    //只响应按下key不响应松开
+                    if (event.type != KeyEventType.KeyDown) return@opke false
+
+
+
+
 //                    val value = textFieldState.value
                     val selection = currentTextField.selection
 
                     if (onPreviewDelKeyEvent(event, selection) { onDeleteNewLine() }) {
-                        return@onPreviewKeyEvent true
+                        return@opke true
                     }
 
                     if (onPreviewDownKeyEvent(event) { onDownFocus() }) {
-                        return@onPreviewKeyEvent true
+                        return@opke true
                     }
 
                     if (onPreviewUpKeyEvent(event) { onUpFocus() }) {
-                        return@onPreviewKeyEvent true
+                        return@opke true
                     }
 
                     if (onPreviewLeftKeyEvent(event, textFieldState) { onLeftPressed(textFieldState, idx, false) }) {
-                        return@onPreviewKeyEvent true
+                        return@opke true
                     }
 
                     if (onPreviewRightKeyEvent(event, textFieldState) { onRightPressed(textFieldState, idx, false) }) {
-                        return@onPreviewKeyEvent true
+                        return@opke true
                     }
 
                     if (onPreviewHomeKeyEvent(event, textFieldState) { onLeftPressed(textFieldState, idx, true) }) {
-                        return@onPreviewKeyEvent true
+                        return@opke true
                     }
 
                     if (onPreviewEndKeyEvent(event, textFieldState) { onRightPressed(textFieldState, idx, true) }) {
-                        return@onPreviewKeyEvent true
+                        return@opke true
                     }
 
                     // even disable this, when new line '\n' added to text filed, will still split new line, so this is unnecessary
@@ -180,7 +186,7 @@ internal fun MyTextField(
 //                val b5 = onPreviewTabKeyEvent(event) { onDownFocus() }
 //                if (b5) return@onPreviewKeyEvent true
 
-                    false
+                    return@opke false
                 }
         )
     }
@@ -230,10 +236,6 @@ private fun onPreviewDelKeyEvent(
     selection: TextRange,
     invoke: () -> Unit
 ): Boolean {
-    //只响应按下key不响应松开
-    val isKeyDown = event.type == KeyEventType.KeyDown
-    if (!isKeyDown) return false
-
     //不是删除不响应
     val isDelKey = event.nativeKeyEvent.keyCode == KEYCODE_DEL
     if (!isDelKey) return false
@@ -256,9 +258,6 @@ private fun onPreviewUpOrDownKeyEvent(
 ): Boolean {
     if(event.isCtrlPressed || event.isShiftPressed || event.isAltPressed || event.isMetaPressed) return false
 
-    val isKeyDown = event.type == KeyEventType.KeyDown
-    if (!isKeyDown) return false
-
     val expectedKey = if (trueUpFalseDown) KEYCODE_DPAD_UP else KEYCODE_DPAD_DOWN
     val isExpectedKey = event.nativeKeyEvent.keyCode == expectedKey
     if (!isExpectedKey) return false
@@ -278,9 +277,6 @@ private fun onPreviewLeftOrRightKeyEvent(
 ): Boolean {
     if(event.isCtrlPressed || event.isShiftPressed || event.isAltPressed || event.isMetaPressed || field.value.selection.collapsed.not()) return false
 
-    val isKeyDown = event.type == KeyEventType.KeyDown
-    if (!isKeyDown) return false
-
     val expectedKey = if(trueLeftFalseRight) KEYCODE_DPAD_LEFT else KEYCODE_DPAD_RIGHT
     val isExceptedKey = event.nativeKeyEvent.keyCode == expectedKey
     if (!isExceptedKey) return false
@@ -299,9 +295,6 @@ private fun onPreviewHomeOrEndKeyEvent(
     invoke: () -> Unit,
 ): Boolean {
     if(event.isShiftPressed || event.isAltPressed || event.isMetaPressed || field.value.selection.collapsed.not()) return false
-
-    val isKeyDown = event.type == KeyEventType.KeyDown
-    if (!isKeyDown) return false
 
     val expectedKey = if(trueHomeFalseEnd) Key.MoveHome else Key.MoveEnd
     val isExpectedKey = event.key == expectedKey

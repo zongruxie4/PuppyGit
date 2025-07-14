@@ -339,14 +339,15 @@ fun FileEditor(
                             //  so here must use `onPreviewKeyEvent` rather than `onKeyEvent` to intercept the key events
                             // see: https://developer.android.com/develop/ui/compose/touch-input/keyboard-input/commands
                             .onPreviewKeyEvent opke@{ keyEvent ->
-                                val textEditorState = textEditorState.value
-                                val lastScrollEvent = editorLastScrollEvent
-
 
                                 // return true to stop key event propaganda
                                 if (keyEvent.type != KeyEventType.KeyDown) {
                                     return@opke false
                                 }
+
+                                val textEditorState = textEditorState.value
+                                val lastScrollEvent = editorLastScrollEvent
+
 
                                 if (keyEvent.isCtrlPressed && keyEvent.key == Key.S) { // save
                                     requestFromParent.value = PageRequest.requireSave
