@@ -218,7 +218,7 @@ fun DiffPageActions(
                     it.diff.showLineNum = showLineNum.value
                 }
 
-                dropDownMenuExpandState.value = false
+//                dropDownMenuExpandState.value = false
             }
 
         )
@@ -236,7 +236,7 @@ fun DiffPageActions(
                     it.diff.showOriginType = showOriginType.value
                 }
 
-                dropDownMenuExpandState.value = false
+//                dropDownMenuExpandState.value = false
             }
 
         )
@@ -254,7 +254,7 @@ fun DiffPageActions(
                     it.diff.groupDiffContentByLineNum = groupDiffContentByLineNum.value
                 }
 
-                dropDownMenuExpandState.value = false
+//                dropDownMenuExpandState.value = false
             }
         )
 
@@ -272,7 +272,7 @@ fun DiffPageActions(
                         it.diff.enableBetterButSlowCompare = requireBetterMatchingForCompare.value
                     }
 
-                    dropDownMenuExpandState.value = false
+//                    dropDownMenuExpandState.value = false
                 }
             )
 
@@ -288,7 +288,7 @@ fun DiffPageActions(
                         it.diff.matchByWords = matchByWords.value
                     }
 
-                    dropDownMenuExpandState.value = false
+//                    dropDownMenuExpandState.value = false
                 }
             )
 
@@ -307,7 +307,7 @@ fun DiffPageActions(
                     it.diff.readOnly = readOnlyModeOn.value
                 }
 
-                dropDownMenuExpandState.value = false
+//                dropDownMenuExpandState.value = false
             }
 
         )
@@ -325,7 +325,7 @@ fun DiffPageActions(
                     it.diff.enableSelectCompare = enableSelectCompare.value
                 }
 
-                dropDownMenuExpandState.value = false
+//                dropDownMenuExpandState.value = false
             }
 
         )

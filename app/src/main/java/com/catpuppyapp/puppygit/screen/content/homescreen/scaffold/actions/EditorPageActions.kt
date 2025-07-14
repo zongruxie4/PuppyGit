@@ -398,7 +398,7 @@ fun EditorPageActions(
                     onClick = {
                         editorPageMergeMode.value = !editorPageMergeMode.value
 
-                        closeMenu()
+//                        closeMenu()
                     }
 
                 )
@@ -419,7 +419,7 @@ fun EditorPageActions(
                         it.editor.patchModeOn = newValue
                     }
 
-                    closeMenu()
+//                    closeMenu()
                 }
 
             )
@@ -436,7 +436,7 @@ fun EditorPageActions(
                     //如果是从非readonly mode切换到readonly mode，则执行一次保存，然后再切换readonly mode
                     editorPageRequest.value = PageRequest.doSaveIfNeedThenSwitchReadOnly
 
-                    closeMenu()
+//                    closeMenu()
                 }
 
             )
@@ -461,7 +461,7 @@ fun EditorPageActions(
                     }
 
                     //关闭菜单
-                    closeMenu()
+//                    closeMenu()
                 }
 
             )
@@ -481,52 +481,47 @@ fun EditorPageActions(
 
             }
 
-            if(proFeatureEnabled(editorFontSizeTestPassed)) {
-                DropdownMenuItem(
-                    enabled = enableMenuItem,
-                    text = { Text(stringResource(R.string.font_size)) },
-                    onClick = {
-                        closeMenu()
 
-                        adjustFontSizeMode.value = true
+            DropdownMenuItem(
+                //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
+                enabled = enableMenuItem,
+                text = { Text(stringResource(R.string.show_line_num)) },
+                trailingIcon = {
+                    SimpleCheckBox(showLineNum.value)
+                },
+                onClick = {
+//                    closeMenu()
+
+                    //切换
+                    showLineNum.value = !showLineNum.value
+
+                    //保存
+                    SettingsUtil.update {
+                        it.editor.showLineNum = showLineNum.value
                     }
-                )
-            }
+                }
+            )
 
-            if(proFeatureEnabled(editorLineNumFontSizeTestPassed)) {
-                DropdownMenuItem(
-                    enabled = enableMenuItem && showLineNum.value,
-                    text = { Text(stringResource(R.string.line_num_size)) },
-                    onClick = {
-                        closeMenu()
+            DropdownMenuItem(
+                enabled = enableMenuItem && showLineNum.value,
+                text = { Text(stringResource(R.string.line_num_size)) },
+                onClick = {
+                    closeMenu()
 
-                        adjustLineNumFontSizeMode.value = true
-                    }
+                    adjustLineNumFontSizeMode.value = true
+                }
 
-                )
-            }
+            )
 
-            if(proFeatureEnabled(editorHideOrShowLineNumTestPassed)) {
-                DropdownMenuItem(
-                    //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
-                    enabled = enableMenuItem,
-                    text = { Text(stringResource(R.string.show_line_num)) },
-                    trailingIcon = {
-                        SimpleCheckBox(showLineNum.value)
-                    },
-                    onClick = {
-                        closeMenu()
+            DropdownMenuItem(
+                enabled = enableMenuItem,
+                text = { Text(stringResource(R.string.font_size)) },
+                onClick = {
+                    closeMenu()
 
-                        //切换
-                        showLineNum.value = !showLineNum.value
-
-                        //保存
-                        SettingsUtil.update {
-                            it.editor.showLineNum = showLineNum.value
-                        }
-                    }
-                )
-            }
+                    adjustFontSizeMode.value = true
+                }
+            )
 
             if(proFeatureEnabled(editorEnableLineSelecteModeFromMenuTestPassed)) {
                 val selectModeOn = editorPageTextEditorState.value.isMultipleSelectionMode
@@ -539,7 +534,7 @@ fun EditorPageActions(
                         SimpleCheckBox(selectModeOn)
                     },
                     onClick = {
-                        closeMenu()
+//                        closeMenu()
 
                         //如果是从非readonly mode切换到readonly mode，则执行一次保存，然后再切换readonly mode
                         editorPageRequest.value = PageRequest.editorSwitchSelectMode
@@ -558,7 +553,7 @@ fun EditorPageActions(
                     SimpleCheckBox(disableSoftKb.value.not())
                 },
                 onClick = {
-                    closeMenu()
+//                    closeMenu()
 
                     EditorSettingsUtil.updateDisableSoftKb(disableSoftKb.value.not(), disableSoftKb)
                 }

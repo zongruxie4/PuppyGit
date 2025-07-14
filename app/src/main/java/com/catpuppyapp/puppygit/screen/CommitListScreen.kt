@@ -1915,7 +1915,7 @@ fun CommitListScreen(
                                             SettingsUtil.update { it.commitHistoryGraph = newValue }
 
                                             //关闭顶栏菜单
-                                            showTopBarMenu.value = false
+//                                            showTopBarMenu.value = false
                                         }
                                     )
 
