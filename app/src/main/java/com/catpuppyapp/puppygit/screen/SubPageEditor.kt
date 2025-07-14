@@ -333,7 +333,7 @@ fun SubPageEditor(
                         getActuallyRecentFilesListState = getActuallyRecentFilesListState,
                         getActuallyRecentFilesListLastPosition = getActuallyRecentFilesListLastPosition,
 
-                        patchModeOn = editorPagePatchMode.value,
+                        patchModeOn = editorPagePatchMode,
                         previewNavStack = editorPreviewNavStack.value,
                         previewingPath = editorPreviewPath,
                         isPreviewModeOn = editorIsPreviewModeOn.value,
@@ -343,8 +343,8 @@ fun SubPageEditor(
                         editorPageRequestFromParent = editorPageRequestFromParent,
                         editorSearchMode = editorPageSearchMode.value,
                         editorSearchKeyword = editorPageSearchKeyword,
-                        editorPageMergeMode = editorPageMergeMode.value,
-                        readOnly = editorReadOnlyMode.value,
+                        editorPageMergeMode = editorPageMergeMode,
+                        readOnly = editorReadOnlyMode,
                     )
 
                 },

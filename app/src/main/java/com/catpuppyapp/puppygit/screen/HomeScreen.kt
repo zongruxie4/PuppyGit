@@ -1022,7 +1022,7 @@ fun HomeScreen(
                                 recentListFilterKeyword = editorFilterRecentListKeyword,
                                 getActuallyRecentFilesListState=getActuallyRecentFilesListState,
                                 getActuallyRecentFilesListLastPosition=getActuallyRecentFilesListLastPosition,
-                                patchModeOn = editorPagePatchMode.value,
+                                patchModeOn = editorPagePatchMode,
                                 previewNavStack = editorPreviewNavStack.value,
                                 previewingPath = editorPreviewPath,
                                 isPreviewModeOn = editorIsPreviewModeOn.value,
@@ -1032,8 +1032,8 @@ fun HomeScreen(
                                 editorPageRequestFromParent = editorPageRequestFromParent,
                                 editorSearchMode = editorPageSearchMode.value,
                                 editorSearchKeyword = editorPageSearchKeyword,
-                                editorPageMergeMode = editorPageMergeMode.value,
-                                readOnly = editorReadOnlyMode.value,
+                                editorPageMergeMode = editorPageMergeMode,
+                                readOnly = editorReadOnlyMode,
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
                             if(changeListPageFilterModeOn.value) {
