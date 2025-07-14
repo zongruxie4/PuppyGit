@@ -1165,13 +1165,31 @@ class TextEditorState(
     private fun splitTextsByNL(text: String): List<TextFieldValue> {
         var autoIndentSpacesCount = ""
         val ret = mutableListOf<TextFieldValue>()
+        val tabIndentSpaceCount = SettingsUtil.editorTabIndentCount()
         for((index, text) in text.lines().withIndex()) {
             ret.add(
                 if (index == 0) {  //第一行，光标在换行的位置
-                    autoIndentSpacesCount = getNextIndentByCurrentStr(text, SettingsUtil.editorTabIndentCount())
+                    autoIndentSpacesCount = getNextIndentByCurrentStr(text, tabIndentSpaceCount)
                     TextFieldValue(text, TextRange(text.length))
                 } else {  //后续行，光标在开头
-                    TextFieldValue(autoIndentSpacesCount + text)
+                    val currentLineIndentCount = getNextIndentByCurrentStr(text, tabIndentSpaceCount)
+                    val diff = autoIndentSpacesCount.length - currentLineIndentCount.length
+
+                    //如果首行缩进大于后续行，添加缩进使其和首行对齐，否则不添加。
+                    //注：添加的是空格，但计算的时候其实是tab和空格一起算，所以如果两种缩进混用，
+                    // 这里可能会添加错误的缩进，结果就会导致后续行和首行对不齐了，但数据不会丢
+                    val text = if(diff > 0) {
+                        val sb = StringBuilder()
+                        for (i in 0 until diff) {
+                            sb.append(IndentChar.SPACE.char)
+                        }
+                        sb.append(text).toString()
+                    }else {
+                        text
+                    }
+
+                    // 不用传selection，光标位置默认就是期望的0
+                    TextFieldValue(text)
                 }
             )
         }
