@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
 import com.catpuppyapp.puppygit.codeeditor.AnnotatedStringResult
+import com.catpuppyapp.puppygit.codeeditor.IndentChar
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.codeeditor.StylesResult
 import com.catpuppyapp.puppygit.codeeditor.StylesUpdateRequest
@@ -50,8 +51,6 @@ import java.io.OutputStream
 
 private const val TAG = "TextEditorState"
 private const val lb = "\n"
-private const val tab = "\t"
-private const val spaceChar = ' '
 
 private fun targetIndexValidOrThrow(targetIndex:Int, listSize:Int) {
     if (targetIndex < 0 || targetIndex >= listSize) {
@@ -1853,7 +1852,7 @@ class TextEditorState(
             return HandleTabRet(newText = fv.text, newSelection = fv.selection, changed = false)
         }
 
-        val (newText, removedCount) = if (fv.text.startsWith(tab)) {  // remove a tab
+        val (newText, removedCount) = if (fv.text.startsWith(IndentChar.TAB.char)) {  // remove a tab
             Pair(fv.text.substring(1, fv.text.length), 1)
         } else {  // remove till non-space char
             if (tabIndentSpacesCount < 1) {  // a tab to 0 spaces, means nothing need to replace
@@ -1861,7 +1860,7 @@ class TextEditorState(
             } else {
                 var removed = 0
                 for (i in fv.text) {
-                    if (i == spaceChar) {
+                    if (i == IndentChar.SPACE.char) {
                         if (++removed >= tabIndentSpacesCount) {
                             break
                         }
