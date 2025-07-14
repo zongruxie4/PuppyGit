@@ -1831,7 +1831,9 @@ class TextEditorState(
 
     private fun doTab(tabIndentSpacesCount: Int, f: TextFieldState): HandleTabRet {
         val fv = f.value
-        val cursorAt = if (fv.selection.collapsed) fv.selection.start else fv.selection.min
+//        val cursorAt = if (fv.selection.collapsed) fv.selection.start else fv.selection.min
+        // if select anything, move the whole line
+        val cursorAt = if (fv.selection.collapsed) fv.selection.start else 0
         val sb = StringBuilder(fv.text.substring(0, cursorAt))
         val newText = sb.append(tabToSpaces(tabIndentSpacesCount)).append(fv.text.substring(cursorAt, fv.text.length)).toString()
         val newSelection = if (fv.selection.collapsed) TextRange(cursorAt + tabIndentSpacesCount)
