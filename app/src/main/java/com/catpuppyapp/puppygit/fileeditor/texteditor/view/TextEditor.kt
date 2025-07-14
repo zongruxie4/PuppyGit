@@ -226,7 +226,6 @@ fun TextEditor(
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
     val conflictKeyword = remember(settings.editor.conflictStartStr) { mutableStateOf(settings.editor.conflictStartStr) }
-    val tabIndentSpacesCount = settings.editor.tabIndentSpacesCount
 
     val scrollIfIndexInvisible = { index:Int ->
         try {

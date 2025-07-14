@@ -39,6 +39,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -157,7 +158,8 @@ fun FileEditor(
     showLineNum:MutableState<Boolean>,
     lineNumFontSize:MutableIntState,
     fontSize:MutableIntState,
-    undoStack: UndoStack
+    undoStack: UndoStack,
+    tabIndentSpacesCount: State<Int>,
 ) {
     val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
@@ -166,7 +168,6 @@ fun FileEditor(
     val density = LocalDensity.current
     val deviceConfiguration = AppModel.getCurActivityConfig()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
-    val tabIndentSpacesCount = settings.editor.tabIndentSpacesCount
 
     val scope = rememberCoroutineScope()
 
@@ -477,7 +478,7 @@ fun FileEditor(
                                 if(keyEvent.key == Key.Tab && keyEvent.isShiftPressed) {
                                     if(textEditorState.isMultipleSelectionMode) {
                                         doJobThenOffLoading {
-                                            textEditorState.let { it.indentLines(settings.editor.tabIndentSpacesCount, it.selectedIndices, trueTabFalseShiftTab = false) }
+                                            textEditorState.let { it.indentLines(tabIndentSpacesCount.value, it.selectedIndices, trueTabFalseShiftTab = false) }
                                         }
 
                                         return@opke true
@@ -485,7 +486,7 @@ fun FileEditor(
                                         val (idx, f) = textEditorState.getCurrentField()
                                         if(idx != null && f != null) {
                                             doJobThenOffLoading {
-                                                textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount, trueTabFalseShiftTab = false)
+                                                textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount.value, trueTabFalseShiftTab = false)
                                             }
 
                                             return@opke true
@@ -499,7 +500,7 @@ fun FileEditor(
                                 if(keyEvent.key == Key.Tab && !keyEvent.isShiftPressed) {
                                     if(textEditorState.isMultipleSelectionMode) {
                                         doJobThenOffLoading {
-                                            textEditorState.let { it.indentLines(settings.editor.tabIndentSpacesCount, it.selectedIndices, trueTabFalseShiftTab = true) }
+                                            textEditorState.let { it.indentLines(tabIndentSpacesCount.value, it.selectedIndices, trueTabFalseShiftTab = true) }
                                         }
 
                                         return@opke true
@@ -507,7 +508,7 @@ fun FileEditor(
                                         val (idx, f) = textEditorState.getCurrentField()
                                         if(idx != null && f != null) {
                                             doJobThenOffLoading {
-                                                textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount, trueTabFalseShiftTab = true)
+                                                textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount.value, trueTabFalseShiftTab = true)
                                             }
 
                                             return@opke true
@@ -854,14 +855,14 @@ fun FileEditor(
                     val iconOnClickList = listOf(
                         onShiftTab@{
                             doJobThenOffLoading {
-                                textEditorState.value.let { it.indentLines(settings.editor.tabIndentSpacesCount, it.selectedIndices, trueTabFalseShiftTab = false) }
+                                textEditorState.value.let { it.indentLines(tabIndentSpacesCount.value, it.selectedIndices, trueTabFalseShiftTab = false) }
                             }
 
                             Unit
                         },
                         onTab@{
                             doJobThenOffLoading {
-                                textEditorState.value.let { it.indentLines(settings.editor.tabIndentSpacesCount, it.selectedIndices, trueTabFalseShiftTab = true) }
+                                textEditorState.value.let { it.indentLines(tabIndentSpacesCount.value, it.selectedIndices, trueTabFalseShiftTab = true) }
                             }
 
                             Unit

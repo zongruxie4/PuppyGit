@@ -24,6 +24,7 @@ object PageRequest {
 //    const val goToBranch ="goToBranch"  //goToBranch#branchName，#后面是要goto的分支名
 
 
+    const val showSetTabSizeDialog = "showSetTabSizeDialog"
     const val selectSyntaxHighlighting = "selectSyntaxHighlighting"
     const val hideKeyboardForAWhile = "hideKeyboardForAWhile"
     const val reloadRecentFileList = "reloadRecentFileList"

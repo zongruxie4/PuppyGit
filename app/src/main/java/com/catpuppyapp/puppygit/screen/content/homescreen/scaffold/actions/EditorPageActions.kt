@@ -523,6 +523,16 @@ fun EditorPageActions(
                 }
             )
 
+            DropdownMenuItem(
+                enabled = enableMenuItem,
+                text = { Text(stringResource(R.string.tab_size)) },
+                onClick = {
+                    closeMenu()
+
+                    editorPageRequest.value = PageRequest.showSetTabSizeDialog
+                }
+            )
+
             if(proFeatureEnabled(editorEnableLineSelecteModeFromMenuTestPassed)) {
                 val selectModeOn = editorPageTextEditorState.value.isMultipleSelectionMode
 

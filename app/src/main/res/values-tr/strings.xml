@@ -1190,6 +1190,9 @@
     <string name="dynamic_color_scheme">Dinamik Renk Şeması</string>
     <string name="syntax_highlighting">Sözdizimi Vurgulama</string>
     <string name="use_system_fonts">Sistem Yazı Tiplerini Kullan</string>
+    <string name="tab_size">Tab Size</string>
+    <string name="set_tab_size_note"><![CDATA[<=0 to use real tab, else will replace tab to spaces]]></string>
+
 
 
 </resources>

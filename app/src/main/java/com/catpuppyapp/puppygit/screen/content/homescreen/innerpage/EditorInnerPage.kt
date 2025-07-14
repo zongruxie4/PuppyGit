@@ -38,13 +38,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
@@ -64,6 +64,7 @@ import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SelectSyntaxHighlightingDialog
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.SelectionRow
+import com.catpuppyapp.puppygit.compose.SetTabSizeDialog
 import com.catpuppyapp.puppygit.compose.rememberFileChangeListenerState
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
@@ -106,11 +107,13 @@ import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.isFileSizeOverLimit
+import com.catpuppyapp.puppygit.utils.parseIntOrDefault
 import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -858,6 +861,36 @@ fun EditorInnerPage(
         changeStateTriggerRefreshPage(needRefreshRecentFileList)
     }
 
+    val tabIndentSpacesCount = rememberSaveable { mutableStateOf(SettingsUtil.editorTabIndentCount()) }
+    val tabSizeBuf = mutableCustomStateOf(stateKeyTag, "tabSizeBuf") { TextFieldValue("") }
+
+    val showSetTabSizeDialog = rememberSaveable { mutableStateOf(false) }
+    val initSetTabSizeDialog = {
+        tabSizeBuf.value = tabIndentSpacesCount.value.toString().let { TextFieldValue(it, selection = TextRange(0, it.length)) }
+
+        showSetTabSizeDialog.value = true
+    }
+    if(showSetTabSizeDialog.value) {
+        val closeDialog = { showSetTabSizeDialog.value = false }
+        SetTabSizeDialog(
+            tabSizeBuf = tabSizeBuf,
+            onCancel = closeDialog,
+            onOk = ok@{ newSize ->
+                val newSize = parseIntOrDefault(newSize, null)
+                if(newSize == null) {
+                    Msg.requireShow(activityContext.getString(R.string.invalid_number))
+                    return@ok
+                }
+
+                closeDialog()
+
+                tabIndentSpacesCount.value = newSize
+                SettingsUtil.update {
+                    it.editor.tabIndentSpacesCount = newSize
+                }
+            }
+        )
+    }
 
     val showSelectSyntaxHighlightDialog = rememberSaveable { mutableStateOf(false) }
     val initSelectSyntaxHighlightingDialog = {
@@ -893,6 +926,12 @@ fun EditorInnerPage(
     if(requestFromParent.value == PageRequest.selectSyntaxHighlighting) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             initSelectSyntaxHighlightingDialog()
+        }
+    }
+
+    if(requestFromParent.value == PageRequest.showSetTabSizeDialog) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            initSetTabSizeDialog()
         }
     }
 
@@ -1714,6 +1753,7 @@ fun EditorInnerPage(
                 fontSize=editorFontSize,
                 undoStack = undoStack,
                 patchMode = editorPatchMode.value,
+                tabIndentSpacesCount = tabIndentSpacesCount,
             )
         }
 
@@ -1880,6 +1920,8 @@ fun EditorInnerPage(
         }
     }
 }
+
+
 
 private suspend fun doInit(
     codeEditor: MyCodeEditor,
