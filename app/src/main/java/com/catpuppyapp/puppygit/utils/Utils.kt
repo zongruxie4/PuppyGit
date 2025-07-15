@@ -49,6 +49,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.io.path.exists
 import kotlin.math.absoluteValue
 
+
 private const val TAG = "Utils"
 
 
@@ -1358,4 +1359,20 @@ private fun appendIndentForUnClosedSignPair(current: String, sb: StringBuilder, 
     }) {
         sb.append(tabToSpaces(aTabToNSpaces))
     }
+}
+
+fun appAvailHeapSizeInMb():Long {
+    val funName = "appAvailHeapSize"
+
+    // src: https://stackoverflow.com/a/19267315
+    val runtime = Runtime.getRuntime()
+    val usedMemInMB = (runtime.totalMemory() - runtime.freeMemory()) / 1048576L
+    val maxHeapSizeInMB = runtime.maxMemory() / 1048576L
+    val availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB
+
+    if(AppModel.devModeOn) {
+        MyLog.w(TAG, "#$funName: ${availHeapSizeInMB}MB")
+    }
+
+    return availHeapSizeInMB
 }

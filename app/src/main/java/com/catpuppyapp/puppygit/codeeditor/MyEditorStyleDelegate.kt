@@ -39,23 +39,25 @@ class MyEditorStyleDelegate(
             return
         }
 
+        // 即使加了锁也可能导致丢失styles，并且这个不是内存消耗大户，所以不检查了
+        // may cause lost styles, and this is not big memory used issue, so disabled
         // is not latest editor state's fieldsId, neither stored into undo stack, need not apply it
-        val isUnusedFieldsId = runBlocking {
-            codeEditor.textEditorStateOnChangeLock.withLock {
-                codeEditor.editorState?.value?.fieldsId != editorState.fieldsId
-                        && codeEditor.undoStack?.value?.contains(editorState.fieldsId) != true
-            }
-        }
-
-        if(isUnusedFieldsId) {
-            return
-        }
+//        val isUnusedFieldsId = runBlocking {
+//            codeEditor.textEditorStateOnChangeLock.withLock {
+//                codeEditor.editorState?.value?.fieldsId != editorState.fieldsId
+//                        && codeEditor.undoStack?.value?.contains(editorState.fieldsId) != true
+//            }
+//        }
+//
+//        if(isUnusedFieldsId) {
+//            return
+//        }
 
 
 
 //        (resolved) 不行，有问题：
 //        lang + editorState1 调用分析，未结束时，lang + editorState2 重新设置了receiver，然后 组合1的结果出来了，就被组合2拿到了，而组合2无法得知组合1 到底是谁
-//        啊，这个问题其实可以解决，因为这里无论如何都会put，所以我可以在获取某个字段的annotatedstring的时候检查，如果有style没高亮，执行apply，就行了
+//        啊，这个问题其实可以解决，因为这里无论如何都会put，所以我可以在获取某个字段的annotatedString的时候检查，如果有style没高亮，执行apply，就行了
 
         // cache只有一个实例，需要并发安全，key为fieldsId，全局唯一
         val stylesResult = StylesResult(inDarkTheme, styles, StylesResultFrom.CODE_EDITOR, fieldsId = editorState.fieldsId, languageScope = languageScope)

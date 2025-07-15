@@ -11,7 +11,9 @@ import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.appAvailHeapSizeInMb
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getRandomUUID
 import com.catpuppyapp.puppygit.utils.isLocked
@@ -39,6 +41,13 @@ import kotlin.concurrent.withLock
 import kotlin.math.absoluteValue
 
 
+// if app available memory lower than `lowestMemInMb` in `lowestMemLimitCount` times,
+//  will disable syntax highlighting and free related memory,
+//  else, app may crash by OOM
+private const val lowestMemInMb = 30
+private const val lowestMemLimitCount = 5
+
+
 private const val TAG = "MyCodeEditor"
 //private val highlightMapShared: MutableMap<String, Map<String, AnnotatedStringResult>> = ConcurrentMap()
 //private val stylesMapShared: MutableMap<String, StylesResult> = ConcurrentMap()
@@ -48,6 +57,7 @@ class MyCodeEditor(
     val appContext: Context = AppModel.realAppContext,
     val editorState: (CustomStateSaveable<TextEditorState>)? = null,
     val undoStack: (CustomStateSaveable<UndoStack>)? = null,
+    private var lowMemCount:Int = 0
 ) {
     private var file: FuckSafFile = FuckSafFile(appContext, FilePath(""))
 
@@ -159,6 +169,24 @@ class MyCodeEditor(
     }
 
 
+    fun noMoreMemory() : Boolean {
+        if(appAvailHeapSizeInMb() < lowestMemInMb) {
+            lowMemCount++
+        }
+
+        return if(lowMemCount >= lowestMemLimitCount) {
+            plScope.value = PLScope.NONE
+            languageScope = PLScope.NONE
+
+            release()
+            Msg.requireShowLongDuration("Syntax highlighting disabled: No more memory!")
+
+            true
+        }else {
+            false
+        }
+    }
+
     fun resetPlScope() {
         PLScope.resetPlScope(plScope)
     }
@@ -183,6 +211,8 @@ class MyCodeEditor(
 
 
     fun reset(newFile: FuckSafFile, force: Boolean) {
+        lowMemCount = 0
+
         if(force.not() && newFile.path.ioPath == file.path.ioPath) {
             return
         }
@@ -213,9 +243,23 @@ class MyCodeEditor(
         }
     }
 
+    private fun plScopeStateInvalid() = PLScope.scopeInvalid(plScope.value.scope)
+
     @OptIn(ExperimentalCoroutinesApi::class)
     fun sendUpdateStylesRequest(stylesUpdateRequest: StylesUpdateRequest, language: Language? = myLang) {
+        if(plScopeStateInvalid()) {
+            return
+        }
+
         stylesRequestLock.withLock {
+            if(plScopeStateInvalid()) {
+                return
+            }
+
+            if(noMoreMemory()) {
+                return
+            }
+
             val targetEditorState = if(stylesUpdateRequest.ignoreThis) {
                 null
             }else {
@@ -249,6 +293,15 @@ class MyCodeEditor(
         if(editorState == null) {
             return
         }
+
+        if(plScopeStateInvalid()) {
+            return
+        }
+
+        if(noMoreMemory()) {
+            return
+        }
+
 
         analyzeLock.withLock {
             doAnalyzeNoLock(editorState, plScope)
@@ -425,6 +478,10 @@ class MyCodeEditor(
     // user stop input after `delayInSec`, will start a syntax highlighting analyze
     // set checkTimes to control check how many times, that should not too large, else may have many tasks, that's bad
     fun startAnalyzeWhenUserStopInputForAWhile(initState: TextEditorState, delayInSec: Int = 2, checkTimes: Int = 5) {
+        if(plScopeStateInvalid()) {
+            return
+        }
+
         doJobThenOffLoading task@{
             if(isLocked(delayAnalyzingTaskLock)) {
                 return@task
@@ -435,6 +492,10 @@ class MyCodeEditor(
                 var count = 0
                 while (count++ < checkTimes) {
                     delay(delayInSec * 1000L)
+                    if(plScopeStateInvalid()) {
+                        break
+                    }
+
                     if(editorState != null && editorState.value.fieldsId.let { it.isNotBlank() && it == initState.fieldsId }) {
                         analyze(editorState.value)
                         break
@@ -499,6 +560,7 @@ class StylesUpdateRequest(
 )
 
 fun MyCodeEditor?.scopeInvalid() = this == null || PLScope.scopeInvalid(languageScope.scope)
+
 
 fun MyCodeEditor?.scopeMatched(scope: String?) = this != null && scope != null && languageScope.scope == scope && !this.scopeInvalid()
 
