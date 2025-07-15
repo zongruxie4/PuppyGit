@@ -51,7 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
@@ -458,13 +457,6 @@ fun HomeScreen(
 
 
 
-    val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
-        MyCodeEditor(
-            appContext = AppModel.realAppContext,
-            editorState = editorPageTextEditorState
-        )
-    }
-
 
 
 
@@ -638,6 +630,16 @@ fun HomeScreen(
     val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack("") }
 
     val editorLoadLock = mutableCustomBoxOf(stateKeyTag, "editorLoadLock") { Mutex() }.value
+
+
+    val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
+        MyCodeEditor(
+            appContext = AppModel.realAppContext,
+            editorState = editorPageTextEditorState,
+            undoStack = editorUndoStack
+        )
+    }
+
 
     //给Files页面点击打开文件用的
     //第2个参数是期望值，只有当文件路径不属于app内置禁止edit的目录时才会使用那个值，否则强制开启readonly模式

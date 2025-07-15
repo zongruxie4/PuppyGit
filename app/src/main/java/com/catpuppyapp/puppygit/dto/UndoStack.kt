@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.dto
 
+import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.getSecFromTime
@@ -9,8 +10,8 @@ import kotlin.concurrent.withLock
 
 private const val TAG = "UndoStack"
 
-private const val defaultSizeLimit = 100
-private const val defaultSaveIntervalInSec = 2
+private const val defaultSizeLimit = 20
+private const val defaultSaveIntervalInSec = 10
 
 class UndoStack(
     /**
@@ -37,6 +38,7 @@ class UndoStack(
     private var redoStack:LinkedList<TextEditorState> = LinkedList(),
     private var undoLock: ReentrantLock = ReentrantLock(true),
     private var redoLock: ReentrantLock = ReentrantLock(true),
+    var codeEditor: MyCodeEditor? = null,
 ) {
 
     fun reset(filePath:String, force:Boolean) {
@@ -105,7 +107,7 @@ class UndoStack(
 
             //若超过数量限制移除第一个
             if(undoStack.size.let { it > 0 && it > sizeLimit }) {
-                undoStack.removeAt(0)
+                codeEditor?.cleanStylesByFieldsId(undoStack.removeAt(0).fieldsId)
             }
 
             return true
@@ -156,6 +158,10 @@ class UndoStack(
 
     fun redoStackClear() {
         redoLock.withLock {
+            for (i in redoStack) {
+                codeEditor?.cleanStylesByFieldsId(i.fieldsId)
+            }
+
             redoStack.clear()
         }
     }
@@ -168,7 +174,7 @@ class UndoStack(
             MyLog.e(TAG, "#push, err: ${e.stackTraceToString()}")
         }
     }
-//
+
 //    @Deprecated("弃用，感觉不需要做太多判断，应该调用者自己判断是否需要入栈")
 //    private fun pushDeprecated(stack: MutableList<TextEditorState>, state: TextEditorState) {
 //        try {
@@ -214,6 +220,20 @@ class UndoStack(
         undoLock.withLock {
             undoStackPopNoLock()
             undoStackPushNoLock(state)
+        }
+    }
+
+    fun contains(fieldsId: String) = undoContains(fieldsId) || redoContains(fieldsId)
+
+    private fun undoContains(fieldsId: String) : Boolean {
+        return undoLock.withLock {
+            undoStack.find { it.fieldsId == fieldsId } != null
+        }
+    }
+
+    private fun redoContains(fieldsId:String) : Boolean {
+        return redoLock.withLock {
+            redoStack.find { it.fieldsId == fieldsId } != null
         }
     }
 

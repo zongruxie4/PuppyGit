@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.SmallFab
@@ -136,10 +135,17 @@ fun SubPageEditor(
     val editorPageSnapshotedFileInfo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSnapshotedFileInfo",FileSimpleDto() )
 
 
+
+    val editorShowUndoRedo = rememberSaveable{mutableStateOf(settings.editor.showUndoRedo)}
+//    val editorUndoStack = remember(editorPageShowingFilePath.value){ derivedStateOf { UndoStack(filePath = editorPageShowingFilePath.value.ioPath) } }
+//    val editorUndoStack = remember { SharedState.subEditorUndoStack }
+    val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack("") }
+
     val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
         MyCodeEditor(
             appContext = AppModel.realAppContext,
-            editorState = editorPageTextEditorState
+            editorState = editorPageTextEditorState,
+            undoStack = editorUndoStack
         )
     }
 
@@ -222,11 +228,6 @@ fun SubPageEditor(
     val editorLastSavedLineNumFontSize = rememberSaveable { mutableIntStateOf(editorLineNumFontSize.intValue) } //用来检查，如果没变，就不执行保存，避免写入硬盘
     val editorLastSavedFontSize = rememberSaveable { mutableIntStateOf(editorFontSize.intValue)}
     val editorOpenFileErr = rememberSaveable{mutableStateOf(false)}
-
-    val editorShowUndoRedo = rememberSaveable{mutableStateOf(settingsTmp.editor.showUndoRedo)}
-//    val editorUndoStack = remember(editorPageShowingFilePath.value){ derivedStateOf { UndoStack(filePath = editorPageShowingFilePath.value.ioPath) } }
-//    val editorUndoStack = remember { SharedState.subEditorUndoStack }
-    val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack("") }
 
 
     val editorLoadLock = mutableCustomBoxOf(stateKeyTag, "editorLoadLock") { Mutex() }.value

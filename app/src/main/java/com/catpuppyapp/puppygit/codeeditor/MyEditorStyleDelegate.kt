@@ -37,6 +37,13 @@ class MyEditorStyleDelegate(
             return
         }
 
+        // is not latest editor state's fieldsId, neither stored into undo stack, need not apply it
+        if(codeEditor.editorState?.value?.fieldsId != editorState.fieldsId
+            && codeEditor.undoStack?.value?.contains(editorState.fieldsId) != true
+        ) {
+            return
+        }
+
 
 
 //        (resolved) 不行，有问题：

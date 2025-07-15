@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.AnnotatedString
+import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
@@ -46,6 +47,7 @@ private const val TAG = "MyCodeEditor"
 class MyCodeEditor(
     val appContext: Context = AppModel.realAppContext,
     val editorState: (CustomStateSaveable<TextEditorState>)? = null,
+    val undoStack: (CustomStateSaveable<UndoStack>)? = null,
 ) {
     private var file: FuckSafFile = FuckSafFile(appContext, FilePath(""))
 
@@ -59,7 +61,10 @@ class MyCodeEditor(
     var languageScope: PLScope = PLScope.NONE
     var myLang: TextMateLanguage? = null
     //{fieldsId: syntaxHighlightId: AnnotatedString}
+    // a fieldsId+syntaxHighlightId can located a AnnotatedString
+    // 一个fieldsId+syntaxHighlightId定位一个AnnotatedString
     val highlightMap: MutableMap<String, Map<String, AnnotatedStringResult>> = ConcurrentMap()
+    //{fieldsId: StylesResult}
     val stylesMap: MutableMap<String, StylesResult> = ConcurrentMap()
 //    val editorStateMap: MutableMap<String, TextEditorState> = ConcurrentMap()
 
@@ -140,6 +145,8 @@ class MyCodeEditor(
 
     init {
         doInit(appContext)
+
+        undoStack?.value?.codeEditor = this
 
         colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
 
@@ -437,6 +444,17 @@ class MyCodeEditor(
                 }
             }
         }
+    }
+
+    fun cleanStylesByFieldsIdList(fieldsIdList: List<String>) {
+        for (fieldsId in fieldsIdList) {
+            cleanStylesByFieldsId(fieldsId)
+        }
+    }
+
+    fun cleanStylesByFieldsId(fieldsId: String) {
+        stylesMap.remove(fieldsId)
+        highlightMap.remove(fieldsId)
     }
 
 
