@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.codeeditor
 
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.FieldsId
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import io.github.rosemoe.sora.lang.analysis.AnalyzeManager
@@ -50,6 +51,12 @@ class MyEditorStyleDelegate(
                 val latestFieldsId = FieldsId.parse(codeEditor.editorState?.value?.fieldsId)
                 val carriedFieldsId = FieldsId.parse(editorState.fieldsId);
 
+                if(AppModel.devModeOn) {
+                    MyLog.w(TAG, "latestFieldsId: $latestFieldsId")
+                    MyLog.w(TAG, "carriedFieldsId: $carriedFieldsId")
+                }
+
+
                 latestFieldsId.id != carriedFieldsId.id
                 && latestFieldsId.timestamp > carriedFieldsId.timestamp
                 && codeEditor.undoStack?.value?.contains(editorState.fieldsId) != true
@@ -57,7 +64,10 @@ class MyEditorStyleDelegate(
         }
 
         if(isUnusedFieldsId) {
-            MyLog.w(TAG, "dropped unused styles for fieldsId: ${editorState.fieldsId}")
+            if(AppModel.devModeOn) {
+                MyLog.w(TAG, "dropped unused styles for fieldsId: ${editorState.fieldsId}")
+            }
+
             return
         }
 

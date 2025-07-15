@@ -44,8 +44,8 @@ import kotlin.math.absoluteValue
 // if app available memory lower than `lowestMemInMb` in `lowestMemLimitCount` times,
 //  will disable syntax highlighting and free related memory,
 //  else, app may crash by OOM
-private const val lowestMemInMb = 30
-private const val lowestMemLimitCount = 5
+private const val lowestMemInMb = 20
+private const val lowestMemLimitCount = 10
 
 
 private const val TAG = "MyCodeEditor"
@@ -175,8 +175,7 @@ class MyCodeEditor(
         }
 
         return if(lowMemCount >= lowestMemLimitCount) {
-            plScope.value = PLScope.NONE
-            languageScope = PLScope.NONE
+            resetAllPlScopes()
 
             release()
             Msg.requireShowLongDuration("Syntax highlighting disabled: No more memory!")
@@ -187,6 +186,18 @@ class MyCodeEditor(
         }
     }
 
+
+    private fun resetAllPlScopes() {
+        // state
+        resetPlScope()
+
+        // current Language used pl scope
+        languageScope = PLScope.NONE
+    }
+
+
+    // reset plScope state
+    // 重置 plScope state，影响编辑器语法高亮弹窗选中的语言
     fun resetPlScope() {
         PLScope.resetPlScope(plScope)
     }
