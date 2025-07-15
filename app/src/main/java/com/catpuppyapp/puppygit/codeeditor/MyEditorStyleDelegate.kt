@@ -9,6 +9,8 @@ import io.github.rosemoe.sora.lang.analysis.StyleUpdateRange
 import io.github.rosemoe.sora.lang.brackets.BracketsProvider
 import io.github.rosemoe.sora.lang.diagnostic.DiagnosticsContainer
 import io.github.rosemoe.sora.lang.styling.Styles
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.withLock
 
 private const val TAG = "MyEditorStyleDelegate"
 
@@ -38,9 +40,14 @@ class MyEditorStyleDelegate(
         }
 
         // is not latest editor state's fieldsId, neither stored into undo stack, need not apply it
-        if(codeEditor.editorState?.value?.fieldsId != editorState.fieldsId
-            && codeEditor.undoStack?.value?.contains(editorState.fieldsId) != true
-        ) {
+        val isUnusedFieldsId = runBlocking {
+            codeEditor.textEditorStateOnChangeLock.withLock {
+                codeEditor.editorState?.value?.fieldsId != editorState.fieldsId
+                        && codeEditor.undoStack?.value?.contains(editorState.fieldsId) != true
+            }
+        }
+
+        if(isUnusedFieldsId) {
             return
         }
 
