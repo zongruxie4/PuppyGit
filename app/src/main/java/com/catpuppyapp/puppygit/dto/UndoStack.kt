@@ -129,7 +129,8 @@ class UndoStack(
 
             //若超过数量限制移除第一个
             if(undoStack.size.let { it > 0 && it > sizeLimit }) {
-                codeEditor?.cleanStylesByFieldsId(undoStack.removeAt(0).fieldsId)
+                val lastHead = undoStack.removeAt(0)
+                codeEditor?.cleanStylesByFieldsId(lastHead.fieldsId)
             }
 
             return true
@@ -183,8 +184,10 @@ class UndoStack(
 
     fun redoStackClear() {
         redoLock.withLock {
-            for (i in redoStack) {
-                codeEditor?.cleanStylesByFieldsId(i.fieldsId)
+            codeEditor?.let { codeEditor ->
+                for (i in redoStack) {
+                    codeEditor.cleanStylesByFieldsId(i.fieldsId)
+                }
             }
 
             redoStack.clear()
