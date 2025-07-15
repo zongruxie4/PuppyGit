@@ -44,8 +44,11 @@ import kotlin.math.absoluteValue
 // if app available memory lower than `lowestMemInMb` in `lowestMemLimitCount` times,
 //  will disable syntax highlighting and free related memory,
 //  else, app may crash by OOM
-private const val lowestMemInMb = 20
-private const val lowestMemLimitCount = 10
+// 如果app可用内存连续`lowestMemLimitCount`次小于`lowestMemInMb`，将禁用语法高亮并释放相关内存，
+//   否则，app可能会因OOM而崩溃，会导致用户正在编辑的文件数据丢失，不只是未保存内容丢失，
+//   源文件可能会在写入时进程被杀，导致写入终止，所以源文件可能损坏或丢失比预期更多的内容。
+private const val lowestMemInMb = 30
+private const val lowestMemLimitCount = 3
 
 
 private const val TAG = "MyCodeEditor"
@@ -172,6 +175,8 @@ class MyCodeEditor(
     fun noMoreMemory() : Boolean {
         if(appAvailHeapSizeInMb() < lowestMemInMb) {
             lowMemCount++
+        }else {
+            lowMemCount = 0
         }
 
         return if(lowMemCount >= lowestMemLimitCount) {
