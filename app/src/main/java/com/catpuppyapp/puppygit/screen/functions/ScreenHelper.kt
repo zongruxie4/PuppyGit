@@ -16,7 +16,6 @@ import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.EditorStateOnChangeCallerFrom
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.FieldsId
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.git.DiffableItem
 import com.catpuppyapp.puppygit.play.pro.R
@@ -361,7 +360,10 @@ fun getEditorStateOnChange(
         caller.codeEditor.textEditorStateOnChangeLock.withLock w@{
             if(from == EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING
                 && editorPageTextEditorState.value.let { latestState ->
-                    caller.fieldsId != latestState.fieldsId && FieldsId.parse(latestState.fieldsId).timestamp > FieldsId.parse(caller.fieldsId).timestamp
+                    caller.fieldsId != latestState.fieldsId
+                            // 这里不应该比较时间戳，只要不是当前状态，就不应该应用styles
+                            // here shouldn't compare timestamp
+//                            && FieldsId.parse(latestState.fieldsId).timestamp > FieldsId.parse(caller.fieldsId).timestamp
                 }
             ) {
                 //这个操作是editor state的apply syntax highlighting的方法调用的，但如今状态已经变化，这个状态并不是给最新的editor state准备的，所以取消应用，直接返回即可

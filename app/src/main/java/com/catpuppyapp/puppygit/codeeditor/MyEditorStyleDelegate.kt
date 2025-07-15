@@ -55,6 +55,10 @@ class MyEditorStyleDelegate(
         }
 
         val isUnusedFieldsId = latestFieldsId != carriedFieldsId
+                // 这个条件有可能不准，导致存上几个无效状态，例如：正在分支状态2的styles，
+                //   然后执行undo，最新状态回退到状态1，然后状态2分析完毕，调用此方法，
+                //   执行到这里，发现其时间戳大于状态1的，这时这个判断就会失效
+                // this check may invalid after undo did, but not big problem, just will save few invalid styles
                 && FieldsId.parse(latestFieldsId).timestamp > FieldsId.parse(carriedFieldsId).timestamp
                 && codeEditor.undoStack?.value?.contains(editorState.fieldsId) != true;
 
