@@ -14,7 +14,7 @@ private const val TAG = "UndoStack"
 // big size, small interval = more mem use but more steps
 // size越小，间隔越大，越省内存记录的步骤越粗略;
 // size越大，间隔越小，越费内存，记录的步骤越精细
-private const val defaultSizeLimit = 10
+private const val defaultSizeLimit = 15
 private const val defaultSaveIntervalInSec = 20
 
 class UndoStack(
@@ -46,6 +46,8 @@ class UndoStack(
 ) {
 
     fun reset(filePath:String, force:Boolean) {
+        cleanUnusedStyles()
+
         if(force.not() && filePath == this.filePath) {
             return
         }
@@ -58,6 +60,22 @@ class UndoStack(
         redoStack = LinkedList()
         undoLock = ReentrantLock(true)
         redoLock = ReentrantLock(true)
+    }
+
+    private fun cleanUnusedStyles() {
+        codeEditor?.let { codeEditor ->
+            if(codeEditor.stylesMap.isNotEmpty()) {
+                undoLock.withLock {
+                    redoLock.withLock {
+                        for (i in codeEditor.stylesMap) {
+                            if(!containsNoLock(i.value.fieldsId)) {
+                                codeEditor.cleanStylesByFieldsId(i.value.fieldsId)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fun copyFrom(other:UndoStack) {
@@ -116,6 +134,9 @@ class UndoStack(
 
             return true
         }
+
+        // not into stack, clear it's styles
+        codeEditor?.cleanStylesByFieldsId(state.fieldsId)
 
         return false
     }
@@ -227,18 +248,24 @@ class UndoStack(
         }
     }
 
-    fun contains(fieldsId: String) = undoContains(fieldsId) || redoContains(fieldsId)
-
-    private fun undoContains(fieldsId: String) : Boolean {
+    fun contains(fieldsId: String):Boolean {
         return undoLock.withLock {
-            undoStack.find { it.fieldsId == fieldsId } != null
+            redoLock.withLock {
+                containsNoLock(fieldsId)
+            }
         }
     }
 
-    private fun redoContains(fieldsId:String) : Boolean {
-        return redoLock.withLock {
-            redoStack.find { it.fieldsId == fieldsId } != null
-        }
+    private fun containsNoLock(fieldsId: String):Boolean {
+        return undoContainsNoLock(fieldsId) || redoContainsNoLock(fieldsId)
+    }
+
+    private fun undoContainsNoLock(fieldsId: String) : Boolean {
+        return undoStack.find { it.fieldsId == fieldsId } != null
+    }
+
+    private fun redoContainsNoLock(fieldsId:String) : Boolean {
+        return redoStack.find { it.fieldsId == fieldsId } != null
     }
 
 }
