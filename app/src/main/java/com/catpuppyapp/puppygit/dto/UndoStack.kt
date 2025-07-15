@@ -10,8 +10,12 @@ import kotlin.concurrent.withLock
 
 private const val TAG = "UndoStack"
 
-private const val defaultSizeLimit = 20
-private const val defaultSaveIntervalInSec = 10
+// small size, big interval = less mem use but less steps
+// big size, small interval = more mem use but more steps
+// size越小，间隔越大，越省内存记录的步骤越粗略;
+// size越大，间隔越小，越费内存，记录的步骤越精细
+private const val defaultSizeLimit = 10
+private const val defaultSaveIntervalInSec = 20
 
 class UndoStack(
     /**
