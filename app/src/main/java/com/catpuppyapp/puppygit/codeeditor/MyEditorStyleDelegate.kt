@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.codeeditor
 
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.FieldsId
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -39,19 +40,26 @@ class MyEditorStyleDelegate(
             return
         }
 
-        // 即使加了锁也可能导致丢失styles，并且这个不是内存消耗大户，所以不检查了
-        // may cause lost styles, and this is not big memory used issue, so disabled
-        // is not latest editor state's fieldsId, neither stored into undo stack, need not apply it
-//        val isUnusedFieldsId = runBlocking {
-//            codeEditor.textEditorStateOnChangeLock.withLock {
-//                codeEditor.editorState?.value?.fieldsId != editorState.fieldsId
-//                        && codeEditor.undoStack?.value?.contains(editorState.fieldsId) != true
-//            }
-//        }
-//
-//        if(isUnusedFieldsId) {
-//            return
-//        }
+        // 如果当前这个类使用的editorState不等于状态变量的state的fieldsId，
+        //    又不在undo/redo stack里，
+        //    并且，其时间戳早于editor state状态变量的时间戳，就在这里直接返回
+        // 这个检测可节省内存，但同时可能导致性能问题，若有性能问题，可尝试禁用，对app影响不大，就是多费点内存
+        // this check can save memory, but may cause performance issue, if happened, disabled it is ok, just maybe will use more memories
+        val isUnusedFieldsId = runBlocking {
+            codeEditor.textEditorStateOnChangeLock.withLock {
+                val latestFieldsId = FieldsId.parse(codeEditor.editorState?.value?.fieldsId)
+                val carriedFieldsId = FieldsId.parse(editorState.fieldsId);
+
+                latestFieldsId.id != carriedFieldsId.id
+                && latestFieldsId.timestamp > carriedFieldsId.timestamp
+                && codeEditor.undoStack?.value?.contains(editorState.fieldsId) != true
+            }
+        }
+
+        if(isUnusedFieldsId) {
+            MyLog.w(TAG, "dropped unused styles for fieldsId: ${editorState.fieldsId}")
+            return
+        }
 
 
 

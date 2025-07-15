@@ -38,6 +38,7 @@ import com.catpuppyapp.puppygit.utils.getNextIndentByCurrentStr
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import com.catpuppyapp.puppygit.utils.isStartInclusiveEndExclusiveRangeValid
+import com.catpuppyapp.puppygit.utils.parseLongOrDefault
 import com.catpuppyapp.puppygit.utils.tabToSpaces
 import io.github.rosemoe.sora.lang.styling.Span
 import io.github.rosemoe.sora.lang.styling.TextStyle
@@ -2548,8 +2549,9 @@ class TextEditorState(
 
 
         fun newId():String {
-            return generateRandomString(20)
+            return FieldsId.generateString()
         }
+
     }
 }
 
@@ -2561,6 +2563,37 @@ private fun createInitTextFieldStates(list:List<String>): List<TextFieldState> {
             value = TextFieldValue(s, TextRange.Zero),
             isSelected = false
         )
+    }
+}
+
+data class FieldsId(
+    val id: String = generateRandomString(20),
+    val timestamp: Long = System.currentTimeMillis(),
+) {
+    companion object {
+        val EMPTY = FieldsId("", 0L)
+
+        fun generateString():String {
+            return FieldsId().toString()
+        }
+
+
+        fun parse(fieldsId: String?):FieldsId {
+            if(fieldsId == null) {
+                return EMPTY
+            }
+
+            return fieldsId.split(":").let {
+                FieldsId(
+                    id = it.get(0),
+                    timestamp = it.getOrNull(1)?.let { parseLongOrDefault(it, null) } ?: 0L
+                )
+            }
+        }
+    }
+
+    override fun toString(): String {
+        return "$id:$timestamp"
     }
 }
 
