@@ -46,22 +46,17 @@ class MyEditorStyleDelegate(
         //    并且，其时间戳早于editor state状态变量的时间戳，就在这里直接返回
         // 这个检测可节省内存，但同时可能导致性能问题，若有性能问题，可尝试禁用，对app影响不大，就是多费点内存
         // this check can save memory, but may cause performance issue, if happened, disabled it is ok, just maybe will use more memories
-        val isUnusedFieldsId = runBlocking {
-            codeEditor.textEditorStateOnChangeLock.withLock {
-                val latestFieldsId = FieldsId.parse(codeEditor.editorState?.value?.fieldsId)
-                val carriedFieldsId = FieldsId.parse(editorState.fieldsId);
+        val latestFieldsId = codeEditor.editorState?.value?.fieldsId
+        val carriedFieldsId = editorState.fieldsId
 
-                if(AppModel.devModeOn) {
-                    MyLog.w(TAG, "latestFieldsId: $latestFieldsId")
-                    MyLog.w(TAG, "carriedFieldsId: $carriedFieldsId")
-                }
-
-
-                latestFieldsId.id != carriedFieldsId.id
-                && latestFieldsId.timestamp > carriedFieldsId.timestamp
-                && codeEditor.undoStack?.value?.contains(editorState.fieldsId) != true
-            }
+        if(AppModel.devModeOn) {
+            MyLog.w(TAG, "latestFieldsId: $latestFieldsId")
+            MyLog.w(TAG, "carriedFieldsId: $carriedFieldsId")
         }
+
+        val isUnusedFieldsId = latestFieldsId != carriedFieldsId
+                && FieldsId.parse(latestFieldsId).timestamp > FieldsId.parse(carriedFieldsId).timestamp
+                && codeEditor.undoStack?.value?.contains(editorState.fieldsId) != true;
 
         if(isUnusedFieldsId) {
             if(AppModel.devModeOn) {

@@ -16,6 +16,7 @@ import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.EditorStateOnChangeCallerFrom
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.FieldsId
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.git.DiffableItem
 import com.catpuppyapp.puppygit.play.pro.R
@@ -358,7 +359,11 @@ fun getEditorStateOnChange(
 ): suspend (newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean, caller: TextEditorState, from: EditorStateOnChangeCallerFrom?) -> Unit {
     return { newState, trueSaveToUndoFalseRedoNullNoSave, clearRedoStack, caller, from ->
         caller.codeEditor.textEditorStateOnChangeLock.withLock w@{
-            if(from == EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING && editorPageTextEditorState.value.let { caller.fieldsId.isNotBlank() && it.fieldsId != caller.fieldsId }) {
+            if(from == EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING
+                && editorPageTextEditorState.value.let { latestState ->
+                    caller.fieldsId != latestState.fieldsId && FieldsId.parse(latestState.fieldsId).timestamp > FieldsId.parse(caller.fieldsId).timestamp
+                }
+            ) {
                 //这个操作是editor state的apply syntax highlighting的方法调用的，但如今状态已经变化，这个状态并不是给最新的editor state准备的，所以取消应用，直接返回即可
                 MyLog.d(TAG, "editor state already changed, ignore style update request by previous style's apply syntax highlighting method")
                 return@w
