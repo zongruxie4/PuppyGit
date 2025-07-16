@@ -1336,9 +1336,10 @@ fun getNextIndentByCurrentStr(current:String?, aTabToNSpaces:Int):String {
         }
     }
 
-    //Disabled reason: it will cause pasted content have wrong intent, so disabled
+    // x fixed: Disabled reason: it will cause pasted content have wrong intent, so disabled
+    // x 已修复：改成在调用此方法前做判断了，如果可能是粘贴的内容，则不加缩进，否则加缩进，不一定准，但一般够用
     // append extras spaces for block start
-//    appendIndentForUnClosedSignPair(current, sb, aTabToNSpaces)
+    appendIndentForUnClosedSignPair(current, sb, aTabToNSpaces)
 
     return sb.toString()
 }

@@ -1164,12 +1164,18 @@ class TextEditorState(
     }
 
     private fun splitTextsByNL(text: String): List<TextFieldValue> {
-        var autoIndentSpacesCount = ""
+        val lines = text.lines()
+        // if pressed enter, most have 2 lines, else, maybe is pasted content
+        val maybeIsPaste = lines.size > 2
         val ret = mutableListOf<TextFieldValue>()
         val tabIndentSpaceCount = SettingsUtil.editorTabIndentCount()
-        for((index, text) in text.lines().withIndex()) {
+        var autoIndentSpacesCount = ""
+
+        for((index, text) in lines.withIndex()) {
             ret.add(
-                if (index == 0) {  //第一行，光标在换行的位置
+                if(maybeIsPaste) {
+                    TextFieldValue(text, TextRange(text.length))
+                } else if (index == 0) {  //第一行，光标在换行的位置
                     autoIndentSpacesCount = getNextIndentByCurrentStr(text, tabIndentSpaceCount)
                     TextFieldValue(text, TextRange(text.length))
                 } else {  //后续行，光标在开头
@@ -2057,7 +2063,8 @@ class TextEditorState(
             //   如果想解决，可给每个editor state加时间戳，但太麻烦，
             //   不如直接禁用在这里调on change，反正用户点屏幕或滚动或输入后，就会触发页面刷新
             if(requireCallOnChange) {
-                onChanged(copy(), null, false, this, EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING)
+                // in this case, first param `nextState` even is  `this`, but it will not be applied, will use copied latest state as new state
+                onChanged(this, null, false, this, EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING)
             }
 
             // if no check, editor content will incorrect
