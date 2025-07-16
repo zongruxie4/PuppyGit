@@ -409,7 +409,8 @@
 		"terminal.ansiBrightCyan": "#93a1a1",
 		"terminal.ansiBrightWhite": "#fdf6e3",
 		"terminal.background": "#FDF6E3",
-		"walkThrough.embeddedEditorBackground": "#00000014"
+		"walkThrough.embeddedEditorBackground": "#00000014",
+		"highlightedDelimitersForeground": "#D43683"
 	},
 	"semanticHighlighting": true
 }
