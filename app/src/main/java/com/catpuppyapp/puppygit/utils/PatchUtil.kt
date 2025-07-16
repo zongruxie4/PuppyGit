@@ -5,14 +5,14 @@ import androidx.compose.ui.graphics.Color
 object PatchUtil {
     //这些背景色，最关键的一个原则就是要浅，半透明的感觉，不要喧宾夺主让人看不清字本身
     //BEGIN: line background colors
-    private val color_fileHeader_dark = Color(0x7A4D4414)
-    private val color_fileHeader = Color(0x6AC7BB81)
-    private val color_add_dark = Color(0x771B5E20)
-    private val color_add = Color(0x8181C784)
-    private val color_del_dark = Color(0x746B3E3E)
-    private val color_del = Color(0x6FB04242)
-    private val color_hunkHeader_dark = Color(0x7C01579B)
-    private val color_hunkHeader = Color(0x7981B1C7)
+    private val color_fileHeader_dark = Color(0x4B4D4414)
+    private val color_fileHeader = Color(0x4BC7BB81)
+    private val color_add_dark = Color(0x4D1B5E20)
+    private val color_add = Color(0x5981C784)
+    private val color_del_dark = Color(0x4B6B3E3E)
+    private val color_del = Color(0x46834040)
+    private val color_hunkHeader_dark = Color(0x5901579B)
+    private val color_hunkHeader = Color(0x5181B1C7)
     //END: line background colors
 
     // 判断一段字符串有没有可能是 patch文件的内容。（也有叫diff文件的，总之就是git 导出的patch）

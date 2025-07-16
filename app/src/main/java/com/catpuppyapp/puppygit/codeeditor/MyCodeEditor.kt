@@ -163,6 +163,7 @@ class MyCodeEditor(
 
         colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
 
+        // 必须调用，不然没颜色
         colorScheme.applyDefault()
 
         // for clear when Activity destroy
