@@ -67,9 +67,9 @@ class UndoStack(
             if(codeEditor.stylesMap.isNotEmpty()) {
                 undoLock.withLock {
                     redoLock.withLock {
-                        for (i in codeEditor.stylesMap) {
-                            if(!containsNoLock(i.value.fieldsId)) {
-                                codeEditor.cleanStylesByFieldsId(i.value.fieldsId)
+                        for ((k, v) in codeEditor.stylesMap) {
+                            if(!containsNoLock(v.fieldsId) && v.fieldsId != codeEditor.editorState?.value?.fieldsId) {
+                                codeEditor.cleanStylesByFieldsId(v.fieldsId)
                             }
                         }
                     }
