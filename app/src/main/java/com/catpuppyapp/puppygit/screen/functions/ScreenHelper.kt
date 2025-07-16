@@ -358,21 +358,32 @@ fun getEditorStateOnChange(
 ): suspend (newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean, caller: TextEditorState, from: EditorStateOnChangeCallerFrom?) -> Unit {
     return { newState, trueSaveToUndoFalseRedoNullNoSave, clearRedoStack, caller, from ->
         caller.codeEditor.textEditorStateOnChangeLock.withLock w@{
-            if(from == EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING
-                && editorPageTextEditorState.value.let { latestState ->
+            val newState = if(from == EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING) {
+                val latestState = editorPageTextEditorState.value
+                if(
                     caller.fieldsId != latestState.fieldsId
-                            // 这里不应该比较时间戳，只要不是当前状态，就不应该应用styles
-                            // here shouldn't compare timestamp
+
+                        // 这里不应该比较时间戳，只要不是当前状态，就不应该应用styles
+                        // here shouldn't compare timestamp
 //                            && FieldsId.parse(latestState.fieldsId).timestamp > FieldsId.parse(caller.fieldsId).timestamp
+                ) {
+                    //这个操作是editor state的apply syntax highlighting的方法调用的，但如今状态已经变化，这个状态并不是给最新的editor state准备的，所以取消应用，直接返回即可
+                    MyLog.d(TAG, "editor state already changed, ignore style update request by previous style's apply syntax highlighting method")
+                    return@w
                 }
-            ) {
-                //这个操作是editor state的apply syntax highlighting的方法调用的，但如今状态已经变化，这个状态并不是给最新的editor state准备的，所以取消应用，直接返回即可
-                MyLog.d(TAG, "editor state already changed, ignore style update request by previous style's apply syntax highlighting method")
-                return@w
+
+                // first copy for refresh view
+                // even fieldsId are the same, other fields maybe are not same, so, we should copy latest state
+                // 第一个拷贝是为了避免fields以外的状态丢失，例如：正在分析语法高亮样式，开启选中模式，由于没修改文本，所以fieldsId没变，
+                //   样式分析完毕，执行到这里，如果应用调用onChanged那个实例传来的newState，选中模式等其他非fields字段就会变成调用者的而不是最新的状态的值
+                if(latestState.focusingLineIdx.let { it == null || it >= 0 }) latestState.copy() else newState.copy(focusingLineIdx = latestState.focusingLineIdx)
+            }else {
+                //如果新state的focusingLineIdx为负数，使用上个state的focusingLineIdx，这样是为了避免 updateField 更新索引，不然会和 selectField 更新索引冲突，有时会定位错
+
+                if(newState.focusingLineIdx.let { it == null || it >= 0 }) newState else newState.copy(focusingLineIdx = editorPageTextEditorState.value.focusingLineIdx)
+
             }
 
-            //如果新state的focusingLineIdx为负数，使用上个state的focusingLineIdx，这样是为了避免 updateField 更新索引，不然会和 selectField 更新索引冲突，有时会定位错
-            val newState = if(newState.focusingLineIdx.let { it == null || it >= 0 }) newState else newState.copy(focusingLineIdx = editorPageTextEditorState.value.focusingLineIdx)
 
             val lastState = editorPageTextEditorState.value
             editorPageTextEditorState.value = newState
