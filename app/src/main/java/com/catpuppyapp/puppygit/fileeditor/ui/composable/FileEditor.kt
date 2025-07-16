@@ -63,13 +63,13 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import com.catpuppyapp.puppygit.codeeditor.PLFont
 import com.catpuppyapp.puppygit.codeeditor.PLTheme
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
@@ -760,7 +760,7 @@ fun FileEditor(
                                     text = paddingLineNumber((index+1).toString(), expectLength),
                                     color = MyStyleKt.TextColor.lineNumColor(inDarkTheme),
                                     fontSize = lineNumFontSize.intValue.sp,
-                                    fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
+                                    fontFamily = PLFont.codeFont,  //等宽字体，和diff页面的行号保持一致
 
                                     //右边加点padding给修改类型指示器，左边加点padding给和屏幕边缘拉开距离
                                     modifier = Modifier.padding(start = 5.dp, end = changeTypeWidth)
