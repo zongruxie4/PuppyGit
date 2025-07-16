@@ -1054,37 +1054,6 @@ fun SettingsInnerPage(
         )
 
 
-
-        SettingsContentSwitcher(
-            left = {
-                TwoLineTrailingFolderItem(
-                    text1 = stringResource(R.string.edit_cache),
-                    text2 = replaceStringResList(stringResource(R.string.cache_your_input_into_editcache_dir_path), listOf("${Cons.defalutPuppyGitDataUnderAllReposDirName}/${Cons.defaultEditCacheDirName}")),
-                    trailIconOnClick = {
-                        goToFilesPage(AppModel.getOrCreateEditCacheDir().canonicalPath)
-                    }
-                )
-            },
-            right = {
-                Switch(
-                    checked = enableEditCache.value,
-                    onCheckedChange = null
-                )
-            },
-            onClick = {
-                val newValue = !enableEditCache.value
-
-                //save
-                enableEditCache.value = newValue
-                val settings = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
-                    it.editor.editCacheEnable = newValue
-                }!!
-
-                //重新初始化EditCache
-                EditCache.init(enableCache = newValue, cacheDir = AppModel.getOrCreateEditCacheDir(), keepInDays = settings.editor.editCacheKeepInDays)
-            }
-        )
-
         SettingsContentSwitcher(
             left = {
                 TwoLineTrailingFolderItem(
@@ -1139,6 +1108,42 @@ fun SettingsInnerPage(
                 SnapshotUtil.update_enableContentSnapshotForEditor(newValue)
             }
         )
+
+
+
+
+        SettingsContentSwitcher(
+            left = {
+                TwoLineTrailingFolderItem(
+                    text1 = stringResource(R.string.edit_cache),
+                    text2 = replaceStringResList(stringResource(R.string.cache_your_input_into_editcache_dir_path), listOf("${Cons.defalutPuppyGitDataUnderAllReposDirName}/${Cons.defaultEditCacheDirName}")),
+                    trailIconOnClick = {
+                        goToFilesPage(AppModel.getOrCreateEditCacheDir().canonicalPath)
+                    }
+                )
+            },
+            right = {
+                Switch(
+                    checked = enableEditCache.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                val newValue = !enableEditCache.value
+
+                //save
+                enableEditCache.value = newValue
+                val settings = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
+                    it.editor.editCacheEnable = newValue
+                }!!
+
+                //重新初始化EditCache
+                EditCache.init(enableCache = newValue, cacheDir = AppModel.getOrCreateEditCacheDir(), keepInDays = settings.editor.editCacheKeepInDays)
+            }
+        )
+
+
+
 
         // diff settings block start
 //
