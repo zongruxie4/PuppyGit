@@ -30,7 +30,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
@@ -38,6 +37,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.catpuppyapp.puppygit.codeeditor.PLFont
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.dev.DevFeature
@@ -624,7 +624,8 @@ fun DiffRow (
                 text = prefix,
                 color = lineNumColor,
                 fontSize = lineNumSize.sp,
-                fontFamily = FontFamily.Monospace, // 使用系统自带的等宽字体，不然那个+和-不等宽，看着难受
+//                fontFamily = FontFamily.Monospace, // 使用系统自带的等宽字体，不然那个+和-不等宽，看着难受
+                fontFamily = PLFont.codeFont,  // line number always use mono font for align +-（行号总是使用等宽字体，不然+-符号对不齐）
                 modifier = Modifier
 //                .background(MyStyleKt.TextColor.lineNumBgColor(inDarkTheme))
                     .clickable {
@@ -690,6 +691,7 @@ fun DiffRow (
                             }
                         }
                     },
+                    fontFamily = PLFont.diffCodeFont(),
 
                     color = textColor,
                     overflow = TextOverflow.Visible,
@@ -709,6 +711,8 @@ fun DiffRow (
                 //文本内容
                 Text(
                     text = line.getContentNoLineBreak(),
+                    fontFamily = PLFont.diffCodeFont(),
+
                     color = textColor,
                     overflow = TextOverflow.Visible,
                     softWrap = true,

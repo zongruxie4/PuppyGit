@@ -147,6 +147,7 @@ fun SettingsInnerPage(
     val showNaviButtons = rememberSaveable { mutableStateOf(settingsState.value.showNaviButtons) }
     val syntaxHighlightEnabled = rememberSaveable { mutableStateOf(settingsState.value.editor.syntaxHighlightEnabled) }
     val useSystemFonts = rememberSaveable { mutableStateOf(settingsState.value.editor.useSystemFonts) }
+    val useSystemFonts_DiffScreen = rememberSaveable { mutableStateOf(settingsState.value.diff.useSystemFonts) }
     val devModeOn = rememberSaveable { mutableStateOf(PrefUtil.getDevMode(activityContext)) }
     val enableSnapshot_File = rememberSaveable { mutableStateOf(settingsState.value.editor.enableFileSnapshot) }
     val enableSnapshot_Content = rememberSaveable { mutableStateOf(settingsState.value.editor.enableContentSnapshot) }
@@ -1142,6 +1143,27 @@ fun SettingsInnerPage(
         // diff settings block start
 //
         SettingsTitle(stringResource(R.string.diff))
+
+        SettingsContentSwitcher(
+            left = {
+                Text(stringResource(R.string.use_system_fonts), fontSize = itemFontSize)
+            },
+            right = {
+                Switch(
+                    checked = useSystemFonts_DiffScreen.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                val newValue = !useSystemFonts_DiffScreen.value
+
+                //save
+                useSystemFonts_DiffScreen.value = newValue
+                SettingsUtil.update {
+                    it.diff.useSystemFonts = newValue
+                }
+            }
+        )
 
         SettingsContentSwitcher(
             left = {

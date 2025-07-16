@@ -65,4 +65,9 @@ data class DiffSettings (
      * 注意：即使此值为false，只读模式仍可能强制启用（例如比较两个提交时），一般只有和本地文件(worktree)比较时此值才可切换
      */
     var readOnly:Boolean = false,
+
+    /**
+     * true to use system fonts, else will use app bundled fonts
+     */
+    var useSystemFonts: Boolean = false,
 )

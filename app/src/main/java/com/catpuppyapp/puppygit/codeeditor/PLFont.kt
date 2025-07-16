@@ -11,5 +11,6 @@ object PLFont {
     val codeFont = FontFamily(Font(R.font.jb_mono_nl_regular))
 
     fun editorCodeFont() = if(SettingsUtil.isEditorUseSystemFonts()) null else codeFont
+    fun diffCodeFont() = if(SettingsUtil.isDiffUseSystemFonts()) null else codeFont
 
 }
