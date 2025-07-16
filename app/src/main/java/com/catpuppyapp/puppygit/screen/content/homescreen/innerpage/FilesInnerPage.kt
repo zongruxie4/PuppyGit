@@ -1102,54 +1102,8 @@ fun FilesInnerPage(
     if (showRenameDialog.value) {
         val focusRequester = remember { FocusRequester() }
 
-        ConfirmDialog(
-            okBtnEnabled = !renameHasErr.value,
-            cancelBtnText = stringResource(id = R.string.cancel),
-            okBtnText = stringResource(id = R.string.ok),
-            title = stringResource(R.string.rename),
-            requireShowTextCompose = true,
-            textCompose = {
-                ScrollableColumn {
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                            .focusRequester(focusRequester),
-                        value = renameFileName.value,
-                        singleLine = true,
-                        isError = renameHasErr.value,
-                        supportingText = {
-                            if (renameHasErr.value) {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = renameErrText.value,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        },
-                        trailingIcon = {
-                            if (renameHasErr.value) {
-                                Icon(
-                                    imageVector = Icons.Filled.Error,
-                                    contentDescription = renameErrText.value,
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        },
-                        onValueChange = {
-                            updateRenameFileName(it)
-                        },
-                        label = {
-                            Text(stringResource(R.string.file_name))
-                        },
-                        placeholder = {
-                            Text(stringResource(R.string.input_new_file_name))
-                        }
-                    )
-                }
-            },
-            onCancel = { showRenameDialog.value = false }
-        ) {
+        val onOk = {
+
             try {
                 val oldFileItemDto = renameFileItemDto.value // 旧文件
                 val renameFileItemDto = Unit // avoid mistake using
@@ -1213,6 +1167,61 @@ fun FilesInnerPage(
                 renameErrText.value = outE.localizedMessage ?: errorStrRes
                 MyLog.e(TAG, "#RenameDialog err: " + outE.stackTraceToString())
             }
+        }
+
+        ConfirmDialog(
+            okBtnEnabled = !renameHasErr.value,
+            cancelBtnText = stringResource(id = R.string.cancel),
+            okBtnText = stringResource(id = R.string.ok),
+            title = stringResource(R.string.rename),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                            .focusRequester(focusRequester),
+                        value = renameFileName.value,
+                        singleLine = true,
+                        isError = renameHasErr.value,
+                        supportingText = {
+                            if (renameHasErr.value) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = renameErrText.value,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        trailingIcon = {
+                            if (renameHasErr.value) {
+                                Icon(
+                                    imageVector = Icons.Filled.Error,
+                                    contentDescription = renameErrText.value,
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        onValueChange = {
+                            updateRenameFileName(it)
+                        },
+                        label = {
+                            Text(stringResource(R.string.file_name))
+                        },
+                        placeholder = {
+                            Text(stringResource(R.string.input_new_file_name))
+                        },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            onOk()
+                        }),
+                    )
+                }
+            },
+            onCancel = { showRenameDialog.value = false }
+        ) {
+            onOk()
         }
 
         LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
