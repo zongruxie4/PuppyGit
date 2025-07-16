@@ -12,7 +12,8 @@ object PLTheme {
 //    private val THEME_DARK = "darcula"
     private val THEME_DARK = "solarized_dark"
 //    private val THEME_DARK = "abyss"
-    private val THEME_LIGHT = "quietlight"
+    private val THEME_LIGHT = "solarized_light"
+//    private val THEME_LIGHT = "quietlight"
 //    private val THEME_LIGHT = "solarized_dark"
 
     val THEMES = listOf(THEME_DARK, THEME_LIGHT)
