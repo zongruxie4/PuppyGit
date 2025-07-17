@@ -67,8 +67,12 @@ class UndoStack(
             if(codeEditor.stylesMap.isNotEmpty()) {
                 undoLock.withLock {
                     redoLock.withLock {
-                        for ((k, v) in codeEditor.stylesMap) {
-                            if(!containsNoLock(v.fieldsId) && v.fieldsId != codeEditor.editorState?.value?.fieldsId) {
+                        // don't read state in for-each, if have many iterations, may cause performance issue
+                        // 如果循环过多，读取state可能导致性能问题，比存到变量再读可能差2倍
+                        val latestEditorStateFieldsId = codeEditor.editorState?.value?.fieldsId
+                        for ((_, v) in codeEditor.stylesMap) {
+                            // clean if undo/redo stacks doesn't contains fieldsId and the fieldsId neither equals to latest editor state fieldsId
+                            if(!containsNoLock(v.fieldsId) && v.fieldsId != latestEditorStateFieldsId) {
                                 codeEditor.cleanStylesByFieldsId(v.fieldsId)
                             }
                         }
