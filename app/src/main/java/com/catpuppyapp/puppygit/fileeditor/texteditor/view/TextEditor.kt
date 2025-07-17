@@ -151,12 +151,15 @@ typealias DecorationBoxComposable = @Composable (
     innerTextField: @Composable (modifier: Modifier) -> Unit
 ) -> Unit
 
-//光标handle和选中文本颜色设置
-private val customTextSelectionColors = MyStyleKt.TextSelectionColor.customTextSelectionColors
-private val customTextSelectionColors_darkMode = MyStyleKt.TextSelectionColor.customTextSelectionColors_darkMode
+//选中文本时使用这个，自定义光标handle和选中文本颜色
+//private val customTextSelectionColors = MyStyleKt.TextSelectionColor.customTextSelectionColors
+//private val customTextSelectionColors_darkMode = MyStyleKt.TextSelectionColor.customTextSelectionColors_darkMode
 
-//隐藏光标，没选中文本时使用这个
-private val customTextSelectionColors_hideCursorHandle = MyStyleKt.TextSelectionColor.customTextSelectionColors_hideCursorHandle
+//没选中文本时使用这个，隐藏光标
+//private val customTextSelectionColors_hideCursorHandle = MyStyleKt.TextSelectionColor.customTextSelectionColors_cursorHandleInvisible
+
+// show cursor handle
+//private val customTextSelectionColors_cursorHandleVisible = MyStyleKt.TextSelectionColor.customTextSelectionColors_cursorHandleVisible
 
 
 
@@ -977,7 +980,8 @@ fun TextEditor(
 
     CompositionLocalProvider(
 //        LocalTextInputService provides (if(allowKeyboard.value && !readOnlyMode) LocalTextInputService.current else null),  //为null可阻止弹出键盘(compose 1.7.0之后已无效)
-        LocalTextSelectionColors provides (if(!needShowCursorHandle.value) customTextSelectionColors_hideCursorHandle else if(inDarkTheme) customTextSelectionColors_darkMode else customTextSelectionColors),
+//        LocalTextSelectionColors provides (if(!needShowCursorHandle.value) customTextSelectionColors_NoSelections else if(inDarkTheme) customTextSelectionColors_darkMode else customTextSelectionColors),
+        LocalTextSelectionColors provides MyStyleKt.TextSelectionColor.customTextSelectionColors_cursorHandleVisible,
     ) {
 
         expectConflictStrDto.value.reset()

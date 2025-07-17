@@ -323,19 +323,24 @@ object MyStyleKt{
     }
 
     object TextSelectionColor {
-        val customTextSelectionColors = TextSelectionColors(
-            handleColor = Color(0xff4b6cc6),  //光标拖手颜色
-            backgroundColor = Color(0xFF6A86D1),  //选中文本背景颜色
-        )
-        val customTextSelectionColors_darkMode = TextSelectionColors(
-            handleColor = Color(0xFF1F3368),  //光标拖手颜色
-            backgroundColor = Color(0xFF23376F),  //选中文本背景颜色
-        )
+//        val customTextSelectionColors = TextSelectionColors(
+//            handleColor = Color(0xFF4b6cc6),  //光标拖手颜色
+//            backgroundColor = Color(0xFF6A86D1),  //选中文本背景颜色
+//        )
+//        val customTextSelectionColors_darkMode = TextSelectionColors(
+//            handleColor = Color(0xFF1F3368),  //光标拖手颜色
+//            backgroundColor = Color(0xFF23376F),  //选中文本背景颜色
+//        )
+//
+//        //隐藏光标拖手（拖柄）。注意：只是透明了，但实际仍存在且可点击和拖动
+//        val customTextSelectionColors_cursorHandleInvisible = TextSelectionColors(
+//            handleColor = Color.Transparent,  //光标拖手颜色
+//            backgroundColor = Color.Transparent,  //选中文本背景颜色
+//        )
 
-        //隐藏光标拖手（拖柄）。注意：只是透明了，但实际仍存在且可点击和拖动
-        val customTextSelectionColors_hideCursorHandle = TextSelectionColors(
-            handleColor = Color.Transparent,  //光标拖手颜色
-            backgroundColor = Color.Transparent,  //选中文本背景颜色
+        val customTextSelectionColors_cursorHandleVisible = TextSelectionColors(
+            handleColor = Color(0x854B6CC6),  //光标拖手颜色
+            backgroundColor = Color(0x756A86D1),  //选中文本背景颜色
         )
     }
 

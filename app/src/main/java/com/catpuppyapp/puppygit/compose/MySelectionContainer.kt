@@ -24,10 +24,11 @@ fun MySelectionContainer(
     modifier: Modifier=Modifier,
     content:@Composable ()->Unit
 ) {
-    val inDarkMode = Theme.inDarkTheme
+//    val inDarkMode = Theme.inDarkTheme
 
     CompositionLocalProvider(
-        LocalTextSelectionColors provides (if(inDarkMode) MyStyleKt.TextSelectionColor.customTextSelectionColors_darkMode else MyStyleKt.TextSelectionColor.customTextSelectionColors),
+//        LocalTextSelectionColors provides (if(inDarkMode) MyStyleKt.TextSelectionColor.customTextSelectionColors_darkMode else MyStyleKt.TextSelectionColor.customTextSelectionColors),
+        LocalTextSelectionColors provides MyStyleKt.TextSelectionColor.customTextSelectionColors_cursorHandleVisible,
     ) {
         //旧版m3，这个东西有bug，如果结束光标超过开始光标，会直接崩溃，但新版1.2.1已解决！
         // 目前用的版本是没问题的，不过好像只能复制，没有翻译之类的选项，可能还是有bug，或者我哪里设置的不对？（不是bug，就是故意的，想要更多选项需自己实现）
