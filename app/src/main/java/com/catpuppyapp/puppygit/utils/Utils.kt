@@ -1347,11 +1347,11 @@ fun getNextIndentByCurrentStr(current:String?, aTabToNSpaces:Int):String {
 private fun appendIndentForUnClosedSignPair(current: String, sb: StringBuilder, aTabToNSpaces: Int) {
     if (current.trim().let {
             it.endsWith("{")
-                    || it.endsWith("(")
-                    || it.endsWith("[")
+//                    || it.endsWith("(")
+//                    || it.endsWith("[")
 
                     // e.g. for yml
-                    || it.endsWith(":")
+//                    || it.endsWith(":")
 
                     // e.g. for html xml, if only has "open" sign without "close", add indent
                     // if has pair open+close, then it should mod 2 equals to 0,
