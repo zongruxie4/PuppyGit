@@ -2,6 +2,15 @@
 
 
 ---
+1.1.3.2v108 - 20250717:
+- show cursor handle for Editor
+
+
+
+- 文本编辑器显示光标拖柄
+
+
+---
 1.1.3.1v107 - 20250712:
 - make storage paths displayed name better if path is external or internal path
 - try go to first conflict line when open file with merge mode
