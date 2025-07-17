@@ -114,7 +114,9 @@ class UndoStack(
      */
     fun undoStackPush(state: TextEditorState):Boolean {
         return undoLock.withLock {
-            undoStackPushNoLock(state)
+            redoLock.withLock {
+                undoStackPushNoLock(state)
+            }
         }
     }
 
@@ -134,14 +136,25 @@ class UndoStack(
             //若超过数量限制移除第一个
             if(undoStack.size.let { it > 0 && it > sizeLimit }) {
                 val lastHead = undoStack.removeAt(0)
-                codeEditor?.cleanStylesByFieldsId(lastHead.fieldsId)
+
+                // remove styles if fieldsId Unused
+                if(lastHead.fieldsId != state.fieldsId
+                    && lastHead.fieldsId != codeEditor?.editorState?.value?.fieldsId
+                    && !containsNoLock(lastHead.fieldsId)
+                ) {
+                    codeEditor?.cleanStylesByFieldsId(lastHead.fieldsId)
+                }
             }
 
             return true
         }
 
         // not into stack, clear it's styles
-        codeEditor?.cleanStylesByFieldsId(state.fieldsId)
+        if(state.fieldsId != codeEditor?.editorState?.value?.fieldsId
+            && !containsNoLock(state.fieldsId)
+        ) {
+            codeEditor?.cleanStylesByFieldsId(state.fieldsId)
+        }
 
         return false
     }
@@ -189,8 +202,13 @@ class UndoStack(
     fun redoStackClear() {
         redoLock.withLock {
             codeEditor?.let { codeEditor ->
-                for (i in redoStack) {
-                    codeEditor.cleanStylesByFieldsId(i.fieldsId)
+                undoLock.withLock {
+                    val latestStateFieldsId = codeEditor.editorState?.value?.fieldsId
+                    for (i in redoStack) {
+                        if(i.fieldsId != latestStateFieldsId && !undoContainsNoLock(i.fieldsId)) {
+                            codeEditor.cleanStylesByFieldsId(i.fieldsId)
+                        }
+                    }
                 }
             }
 
