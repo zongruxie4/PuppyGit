@@ -2,6 +2,17 @@
 
 
 ---
+1.1.3.3v109 - 20250718:
+- support zig file syntax highlighting
+- editor support open .h/.hpp file
+
+
+
+- 支持zig文件语法高亮
+- 文本编辑器支持打开.h/.hpp文件
+
+
+---
 1.1.3.2v108 - 20250717:
 - show cursor handle for Editor
 
