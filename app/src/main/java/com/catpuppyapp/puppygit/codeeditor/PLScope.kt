@@ -141,7 +141,15 @@ enum class PLScope(val scope: String) {
                 return C
             }
 
-            if(fileName.endsWith(".cpp") || fileName.endsWith(".cc") || fileName.endsWith(".cxx") || fileName.endsWith(".c++")) {
+            // c and cpp both use same header extension .h, but cpp is super set of c, so match to cpp better
+            // c和c++头文件后缀名一样，但c++是c的超集，所以匹配到c++兼容性更好
+            if(fileName.endsWith(".h")
+                || fileName.endsWith(".cpp")
+                || fileName.endsWith(".hpp")
+                || fileName.endsWith(".cc")
+                || fileName.endsWith(".cxx")
+                || fileName.endsWith(".c++")
+            ) {
                 return CPP
             }
 
