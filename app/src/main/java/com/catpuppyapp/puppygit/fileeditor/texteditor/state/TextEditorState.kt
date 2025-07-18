@@ -135,11 +135,16 @@ class TextEditorState(
         lock.withLock {
             val lastState = if(trueUndoFalseRedo) undoStack.undoStackPop() else undoStack.redoStackPop()
             if(lastState != null) {
-                isContentEdited?.value=true
+                if（isContentEdited != null && isContentEdited.value.not() && fieldsId == lastState.fieldsId) {
+                    isContentEdited.value = false
+                } else {
+                    isContentEdited?.value = true                      
+                }
                 editorPageIsContentSnapshoted?.value=false
 //                _fieldsId = TextEditorState.newId()
 
                 //无论执行redo还是undo，都不需要清redoStack，所以这里此值传false
+                //ps. 清redoStack的时机是先undo，再编辑内容，这时才需要清
                 val clearRedoStack = false
                 // 第2个值需要取反，因为执行redo的时候期望更新undoStack，执行undo的时候期望更新redoStack
                 onChanged(lastState, !trueUndoFalseRedo, clearRedoStack, this, null)
