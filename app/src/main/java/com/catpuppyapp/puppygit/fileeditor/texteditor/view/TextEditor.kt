@@ -42,8 +42,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -625,7 +627,9 @@ fun TextEditor(
                             .padding(10.dp)
                             .focusRequester(focusRequester)
                             .onPreviewKeyEvent { event ->
-                                if(event.key == Key.Enter) {
+                                if (event.type != KeyEventType.KeyDown) {
+                                    false
+                                } else if(event.key == Key.Enter) {
                                     onOK()
                                     true
                                 }else {

@@ -19,8 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -60,7 +62,9 @@ fun PasswordTextFiled(
             ).then(
                 if(enterPressedCallback != null) {
                     Modifier.onPreviewKeyEvent { event ->
-                        if(event.key == Key.Enter) {
+                        if (event.type != KeyEventType.KeyDown) {
+                            false
+                        } else if(event.key == Key.Enter) {
                             enterPressedCallback()
                             true
                         }else {

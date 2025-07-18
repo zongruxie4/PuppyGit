@@ -19,9 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -64,17 +66,20 @@ fun CreateFileOrFolderDialog2(
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
                         .onPreviewKeyEvent { event ->
-                            // ctrl + enter to create file
-                            // enter to create folder
-                            if(event.key == Key.Enter && event.isCtrlPressed) {
-                                val isDir = false
-                                doCreate(isDir)
-                                true
-                            }else if(event.key == Key.Enter && event.isCtrlPressed.not()) {
+                            // ctrl + enter to create folder
+                            // enter to create file
+
+                            if (event.type != KeyEventType.KeyDown) {
+                                false
+                            } else if(event.key == Key.Enter && event.isCtrlPressed) {
                                 val isDir = true
                                 doCreate(isDir)
                                 true
-                            }else {
+                            } else if(event.key == Key.Enter && event.isCtrlPressed.not()) {
+                                val isDir = false
+                                doCreate(isDir)
+                                true
+                            } else {
                                 false
                             }
                         }
@@ -132,7 +137,19 @@ fun CreateFileOrFolderDialog2(
                 //按钮启用条件
                 val maybeIsGoodFileName = fileName.value.text.isNotEmpty() && !hasErr()
 
-                //创建文件（左边）
+                //创建文件夹（左边）
+                TextButton(
+                    enabled = maybeIsGoodFileName,
+                    onClick = {
+                        val isDir = true
+                        doCreate(isDir)
+                    },
+                ) {
+                    Text(
+                        text = activityContext.getString(R.string.folder),
+                    )
+                }
+                //创建文件（右边）
                 TextButton(
                     enabled = maybeIsGoodFileName,
                     onClick = {
@@ -145,18 +162,6 @@ fun CreateFileOrFolderDialog2(
                     )
                 }
 
-                //创建文件夹（右边）
-                TextButton(
-                    enabled = maybeIsGoodFileName,
-                    onClick = {
-                        val isDir = true
-                        doCreate(isDir)
-                    },
-                ) {
-                    Text(
-                        text = activityContext.getString(R.string.folder),
-                    )
-                }
 
             }
         },
