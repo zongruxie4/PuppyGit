@@ -333,6 +333,14 @@
       "name": "yaml",
       "scopeName": "source.yaml",
       "languageConfiguration": "textmate/yaml/language-configuration.json"
+    },
+
+
+    {
+      "grammar": "textmate/zig/syntaxes/Zig.tmLanguage",
+      "name": "zig",
+      "scopeName": "source.zig",
+      "languageConfiguration": "textmate/zig/language-configuration.json"
     }
 
 

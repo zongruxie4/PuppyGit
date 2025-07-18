@@ -60,6 +60,7 @@ enum class PLScope(val scope: String) {
     XML("text.xml"),
     XSL("text.xml.xsl"),
     YAML("source.yaml"),
+    ZIG("source.zig"),
 
     ;
 
@@ -193,6 +194,10 @@ enum class PLScope(val scope: String) {
 
             if(fileName.endsWith(".sh")) {
                 return SHELL
+            }
+
+            if(fileName.endsWith(".zig")) {
+                return ZIG
             }
 
             if(fileName.endsWith(".toml")) {

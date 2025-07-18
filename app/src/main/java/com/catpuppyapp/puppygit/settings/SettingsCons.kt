@@ -27,5 +27,6 @@ object SettingsCons {
         "dockerfile",
         "makefile",
         "*.xsl",
+        "*.zig",
     )
 }

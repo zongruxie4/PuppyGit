@@ -297,6 +297,7 @@ private val extensionToMimeTypeMap = mapOf(
     "dart" to "application/x-dart",
     "dockerfile" to "application/x-dockerfile",
     "makefile" to "application/x-makefile",
+    "zig" to "application/x-zig",
 
 
     // end: I add
