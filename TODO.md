@@ -1,3 +1,19 @@
+TODO sha256 support 20250607:
+1. waiting for libgit2 sha256 feature become stable
+2. UI: add menu item to RepoCard menu to allow users switch hash method, then save settings into .gitconfig (need test if were switched to sha256, then, still can switch back to sha1?)
+3. UI: can choose sha256/sha1 when init a folder to git repo, and save to .gitconfig file
+4. GUIDE: honor sha256 settings in the .gitconfig file, rather than save settings to db repo table
+5. CODE: change Oid class of git24j to libgit2 oid series method binding, else need implement sha256 in java side, may cause bug
+
+
+中文：
+1. 等 libgit2 的sha256功能稳定
+2. UI: 仓库卡片添加可切换hash算法的菜单项，并保存到仓库的.gitconfig（需要测试如果切换到 sha256 还能否切换回sha1？）
+3. UI: 初始化文件夹为仓库时可选hash算法，并保存到.gitconfig
+4. GUIDE: 遵循 .gitconfig 的 sha256 相关选项，把相关设置都存到 .gitcofnig 里，尽量别往 db repo表 存
+5. CODE: 修改 git24j 的 Oid 类为libgit2 oid系列函数的binding，不然还得自己写sha256相关的算法，可能导致新的bug
+
+---
 ## TODO 20241221
 - 本地化service通知信息：给RepoActUtil下相关方法添加context参数，然后逐层向上添加context参数，直到顶层Service类里，然后把this作为context传过去即可。最后在这条链路上，把硬编码的英文字符串都替换为context.getString()就行了。还有，别忘了把Service类里的相应字符串资源也替换下，例如HttpService里的"Listen on:........."字符串。（ps: 20250220已经重写了所有的Service的attachBaseContext()所以直接在Service/Activity里传this即可正常根据app设置的语言获取相应的字符串资源。btw 获取字符串资源最好不要传applicationContext，不然有可能获取到英文或者强制根据系统语言获取资源而不是获取app设置的语言对应的字符串资源）
 x - 支持以 isMerged NotMerged hasUpstream noUpstream等附加条件过滤提交、分支，或者强制把这些东西改成可搜索的英语和供查看的指定语言？例如可通过IsMerged/NotMerged过滤条目，但显示的时候显示为合并而来和非合并而来

@@ -88,6 +88,9 @@ private val MimeType.intentMimeType: MimeType
     get() = mimeTypeToIntentMimeTypeMap[this] ?: this
 
 private val mimeTypeToIntentMimeTypeMap = listOf(
+    // better add file extension to `SettingsCons.editor_defaultFileAssociationList`, because users can edit it, but can't edit here
+    // 最好关联文件扩展名到`SettingsCons.editor_defaultFileAssociationList`，而不是在这里映射成"text/" mime，因为用户如果想取消关联，可在设置页面编辑那个列表，但在这改的，对用户来说无法取消关联
+
     // Allows matching "text/*"
     "application/ecmascript" to "text/ecmascript",
     "application/javascript" to "text/javascript",

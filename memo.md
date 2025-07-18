@@ -1,17 +1,8 @@
 
 ---
-TODO sha256 support 20250607:
-1. waiting for libgit2 sha256 feature become stable
-2. UI: add menu item to RepoCard menu to allow users switch hash method, then save settings into .gitconfig (need test if were switched to sha256, then, still can switch back to sha1?)
-3. UI: can choose sha256/sha1 when init a folder to git repo, and save to .gitconfig file
-4. GUIDE: honor sha256 settings in the .gitconfig file, rather than save settings to db repo table
-5. CODE: change Oid class of git24j to libgit2 oid series method binding, else need implement sha256 in java side, may cause bug
+为内置Editor关联文件 20250718：
+1 在 `MimeTypeMapCompat.kt` 添加对应的mime
+2 在 `MimeTypeIconKt.mimeTypeToIconMap` 关联对应的图标
+3 在 `SettingsCons.getEditor_defaultFileAssociationList` 添加文件后缀名
 
-
-中文：
-1. 等 libgit2 的sha256功能稳定
-2. UI: 仓库卡片添加可切换hash算法的菜单项，并保存到仓库的.gitconfig（需要测试如果切换到 sha256 还能否切换回sha1？）
-3. UI: 初始化文件夹为仓库时可选hash算法，并保存到.gitconfig
-4. GUIDE: 遵循 .gitconfig 的 sha256 相关选项，把相关设置都存到 .gitcofnig 里，尽量别往 db repo表 存
-5. CODE: 修改 git24j 的 Oid 类为libgit2 oid系列函数的binding，不然还得自己写sha256相关的算法，可能导致新的bug
-
+其中第3步可替换为修改Mime类型，但不推荐： 在 `MimeTypeConversionExtensionsKt.mimeTypeToIntentMimeTypeMap` 将文件后缀名转换为 "text/your_type" 类型，内置编辑器会默认打开所有mime为text/*的文件。之所以不推荐这种方式是因为这种方式对用户来说不可控，用户无法通过用户界面取消关联，但如果同一mime类型关联特别多的后缀名，则可使用这种方式来减少代码，由于用户总是可通过open as选择外部程序打开文件，所以这种方式虽然不推荐，但也可接受。 
