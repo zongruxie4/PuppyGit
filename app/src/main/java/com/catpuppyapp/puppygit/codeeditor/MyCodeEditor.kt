@@ -57,11 +57,14 @@ private const val TAG = "MyCodeEditor"
 
 
 class MyCodeEditor(
-    val appContext: Context = AppModel.realAppContext,
-    val editorState: (CustomStateSaveable<TextEditorState>)? = null,
-    val undoStack: (CustomStateSaveable<UndoStack>)? = null,
-    private var lowMemCount:Int = 0
+    val appContext: Context,
+    // this will bind code editor
+    val editorState: CustomStateSaveable<TextEditorState>,
+    // code editor will bind this at init block
+    val undoStack: CustomStateSaveable<UndoStack>,
+    val plScope: MutableState<PLScope>,
 ) {
+    private var lowMemCount:Int = 0
     private var file: FuckSafFile = FuckSafFile(appContext, FilePath(""))
 
     var colorScheme: EditorColorScheme = EditorColorScheme()
@@ -69,10 +72,12 @@ class MyCodeEditor(
 
     internal var latestStyles: StylesResult? = null
 
-    private val plScope: MutableState<PLScope> = mutableStateOf(PLScope.AUTO)
 
     var languageScope: PLScope = PLScope.NONE
+        private set
+
     var myLang: TextMateLanguage? = null
+
     //{fieldsId: syntaxHighlightId: AnnotatedString}
     // a fieldsId+syntaxHighlightId can located a AnnotatedString
     // 一个fieldsId+syntaxHighlightId定位一个AnnotatedString
@@ -214,11 +219,11 @@ class MyCodeEditor(
         analyze()
     }
 
-    fun updatePlScope(newScope: PLScope) {
-        plScope.value = newScope
-    }
-
-    fun currentPlScope() = plScope.value
+//    fun updatePlScope(newScope: PLScope) {
+//        plScope.value = newScope
+//    }
+//
+//    fun currentPlScope() = plScope.value
 
     fun release() {
         cleanLanguage()

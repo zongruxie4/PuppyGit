@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
+import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
@@ -129,6 +130,7 @@ fun EditorInnerPage(
     stateKeyTag:String,
 
     codeEditor: CustomStateSaveable<MyCodeEditor>,
+    plScope: MutableState<PLScope>,
 
     disableSoftKb: MutableState<Boolean>,
     editorRecentListScrolled: MutableState<Boolean>,
@@ -179,7 +181,7 @@ fun EditorInnerPage(
     /**
      * 此变量严格来说并不是Editor的上个状态，而是最后一个记录到Undo/Redo stack的状态
      */
-    lastTextEditorState:CustomStateSaveable<TextEditorState>,
+//    lastTextEditorState:CustomStateSaveable<TextEditorState>,
 //    editorPageShowSaveDoneToast:MutableState<Boolean>,
     needRefreshEditorPage:MutableState<String>,
     isSaving:MutableState<Boolean>,  //这个变量只是用来判断是否可用保存按钮的
@@ -903,11 +905,11 @@ fun EditorInnerPage(
     }
     if(showSelectSyntaxHighlightDialog.value) {
         SelectSyntaxHighlightingDialog(
-            plScope = codeEditor.value.currentPlScope(),
+            plScope = plScope.value,
             onCancel = { showSelectSyntaxHighlightDialog.value = false }
         ) {
-            if(it != codeEditor.value.currentPlScope()) {
-                codeEditor.value.updatePlScope(it)
+            if(it != plScope.value) {
+                plScope.value = it
                 // (fixed, no need clear undo stack anymore) switch syntax will clear undo stack,
                 // else after user pressed undo,
                 // will use old syntax highlighting scheme,
@@ -1880,7 +1882,7 @@ fun EditorInnerPage(
                         isEdited = isEdited,
                         isSaving = isSaving,
                         isContentSnapshoted = editorPageIsContentSnapshoted,
-                        lastTextEditorState = lastTextEditorState,
+//                        lastTextEditorState = lastTextEditorState,
                         undoStack = undoStack,
                         hasError = hasError
                     )
@@ -1948,7 +1950,7 @@ private suspend fun doInit(
     isEdited:MutableState<Boolean>,
     isSaving:MutableState<Boolean>,
     isContentSnapshoted:MutableState<Boolean>,
-    lastTextEditorState: CustomStateSaveable<TextEditorState>,
+//    lastTextEditorState: CustomStateSaveable<TextEditorState>,
     undoStack:UndoStack,
     hasError:()->Boolean,
 ) {
@@ -2119,7 +2121,7 @@ private suspend fun doInit(
 //                    temporaryStyles = null,
                 )
                 editorPageTextEditorState.value = newState
-                lastTextEditorState.value = newState
+//                lastTextEditorState.value = newState
 
                 // syntax highlightings
                 codeEditor.updatePlScopeThenAnalyze()

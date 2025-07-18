@@ -357,7 +357,7 @@ fun getEditorStateOnChange(
     resetLastCursorAtColumn:()->Unit,
 ): suspend (newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean, caller: TextEditorState, from: EditorStateOnChangeCallerFrom?) -> Unit {
     return { newState, trueSaveToUndoFalseRedoNullNoSave, clearRedoStack, caller, from ->
-        caller.codeEditor.textEditorStateOnChangeLock.withLock w@{
+        caller.codeEditor?.textEditorStateOnChangeLock?.withLock w@{
             val newState = if(from == EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING) {
                 val latestState = editorPageTextEditorState.value
                 if(
@@ -457,7 +457,7 @@ fun getEditorStateOnChange(
 //初始状态值随便填，只是为了帮助泛型确定类型并且避免使用null作为初始值而已，具体的值在打开文件后会重新创建
 fun getInitTextEditorState() = TextEditorState(
 //    uniId = "",
-    codeEditor = MyCodeEditor(),
+    codeEditor = null,
     fields = listOf(),
     fieldsId = "",
     isContentEdited = mutableStateOf(false),

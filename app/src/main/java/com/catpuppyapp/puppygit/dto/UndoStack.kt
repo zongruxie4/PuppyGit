@@ -82,16 +82,17 @@ class UndoStack(
         }
     }
 
-    fun copyFrom(other:UndoStack) {
-        filePath = other.filePath
-        sizeLimit = other.sizeLimit
-        undoSaveIntervalInSec = other.undoSaveIntervalInSec
-        undoLastSaveAt = other.undoLastSaveAt
-        undoStack = other.undoStack
-        redoStack = other.redoStack
-        undoLock = other.undoLock
-        redoLock = other.redoLock
-    }
+//    fun copyFrom(other:UndoStack) {
+//        codeEditor = other.codeEditor
+//        filePath = other.filePath
+//        sizeLimit = other.sizeLimit
+//        undoSaveIntervalInSec = other.undoSaveIntervalInSec
+//        undoLastSaveAt = other.undoLastSaveAt
+//        undoStack = other.undoStack
+//        redoStack = other.redoStack
+//        undoLock = other.undoLock
+//        redoLock = other.redoLock
+//    }
 
     fun undoStackIsEmpty():Boolean {
         return undoStack.isEmpty()

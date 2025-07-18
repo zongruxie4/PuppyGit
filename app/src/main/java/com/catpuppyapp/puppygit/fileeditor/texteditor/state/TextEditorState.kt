@@ -85,7 +85,7 @@ class TextEditorState(
     // caller from: usually is null, other types see that enum class
     private val onChanged: suspend (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean, caller: TextEditorState, from: EditorStateOnChangeCallerFrom?) -> Unit,
 
-    val codeEditor: MyCodeEditor,
+    val codeEditor: MyCodeEditor?,
 
 //    val uniId: String = newId(),
     // temporary use when syntax highlighting analyzing
@@ -105,7 +105,7 @@ class TextEditorState(
         isContentEdited: MutableState<Boolean> = this.isContentEdited,
         editorPageIsContentSnapshoted:MutableState<Boolean> = this.editorPageIsContentSnapshoted,
         onChanged: suspend (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean, caller: TextEditorState, from: EditorStateOnChangeCallerFrom?) -> Unit = this.onChanged,
-        codeEditor: MyCodeEditor = this.codeEditor,
+        codeEditor: MyCodeEditor? = this.codeEditor,
 //        uniId: String = this.uniId,
 //        temporaryStyles: StylesResult? = this.temporaryStyles,
     ) = TextEditorState(
@@ -660,7 +660,7 @@ class TextEditorState(
         val baseStyles = tryGetStylesResult()
         if(baseStyles == null) {
             MyLog.d(TAG, "#updateStyles: Styles of current field '$fieldsId' not found, maybe not exists or theme/languageScop are not matched, will re-run analyze after user stop input for a while")
-            codeEditor.startAnalyzeWhenUserStopInputForAWhile(nextState)
+            codeEditor?.startAnalyzeWhenUserStopInputForAWhile(nextState)
         }else {
             // even accept ours/theirs,
             // fields still is what we want,
@@ -2142,7 +2142,7 @@ class TextEditorState(
         // have a little bug (its acceptable, no fix still ok): if users clicked undo/redo, then change content,
         // here will still return the expired latestStyles and do last once afterDelete/afterInsert,
         // even it doesn't make sense, because a new full analyze will run in soon after
-        return codeEditor.getLatestStylesResultIfMatch(this)
+        return codeEditor?.getLatestStylesResultIfMatch(this)
 
 //        val cachedStyles = codeEditor?.stylesMap?.get(fieldsId)
 //        return if(isGoodStyles(cachedStyles)) {

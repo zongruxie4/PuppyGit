@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
+import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
@@ -444,11 +445,11 @@ fun HomeScreen(
         keyName = "editorPageTextEditorState",
         initValue = getInitTextEditorState()
     )
-    val editorPageLastTextEditorState = mutableCustomStateOf(
-        keyTag = stateKeyTag,
-        keyName = "editorPageLastTextEditorState",
-        initValue = getInitTextEditorState()
-    )
+//    val editorPageLastTextEditorState = mutableCustomStateOf(
+//        keyTag = stateKeyTag,
+//        keyName = "editorPageLastTextEditorState",
+//        initValue = getInitTextEditorState()
+//    )
 //    val editorPageShowSaveDoneToast = rememberSaveable { mutableStateOf(false)}
 //    val needRefreshEditorPage = rememberSaveable { mutableStateOf(false) }
     val needRefreshEditorPage = rememberSaveable { mutableStateOf("")}
@@ -632,11 +633,13 @@ fun HomeScreen(
     val editorLoadLock = mutableCustomBoxOf(stateKeyTag, "editorLoadLock") { Mutex() }.value
 
 
+    val editorPlScope = rememberSaveable { mutableStateOf(PLScope.AUTO) }
     val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
         MyCodeEditor(
             appContext = AppModel.realAppContext,
             editorState = editorPageTextEditorState,
-            undoStack = editorUndoStack
+            undoStack = editorUndoStack,
+            plScope = editorPlScope
         )
     }
 
@@ -1469,6 +1472,7 @@ fun HomeScreen(
                     stateKeyTag = stateKeyTag,
 
                     codeEditor = codeEditor,
+                    plScope = editorPlScope,
 
                     editorRecentListScrolled = editorRecentListScrolled,
                     disableSoftKb = editorDisableSoftKb,
@@ -1513,7 +1517,7 @@ fun HomeScreen(
                     editorPageShowingFilePath=editorPageShowingFilePath,
                     editorPageShowingFileIsReady=editorPageShowingFileIsReady,
                     editorPageTextEditorState=editorPageTextEditorState,
-                    lastTextEditorState = editorPageLastTextEditorState,
+//                    lastTextEditorState = editorPageLastTextEditorState,
 //                    editorPageShowSaveDoneToast=editorPageShowSaveDoneToast,
                     needRefreshEditorPage=needRefreshEditorPage,
                     isSaving = editorPageIsSaving,

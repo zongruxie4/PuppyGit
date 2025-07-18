@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
+import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.SmallFab
@@ -123,11 +124,11 @@ fun SubPageEditor(
         keyName = "editorPageTextEditorState",
         initValue = getInitTextEditorState()
     )
-    val editorPageLastTextEditorState = mutableCustomStateOf(
-        keyTag = stateKeyTag,
-        keyName = "editorPageLastTextEditorState",
-        initValue = getInitTextEditorState()
-    )
+//    val editorPageLastTextEditorState = mutableCustomStateOf(
+//        keyTag = stateKeyTag,
+//        keyName = "editorPageLastTextEditorState",
+//        initValue = getInitTextEditorState()
+//    )
     val needRefreshEditorPage = rememberSaveable { mutableStateOf("")}
     val editorPageIsSaving = rememberSaveable { mutableStateOf(false)}
     val showReloadDialog = rememberSaveable { mutableStateOf(false)}
@@ -141,11 +142,14 @@ fun SubPageEditor(
 //    val editorUndoStack = remember { SharedState.subEditorUndoStack }
     val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack("") }
 
+    val editorPlScope = rememberSaveable { mutableStateOf(PLScope.AUTO) }
     val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
         MyCodeEditor(
             appContext = AppModel.realAppContext,
             editorState = editorPageTextEditorState,
-            undoStack = editorUndoStack
+            undoStack = editorUndoStack,
+            plScope = editorPlScope
+
         )
     }
 
@@ -512,6 +516,7 @@ fun SubPageEditor(
             stateKeyTag = stateKeyTag,
 
             codeEditor = codeEditor,
+            plScope = editorPlScope,
 
             disableSoftKb = editorDisableSoftKb,
             editorRecentListScrolled = editorRecentListScrolled,
@@ -559,7 +564,7 @@ fun SubPageEditor(
             editorPageShowingFilePath=editorPageShowingFilePath,
             editorPageShowingFileIsReady=editorPageShowingFileIsReady,
             editorPageTextEditorState=editorPageTextEditorState,
-            lastTextEditorState=editorPageLastTextEditorState,
+//            lastTextEditorState=editorPageLastTextEditorState,
 //            editorPageShowSaveDoneToast=editorPageShowSaveDoneToast,
             needRefreshEditorPage=needRefreshEditorPage,
             isSaving = editorPageIsSaving,
