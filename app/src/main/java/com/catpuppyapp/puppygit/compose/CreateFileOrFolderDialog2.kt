@@ -116,7 +116,7 @@ fun CreateFileOrFolderDialog2(
 
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {
-                        val isDir = true
+                        val isDir = false
                         doCreate(isDir)
                     }),
                 )
