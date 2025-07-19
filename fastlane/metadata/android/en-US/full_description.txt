@@ -1,4 +1,4 @@
-PuppyGit Pro is a modern git client for Android. Open Source, no Ads and free to use.
+PuppyGit is a modern git client for Android. Open Source, no Ads and free to use.
 
 Features：
 
