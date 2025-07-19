@@ -129,12 +129,14 @@ fun BranchItem(
             )
 //            Text(text = stringResource(R.string.name) +": ")
 
-            Text(text = thisObj.shortName,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = if(thisObj.isCurrent) FontWeight.ExtraBold else defaultFontWeight,
-                color = if(thisObj.isCurrent) MyStyleKt.DropDownMenu.selectedItemColor() else Color.Unspecified
-            )
+            ScrollableRow {
+                Text(text = thisObj.shortName,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = if(thisObj.isCurrent) FontWeight.ExtraBold else defaultFontWeight,
+                    color = if(thisObj.isCurrent) MyStyleKt.DropDownMenu.selectedItemColor() else Color.Unspecified
+                )
+            }
         }
 
         Row (
@@ -230,11 +232,13 @@ fun BranchItem(
 
 //                    Text(text = stringResource(R.string.upstream) + ": ")
 
-                    SingleLineClickableText(thisObj.getUpstreamShortName(activityContext)) {
-                        lastClickedItemKey.value = thisObj.fullName
+                    ScrollableRow {
+                        SingleLineClickableText(thisObj.getUpstreamShortName(activityContext)) {
+                            lastClickedItemKey.value = thisObj.fullName
 
-                        setCurObj()
-                        pageRequest.value = PageRequest.goToUpstream
+                            setCurObj()
+                            pageRequest.value = PageRequest.goToUpstream
+                        }
                     }
                 }
             }
@@ -294,12 +298,14 @@ fun BranchItem(
 
 //            Text(text = stringResource(R.string.other) +": ")
 
-            Text(text = thisObj.getOther(activityContext, false),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
+            ScrollableRow {
+                Text(text = thisObj.getOther(activityContext, false),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
 
-            )
+                )
+            }
         }
      }
 }
