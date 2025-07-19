@@ -58,6 +58,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.codeeditor.PLFont
 import com.catpuppyapp.puppygit.compose.BarContainer
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
@@ -1708,6 +1709,7 @@ fun DiffScreen(
                                     ) {
                                         Text(
                                             text = hunkAndLines.hunk.cachedNoLineBreakHeader(),
+                                            fontFamily = PLFont.diffCodeFont(),
                                             fontStyle = FontStyle.Italic,
                                             color = UIHelper.getFontColor(),
                                         )
