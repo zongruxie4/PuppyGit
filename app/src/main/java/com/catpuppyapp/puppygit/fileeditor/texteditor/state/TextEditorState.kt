@@ -2098,7 +2098,7 @@ class TextEditorState(
 //        }
     }
 
-    // 在MyTextField应调用此方法获得AnnotatedString
+
     private fun generateAnnotatedStringForLine(textFieldState: TextFieldState, spans:List<Span>): AnnotatedString {
         val colorScheme = codeEditor?.colorScheme
         if(colorScheme == null) {
