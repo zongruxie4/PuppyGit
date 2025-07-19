@@ -305,4 +305,12 @@ class UndoStack(
         }
     }
 
+    fun clearRedoStackThenPushToUndoStack(state: TextEditorState, force: Boolean) {
+        // order is important, clear stack first can have better performance,
+        //   because it will reduce contains check spent time when push
+        // 顺序很重要，先清stack再push可有更好的性能，因为在push时会进行contains检测来决定是否清除state关联的styles
+        redoStackClear()
+        undoStackPush(state, force)
+    }
+
 }

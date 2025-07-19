@@ -1776,10 +1776,8 @@ fun EditorInnerPage(
                     MyLog.d(TAG, "file is changed by external, will reload it, $printFilePath")
 
                     // text editor state changed, so we should clear redo stack
-                    undoStack.redoStackClear()
-                    // push currently text editor state into undo stack
-                    undoStack.undoStackPush(editorPageTextEditorState.value, force = true)
-
+                    // and push currently text editor state into undo stack
+                    undoStack.clearRedoStackThenPushToUndoStack(editorPageTextEditorState.value, force = true)
 
                     // set force to false to check last saved file info to avoid nonsense reload,
                     //   but most time the file need a force reload when reached here, because we already detected changes,
