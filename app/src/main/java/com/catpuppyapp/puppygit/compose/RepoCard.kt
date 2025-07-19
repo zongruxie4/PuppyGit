@@ -284,16 +284,20 @@ fun RepoCard(
                                 tooltipText = stringResource(R.string.repo_label_branch)
                             )
 
-                            ClickableText (
-                                //如果是detached，显示分支号，否则显示“本地分支:远程分支”
-                                text = if(repoStatusGood) {if(dbIntToBool(repoDto.isDetached)) Libgit2Helper.genDetachedText(repoDto.lastCommitHashShort) else Libgit2Helper.genLocalBranchAndUpstreamText(repoDto.branch, repoDto.upstreamBranch)} else "",
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontWeight = defaultFontWeight,
-                                modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = repoStatusGood) {
-                                    navController.navigate(Cons.nav_BranchListScreen + "/" + repoDto.id)
-                                },
-                            )
+                            ScrollableRow {
+                                ClickableText (
+                                    //如果是detached，显示分支号，否则显示“本地分支:远程分支”
+                                    text = if(repoStatusGood) {if(dbIntToBool(repoDto.isDetached)) Libgit2Helper.genDetachedText(repoDto.lastCommitHashShort) else Libgit2Helper.genLocalBranchAndUpstreamText(repoDto.branch, repoDto.upstreamBranch)} else "",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontWeight = defaultFontWeight,
+                                    modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = repoStatusGood) {
+                                        navController.navigate(Cons.nav_BranchListScreen + "/" + repoDto.id)
+                                    },
+                                )
+                            }
+
+
                         }
 
                     }
