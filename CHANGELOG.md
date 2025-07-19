@@ -2,6 +2,15 @@
 
 
 ---
+1.1.3.4v110 - 20250719:
+- minor bugs fixed
+
+
+
+- 小bug修正
+
+
+---
 1.1.3.3v109 - 20250718:
 - support zig file syntax highlighting
 - editor support open .h/.hpp file
