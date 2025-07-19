@@ -597,11 +597,12 @@ fun EditorInnerPage(
                 MyLog.d(TAG,"#showReloadDialog: file '${fileName}' may changed by external, will save content snapshot before reload")
 //                val content = editorPageTextEditorState.value.getAllText()
 //                val content = null
+                val editorState = editorPageTextEditorState.value
                 doJobThenOffLoading {
                     val snapRet = SnapshotUtil.createSnapshotByContentAndGetResult(
                         srcFileName = fileName,
                         fileContent = null,
-                        editorState = editorPageTextEditorState.value,
+                        editorState = editorState,
                         trueUseContentFalseUseEditorState = false,
                         flag = SnapshotFileFlag.editor_content_BeforeReloadFoundSrcFileChanged
                     )
@@ -670,11 +671,12 @@ fun EditorInnerPage(
                 MyLog.d(TAG,"#showBackFromExternalAppAskReloadDialog: file '${fileName}' may changed by external, will save content snapshot before reload")
 //                val content = editorPageTextEditorState.value.getAllText()
 //                val content = null
+                val editorState = editorPageTextEditorState.value
                 doJobThenOffLoading {
                     val snapRet = SnapshotUtil.createSnapshotByContentAndGetResult(
                         srcFileName = fileName,
                         fileContent = null,
-                        editorState = editorPageTextEditorState.value,
+                        editorState = editorState,
                         trueUseContentFalseUseEditorState = false,
                         flag = SnapshotFileFlag.editor_content_BeforeReloadFoundSrcFileChanged_ReloadByBackFromExternalDialog
                     )
@@ -2042,11 +2044,12 @@ private suspend fun doInit(
                 if(editorPageTextEditorState.value.contentIsEmpty().not() && !isContentSnapshoted.value) {
                     MyLog.w(TAG, "#loadFile: file doesn't exist anymore, but content is not empty, will create snapshot for content")
                     val fileName = file.name
+                    val editorState = editorPageTextEditorState.value
                     doJobThenOffLoading {
                         val snapRet = SnapshotUtil.createSnapshotByContentAndGetResult(
                             srcFileName = fileName,
                             fileContent = null,
-                            editorState = editorPageTextEditorState.value,
+                            editorState = editorState,
                             trueUseContentFalseUseEditorState = false,
                             flag = SnapshotFileFlag.editor_content_FileNonExists_Backup
                         )
