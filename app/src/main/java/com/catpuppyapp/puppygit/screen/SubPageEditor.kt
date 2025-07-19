@@ -155,7 +155,7 @@ fun SubPageEditor(
 
 
     val naviUp = {
-        codeEditor.value.releaseAndRemoveSelfFromCache()
+        codeEditor.value.releaseAndClearUndoStack()
         naviUp()
     }
 

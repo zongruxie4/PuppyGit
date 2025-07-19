@@ -27,6 +27,7 @@ import com.catpuppyapp.puppygit.jni.LibLoader
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.service.HttpService
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -56,7 +57,7 @@ private const val TAG ="AppModel"
 
 object AppModel {
 
-    val editorCache: MutableSet<MyCodeEditor> = ConcurrentSet()
+//    val editorCache: MutableSet<MyCodeEditor> = ConcurrentSet()
 
 
 //    private val inited_1 = mutableStateOf(false)
@@ -721,12 +722,8 @@ object AppModel {
             runBlocking { CommitCache.clear() }
         }
 
-        editorCache.forEach {
-            runCatching {
-                it.release()
-            }
-        }
-        editorCache.clear()
+        SharedState.homeCodeEditor?.releaseAndClearUndoStack()
+
     }
 
 

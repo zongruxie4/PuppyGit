@@ -3,19 +3,18 @@ package com.catpuppyapp.puppygit.codeeditor
 import android.content.Context
 import android.os.Bundle
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.ui.theme.Theme
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.appAvailHeapSizeInMb
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getRandomUUID
+import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.isLocked
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import io.github.rosemoe.sora.lang.Language
@@ -64,6 +63,7 @@ class MyCodeEditor(
     val undoStack: CustomStateSaveable<UndoStack>,
     val plScope: MutableState<PLScope>,
 ) {
+    val uid = getShortUUID()
     private var lowMemCount:Int = 0
     private var file: FuckSafFile = FuckSafFile(appContext, FilePath(""))
 
@@ -172,7 +172,7 @@ class MyCodeEditor(
         colorScheme.applyDefault()
 
         // for clear when Activity destroy
-        AppModel.editorCache.add(this)
+//        AppModel.editorCache.add(this)
 
         analyze()
     }
@@ -492,10 +492,10 @@ class MyCodeEditor(
         return highlightMap.get(fieldsId)
     }
 
-    fun releaseAndRemoveSelfFromCache() {
-        release()
-        AppModel.editorCache.remove(this)
-    }
+//    fun releaseAndRemoveSelfFromCache() {
+//        release()
+//        AppModel.editorCache.remove(this)
+//    }
 
     // user stop input after `delayInSec`, will start a syntax highlighting analyze
     // set checkTimes to control check how many times, that should not too large, else may have many tasks, that's bad
@@ -538,6 +538,13 @@ class MyCodeEditor(
     fun cleanStylesByFieldsId(fieldsId: String) {
         stylesMap.remove(fieldsId)
         highlightMap.remove(fieldsId)
+    }
+
+    fun releaseAndClearUndoStack() {
+        // clean all syntax highlight styles
+        release()
+        // already released, so no need clean unused styles anymore
+        undoStack.value.reset("", force = true, cleanUnusedStyles = false)
     }
 
 

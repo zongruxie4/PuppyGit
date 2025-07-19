@@ -487,8 +487,7 @@ fun EditorInnerPage(
         // start: reset syntax highlighting related vars
         codeEditor.value.reset(FuckSafFile(AppModel.realAppContext, emptyPath), force = true)
         // end: reset syntax highlighting related vars
-
-//        undoStack.value.reset(filePath = "")
+        undoStack.reset("", force = true)
 //        changeStateTriggerRefreshPage(needRefreshEditorPage)
     }
 
@@ -524,8 +523,10 @@ fun EditorInnerPage(
             //确保重载：清空文件路径，这样和showingFilePath对比就永远不会为真，也就会百分百重载文件
             editorPageShowingFileDto.value.fullPath = ""
 
-            //重载文件清undo stack，后来修改了下，在加载文件时根据路径是否变化决定是否reset undo stack，所以不需要在这清了
-//            undoStack.reset(editorPageShowingFilePath.value.ioPath)
+            // here shouldn't use reset code editor instead of release it,
+            //   because it will reset PLScope to Auto,
+            //   but we expect keep PLScope when reloading file
+            codeEditor.value.releaseAndClearUndoStack()
         }else { // check file change if is not require force reload
             val requireOpenFilePath = editorPageShowingFileDto.value.fullPath
 
@@ -910,12 +911,7 @@ fun EditorInnerPage(
         ) {
             if(it != plScope.value) {
                 plScope.value = it
-                // (fixed, no need clear undo stack anymore) switch syntax will clear undo stack,
-                // else after user pressed undo,
-                // will use old syntax highlighting scheme,
-                // and maybe will cause many full text re-analyze,
-                // it will cause performance issue
-//                undoStack.reset(editorPageShowingFilePath.value.ioPath)
+
                 doJobThenOffLoading {
                     doSaveNoCoroutine()
                     forceReloadFile()
@@ -1779,7 +1775,21 @@ fun EditorInnerPage(
                 ) {
                     MyLog.d(TAG, "file is changed by external, will reload it, $printFilePath")
 
-                    // set force to false to check last saved file info to avoid nonsense reload
+                    // text editor state changed, so we should clear redo stack
+                    undoStack.redoStackClear()
+                    // push currently text editor state into undo stack
+                    undoStack.undoStackPush(editorPageTextEditorState.value, force = true)
+
+
+                    // set force to false to check last saved file info to avoid nonsense reload,
+                    //   but most time the file need a force reload when reached here, because we already detected changes,
+                    //   anyway, set force to false is a better choice
+                    // 其实这个检测，force false或true区别不大，
+                    // 因为这里已经检测到修改了，
+                    // 大概率会需要重载文件，
+                    // 不过false也没坏处，
+                    // 顶多多检测几次文件信息，
+                    // 确认文件确实修改了才重载，没明显坏处
                     val force = false
                     reloadFile(force)
                 }else {

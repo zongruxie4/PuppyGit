@@ -1,9 +1,11 @@
 package com.catpuppyapp.puppygit.screen.shared
 
 import androidx.compose.runtime.mutableStateOf
+import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
+import com.catpuppyapp.puppygit.utils.MyLog
 
 
 private const val TAG = "SharedState"
@@ -36,5 +38,28 @@ object SharedState {
 
 
     val editor_softKeyboardIsVisible = Box(false)
+
+    // save home code editor for release when activity destroyer
+    // sub page's code editor release when navi up, so don't need store them,
+    //  but home page's code editor release when app destroy,
+    //  and it only have 1 instance, so we can simple store it, and release when app destroy
+    var homeCodeEditor: MyCodeEditor? = null
+        private set
+
+    fun updateHomeCodeEditor(newCodeEditor: MyCodeEditor) {
+        homeCodeEditor?.let {
+            // this if should never be true, else,
+            // means home screen create more than 1 instance, may have memory leak,
+            // if have memory leak, also need handle sub page editor's code editor, must release when new instance created,
+            // but it shouldn't happened, unless the rememberSaveable have bugs
+            // 如果有内存泄漏的话，子页面的code editor state也得处理，有点麻烦，不过应该不会泄漏，除非rememberSaveable不好使
+            if(it.uid != newCodeEditor.uid) {
+                MyLog.w(TAG, "#updateHomeCodeEditor: WARNING! detected difference code editor instance, maybe have memory leak: homeCodeEditor.uid=${homeCodeEditor?.uid}, newCodeEditor=${newCodeEditor.uid}")
+                it.release()
+            }
+        }
+
+        homeCodeEditor = newCodeEditor
+    }
 
 }

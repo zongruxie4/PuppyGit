@@ -45,8 +45,10 @@ class UndoStack(
     var codeEditor: MyCodeEditor? = null,
 ) {
 
-    fun reset(filePath:String, force:Boolean) {
-        cleanUnusedStyles()
+    fun reset(filePath:String, force:Boolean, cleanUnusedStyles: Boolean = true) {
+        if(cleanUnusedStyles) {
+            this.cleanUnusedStyles()
+        }
 
         if(force.not() && filePath == this.filePath) {
             return
@@ -113,24 +115,24 @@ class UndoStack(
     /**
      * @return true saved, false not saved
      */
-    fun undoStackPush(state: TextEditorState):Boolean {
+    fun undoStackPush(state: TextEditorState, force: Boolean = false):Boolean {
         return undoLock.withLock {
             redoLock.withLock {
-                undoStackPushNoLock(state)
+                undoStackPushNoLock(state, force)
             }
         }
     }
 
-    private fun undoStackPushNoLock(state: TextEditorState):Boolean {
-        val headState = peek(undoStack)
+    private fun undoStackPushNoLock(state: TextEditorState, force: Boolean = false):Boolean {
+//        val headState = peek(undoStack)
         // first time save or switched multi selection mode, save without interval check
-        val selectModeChanged = headState == null || headState.isMultipleSelectionMode != state.isMultipleSelectionMode
+//        val selectModeChanged = headState.isMultipleSelectionMode != state.isMultipleSelectionMode
 
         val now = getSecFromTime()
 
-        val snapshotLastSaveAt = undoLastSaveAt
         //在时间间隔内只存一版
-        if(selectModeChanged || undoSaveIntervalInSec == 0 || snapshotLastSaveAt == 0L || (now - snapshotLastSaveAt) > undoSaveIntervalInSec) {
+        // force || disabled save interval || first time push || over the save interval
+        if(force || undoSaveIntervalInSec == 0 || undoLastSaveAt == 0L || (now - undoLastSaveAt) > undoSaveIntervalInSec) {
             push(undoStack, state)
             undoLastSaveAt = now
 
@@ -292,6 +294,15 @@ class UndoStack(
 
     private fun redoContainsNoLock(fieldsId:String) : Boolean {
         return redoStack.find { it.fieldsId == fieldsId } != null
+    }
+
+    fun clear() {
+        undoLock.withLock {
+            undoStack.clear()
+        }
+        redoLock.withLock {
+            redoStack.clear()
+        }
     }
 
 }

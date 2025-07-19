@@ -1731,7 +1731,8 @@ class TextEditorState(
 //      don't use `this.fields !== other.fields` instead of `fieldsId` compare,
         //      because maybe fields value no change, but the selection range changed,
         //      so the fields will have a new copy, but the text still are the same
-        return this.fieldsId != other.fieldsId || this.isMultipleSelectionMode != other.isMultipleSelectionMode || this.selectedIndices != other.selectedIndices
+//        return this.fieldsId != other.fieldsId || this.isMultipleSelectionMode != other.isMultipleSelectionMode || this.selectedIndices != other.selectedIndices
+        return this.fieldsId != other.fieldsId
     }
 
     private fun internalCreate(
