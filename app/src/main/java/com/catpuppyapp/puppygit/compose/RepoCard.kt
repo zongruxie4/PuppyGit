@@ -432,22 +432,25 @@ fun RepoCard(
                             icon = Icons.Outlined.Folder,
                             tooltipText = stringResource(R.string.storage)
                         )
-                        ClickableText (
-                            text = FsUtils.getPathWithInternalOrExternalPrefix(fullPath = repoDto.fullSavePath),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
-                                onLongClick = { // long press will copy path
-//                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    clipboardManager.setText(AnnotatedString(repoDto.fullSavePath))
-                                    Msg.requireShow(activityContext.getString(R.string.copied))
-                                }
-                            ) {  // on click
-                                goToFilesPage(repoDto.fullSavePath)
-                            },
-                            fontWeight = defaultFontWeight
 
-                        )
+                        ScrollableRow {
+                            ClickableText (
+                                text = FsUtils.getPathWithInternalOrExternalPrefix(fullPath = repoDto.fullSavePath),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
+                                    onLongClick = { // long press will copy path
+    //                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        clipboardManager.setText(AnnotatedString(repoDto.fullSavePath))
+                                        Msg.requireShow(activityContext.getString(R.string.copied))
+                                    }
+                                ) {  // on click
+                                    goToFilesPage(repoDto.fullSavePath)
+                                },
+                                fontWeight = defaultFontWeight
+    
+                            )
+                        }
                     }
 
 
