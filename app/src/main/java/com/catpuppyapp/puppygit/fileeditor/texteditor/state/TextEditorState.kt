@@ -136,7 +136,7 @@ class TextEditorState(
             val lastState = if(trueUndoFalseRedo) undoStack.undoStackPop() else undoStack.redoStackPop()
             if(lastState != null) {
                 //如果未编辑且fieldsId没变，则为真，否则为假
-                isContentEdited.value = !(isContentEdited.value.not() && fieldsId == lastState.fieldsId)
+                isContentEdited.value = isContentEdited.value || fieldsId != lastState.fieldsId
                 editorPageIsContentSnapshoted?.value=false
 //                _fieldsId = TextEditorState.newId()
 
