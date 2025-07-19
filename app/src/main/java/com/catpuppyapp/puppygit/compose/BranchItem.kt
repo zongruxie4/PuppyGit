@@ -258,7 +258,8 @@ fun BranchItem(
                         text = thisObj.getAheadBehind(activityContext, false),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        fontWeight = defaultFontWeight
+                        fontWeight = defaultFontWeight,
+                        color = if(thisObj.alreadyUpToDate()) MyStyleKt.TextColor.getHighlighting() else Color.Unspecified
 
                     )
                 }

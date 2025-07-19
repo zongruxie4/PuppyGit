@@ -40,7 +40,7 @@ class BranchNameAndTypeDto {
     }
 
     fun getAheadBehind(activityContext: Context, searchable: Boolean):String {
-        return if(ahead==0 && 0==behind) {
+        return if(alreadyUpToDate()) {
             if(searchable) {
                 BranchSearchableText.upToDate
             }else {
@@ -54,6 +54,8 @@ class BranchNameAndTypeDto {
             }
         }
     }
+
+    fun alreadyUpToDate() = ahead == 0 && behind == 0;
 
     //若remote name不存在歧义，返回移除remotename后的分支名(例如输入 origin/main ，返回 main)，否则返回空字符串
     fun getBranchNameNoRemotePrefixOrEmptyStrIfAmbiguous():String {
