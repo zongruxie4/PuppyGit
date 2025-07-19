@@ -2122,10 +2122,14 @@ class TextEditorState(
                 val style = curSpan.style
                 val foregroundColor = Color(RendererUtils.getForegroundColor(curSpan, colorScheme))
 //                println("forecolor = ${RendererUtils.getForegroundColor(curSpan, colorScheme)}")
-                val backgroundColor = Color(RendererUtils.getBackgroundColor(curSpan, colorScheme))
+
+                // disable for avoid bg color conflicts when editor's merge mode on
+                //   (but, actually, I never have seen this bg colors, maybe most time is transparency)
+//                val backgroundColor = Color(RendererUtils.getBackgroundColor(curSpan, colorScheme))
                 val fontWeight = if(TextStyle.isBold(style)) FontWeight.Bold else null
                 val fontStyle = if(TextStyle.isItalics(style)) FontStyle.Italic else null
-                withStyle(SpanStyle(color = foregroundColor, fontStyle = fontStyle, fontWeight = fontWeight, background = backgroundColor)) {
+//                withStyle(SpanStyle(color = foregroundColor, fontStyle = fontStyle, fontWeight = fontWeight, background = backgroundColor)) {
+                withStyle(SpanStyle(color = foregroundColor, fontStyle = fontStyle, fontWeight = fontWeight)) {
                     append(rawText.substring(textRange))
                 }
             }
