@@ -3,11 +3,11 @@
 
 ---
 1.1.3.4v110 - 20250719:
-- minor bugs fixed
+- fix editor undo stack not clear after reload file
 
 
 
-- 小bug修正
+- 修复编辑器在重载文件后不清空撤销栈的bug
 
 
 ---

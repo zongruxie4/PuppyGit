@@ -1,1 +1,1 @@
-- minor bugs fixed
+- fix editor undo stack not clear after reload file
