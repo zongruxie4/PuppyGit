@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.git
 
+import com.catpuppyapp.puppygit.codeeditor.HunkSyntaxHighlighter
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.utils.compare.CmpUtil
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
@@ -68,6 +69,8 @@ data class DiffItemSaver (
 
     //根据delta比较出来的实际的修改类型，最终在diff页面显示的修改类型以这个为准
     var changeType:String = Cons.gitStatusUnmodified,
+
+    val hunkSyntaxHighlighter: HunkSyntaxHighlighter = HunkSyntaxHighlighter()
 ){
 
 
