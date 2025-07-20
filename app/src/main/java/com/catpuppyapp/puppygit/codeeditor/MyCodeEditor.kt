@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.codeeditor
 
 import android.content.Context
 import android.os.Bundle
+import androidx.annotation.WorkerThread
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -20,15 +21,13 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.lang.analysis.StyleReceiver
 import io.github.rosemoe.sora.lang.styling.Styles
-import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
-import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.ContentReference
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicBoolean
@@ -61,7 +60,6 @@ class MyCodeEditor(
     val plScope: MutableState<PLScope>,
 ) {
     val uid = getShortUUID()
-    private var lowMemCount:Int = 0
     private var file: FuckSafFile = FuckSafFile(appContext, FilePath(""))
 
 
@@ -107,22 +105,27 @@ class MyCodeEditor(
     }
 
 
+    // Don't call this on main thread
+    @WorkerThread
     fun noMoreMemory() : Boolean {
-        if(appAvailHeapSizeInMb() < lowestMemInMb) {
-            lowMemCount++
-        }else {
-            lowMemCount = 0
-        }
+        var lowMemCount = 0
 
-        return if(lowMemCount >= lowestMemLimitCount) {
-            resetAllPlScopes()
+        while (true) {
+            if(appAvailHeapSizeInMb() < lowestMemInMb) {
+                if(++lowMemCount >= lowestMemLimitCount) {
+                    resetAllPlScopes()
 
-            release()
-            Msg.requireShowLongDuration("Syntax highlighting disabled: No more memory!")
+                    release()
+                    Msg.requireShowLongDuration("Syntax highlighting disabled: No more memory!")
 
-            true
-        }else {
-            false
+                    return true
+                }
+
+                // 如果内存不够，会增长，直到无法增长，然后throw OOM，所以需要delay一下才能确定是否还有空闲内存
+                runBlocking { delay(100) }
+            }else {
+                return false
+            }
         }
     }
 
@@ -162,8 +165,6 @@ class MyCodeEditor(
 
 
     fun reset(newFile: FuckSafFile, force: Boolean) {
-        lowMemCount = 0
-
         if(force.not() && newFile.path.ioPath == file.path.ioPath) {
             return
         }
