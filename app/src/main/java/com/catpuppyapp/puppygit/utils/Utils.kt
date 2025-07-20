@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.media.MediaMetadataRetriever
 import android.os.Build
 import android.widget.Toast
+import androidx.annotation.WorkerThread
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -34,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -1376,4 +1378,38 @@ fun appAvailHeapSizeInMb():Long {
     }
 
     return availHeapSizeInMB
+}
+
+/**
+ *
+ * if no more memory over limit times, will do act then return true, else return false and do nothing
+ *
+ * Don't call this on main thread
+ * even call, will not throw an err,
+ * because the @WorkerThread is not a force limit
+ *
+ * @return true means no more memory, otherwise false
+ */
+@WorkerThread
+fun noMoreHeapMemThenDoAct(
+    lowestMemInMb: Int = 30,
+    lowestMemLimitCount: Int = 3,
+    act: () -> Unit,
+) : Boolean  {
+    var lowMemCount = 0
+
+    while (true) {
+        if(appAvailHeapSizeInMb() < lowestMemInMb) {
+            if(++lowMemCount >= lowestMemLimitCount) {
+                act()
+
+                return true
+            }
+
+            // 如果内存不够，会增长，直到无法增长，然后throw OOM，所以需要delay一下才能确定是否还有空闲内存
+            runBlocking { delay(100) }
+        }else {
+            return false
+        }
+    }
 }

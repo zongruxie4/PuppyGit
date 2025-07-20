@@ -17,4 +17,6 @@ object StrCons {
     const val withLease = "with-lease"
     // this is git refspec, shouldn't translate also
     const val refspec = "Refspec"
+
+    const val syntaxHightDisabledDueToNoMoreMem = "Syntax highlighting disabled: No more memory!"
 }

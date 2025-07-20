@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
+import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.screen.shared.FilePath
@@ -12,11 +13,11 @@ import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.appAvailHeapSizeInMb
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getRandomUUID
 import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.isLocked
+import com.catpuppyapp.puppygit.utils.noMoreHeapMemThenDoAct
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.lang.analysis.StyleReceiver
@@ -27,7 +28,6 @@ import io.github.rosemoe.sora.text.ContentReference
 import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicBoolean
@@ -42,8 +42,8 @@ import kotlin.math.absoluteValue
 // 如果app可用内存连续`lowestMemLimitCount`次小于`lowestMemInMb`，将禁用语法高亮并释放相关内存，
 //   否则，app可能会因OOM而崩溃，会导致用户正在编辑的文件数据丢失，不只是未保存内容丢失，
 //   源文件可能会在写入时进程被杀，导致写入终止，所以源文件可能损坏或丢失比预期更多的内容。
-private const val lowestMemInMb = 30
-private const val lowestMemLimitCount = 3
+//private const val lowestMemInMb = 30
+//private const val lowestMemLimitCount = 3
 
 
 private const val TAG = "MyCodeEditor"
@@ -108,24 +108,13 @@ class MyCodeEditor(
     // Don't call this on main thread
     @WorkerThread
     fun noMoreMemory() : Boolean {
-        var lowMemCount = 0
+        return noMoreHeapMemThenDoAct {
+            resetAllPlScopes()
 
-        while (true) {
-            if(appAvailHeapSizeInMb() < lowestMemInMb) {
-                if(++lowMemCount >= lowestMemLimitCount) {
-                    resetAllPlScopes()
+            release()
 
-                    release()
-                    Msg.requireShowLongDuration("Syntax highlighting disabled: No more memory!")
+            Msg.requireShowLongDuration(StrCons.syntaxHightDisabledDueToNoMoreMem)
 
-                    return true
-                }
-
-                // 如果内存不够，会增长，直到无法增长，然后throw OOM，所以需要delay一下才能确定是否还有空闲内存
-                runBlocking { delay(100) }
-            }else {
-                return false
-            }
         }
     }
 

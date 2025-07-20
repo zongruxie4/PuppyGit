@@ -16,6 +16,7 @@ import com.catpuppyapp.puppygit.codeeditor.IndentChar
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.codeeditor.StylesResult
 import com.catpuppyapp.puppygit.codeeditor.StylesUpdateRequest
+import com.catpuppyapp.puppygit.codeeditor.TextMateUtil
 import com.catpuppyapp.puppygit.codeeditor.scopeInvalid
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.Ret
@@ -2100,7 +2101,7 @@ class TextEditorState(
 
 
     private fun generateAnnotatedStringForLine(textFieldState: TextFieldState, spans:List<Span>): AnnotatedString {
-        val colorScheme = codeEditor?.colorScheme
+        val colorScheme = TextMateUtil.colorScheme
         if(colorScheme == null) {
             return AnnotatedString(textFieldState.value.text)
         }
