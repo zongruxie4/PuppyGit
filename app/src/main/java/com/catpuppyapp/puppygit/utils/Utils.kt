@@ -1390,8 +1390,9 @@ fun appAvailHeapSizeInMb():Long {
  *
  * @return true means no more memory, otherwise false
  */
+@Deprecated("due to it use a delay for more accurately result, so if run this in concurrency way, maybe got a backlog of many mem check tasks")
 @WorkerThread
-fun noMoreHeapMemThenDoAct(
+fun noMoreHeapMemThenDoAct_Deprecated(
     lowestMemInMb: Int = 30,
     lowestMemLimitCount: Int = 3,
     act: () -> Unit,
@@ -1411,5 +1412,24 @@ fun noMoreHeapMemThenDoAct(
         }else {
             return false
         }
+    }
+}
+
+
+@WorkerThread
+fun noMoreHeapMemThenDoAct(
+    // 这个值不应该太大，因为内存过低时会回收，
+    // 回收后可能会有更多可用内存，如果太大，在回收内存前就会认为内存不足了
+    lowestMemInMb: Int = 16,
+
+    act: () -> Unit,
+) : Boolean  {
+    if(appAvailHeapSizeInMb() < lowestMemInMb) {
+        act()
+
+        return true
+
+    }else {
+        return false
     }
 }
