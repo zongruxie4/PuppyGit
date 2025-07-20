@@ -676,12 +676,13 @@ fun DiffRow (
             ) {
 
                 //StringPart是比较过后的解析出哪些部分是真修改，哪些不是的一个数组，每个元素都包含完整字符串一部分，按序拼接即可得到原字符串
-                val lastIndex = stringPartList!!.lastIndex  //用来判断，最后一个条目，需要移除末尾换行符
+//                val lastIndex = stringPartList!!.lastIndex  //用来判断，最后一个条目，需要移除末尾换行符
 
                 //注意：这里不能改成用多个Text组件，不然若超过屏幕宽度软换行会失效
                 Text(
                     text = buildAnnotatedString {
                         stylePartList?.forEach { stylePart ->
+                            这算法不对，需要合并一下两个range
                             val found = stringPartList.find { it.start <= stylePart.range.start && it.end > stylePart.range.endInclusive }
                             val style = if(found != null && found.modified) stylePart.style.merge(SpanStyle(background = bgColor)) else stylePart.style
                             withStyle(style) {
