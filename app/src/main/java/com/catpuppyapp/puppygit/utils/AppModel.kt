@@ -16,6 +16,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
+import com.catpuppyapp.puppygit.codeeditor.TextMateUtil
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.AppContainer
@@ -636,6 +637,8 @@ object AppModel {
         }
 
 
+        // init text mate theme and grammers
+        TextMateUtil.doInit(applicationContext)
 
         //初始化与谷歌play的连接，查询支付信息之类的
         //            Billing.init(AppModel.appContext)

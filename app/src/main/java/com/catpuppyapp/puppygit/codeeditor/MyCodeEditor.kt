@@ -95,8 +95,6 @@ class MyCodeEditor(
 
 
     init {
-        TextMateUtil.doInit(appContext)
-
         undoStack?.value?.codeEditor = this
 
 
