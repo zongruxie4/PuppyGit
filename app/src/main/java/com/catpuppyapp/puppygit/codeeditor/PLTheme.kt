@@ -31,7 +31,7 @@ object PLTheme {
 //        init(inDarkTheme)
 //    }
 
-    fun applyTheme(inDarkTheme: Boolean) {
+    fun setTheme(inDarkTheme: Boolean) {
         val theme = if(inDarkTheme) THEME_DARK else THEME_LIGHT
         ThemeRegistry.getInstance().setTheme(theme)
     }

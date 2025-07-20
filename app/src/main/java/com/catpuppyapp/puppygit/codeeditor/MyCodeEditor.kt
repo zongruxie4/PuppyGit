@@ -64,8 +64,7 @@ class MyCodeEditor(
     private var lowMemCount:Int = 0
     private var file: FuckSafFile = FuckSafFile(appContext, FilePath(""))
 
-    var colorScheme: EditorColorScheme = EditorColorScheme()
-        private set
+
 
     internal var latestStyles: StylesResult? = null
 
@@ -100,10 +99,6 @@ class MyCodeEditor(
 
         undoStack?.value?.codeEditor = this
 
-        colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
-
-        // 必须调用，不然没颜色
-        colorScheme.applyDefault()
 
         // for clear when Activity destroy
 //        AppModel.editorCache.add(this)
@@ -323,7 +318,7 @@ class MyCodeEditor(
         // if no bug, should not trigger full syntax analyze a lot
         MyLog.w(TAG, "will run full syntax highlighting analyze")
 
-        PLTheme.applyTheme(Theme.inDarkTheme)
+        PLTheme.setTheme(Theme.inDarkTheme)
 
         this.let {
 //            clearStylesChannel()

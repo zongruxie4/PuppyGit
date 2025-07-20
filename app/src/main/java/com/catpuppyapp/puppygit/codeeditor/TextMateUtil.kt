@@ -4,15 +4,22 @@ import android.content.Context
 import com.catpuppyapp.puppygit.utils.MyLog
 import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.lang.analysis.StyleReceiver
+import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
+import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 
 
 private const val TAG = "TextMateInit"
 
 object TextMateUtil {
     private var inited = false
+
+    // colorScheme is shareable
+    var colorScheme: EditorColorScheme = EditorColorScheme()
+        private set
 
     // only need init once
     fun doInit(appContext: Context) {
@@ -24,6 +31,12 @@ object TextMateUtil {
 
         try {
             setupTextmate(appContext)
+
+
+            colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
+
+            // 必须调用，不然没颜色
+            colorScheme.applyDefault()
         }catch (e: Exception) {
             inited = false
             MyLog.e(TAG, "$TAG#doInit err: ${e.stackTraceToString()}")
