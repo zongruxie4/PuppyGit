@@ -42,16 +42,16 @@ class HunkSyntaxHighlighter(
 
 
     fun analyze(scope: PLScope = languageScope) {
-        if(PLScope.scopeTypeInvalid(scope, autoAsInvalid = false)) {
-            hunk.clearStyles()
-            return
-        }
-
         // only left two cases: auto or not
         val scope = if(scope == PLScope.AUTO) {
             PLScope.guessScopeType(hunk.diffItemSaver.fileName())
         } else {
             scope
+        }
+
+        if(PLScope.scopeTypeInvalid(scope)) {
+            hunk.clearStyles()
+            return
         }
 
         if(noMoreMemory()) {
