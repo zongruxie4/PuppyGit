@@ -292,7 +292,7 @@ enum class PLScope(val scope: String) {
             plScope: PLScope?,
             autoAsInvalid: Boolean = true,
             noneAsInvalid: Boolean = true
-        ) = scopeInvalid(plScope?.scope)
+        ) = scopeInvalid(plScope?.scope, autoAsInvalid = autoAsInvalid, noneAsInvalid = noneAsInvalid)
 
 
 
