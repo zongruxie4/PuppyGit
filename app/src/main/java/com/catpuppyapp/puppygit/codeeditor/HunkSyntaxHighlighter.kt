@@ -18,6 +18,7 @@ class HunkSyntaxHighlighter(
     val stylesMap: SnapshotStateMap<String, HunkStylesResult> = mutableStateMapOf(),
     val plScope: MutableState<PLScope> = mutableStateOf(PLScope.AUTO),
 ) {
+    var languageScope: PLScope = PLScope.NONE
 
 }
 

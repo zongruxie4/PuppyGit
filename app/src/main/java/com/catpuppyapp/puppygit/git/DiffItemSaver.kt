@@ -70,7 +70,7 @@ data class DiffItemSaver (
     //根据delta比较出来的实际的修改类型，最终在diff页面显示的修改类型以这个为准
     var changeType:String = Cons.gitStatusUnmodified,
 
-    val hunkSyntaxHighlighter: HunkSyntaxHighlighter = HunkSyntaxHighlighter()
+//    val hunkSyntaxHighlighter: HunkSyntaxHighlighter = HunkSyntaxHighlighter()
 ){
 
 
@@ -148,6 +148,20 @@ class PuppyHunkAndLines {
     fun clearCachesForShown(){
         mergedAddDelLine.clear()
         modifyResultMap.clear()
+    }
+
+    var cachedLinesString:String? = null
+    fun linesToString(forceRefreshCache:Boolean = false) : String {
+        if(forceRefreshCache.not() && cachedLinesString != null) {
+            return cachedLinesString!!
+        }
+
+        val sb = StringBuilder()
+        for (i in lines) {
+            // content already included '\n'
+            sb.append(i.content)
+        }
+        return sb.toString().let { cachedLinesString = it; it }
     }
 
 
