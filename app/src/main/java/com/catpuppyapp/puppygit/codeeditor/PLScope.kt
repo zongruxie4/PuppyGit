@@ -70,7 +70,7 @@ enum class PLScope(val scope: String) {
         val SCOPES = PLScope.entries.map { it.scope }
         val SCOPES_NO_AUTO = PLScope.entries.filter { it != AUTO }
 
-        private fun guessScopeType(fileName: String) : PLScope {
+        fun guessScopeType(fileName: String) : PLScope {
             val fileName = fileName.lowercase()
 
             if(fileName.endsWith(".txt") || fileName.endsWith(".text")) {
@@ -276,29 +276,26 @@ enum class PLScope(val scope: String) {
 
         private fun guessScope(fileName: String) = guessScopeType(fileName).scope
 
-        fun scopeInvalid(plScope: String?) :Boolean {
+        fun scopeInvalid(
+            plScope: String?,
+            autoAsInvalid: Boolean = true,
+            noneAsInvalid: Boolean = true
+        ) :Boolean {
             return plScope == null
-                    || plScope == NONE.scope
-                    || plScope == AUTO.scope
+                    || (autoAsInvalid && plScope == AUTO.scope)
+                    || (noneAsInvalid && plScope == NONE.scope)
                     || plScope.isBlank()
                     || !SCOPES.contains(plScope)
         }
 
+        fun scopeTypeInvalid(
+            plScope: PLScope?,
+            autoAsInvalid: Boolean = true,
+            noneAsInvalid: Boolean = true
+        ) = scopeInvalid(plScope?.scope)
 
-        fun updatePlScopeIfNeeded(plScope: MutableState<PLScope>, fileName: String) {
-            // if was detected language or selected by user, then will not update program language scope again
-            if(plScope.value == AUTO) {
-                plScope.value = if(SettingsUtil.isEditorSyntaxHighlightEnabled()) {
-                    PLScope.guessScopeType(fileName)
-                }else {
-                    NONE
-                }
-            }
-        }
 
-        fun resetPlScope(plScope: MutableState<PLScope>) {
-            plScope.value = AUTO
-        }
+
 
     }
 }

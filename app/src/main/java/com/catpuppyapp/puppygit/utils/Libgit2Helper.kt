@@ -44,6 +44,7 @@ import com.catpuppyapp.puppygit.jni.LibgitTwo
 import com.catpuppyapp.puppygit.jni.SaveBlobRet
 import com.catpuppyapp.puppygit.jni.SaveBlobRetCode
 import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
+import com.catpuppyapp.puppygit.msg.OneTimeToast
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -1538,11 +1539,14 @@ object Libgit2Helper {
         checkChannelLinesLimit:Int,  // only work when `loadChannel` is not null
         checkChannelSizeLimit:Long,  // only work when `loadChannel` is not null
         // loadChannelLock:Mutex?,
+
+        // syntax highlighting, no more memory, will use this notify user
+        noMoreMemToaster: OneTimeToast,
     ):DiffItemSaver{
         val funName = "getSingleDiffItem"
         MyLog.d(TAG, "#$funName(): relativePathUnderRepo=${relativePathUnderRepo}, fromTo=${fromTo}")
 
-        val diffItem = DiffItemSaver(relativePathUnderRepo = relativePathUnderRepo, fromTo = fromTo)
+        val diffItem = DiffItemSaver(relativePathUnderRepo = relativePathUnderRepo, fromTo = fromTo, noMoreMemToaster = noMoreMemToaster)
 
         val options = Diff.Options.create()
 
@@ -1681,7 +1685,7 @@ object Libgit2Helper {
             val hunkInfo = patch.getHunk(i) ?:continue
             val hunk = hunkInfo.hunk
             val lineCnt = hunkInfo.lines
-            val hunkAndLines = PuppyHunkAndLines()
+            val hunkAndLines = PuppyHunkAndLines(diffItem)
             hunkAndLines.hunk.header = hunk.header
 
 //                    libgit2 1.7.1 ，经过测试，我发现其计算的header长度不对，该在 @@结束，

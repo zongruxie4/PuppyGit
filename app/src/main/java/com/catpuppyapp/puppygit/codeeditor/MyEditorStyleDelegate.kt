@@ -28,6 +28,12 @@ class MyEditorStyleDelegate(
     }
 
     override fun setStyles(sourceManager: AnalyzeManager, styles: Styles?, action: Runnable?) {
+        val expectedAnalyzeManager = codeEditor.myLang?.analyzeManager
+        if(sourceManager != expectedAnalyzeManager) {
+            MyLog.w(TAG, "sourceManager doesn't match: sourceManager=$sourceManager, expectedAnalyzeManager=$expectedAnalyzeManager")
+            return
+        }
+
 //        val requester = codeEditor.stylesUpdateRequestChannel.tryReceive().getOrNull()
 //        if(requester == null || requester.ignoreThis) {
 //            return

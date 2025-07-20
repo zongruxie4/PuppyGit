@@ -1,37 +1,128 @@
 package com.catpuppyapp.puppygit.codeeditor
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
+import android.content.Context
+import android.os.Bundle
+import androidx.annotation.WorkerThread
+import androidx.compose.ui.text.SpanStyle
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
+import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.getRandomUUID
+import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.lang.styling.Styles
+import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
+import io.github.rosemoe.sora.text.Content
+import io.github.rosemoe.sora.text.ContentReference
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.locks.ReentrantReadWriteLock
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
+
+
+private const val TAG = "HunkSyntaxHighlighter"
 
 class HunkSyntaxHighlighter(
-    // low mem count应属于页面，所有hunk共享同一low mem count
-    val getLowMemoryCount: suspend () -> Unit,
-    val updateLowMemCount: suspend (Int) -> Unit,
-
-    val stylesMapLock: ReentrantReadWriteLock = ReentrantReadWriteLock(),
-    val stylesMap: SnapshotStateMap<String, HunkStylesResult> = mutableStateMapOf(),
-    val plScope: MutableState<PLScope> = mutableStateOf(PLScope.AUTO),
+    val hunk: PuppyHunkAndLines,
 ) {
-    var languageScope: PLScope = PLScope.NONE
+    val appContext: Context = AppModel.realAppContext
+    var languageScope: PLScope = PLScope.AUTO
+    val analyzeLock = ReentrantLock()
+    var myLang: TextMateLanguage? = null
 
+
+    // Don't call this on main thread
+    @WorkerThread
+    fun noMoreMemory() : Boolean {
+        val disabledOrNoMore = hunk.diffItemSaver.syntaxDisabledOrNoMoreMem()
+
+        if(disabledOrNoMore) {
+            languageScope = PLScope.AUTO
+        }
+
+        return disabledOrNoMore
+    }
+
+
+    fun analyze(scope: PLScope = languageScope) {
+        if(PLScope.scopeTypeInvalid(scope, autoAsInvalid = false)) {
+            hunk.clearStyles()
+            return
+        }
+
+        // only left two cases: auto or not
+        val scope = if(scope == PLScope.AUTO) {
+            PLScope.guessScopeType(hunk.diffItemSaver.fileName())
+        } else {
+            scope
+        }
+
+        if(noMoreMemory()) {
+            return
+        }
+
+
+        analyzeLock.withLock {
+            if(noMoreMemory()) {
+                return
+            }
+
+            doAnalyzeNoLock(scope)
+        }
+    }
+
+    private fun doAnalyzeNoLock(scope: PLScope) {
+        val text = hunk.linesToString()
+        // even text is empty, still need create language object
+//        if(text.isEmpty()) {
+//            return
+//        }
+
+//        println("text: $text")
+
+        // if no bug, should not trigger full syntax analyze a lot
+        MyLog.w(TAG, "will run full syntax highlighting analyze")
+
+        PLTheme.setTheme(Theme.inDarkTheme)
+
+        TextMateUtil.cleanLanguage(myLang)
+
+
+        // run new analyze
+        val autoComplete = false
+        val lang = TextMateLanguage.create(scope.scope, autoComplete)
+        myLang = lang
+
+
+
+        try {
+            //闭包的receiver和给函数传参的是同一个实例
+            TextMateUtil.setReceiverThenDoAct(lang, MyHunkStyleDelegate(this)) { receiver ->
+                lang.analyzeManager.reset(ContentReference(Content(text)), Bundle(), receiver)
+            }
+        }catch (e: Exception) {
+            // maybe will got NPE, if language changed to null by a new analyze
+            MyLog.e(TAG, "#doAnalyzeNoLock() err: call `TextMateUtil.setReceiverThenDoAct()` err: fileRelativePath=${hunk.diffItemSaver.relativePathUnderRepo} err=${e.stackTraceToString()}")
+
+        }
+    }
+
+    fun applyStyles(styles: Styles) {
+        val spansReader = styles.spans.read()
+        hunk.lines.forEachIndexedBetter { idx, line ->
+            val spans = spansReader.getSpansOnLine(idx)
+            TextMateUtil.forEachSpanResult(line.content, spans) { range, style ->
+                hunk.diffItemSaver.putStyles(line.key, LineStyle(range, style))
+            }
+        }
+    }
 }
 
 
-data class HunkStylesResult(
-    val inDarkTheme: Boolean,
-    val styles: Styles,
-    val from: StylesResultFrom,
-    val uniqueId: String = getRandomUUID(),
-    val hunkId:String,
-    val languageScope: PLScope,
-    val applied: AtomicBoolean = AtomicBoolean(false)
-) {
-
-
-}
+data class LineStyle(
+    val range: IntRange,
+    val style: SpanStyle,
+)

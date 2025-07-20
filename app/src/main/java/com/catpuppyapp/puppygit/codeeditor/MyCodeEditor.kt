@@ -5,11 +5,14 @@ import android.os.Bundle
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
+import com.catpuppyapp.puppygit.codeeditor.PLScope.AUTO
+import com.catpuppyapp.puppygit.codeeditor.PLScope.NONE
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
@@ -131,11 +134,23 @@ class MyCodeEditor(
     // reset plScope state
     // 重置 plScope state，影响编辑器语法高亮弹窗选中的语言
     fun resetPlScope() {
-        PLScope.resetPlScope(plScope)
+        plScope.value = AUTO
+    }
+
+
+    private fun updatePlScopeIfNeeded(plScope: MutableState<PLScope>, fileName: String) {
+        // if was detected language or selected by user, then will not update program language scope again
+        if(plScope.value == AUTO) {
+            plScope.value = if(SettingsUtil.isEditorSyntaxHighlightEnabled()) {
+                PLScope.guessScopeType(fileName)
+            }else {
+                NONE
+            }
+        }
     }
 
     fun updatePlScopeThenAnalyze() {
-        PLScope.updatePlScopeIfNeeded(plScope, file.name)
+        updatePlScopeIfNeeded(plScope, file.name)
         // call this is safe, if have cached styles, will not re-analyze
         analyze()
     }
@@ -221,7 +236,7 @@ class MyCodeEditor(
                 TextMateUtil.setReceiverThenDoAct(language, receiver, stylesUpdateRequest.act)
             }catch (e: Exception) {
                 // maybe will got NPE, if language changed to null by a new analyze
-                MyLog.e(TAG, "#setReceiverThenDoAct() err: targetFieldsId=${receiver.editorState?.fieldsId}, err=${e.stackTraceToString()}")
+                MyLog.e(TAG, "#sendUpdateStylesRequest() err: call `TextMateUtil.setReceiverThenDoAct()` err: targetFieldsId=${receiver.editorState?.fieldsId}, err=${e.stackTraceToString()}")
 
             }
         }
@@ -310,44 +325,42 @@ class MyCodeEditor(
 
         PLTheme.setTheme(Theme.inDarkTheme)
 
-        this.let {
+
 //            clearStylesChannel()
 //            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = true, editorState, {}))
 //            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
 
 
 
-            // Destroy old one
-            cleanLanguage()
+        // Destroy old one
+        cleanLanguage()
 
 
-            // run new analyze
-            val autoComplete = false
-            val lang = TextMateLanguage.create(plScope.scope, autoComplete)
-            myLang = lang
+        // run new analyze
+        val autoComplete = false
+        val lang = TextMateLanguage.create(plScope.scope, autoComplete)
+        myLang = lang
 
-            //BEGIN: don't enable these lines, may cause parse err
-            // x wrong) whatever, we don't use it's indent enter pressed feature
-            // x 理解错了好像) 这些值用来计算缩进的，也可能会按回车有关，比如回车时自动补全注释星号，但我这里不用，所以无所谓，能关则关，减少执行无意义操作
+        //BEGIN: don't enable these lines, may cause parse err
+        // x wrong) whatever, we don't use it's indent enter pressed feature
+        // x 理解错了好像) 这些值用来计算缩进的，也可能会按回车有关，比如回车时自动补全注释星号，但我这里不用，所以无所谓，能关则关，减少执行无意义操作
 //            lang.isAutoCompleteEnabled = false  // enable this is fine, and can avoid store identifiers for auto complete (reduce mem use and improve performance), but, already disabled it when create Language, so don't need disable again at here
 //            lang.tabSize = 0  // enable this maybe will cause err when open git config file or other file which have tab size not equals to 0 spaces? I am not sure.
-            //END: don't enable these lines, may cause parse err
+        //END: don't enable these lines, may cause parse err
 
-            // must set receiver, then do act, else the result will sent to unrelated editor state
-            sendUpdateStylesRequest(
-                stylesUpdateRequest = StylesUpdateRequest(
-                    ignoreThis = false,
-                    targetEditorState = editorState,
-                    act = { styleReceiver -> lang.analyzeManager.reset(ContentReference(Content(text)), Bundle(), styleReceiver) }
-                ),
-                language = lang
-            )
+        // must set receiver, then do act, else the result will sent to unrelated editor state
+        sendUpdateStylesRequest(
+            stylesUpdateRequest = StylesUpdateRequest(
+                ignoreThis = false,
+                targetEditorState = editorState,
+                act = { styleReceiver -> lang.analyzeManager.reset(ContentReference(Content(text)), Bundle(), styleReceiver) }
+            ),
+            language = lang
+        )
 //            sendUpdateStylesRequest(StylesUpdateRequest(ignoreThis = false, editorState, {}))
 
 //            it.setEditorLanguage(lang)
 //            it.setText(text)
-
-        }
     }
 
     private fun cleanLanguage() {
@@ -355,14 +368,7 @@ class MyCodeEditor(
         val old: Language? = myLang
         myLang = null
 
-        if (old != null) {
-            val formatter = old.getFormatter()
-            formatter.setReceiver(null)
-            formatter.destroy()
-            old.getAnalyzeManager().setReceiver(null)
-            old.getAnalyzeManager().destroy()
-            old.destroy()
-        }
+        TextMateUtil.cleanLanguage(old)
     }
 
 //    private fun clearStylesChannel() {

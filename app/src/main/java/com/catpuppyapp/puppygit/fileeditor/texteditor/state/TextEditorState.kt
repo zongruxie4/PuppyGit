@@ -2101,37 +2101,12 @@ class TextEditorState(
 
 
     private fun generateAnnotatedStringForLine(textFieldState: TextFieldState, spans:List<Span>): AnnotatedString {
-        val colorScheme = TextMateUtil.colorScheme
-        if(colorScheme == null) {
-            return AnnotatedString(textFieldState.value.text)
-        }
+        val rawText = textFieldState.value.text
 
         return buildAnnotatedString {
-            var start = 0
-            var spanIdx = 1
-            val rawText = textFieldState.value.text
-            while (spanIdx <= spans.size) {
-                val curSpan = spans.get(spanIdx - 1)
-                val nextSpan = spans.getOrNull(spanIdx++)
-                val endExclusive = nextSpan?.column ?: rawText.length
-                val textRange = IntRange(start, endExclusive - 1)
-                // don't check, let'em throw if have any err
-//                if(textRange.start < 0 || textRange.endInclusive >= rawText.length) {
-//                    continue
-//                }
-                start = endExclusive
-                val style = curSpan.style
-                val foregroundColor = Color(RendererUtils.getForegroundColor(curSpan, colorScheme))
-//                println("forecolor = ${RendererUtils.getForegroundColor(curSpan, colorScheme)}")
-
-                // disable for avoid bg color conflicts when editor's merge mode on
-                //   (but, actually, I never have seen this bg colors, maybe most time is transparency)
-//                val backgroundColor = Color(RendererUtils.getBackgroundColor(curSpan, colorScheme))
-                val fontWeight = if(TextStyle.isBold(style)) FontWeight.Bold else null
-                val fontStyle = if(TextStyle.isItalics(style)) FontStyle.Italic else null
-//                withStyle(SpanStyle(color = foregroundColor, fontStyle = fontStyle, fontWeight = fontWeight, background = backgroundColor)) {
-                withStyle(SpanStyle(color = foregroundColor, fontStyle = fontStyle, fontWeight = fontWeight)) {
-                    append(rawText.substring(textRange))
+            TextMateUtil.forEachSpanResult(rawText, spans) { range, style ->
+                withStyle(style) {
+                    append(rawText.substring(range))
                 }
             }
         }

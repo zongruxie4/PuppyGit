@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.codeeditor
 
+import com.catpuppyapp.puppygit.utils.MyLog
 import io.github.rosemoe.sora.lang.analysis.AnalyzeManager
 import io.github.rosemoe.sora.lang.analysis.StyleReceiver
 import io.github.rosemoe.sora.lang.analysis.StyleUpdateRange
@@ -17,8 +18,20 @@ class MyHunkStyleDelegate(
     }
 
     override fun setStyles(sourceManager: AnalyzeManager, styles: Styles?, action: Runnable?) {
+        val expectedAnalyzeManager = highlighter.myLang?.analyzeManager
+        if(sourceManager != expectedAnalyzeManager) {
+            MyLog.w(TAG, "sourceManager doesn't match: sourceManager=$sourceManager, expectedAnalyzeManager=$expectedAnalyzeManager")
+            return
+        }
+
+        if(styles == null) {
+            return
+        }
+
+        highlighter.applyStyles(styles)
 
     }
+
 
     //received styles is full spans, not a part
     override fun updateStyles(

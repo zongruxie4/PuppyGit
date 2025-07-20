@@ -70,4 +70,6 @@ data class DiffSettings (
      * true to use system fonts, else will use app bundled fonts
      */
     var useSystemFonts: Boolean = false,
+
+    val syntaxHighlightEnabled: Boolean = true
 )

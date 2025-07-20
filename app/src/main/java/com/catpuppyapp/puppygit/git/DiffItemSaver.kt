@@ -1,14 +1,27 @@
 package com.catpuppyapp.puppygit.git
 
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.ui.text.SpanStyle
 import com.catpuppyapp.puppygit.codeeditor.HunkSyntaxHighlighter
+import com.catpuppyapp.puppygit.codeeditor.LineStyle
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.StrCons
+import com.catpuppyapp.puppygit.msg.OneTimeToast
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.compare.CmpUtil
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
+import com.catpuppyapp.puppygit.utils.forEachBetter
+import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getShortUUID
+import com.catpuppyapp.puppygit.utils.noMoreHeapMemThenDoAct
 import com.github.git24j.core.Diff
 import java.util.EnumSet
 import java.util.TreeMap
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 
 
 // used to decide which addition line compare to which deletion line in the hunk.
@@ -70,10 +83,55 @@ data class DiffItemSaver (
     //根据delta比较出来的实际的修改类型，最终在diff页面显示的修改类型以这个为准
     var changeType:String = Cons.gitStatusUnmodified,
 
-//    val hunkSyntaxHighlighter: HunkSyntaxHighlighter = HunkSyntaxHighlighter()
-){
+    // styles
+    private val stylesMapLock: ReentrantReadWriteLock = ReentrantReadWriteLock(),
+    // {PuppyLine.key: StylesResult}
+    private val stylesMap: SnapshotStateMap<String, LineStyle> = mutableStateMapOf(),
+    val noMoreMemToaster: OneTimeToast,
+) {
 
+    private var cachedFileName:String? = null
+    fun fileName() = cachedFileName ?: getFileNameFromCanonicalPath(relativePathUnderRepo).let { cachedFileName = it; it }
 
+    // `oneTimeNoMoreMemNotify` should ensure only call once
+    fun startAnalyzeSyntaxHighlight() {
+        if(syntaxDisabledOrNoMoreMem()) {
+            return
+        }
+
+        for(h in hunks) {
+            h.hunkSyntaxHighlighter.analyze()
+        }
+    }
+
+    fun syntaxDisabledOrNoMoreMem(): Boolean {
+        if(!SettingsUtil.isDiffSyntaxHighlightEnabled() || noMoreHeapMemThenDoAct { noMoreMemToaster.show(StrCons.syntaxHightDisabledDueToNoMoreMem) }) {
+            clearStyles()
+            return true
+        }
+
+        return false
+    }
+
+    fun putStyles(lineKey:String, style: LineStyle) {
+        stylesMapLock.write {
+            stylesMap.put(lineKey, style)
+        }
+    }
+
+    fun obtainStyles(lineKey: String): LineStyle? {
+        return stylesMapLock.read {
+            stylesMap.get(lineKey)
+        }
+    }
+
+    fun clearStyles() {
+        stylesMapLock.write { stylesMap.clear() }
+    }
+
+    fun removeStylesByLineKey(lineKey: String) {
+        stylesMapLock.write { stylesMap.remove(lineKey) }
+    }
 
     //获取实际生效的文件大小
     //ps:如果想判断文件大小有无超过限制，用此方法返回值作为 isFileSizeOverLimit() 的入参做判断即可
@@ -102,9 +160,12 @@ data class DiffItemSaver (
             }
         }
     }
+
 }
 
-class PuppyHunkAndLines {
+class PuppyHunkAndLines(
+    val diffItemSaver: DiffItemSaver
+) {
     var hunk:PuppyHunk=PuppyHunk();
     var lines:MutableList<PuppyLine> = mutableListOf()
 
@@ -127,6 +188,8 @@ class PuppyHunkAndLines {
     // 同一行，包含添加和删除，区别只在于末尾是否有换行符，仅显示对应行号一次，且类型为context
     private val mergedAddDelLine:MutableSet<Int> = mutableSetOf()
 
+    val hunkSyntaxHighlighter = HunkSyntaxHighlighter(this)
+
     class MergeAddDelLineResult (
         //是否已经显示过此行，若已显示过，不会在显示，例如第12行只有末尾是否有换行符的区别，遍历到+12时，显示12行作为context，下次遍历到-12，则直接不显示
         // if already showed this line as context, next time same line will not showed again, eg: if +12 and -12 only diff at end of line has "\n" or not, then only show context line 12 once
@@ -145,12 +208,14 @@ class PuppyHunkAndLines {
     /**
      * should clear caches if page re-render
      */
-    fun clearCachesForShown(){
+    fun clearCachesForShown() {
         mergedAddDelLine.clear()
         modifyResultMap.clear()
     }
 
-    var cachedLinesString:String? = null
+
+    private var cachedLinesString:String? = null
+    // make sure call this after all hunk's lines ready
     fun linesToString(forceRefreshCache:Boolean = false) : String {
         if(forceRefreshCache.not() && cachedLinesString != null) {
             return cachedLinesString!!
@@ -355,6 +420,12 @@ class PuppyHunkAndLines {
         modifyResultMap.put(line.compareTargetLineKey, modifyResult2)
 
         return modifyResult2
+    }
+
+    fun clearStyles() {
+        lines.forEachBetter {
+            diffItemSaver.removeStylesByLineKey(it.key)
+        }
     }
 }
 
