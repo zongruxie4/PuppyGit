@@ -125,16 +125,16 @@ object MyStyleKt{
         val lineNum_forDiffInDarkTheme = Color(0xFF4D4D4D)
 
         // DiffScreen: 有匹配的背景颜色
-        val hasMatchedAddedLineBgColorForDiffInLightTheme = Color(0x1B2F9B09)
-        val hasMatchedAddedLineBgColorForDiffInDarkTheme = Color(0x12016505)
-        val hasMatchedDeletedLineBgColorForDiffInLightTheme = Color(0x1E640000)
-        val hasMatchedDeletedLineBgColorForDiffInDarkTheme = Color(0x17910000)
+        val hasMatchedAddedLineBgColorForDiffInLightTheme = Color(0x2F2F9B09)
+        val hasMatchedAddedLineBgColorForDiffInDarkTheme = Color(0x57016505)
+        val hasMatchedDeletedLineBgColorForDiffInLightTheme = Color(0x36640000)
+        val hasMatchedDeletedLineBgColorForDiffInDarkTheme = Color(0x59910000)
 
         // DiffScreen: 无匹配的背景颜色
-        val addedLineBgColorForDiffInLightTheme = Color(0x45089613)
-        val addedLineBgColorForDiffInDarkTheme = Color(0x31009B0B)
-        val deletedLineBgColorForDiffInLightTheme = Color(0x3B7E0000)
-        val deletedLineBgColorForDiffInDarkTheme = Color(0x489F0303)
+        val addedLineBgColorForDiffInLightTheme = Color(0x5E089613)
+        val addedLineBgColorForDiffInDarkTheme = Color(0x90009B0B)
+        val deletedLineBgColorForDiffInLightTheme = Color(0x617E0000)
+        val deletedLineBgColorForDiffInDarkTheme = Color(0xC49F0303)
 
 
         fun lineNumColorForDiff(inDarkTheme:Boolean = Theme.inDarkTheme):Color {
