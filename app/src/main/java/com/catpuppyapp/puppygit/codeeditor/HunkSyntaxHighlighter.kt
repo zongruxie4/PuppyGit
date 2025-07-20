@@ -114,15 +114,18 @@ class HunkSyntaxHighlighter(
         val spansReader = styles.spans.read()
         hunk.lines.forEachIndexedBetter { idx, line ->
             val spans = spansReader.getSpansOnLine(idx)
-            TextMateUtil.forEachSpanResult(line.content, spans) { range, style ->
-                hunk.diffItemSaver.putStyles(line.key, LineStyle(range, style))
+            val lineStyles = mutableListOf<LineStylePart>()
+            TextMateUtil.forEachSpanResult(line.getContentNoLineBreak(), spans) { range, style ->
+                lineStyles.add(LineStylePart(range, style))
             }
+
+            hunk.diffItemSaver.putStyles(line.key, lineStyles)
         }
     }
 }
 
 
-data class LineStyle(
+data class LineStylePart(
     val range: IntRange,
     val style: SpanStyle,
 )

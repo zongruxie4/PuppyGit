@@ -44,6 +44,7 @@ import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.git.CompareLinePair
 import com.catpuppyapp.puppygit.git.CompareLinePairHelper
 import com.catpuppyapp.puppygit.git.CompareLinePairResult
+import com.catpuppyapp.puppygit.git.DiffItemSaver
 import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.getClipboardText
@@ -60,6 +61,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.paddingLineNumber
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -108,7 +110,7 @@ fun DiffRow (
     navController:NavController,
     activityContext:Context,
     lineClickedMenuOffset: DpOffset,
-
+    diffItemSaver: DiffItemSaver,
 ) {
     val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
@@ -654,6 +656,7 @@ fun DiffRow (
             )
         }
 
+        val stylePartList = diffItemSaver.obtainStyles(line.key)
 
         val contentModifier = Modifier
             // if fill max width, will not be able to saw the spaces at the end, because the background will fill the whole line;
@@ -710,7 +713,15 @@ fun DiffRow (
             ) {
                 //文本内容
                 Text(
-                    text = line.getContentNoLineBreak(),
+                    text = buildAnnotatedString {
+                        val contentNoLineBreak = line.getContentNoLineBreak()
+                        stylePartList?.forEachBetter {
+                            withStyle(it.style) {
+                                append(contentNoLineBreak.substring(it.range))
+                            }
+
+                        } ?: contentNoLineBreak
+                    },
                     fontFamily = PLFont.diffCodeFont(),
 
                     color = textColor,

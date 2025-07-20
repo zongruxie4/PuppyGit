@@ -1766,7 +1766,8 @@ fun DiffScreen(
                                                         navController = navController,
                                                         activityContext = activityContext,
                                                         stateKeyTag = stateKeyTag,
-                                                        lineClickedMenuOffset = lineClickedMenuOffset
+                                                        lineClickedMenuOffset = lineClickedMenuOffset,
+                                                        diffItemSaver = diffItem
                                                     )
                                                 }
                                             } else {  // add or del
@@ -1811,7 +1812,8 @@ fun DiffScreen(
                                                                 navController = navController,
                                                                 activityContext = activityContext,
                                                                 stateKeyTag = stateKeyTag,
-                                                                lineClickedMenuOffset = lineClickedMenuOffset
+                                                                lineClickedMenuOffset = lineClickedMenuOffset,
+                                                                diffItemSaver = diffItem
                                                             )
                                                         }
                                                     }
@@ -1872,7 +1874,8 @@ fun DiffScreen(
                                                         navController = navController,
                                                         activityContext = activityContext,
                                                         stateKeyTag = stateKeyTag,
-                                                        lineClickedMenuOffset = lineClickedMenuOffset
+                                                        lineClickedMenuOffset = lineClickedMenuOffset,
+                                                        diffItemSaver = diffItem
                                                     )
                                                 }
                                             }
@@ -1988,7 +1991,8 @@ fun DiffScreen(
                                                             navController = navController,
                                                             activityContext = activityContext,
                                                             stateKeyTag = stateKeyTag,
-                                                            lineClickedMenuOffset = lineClickedMenuOffset
+                                                            lineClickedMenuOffset = lineClickedMenuOffset,
+                                                            diffItemSaver = diffItem
                                                         )
                                                     }
                                                 }
@@ -2025,7 +2029,8 @@ fun DiffScreen(
                                                             navController = navController,
                                                             activityContext = activityContext,
                                                             stateKeyTag = stateKeyTag,
-                                                            lineClickedMenuOffset = lineClickedMenuOffset
+                                                            lineClickedMenuOffset = lineClickedMenuOffset,
+                                                            diffItemSaver = diffItem
                                                         )
                                                     }
                                                 }
@@ -2087,7 +2092,8 @@ fun DiffScreen(
                                                         navController = navController,
                                                         activityContext = activityContext,
                                                         stateKeyTag = stateKeyTag,
-                                                        lineClickedMenuOffset = lineClickedMenuOffset
+                                                        lineClickedMenuOffset = lineClickedMenuOffset,
+                                                        diffItemSaver = diffItem
                                                     )
 
                                                 }
@@ -2136,7 +2142,8 @@ fun DiffScreen(
                                                         navController = navController,
                                                         activityContext = activityContext,
                                                         stateKeyTag = stateKeyTag,
-                                                        lineClickedMenuOffset = lineClickedMenuOffset
+                                                        lineClickedMenuOffset = lineClickedMenuOffset,
+                                                        diffItemSaver = diffItem
                                                     )
                                                 }
                                             }
@@ -2186,7 +2193,8 @@ fun DiffScreen(
                                                     navController = navController,
                                                     activityContext = activityContext,
                                                     stateKeyTag = stateKeyTag,
-                                                    lineClickedMenuOffset = lineClickedMenuOffset
+                                                    lineClickedMenuOffset = lineClickedMenuOffset,
+                                                    diffItemSaver = diffItem
                                                 )
                                             }
                                         }
@@ -2234,7 +2242,8 @@ fun DiffScreen(
                                                 navController = navController,
                                                 activityContext = activityContext,
                                                 stateKeyTag = stateKeyTag,
-                                                lineClickedMenuOffset = lineClickedMenuOffset
+                                                lineClickedMenuOffset = lineClickedMenuOffset,
+                                                diffItemSaver = diffItem
                                             )
                                         }
                                     }
@@ -2560,6 +2569,10 @@ fun DiffScreen(
                             false
                         }
 
+
+                        if(SettingsUtil.isDiffSyntaxHighlightEnabled()) {
+                            diffItemSaver.startAnalyzeSyntaxHighlight()
+                        }
 
                         item.copy(loading = false, submoduleIsDirty = submdirty, diffItemSaver = diffItemSaver)
                     }

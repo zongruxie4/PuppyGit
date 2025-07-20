@@ -2,9 +2,8 @@ package com.catpuppyapp.puppygit.git
 
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.compose.ui.text.SpanStyle
 import com.catpuppyapp.puppygit.codeeditor.HunkSyntaxHighlighter
-import com.catpuppyapp.puppygit.codeeditor.LineStyle
+import com.catpuppyapp.puppygit.codeeditor.LineStylePart
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.msg.OneTimeToast
@@ -86,7 +85,7 @@ data class DiffItemSaver (
     // styles
     private val stylesMapLock: ReentrantReadWriteLock = ReentrantReadWriteLock(),
     // {PuppyLine.key: StylesResult}
-    private val stylesMap: SnapshotStateMap<String, LineStyle> = mutableStateMapOf(),
+    private val stylesMap: SnapshotStateMap<String, List<LineStylePart>> = mutableStateMapOf(),
     val noMoreMemToaster: OneTimeToast,
 ) {
 
@@ -113,13 +112,13 @@ data class DiffItemSaver (
         return false
     }
 
-    fun putStyles(lineKey:String, style: LineStyle) {
+    fun putStyles(lineKey:String, style: List<LineStylePart>) {
         stylesMapLock.write {
             stylesMap.put(lineKey, style)
         }
     }
 
-    fun obtainStyles(lineKey: String): LineStyle? {
+    fun obtainStyles(lineKey: String): List<LineStylePart>? {
         return stylesMapLock.read {
             stylesMap.get(lineKey)
         }
