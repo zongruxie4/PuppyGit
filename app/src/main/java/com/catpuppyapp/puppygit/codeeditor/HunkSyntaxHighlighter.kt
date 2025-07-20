@@ -4,21 +4,15 @@ import android.content.Context
 import android.os.Bundle
 import androidx.annotation.WorkerThread
 import androidx.compose.ui.text.SpanStyle
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
-import com.catpuppyapp.puppygit.utils.getRandomUUID
-import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
 import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.ContentReference
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -74,6 +68,10 @@ class HunkSyntaxHighlighter(
         }
     }
 
+    private fun cleanLanguage() {
+        TextMateUtil.cleanLanguage(myLang)
+    }
+
     private fun doAnalyzeNoLock(scope: PLScope) {
         val text = hunk.linesToString()
         // even text is empty, still need create language object
@@ -88,8 +86,7 @@ class HunkSyntaxHighlighter(
 
         PLTheme.setTheme(Theme.inDarkTheme)
 
-        TextMateUtil.cleanLanguage(myLang)
-
+        cleanLanguage()
 
         // run new analyze
         val autoComplete = false
@@ -112,15 +109,20 @@ class HunkSyntaxHighlighter(
 
     fun applyStyles(styles: Styles) {
         val spansReader = styles.spans.read()
-        hunk.lines.forEachIndexedBetter { idx, line ->
-            val spans = spansReader.getSpansOnLine(idx)
-            val lineStyles = mutableListOf<LineStylePart>()
-            TextMateUtil.forEachSpanResult(line.getContentNoLineBreak(), spans) { range, style ->
-                lineStyles.add(LineStylePart(range, style))
-            }
+        hunk.diffItemSaver.operateStylesMapWithWriteLock { styleMap ->
+            hunk.lines.forEachIndexedBetter { idx, line ->
+                val spans = spansReader.getSpansOnLine(idx)
+                val lineStyles = mutableListOf<LineStylePart>()
+                TextMateUtil.forEachSpanResult(line.getContentNoLineBreak(), spans) { range, style ->
+                    lineStyles.add(LineStylePart(range, style))
+                }
 
-            hunk.diffItemSaver.putStyles(line.key, lineStyles)
+                styleMap.put(line.key, lineStyles)
+            }
         }
+
+        // diff页面只分析一次，无需增量分析，所以拿完对象就可以释放内存了
+        cleanLanguage()
     }
 }
 

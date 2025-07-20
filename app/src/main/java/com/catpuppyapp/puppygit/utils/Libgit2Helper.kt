@@ -1540,13 +1540,12 @@ object Libgit2Helper {
         checkChannelSizeLimit:Long,  // only work when `loadChannel` is not null
         // loadChannelLock:Mutex?,
 
-        // syntax highlighting, no more memory, will use this notify user
-        noMoreMemToaster: OneTimeToast,
+
     ):DiffItemSaver{
         val funName = "getSingleDiffItem"
         MyLog.d(TAG, "#$funName(): relativePathUnderRepo=${relativePathUnderRepo}, fromTo=${fromTo}")
 
-        val diffItem = DiffItemSaver(relativePathUnderRepo = relativePathUnderRepo, fromTo = fromTo, noMoreMemToaster = noMoreMemToaster)
+        val diffItem = DiffItemSaver(relativePathUnderRepo = relativePathUnderRepo, fromTo = fromTo)
 
         val options = Diff.Options.create()
 

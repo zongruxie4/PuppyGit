@@ -86,14 +86,15 @@ data class DiffItemSaver (
     private val stylesMapLock: ReentrantReadWriteLock = ReentrantReadWriteLock(),
     // {PuppyLine.key: StylesResult}
     private val stylesMap: SnapshotStateMap<String, List<LineStylePart>> = mutableStateMapOf(),
-    val noMoreMemToaster: OneTimeToast,
 ) {
 
     private var cachedFileName:String? = null
     fun fileName() = cachedFileName ?: getFileNameFromCanonicalPath(relativePathUnderRepo).let { cachedFileName = it; it }
 
+    var cachedNoMoreMemToaster: OneTimeToast? = null
     // `oneTimeNoMoreMemNotify` should ensure only call once
-    fun startAnalyzeSyntaxHighlight() {
+    fun startAnalyzeSyntaxHighlight(noMoreMemToaster: OneTimeToast) {
+        cachedNoMoreMemToaster = noMoreMemToaster
         if(syntaxDisabledOrNoMoreMem()) {
             return
         }
@@ -104,33 +105,22 @@ data class DiffItemSaver (
     }
 
     fun syntaxDisabledOrNoMoreMem(): Boolean {
-        if(!SettingsUtil.isDiffSyntaxHighlightEnabled() || noMoreHeapMemThenDoAct { noMoreMemToaster.show(StrCons.syntaxHightDisabledDueToNoMoreMem) }) {
-            clearStyles()
+        if(!SettingsUtil.isDiffSyntaxHighlightEnabled() || noMoreHeapMemThenDoAct { cachedNoMoreMemToaster?.show(StrCons.syntaxHightDisabledDueToNoMoreMem) }) {
+            operateStylesMapWithWriteLock { it.clear() }
             return true
         }
 
         return false
     }
 
-    fun putStyles(lineKey:String, style: List<LineStylePart>) {
-        stylesMapLock.write {
-            stylesMap.put(lineKey, style)
-        }
+    fun <T> operateStylesMapWithWriteLock(act: (MutableMap<String, List<LineStylePart>>) -> T):T {
+        return stylesMapLock.write { act(stylesMap) }
     }
 
-    fun obtainStyles(lineKey: String): List<LineStylePart>? {
-        return stylesMapLock.read {
-            stylesMap.get(lineKey)
-        }
+    fun <T> operateStylesMapWithReadLock(act: (MutableMap<String, List<LineStylePart>>) -> T):T {
+        return stylesMapLock.read { act(stylesMap) }
     }
 
-    fun clearStyles() {
-        stylesMapLock.write { stylesMap.clear() }
-    }
-
-    fun removeStylesByLineKey(lineKey: String) {
-        stylesMapLock.write { stylesMap.remove(lineKey) }
-    }
 
     //获取实际生效的文件大小
     //ps:如果想判断文件大小有无超过限制，用此方法返回值作为 isFileSizeOverLimit() 的入参做判断即可
@@ -222,6 +212,7 @@ class PuppyHunkAndLines(
 
         val sb = StringBuilder()
         for (i in lines) {
+//            sb.append(i.content).append("\n")
             // content already included '\n'
             sb.append(i.content)
         }
@@ -403,8 +394,8 @@ class PuppyHunkAndLines(
         val del = if(line.originType == PuppyLineOriginType.ADDITION) cmpTarget else line
 
         val modifyResult2 = CmpUtil.compare(
-            add = StringCompareParam(add.content, add.content.length),
-            del = StringCompareParam(del.content, del.content.length),
+            add = StringCompareParam(add.getContentNoLineBreak(), add.getContentNoLineBreak().length),
+            del = StringCompareParam(del.getContentNoLineBreak(), del.getContentNoLineBreak().length),
 
             //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
             requireBetterMatching = requireBetterMatchingForCompare,
@@ -422,8 +413,10 @@ class PuppyHunkAndLines(
     }
 
     fun clearStyles() {
-        lines.forEachBetter {
-            diffItemSaver.removeStylesByLineKey(it.key)
+        diffItemSaver.operateStylesMapWithWriteLock { styleMap ->
+            lines.forEachBetter {
+                styleMap.remove(it.key)
+            }
         }
     }
 }
@@ -459,6 +452,7 @@ data class PuppyLine (
     var newLineNum:Int=-1,
     var contentLen:Int=0,
     var content:String="",  //根据字节数分割后的内容
+
 //    var rawContent:String="";  //原始内容
     var lineNum:Int=1,  // getLineNum(PuppyLine) 的返回值，实际的行号
     var howManyLines:Int=0  // content里有多少行
@@ -508,7 +502,7 @@ data class PuppyLine (
 ){
     private var contentNoBreak:String? = null
     fun getContentNoLineBreak():String {  // not safe for concurrency
-        return contentNoBreak ?: content.removeSuffix(Cons.lineBreak).let { contentNoBreak = it; it }
+        return contentNoBreak ?: content.removeSuffix("\n").removeSuffix("\r").let { contentNoBreak = it; it }
     }
 
 

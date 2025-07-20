@@ -24,6 +24,8 @@ object LineNum {
             return line.copy(
                 lineNum = LINE_NUM,
                 originType = if(add) Diff.Line.OriginType.ADDITION.toString() else Diff.Line.OriginType.DELETION.toString(),
+
+                // only line break, will show as an empty line
                 content = Cons.lineBreak,
                 contentLen = 1
             )

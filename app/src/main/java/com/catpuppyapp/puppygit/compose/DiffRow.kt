@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalDensity
@@ -177,7 +178,7 @@ fun DiffRow (
     val lineNum = paddingLineNumber(if(line.lineNum == LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else line.lineNum.toString(), lineNumExpectLength)
 
 //    var prefix = ""
-    val content = line.content
+    val content = line.getContentNoLineBreak()
     //我发现明明新旧都没末尾行，但是originType却是添加了末尾行 '>'， 很奇怪，所以把行相关的背景颜色改了，文字颜色一律灰色，另外，因为patch输出会包含 no new line at end 之类的东西，所以不需要我再特意添加那句话了
     //只显示新增换行符、删除换行符、新旧文件都没换行符、新增行、删除行、上下文
 //                    if (line.originType == Diff.Line.OriginType.DEL_EOFNL.toString() || line.originType == Diff.Line.OriginType.CONTEXT_EOFNL.toString()) { //新文件删除了换行符 和 新旧都没换行符
@@ -656,7 +657,7 @@ fun DiffRow (
             )
         }
 
-        val stylePartList = diffItemSaver.obtainStyles(line.key)
+        val stylePartList = diffItemSaver.operateStylesMapWithReadLock { it.get(line.key) }
 
         val contentModifier = Modifier
             // if fill max width, will not be able to saw the spaces at the end, because the background will fill the whole line;
@@ -680,10 +681,18 @@ fun DiffRow (
                 //注意：这里不能改成用多个Text组件，不然若超过屏幕宽度软换行会失效
                 Text(
                     text = buildAnnotatedString {
-                        stringPartList.forEachIndexedBetter {idx, it ->
-                            val text = content.substring(it.start, it.end)
-                            //末尾会有个换行符，移除下，不然显示会多个行
-                            val textNoLineSeparator = if(idx == lastIndex) text.removeSuffix(Cons.lineBreak) else text
+                        stylePartList?.forEach { stylePart ->
+                            val found = stringPartList.find { it.start <= stylePart.range.start && it.end > stylePart.range.endInclusive }
+                            val style = if(found != null && found.modified) stylePart.style.merge(SpanStyle(background = bgColor)) else stylePart.style
+                            withStyle(style) {
+                                append(content.substring(stylePart.range))
+                            }
+                        } ?: stringPartList.forEachIndexedBetter { idx, it ->
+//                            val text = content.substring(it.start, it.end)
+//                            //末尾会有个换行符，移除下，不然显示会多个行
+//                            val textNoLineSeparator = if(idx == lastIndex) text.removeSuffix(Cons.lineBreak) else text
+
+                            val textNoLineSeparator = content.substring(it.start, it.end)
 
                             if(it.modified) {  //为修改的内容设置高亮颜色
                                 withStyle(style = SpanStyle(background = bgColor)) {
@@ -714,13 +723,12 @@ fun DiffRow (
                 //文本内容
                 Text(
                     text = buildAnnotatedString {
-                        val contentNoLineBreak = line.getContentNoLineBreak()
                         stylePartList?.forEachBetter {
                             withStyle(it.style) {
-                                append(contentNoLineBreak.substring(it.range))
+                                append(content.substring(it.range))
                             }
 
-                        } ?: contentNoLineBreak
+                        } ?: content
                     },
                     fontFamily = PLFont.diffCodeFont(),
 

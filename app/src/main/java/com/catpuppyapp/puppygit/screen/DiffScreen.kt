@@ -2480,7 +2480,7 @@ fun DiffScreen(
                         val diffItemSaver = if(treeOid1Str == treeOid2Str) {
                             //两hash一样，不可能有差异，返回空结果即可
                             // 设上必须的字段，若不设置，会误判没加载过diff内容而不显示添加删除了多少行
-                            DiffItemSaver(relativePathUnderRepo = relativePath, fromTo = fromTo, noMoreMemToaster = noMoreMemToaster)
+                            DiffItemSaver(relativePathUnderRepo = relativePath, fromTo = fromTo)
                         } else if(fromTo == Cons.gitDiffFromTreeToTree || fromTo == Cons.gitDiffFileHistoryFromTreeToLocal || fromTo == Cons.gitDiffFileHistoryFromTreeToPrev){  //从提交列表点击提交进入
                             val diffItemSaver = if(Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str) || Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid2Str)) {  // tree to work tree, oid1 or oid2 is local, both local will cause err
                                 val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str)
@@ -2507,7 +2507,6 @@ fun DiffScreen(
                                     loadChannel = channelForThisJob,
                                     checkChannelLinesLimit = settings.diff.loadDiffContentCheckAbortSignalLines,
                                     checkChannelSizeLimit = settings.diff.loadDiffContentCheckAbortSignalSize,
-                                    noMoreMemToaster = noMoreMemToaster,
                                 )
                             }else { // tree to tree, no local(worktree)
                                 val tree1 = Libgit2Helper.resolveTree(repo, treeOid1Str)
@@ -2523,7 +2522,6 @@ fun DiffScreen(
                                     loadChannel = channelForThisJob,
                                     checkChannelLinesLimit = settings.diff.loadDiffContentCheckAbortSignalLines,
                                     checkChannelSizeLimit = settings.diff.loadDiffContentCheckAbortSignalSize,
-                                    noMoreMemToaster = noMoreMemToaster,
 
                                 )
                             }
@@ -2543,7 +2541,6 @@ fun DiffScreen(
                                 loadChannel = channelForThisJob,
                                 checkChannelLinesLimit = settings.diff.loadDiffContentCheckAbortSignalLines,
                                 checkChannelSizeLimit = settings.diff.loadDiffContentCheckAbortSignalSize,
-                                noMoreMemToaster = noMoreMemToaster,
 
                             )
 
@@ -2571,7 +2568,7 @@ fun DiffScreen(
 
 
                         if(SettingsUtil.isDiffSyntaxHighlightEnabled()) {
-                            diffItemSaver.startAnalyzeSyntaxHighlight()
+                            diffItemSaver.startAnalyzeSyntaxHighlight(noMoreMemToaster)
                         }
 
                         item.copy(loading = false, submoduleIsDirty = submdirty, diffItemSaver = diffItemSaver)
