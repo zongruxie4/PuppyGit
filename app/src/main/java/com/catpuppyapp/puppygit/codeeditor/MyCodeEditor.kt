@@ -22,10 +22,7 @@ import io.github.rosemoe.sora.lang.analysis.StyleReceiver
 import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
-import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
-import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
-import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver
 import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.ContentReference
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
@@ -96,73 +93,10 @@ class MyCodeEditor(
 
     private fun genNewStyleDelegate(editorState: TextEditorState?) = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap, editorState, languageScope)
 
-    companion object {
-        private var inited = false
 
-        // only need init once
-        fun doInit(appContext: Context) {
-            if(inited) {
-                return
-            }
-
-            inited = true
-
-            try {
-                setupTextmate(appContext)
-            }catch (e: Exception) {
-                inited = false
-                MyLog.e(TAG, "$TAG#doInit err: ${e.stackTraceToString()}")
-            }
-        }
-
-
-        /**
-         * Setup Textmate. Load our grammars and themes from assets
-         */
-        private fun setupTextmate(appContext: Context) {
-            // Add assets file provider so that files in assets can be loaded
-            FileProviderRegistry.getInstance().addFileProvider(
-                AssetsFileResolver(
-                    appContext.assets // use application context
-                )
-            )
-
-            PLTheme.loadDefaultTextMateThemes()
-            loadDefaultTextMateLanguages()
-        }
-
-
-
-        /**
-         * Load default languages from JSON configuration
-         *
-         * @see loadDefaultLanguagesWithDSL Load by Kotlin DSL
-         */
-        private /*suspend*/ fun loadDefaultTextMateLanguages() /*= withContext(Dispatchers.Main)*/ {
-            GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
-        }
-
-
-
-        private fun setReceiverThenDoAct(
-            language: Language?,
-            receiver: MyEditorStyleDelegate,
-            act: (StyleReceiver)->Unit,
-        ) {
-            try {
-                language?.analyzeManager?.setReceiver(receiver)
-                act(receiver)
-            }catch (e: Exception) {
-                // maybe will got NPE, if language changed to null by a new analyze
-                MyLog.e(TAG, "#setReceiverThenDoAct() err: targetFieldsId=${receiver.editorState?.fieldsId}, err=${e.stackTraceToString()}")
-
-            }
-        }
-
-    }
 
     init {
-        doInit(appContext)
+        TextMateUtil.doInit(appContext)
 
         undoStack?.value?.codeEditor = this
 
@@ -297,7 +231,14 @@ class MyCodeEditor(
             //   最好的解决方案：应该让receiver把执行分析时关联的text editor state实例绑定上，或者，只创建一个editor state实例，
             //   后者可以实现，但需要修改撤销机制，因为目前的撤销机制是直接存储整个editor实例，如果改成只存fields，就行了，
             //   不对，好像还是无法解决哪个styles的结果和哪个editor state实例关联的问题。。。。。。。
-            setReceiverThenDoAct(language, genNewStyleDelegate(targetEditorState), stylesUpdateRequest.act)
+            val receiver = genNewStyleDelegate(targetEditorState)
+            try {
+                TextMateUtil.setReceiverThenDoAct(language, receiver, stylesUpdateRequest.act)
+            }catch (e: Exception) {
+                // maybe will got NPE, if language changed to null by a new analyze
+                MyLog.e(TAG, "#setReceiverThenDoAct() err: targetFieldsId=${receiver.editorState?.fieldsId}, err=${e.stackTraceToString()}")
+
+            }
         }
     }
 
