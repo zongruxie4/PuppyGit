@@ -11,6 +11,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -52,13 +53,14 @@ private const val TAG = "MyCodeEditor"
 
 
 class MyCodeEditor(
-    val appContext: Context,
     // this will bind code editor
     val editorState: CustomStateSaveable<TextEditorState>,
     // code editor will bind this at init block
     val undoStack: CustomStateSaveable<UndoStack>,
     val plScope: MutableState<PLScope>,
 ) {
+    val appContext: Context = AppModel.realAppContext
+
     val uid = getShortUUID()
     private var file: FuckSafFile = FuckSafFile(appContext, FilePath(""))
 

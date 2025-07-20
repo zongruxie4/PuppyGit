@@ -636,7 +636,6 @@ fun HomeScreen(
     val editorPlScope = rememberSaveable { mutableStateOf(PLScope.AUTO) }
     val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
         MyCodeEditor(
-            appContext = AppModel.realAppContext,
             editorState = editorPageTextEditorState,
             undoStack = editorUndoStack,
             plScope = editorPlScope
