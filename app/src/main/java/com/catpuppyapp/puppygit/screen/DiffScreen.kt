@@ -1241,10 +1241,9 @@ fun DiffScreen(
     val showSelectSyntaxLangDialog = rememberSaveable { mutableStateOf(false) }
     val diffableItemIndexForSelctSyntaxLangDialog = rememberSaveable { mutableStateOf(0) }
     val plScopeForSelctSyntaxLangDialog = rememberSaveable { mutableStateOf(PLScope.AUTO) }
-    val switchVisibleForSelectSyntaxLangDialog = mutableCustomStateOf<(() -> Unit)?>(stateKeyTag, "switchVisibleForSelectSyntaxLangDialog") { null }
     val diffableItemForSelectSyntaxLangDialog = mutableCustomStateOf<DiffableItem?>(stateKeyTag, "diffableItemForSelectSyntaxLangDialog") { null }
     // isshld is varibale name abbrev
-    val initSelectSyntaxHighlightLanguagDialog = isshld@{ diffableItem: DiffableItem, diffableItemIndex: Int, switchVisible:() -> Unit ->
+    val initSelectSyntaxHighlightLanguagDialog = isshld@{ diffableItem: DiffableItem, diffableItemIndex: Int ->
         val hunks = diffableItem.diffItemSaver.hunks
         if(diffableItem.visible && hunks.isEmpty()) {
             Msg.requireShowLongDuration(activityContext.getString(R.string.file_is_empty))
@@ -1258,7 +1257,6 @@ fun DiffScreen(
         diffableItemIndexForSelctSyntaxLangDialog.value = diffableItemIndex
         diffableItemForSelectSyntaxLangDialog.value = diffableItem
         plScopeForSelctSyntaxLangDialog.value = diffableItem.diffItemSaver.getAndUpdateScopeIfIsAuto(diffableItem.fileName)
-        switchVisibleForSelectSyntaxLangDialog.value = switchVisible
 
         showSelectSyntaxLangDialog.value = true
     }
@@ -1270,36 +1268,45 @@ fun DiffScreen(
         ) { newScope ->
             // the null-check `?:` just in case, actually the left hand variable never be null when reached here
             val item = diffableItemForSelectSyntaxLangDialog.value ?: getCurItem()
-
-            val scopeChanged = item.diffItemSaver.changeScope(newScope) != false
-
-            // if visible, reload;
-            //   else let it visible.
-            //   after switched visible, it will reload with new language scope
-            // those code for single and multi file mode both are worked well
-            // 这段代码对single和multi file mode 都适用
-            if(scopeChanged || !item.visible) {
-                // multi mode may into if or else
-                if (item.visible) {  // visible, reload it
-                    // sinlgle mode will only possible reached here
-                    requireRefreshSubList(listOf(diffableItemIndexForSelctSyntaxLangDialog.value))
-                } else { // invisible, switch to visible (and will reload it after swtiched)
-                    // only multi mode have a chance reached here
-                    switchVisibleForSelectSyntaxLangDialog.value?.invoke()
-                }
-            }
-
             // help gc free memory
             diffableItemForSelectSyntaxLangDialog.value = null
-            switchVisibleForSelectSyntaxLangDialog.value = null
 
+            // change language scope
+            val scopeChanged = item.diffItemSaver.changeScope(newScope) != false
+
+            val itemIndex = diffableItemIndexForSelctSyntaxLangDialog.value
+
+
+            try {
+                // if visible, reload;
+                //   else let it visible.
+                //   after switched visible, it will reload with new language scope
+                // those code for single and multi file mode both are worked well
+                // 这段代码对single和multi file mode 都适用
+                if(scopeChanged || !item.visible) {
+                    if(!item.visible) {
+                        diffableItemList.value[itemIndex] = item.copy(visible = true)
+                    }
+
+                    requireRefreshSubList(listOf(itemIndex))
+                }
+            }catch (e: Exception) {
+                val errPrefix = "switch language scope for '${item.fileName}' err: selected scope is `$newScope`, err="
+                Msg.requireShowLongDuration("switch language scope err: ${e.localizedMessage}")
+                MyLog.e(TAG, errPrefix + e.stackTraceToString())
+
+                // create err for Repo
+                doJobThenOffLoading {
+                    createAndInsertError(repoId, errPrefix + e.localizedMessage)
+                }
+            }
         }
     }
 
 
     if(pageRequest.value == PageRequest.showSyntaxHighlightingSelectLanguageDialogForCurItem) {
         PageRequest.clearStateThenDoAct(pageRequest) {
-            initSelectSyntaxHighlightLanguagDialog(getCurItem(), curItemIndex.intValue, { changeStateTriggerRefreshPage(needRefresh) })
+            initSelectSyntaxHighlightLanguagDialog(getCurItem(), curItemIndex.intValue)
         }
     }
 
@@ -1555,7 +1562,7 @@ fun DiffScreen(
                                                 MenuTextItem(
                                                     text = stringResource(R.string.syntax_highlighting),
                                                     onClick = {
-                                                        initSelectSyntaxHighlightLanguagDialog(diffableItem, diffableItemIdx, switchVisible)
+                                                        initSelectSyntaxHighlightLanguagDialog(diffableItem, diffableItemIdx)
                                                     }
                                                 )
                                             )
