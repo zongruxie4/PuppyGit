@@ -29,7 +29,7 @@ abstract class CompareParam<T: CharSequence>(
      * at the end of text, has '\n' or not
      */
     fun hasEndOfNewLine(): Boolean {
-        return getChar(length - 1) == '\n'
+        return length > 0 && getChar(length - 1) == '\n'
     }
 
     /**
