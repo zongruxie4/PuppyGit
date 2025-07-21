@@ -146,6 +146,7 @@ fun SettingsInnerPage(
     val enableEditCache = rememberSaveable { mutableStateOf(settingsState.value.editor.editCacheEnable) }
     val showNaviButtons = rememberSaveable { mutableStateOf(settingsState.value.showNaviButtons) }
     val syntaxHighlightEnabled = rememberSaveable { mutableStateOf(settingsState.value.editor.syntaxHighlightEnabled) }
+    val syntaxHighlightEnabled_DiffScreen = rememberSaveable { mutableStateOf(settingsState.value.diff.syntaxHighlightEnabled) }
     val useSystemFonts = rememberSaveable { mutableStateOf(settingsState.value.editor.useSystemFonts) }
     val useSystemFonts_DiffScreen = rememberSaveable { mutableStateOf(settingsState.value.diff.useSystemFonts) }
     val devModeOn = rememberSaveable { mutableStateOf(PrefUtil.getDevMode(activityContext)) }
@@ -1148,6 +1149,29 @@ fun SettingsInnerPage(
         // diff settings block start
 //
         SettingsTitle(stringResource(R.string.diff))
+
+
+        SettingsContentSwitcher(
+            left = {
+                Text(stringResource(R.string.syntax_highlighting), fontSize = itemFontSize)
+            },
+            right = {
+                Switch(
+                    checked = syntaxHighlightEnabled_DiffScreen.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                val newValue = !syntaxHighlightEnabled_DiffScreen.value
+
+                //save
+                syntaxHighlightEnabled_DiffScreen.value = newValue
+                SettingsUtil.update {
+                    it.diff.syntaxHighlightEnabled = newValue
+                }
+            }
+        )
+
 
         SettingsContentSwitcher(
             left = {

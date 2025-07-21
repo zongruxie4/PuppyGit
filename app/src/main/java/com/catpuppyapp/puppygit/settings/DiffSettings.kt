@@ -71,5 +71,5 @@ data class DiffSettings (
      */
     var useSystemFonts: Boolean = false,
 
-    val syntaxHighlightEnabled: Boolean = true
+    var syntaxHighlightEnabled: Boolean = true
 )
