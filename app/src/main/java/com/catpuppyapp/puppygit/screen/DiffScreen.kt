@@ -2563,7 +2563,7 @@ fun DiffScreen(
                     }
 
 
-
+                    val languageScope = item.diffItemSaver.languageScope.value
 
                     Repository.open(repoFromDb.fullSavePath).use { repo->
                         val diffItemSaver = if(treeOid1Str == treeOid2Str) {
@@ -2596,6 +2596,8 @@ fun DiffScreen(
                                     loadChannel = channelForThisJob,
                                     checkChannelLinesLimit = settings.diff.loadDiffContentCheckAbortSignalLines,
                                     checkChannelSizeLimit = settings.diff.loadDiffContentCheckAbortSignalSize,
+                                    languageScope = languageScope,
+
                                 )
                             }else { // tree to tree, no local(worktree)
                                 val tree1 = Libgit2Helper.resolveTree(repo, treeOid1Str)
@@ -2611,6 +2613,7 @@ fun DiffScreen(
                                     loadChannel = channelForThisJob,
                                     checkChannelLinesLimit = settings.diff.loadDiffContentCheckAbortSignalLines,
                                     checkChannelSizeLimit = settings.diff.loadDiffContentCheckAbortSignalSize,
+                                    languageScope = languageScope,
 
                                 )
                             }
@@ -2630,6 +2633,7 @@ fun DiffScreen(
                                 loadChannel = channelForThisJob,
                                 checkChannelLinesLimit = settings.diff.loadDiffContentCheckAbortSignalLines,
                                 checkChannelSizeLimit = settings.diff.loadDiffContentCheckAbortSignalSize,
+                                languageScope = languageScope,
 
                             )
 

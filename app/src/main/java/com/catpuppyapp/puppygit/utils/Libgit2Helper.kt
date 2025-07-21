@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
@@ -1540,12 +1541,12 @@ object Libgit2Helper {
         checkChannelSizeLimit:Long,  // only work when `loadChannel` is not null
         // loadChannelLock:Mutex?,
 
-
+        languageScope: PLScope = PLScope.AUTO
     ):DiffItemSaver{
         val funName = "getSingleDiffItem"
         MyLog.d(TAG, "#$funName(): relativePathUnderRepo=${relativePathUnderRepo}, fromTo=${fromTo}")
 
-        val diffItem = DiffItemSaver(relativePathUnderRepo = relativePathUnderRepo, fromTo = fromTo)
+        val diffItem = DiffItemSaver(relativePathUnderRepo = relativePathUnderRepo, fromTo = fromTo, languageScope = Box(languageScope))
 
         val options = Diff.Options.create()
 
