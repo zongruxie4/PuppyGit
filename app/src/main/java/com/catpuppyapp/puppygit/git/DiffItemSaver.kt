@@ -35,15 +35,24 @@ private const val targetRoughlyMatchedCount = 6
 
 
 object PuppyLineOriginType{
+    //不参与语法高亮分析
+    const val HUNK_HDR = Diff.Line.OriginType.HUNK_HDR.toString()
+
+    //参与语法高亮分析
     const val ADDITION = Diff.Line.OriginType.ADDITION.toString()
     const val DELETION = Diff.Line.OriginType.DELETION.toString()
     const val CONTEXT = Diff.Line.OriginType.CONTEXT.toString()
-    const val HUNK_HDR = Diff.Line.OriginType.HUNK_HDR.toString()
 
+    //参与语法高亮分析，但分析前其内容会被替换为空，eof行本身可能有
+    //   "/No end of new line" 之类的东西，但在ui上显示的时候
+    //   改成了空字符串，如果分析前不替换为空，显示时就会越界，
+    //   因为分析的有内容，而显示的时候是空字符串，最后就变成
+    //   空字符串取非空range的substring，就越界了
     const val CONTEXT_EOFNL = Diff.Line.OriginType.CONTEXT_EOFNL.toString()
     const val ADD_EOFNL = Diff.Line.OriginType.ADD_EOFNL.toString()
     const val DEL_EOFNL = Diff.Line.OriginType.DEL_EOFNL.toString()
 
+    fun isEofLine(line: PuppyLine) = line.originType.let { it == CONTEXT_EOFNL || it == ADD_EOFNL || it == DEL_EOFNL }
 }
 
 
