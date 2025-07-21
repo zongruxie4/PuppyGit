@@ -235,9 +235,7 @@ class PuppyHunkAndLines(
 
         val sb = StringBuilder()
         for (i in lines) {
-//            sb.append(i.content).append("\n")
-            // content already included '\n'
-            sb.append(i.content)
+            sb.append(i.getContentNoLineBreak()).append('\n')
         }
         return sb.toString().let { cachedLinesString = it; it }
     }
@@ -560,9 +558,12 @@ data class PuppyLine (
         }
     }
 
+    fun isEOF() = PuppyLineOriginType.isEofLine(this);
+
     private var contentNoBreak:String? = null
     fun getContentNoLineBreak():String {  // not safe for concurrency
-        return contentNoBreak ?: content.removeSuffix("\n").removeSuffix("\r").let { contentNoBreak = it; it }
+        // replace eof to empty string to match UI behavior(display empty line instead of eof text like "\No New Line End Of File")
+        return contentNoBreak ?: (if(!isEOF()) content.removeSuffix("\n").removeSuffix("\r") else "").let { contentNoBreak = it; it }
     }
 
 
