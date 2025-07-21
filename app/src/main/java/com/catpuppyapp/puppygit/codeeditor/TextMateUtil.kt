@@ -14,9 +14,11 @@ import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
+import io.github.rosemoe.sora.langs.textmate.registry.model.ThemeModel
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver
 import io.github.rosemoe.sora.util.RendererUtils
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
+import org.eclipse.tm4e.core.registry.IThemeSource
 
 
 private const val TAG = "TextMateInit"
@@ -39,11 +41,11 @@ object TextMateUtil {
         try {
             setupTextmate(appContext)
 
-
             colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
-
-            // 必须调用，不然没颜色
-            colorScheme.applyDefault()
+                .apply {
+                    // 必须调用，不然没颜色
+                    applyDefault()
+                }
         }catch (e: Exception) {
             inited = false
             MyLog.e(TAG, "$TAG#doInit err: ${e.stackTraceToString()}")
@@ -62,10 +64,29 @@ object TextMateUtil {
             )
         )
 
-        PLTheme.loadDefaultTextMateThemes()
+        loadDefaultTextMateThemes()
         loadDefaultTextMateLanguages()
     }
 
+    /**
+     * Load default textmate themes
+     */
+    /*suspend*/ fun loadDefaultTextMateThemes() /*= withContext(Dispatchers.IO)*/ {
+        val themes = PLTheme.THEMES
+        val themeRegistry = ThemeRegistry.getInstance()
+        themes.forEach { name ->
+            val path = "textmate/$name.json"
+            themeRegistry.loadTheme(
+                ThemeModel(
+                    IThemeSource.fromInputStream(
+                        FileProviderRegistry.getInstance().tryGetInputStream(path), path, null
+                    ), name
+                ).apply {
+                    isDark = name != PLTheme.THEME_LIGHT
+                }
+            )
+        }
+    }
 
 
     /**
