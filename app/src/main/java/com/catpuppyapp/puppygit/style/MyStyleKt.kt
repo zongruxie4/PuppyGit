@@ -122,7 +122,7 @@ object MyStyleKt{
 
         //DiffContent line number color
         val lineNum_forDiffInLightTheme = Color.Gray
-        val lineNum_forDiffInDarkTheme = Color(0xFF4D4D4D)
+        val lineNum_forDiffInDarkTheme = Color(0xFFA6A6A6)
 
         // DiffScreen: 有匹配的背景颜色（浅色）
         val hasMatchedAddedLineBgColorForDiffInLightTheme = Color(0x2F2F9B09)
