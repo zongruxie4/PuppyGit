@@ -113,7 +113,13 @@ data class DiffItemSaver (
     }
 
     fun syntaxDisabledOrNoMoreMem(): Boolean {
-        if(!SettingsUtil.isDiffSyntaxHighlightEnabled() || noMoreHeapMemThenDoAct { cachedNoMoreMemToaster?.show(StrCons.syntaxHightDisabledDueToNoMoreMem) }) {
+        // only clear current diffItemSaver, but memory maybe still intense,
+        //   because other diffItemSaver and their styles still in the memory
+        if(!SettingsUtil.isDiffSyntaxHighlightEnabled()
+            || noMoreHeapMemThenDoAct {
+                    cachedNoMoreMemToaster?.show(StrCons.syntaxHightDisabledDueToNoMoreMem)
+               }
+        ) {
             operateStylesMapWithWriteLock { it.clear() }
             return true
         }
