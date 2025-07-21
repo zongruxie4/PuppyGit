@@ -118,23 +118,6 @@ data class DiffItemSaver (
         return scope
     }
 
-    fun changeScopeThenAnalyze(
-        newScope: PLScope,
-        noMoreMemToaster: OneTimeToast,
-        syntaxHighlightEnabled: State<Boolean>,
-        requireAnalyze: Boolean
-    ) {
-        if(changeScope(newScope) != true) {
-            return
-        }
-
-        // if valid, re-analyze
-        if(requireAnalyze) {
-            startAnalyzeSyntaxHighlight(noMoreMemToaster, syntaxHighlightEnabled)
-        }
-
-    }
-
 
     // true means changed and scope valid, false means no change, null means changed but newScope is invalid
     fun changeScope(newScope: PLScope) : Boolean? {
