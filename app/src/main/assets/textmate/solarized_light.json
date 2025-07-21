@@ -3,7 +3,7 @@
 	"tokenColors": [
 		{
 			"settings": {
-				"foreground": "#657B83"
+				"foreground": "#49595f"
 			}
 		},
 		{
@@ -14,7 +14,7 @@
 				"variable.legacy.builtin.python"
 			],
 			"settings": {
-				"foreground": "#657B83"
+				"foreground": "#49595f"
 			}
 		},
 		{
@@ -22,7 +22,7 @@
 			"scope": "comment",
 			"settings": {
 				"fontStyle": "italic",
-				"foreground": "#93A1A1"
+				"foreground": "#788585"
 			}
 		},
 		{
@@ -161,14 +161,14 @@
 			"name": "Tag start/end",
 			"scope": "punctuation.definition.tag",
 			"settings": {
-				"foreground": "#93A1A1"
+				"foreground": "#788585"
 			}
 		},
 		{
 			"name": "Tag attribute",
 			"scope": "entity.other.attribute-name",
 			"settings": {
-				"foreground": "#93A1A1"
+				"foreground": "#788585"
 			}
 		},
 		{
@@ -344,10 +344,10 @@
 		"list.inactiveSelectionBackground": "#D1CBB8",
 		"list.highlightForeground": "#B58900",
 		"editor.background": "#FDF6E3",
-		"editor.foreground": "#657B83",
+		"editor.foreground": "#49595f",
 		"notebook.cellEditorBackground": "#F7F0E0",
 		"editorWidget.background": "#EEE8D5",
-		"editorCursor.foreground": "#657B83",
+		"editorCursor.foreground": "#49595f",
 		"editorWhitespace.foreground": "#586E7580",
 		"editor.lineHighlightBackground": "#EEE8D5",
 		"editor.selectionBackground": "#EEE8D5",
@@ -403,10 +403,10 @@
 		"terminal.ansiBrightBlack": "#002b36",
 		"terminal.ansiBrightRed": "#cb4b16",
 		"terminal.ansiBrightGreen": "#586e75",
-		"terminal.ansiBrightYellow": "#657b83",
+		"terminal.ansiBrightYellow": "#49595f",
 		"terminal.ansiBrightBlue": "#839496",
 		"terminal.ansiBrightMagenta": "#6c71c4",
-		"terminal.ansiBrightCyan": "#93a1a1",
+		"terminal.ansiBrightCyan": "#788585",
 		"terminal.ansiBrightWhite": "#fdf6e3",
 		"terminal.background": "#FDF6E3",
 		"walkThrough.embeddedEditorBackground": "#00000014",
