@@ -49,6 +49,7 @@ fun DiffPageActions(
     groupDiffContentByLineNum:MutableState<Boolean>,
     enableSelectCompare:MutableState<Boolean>,
     matchByWords:MutableState<Boolean>,
+    syntaxHighlightEnabled:MutableState<Boolean>,
 ) {
 
 //    val navController = AppModel.navController
@@ -293,6 +294,24 @@ fun DiffPageActions(
             )
 
         }
+
+        DropdownMenuItem(
+            enabled = true,
+            text = { Text(stringResource(R.string.syntax_highlighting)) },
+            trailingIcon = {
+                SimpleCheckBox(syntaxHighlightEnabled.value)
+            },
+            onClick = {
+                syntaxHighlightEnabled.value = !syntaxHighlightEnabled.value
+
+                SettingsUtil.update {
+                    it.diff.syntaxHighlightEnabled = syntaxHighlightEnabled.value
+                }
+
+                refreshPage()
+            }
+
+        )
 
         DropdownMenuItem(
             enabled = readOnlyModeSwitchable,

@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.git
 
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.graphics.Color
@@ -11,7 +12,6 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.msg.OneTimeToast
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.compare.CmpUtil
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
@@ -105,10 +105,12 @@ data class DiffItemSaver (
     private var cachedFileName:String? = null
     fun fileName() = cachedFileName ?: getFileNameFromCanonicalPath(relativePathUnderRepo).let { cachedFileName = it; it }
 
-    var cachedNoMoreMemToaster: OneTimeToast? = null
+    private var cachedNoMoreMemToaster: OneTimeToast? = null
+    private var cachedSyntaxHighlightEnabledState: State<Boolean>? = null
     // `oneTimeNoMoreMemNotify` should ensure only call once
-    fun startAnalyzeSyntaxHighlight(noMoreMemToaster: OneTimeToast) {
+    fun startAnalyzeSyntaxHighlight(noMoreMemToaster: OneTimeToast, syntaxHighlightEnabled: State<Boolean>) {
         cachedNoMoreMemToaster = noMoreMemToaster
+        cachedSyntaxHighlightEnabledState = syntaxHighlightEnabled
         if(syntaxDisabledOrNoMoreMem()) {
             return
         }
@@ -124,7 +126,7 @@ data class DiffItemSaver (
     fun syntaxDisabledOrNoMoreMem(): Boolean {
         // only clear current diffItemSaver, but memory maybe still intense,
         //   because other diffItemSaver and their styles still in the memory
-        if(!SettingsUtil.isDiffSyntaxHighlightEnabled()
+        if(!(cachedSyntaxHighlightEnabledState?.value ?: SettingsUtil.isDiffSyntaxHighlightEnabled())
             || noMoreHeapMemThenDoAct {
                     cachedNoMoreMemToaster?.show(StrCons.syntaxHightDisabledDueToNoMoreMem)
                }

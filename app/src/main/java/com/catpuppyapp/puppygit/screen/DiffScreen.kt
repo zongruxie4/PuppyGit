@@ -664,6 +664,7 @@ fun DiffScreen(
     //20240618:目前临时开启O(nm)算法的机制是在预览diff页面三击屏幕，但app启动时会重置为关闭，日后需要添加相关设置项以方便用户使用
     val requireBetterMatchingForCompare = rememberSaveable { mutableStateOf(settings.diff.enableBetterButSlowCompare) }
     val matchByWords = rememberSaveable { mutableStateOf(settings.diff.matchByWords) }
+    val syntaxHighlightEnabled = rememberSaveable { mutableStateOf(settings.diff.syntaxHighlightEnabled) }
     val adjustFontSizeModeOn = rememberSaveable { mutableStateOf(false) }
     val adjustLineNumSizeModeOn = rememberSaveable { mutableStateOf(false) }
     val showLineNum = rememberSaveable { mutableStateOf(settings.diff.showLineNum) }
@@ -1301,7 +1302,8 @@ fun DiffScreen(
                             adjustLineNumSizeModeOn = adjustLineNumSizeModeOn,
                             groupDiffContentByLineNum=groupDiffContentByLineNum,
                             enableSelectCompare=enableSelectCompare,
-                            matchByWords=matchByWords
+                            matchByWords=matchByWords,
+                            syntaxHighlightEnabled = syntaxHighlightEnabled
                         )
 
                     }
@@ -2567,9 +2569,8 @@ fun DiffScreen(
                         }
 
 
-                        if(SettingsUtil.isDiffSyntaxHighlightEnabled()) {
-                            diffItemSaver.startAnalyzeSyntaxHighlight(noMoreMemToaster)
-                        }
+                        diffItemSaver.startAnalyzeSyntaxHighlight(noMoreMemToaster, syntaxHighlightEnabled)
+
 
                         item.copy(loading = false, submoduleIsDirty = submdirty, diffItemSaver = diffItemSaver)
                     }
