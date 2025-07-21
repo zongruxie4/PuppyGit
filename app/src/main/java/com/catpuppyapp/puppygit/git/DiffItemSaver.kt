@@ -6,10 +6,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import com.catpuppyapp.puppygit.codeeditor.HunkSyntaxHighlighter
 import com.catpuppyapp.puppygit.codeeditor.LineStylePart
+import com.catpuppyapp.puppygit.codeeditor.PLTheme
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.msg.OneTimeToast
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.compare.CmpUtil
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
@@ -101,6 +103,9 @@ data class DiffItemSaver (
         if(syntaxDisabledOrNoMoreMem()) {
             return
         }
+
+        // set theme first
+        PLTheme.setTheme(Theme.inDarkTheme)
 
         for(h in hunks) {
             h.hunkSyntaxHighlighter.analyze()

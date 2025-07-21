@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.annotation.WorkerThread
 import androidx.compose.ui.text.SpanStyle
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
-import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
@@ -84,7 +83,6 @@ class HunkSyntaxHighlighter(
         // if no bug, should not trigger full syntax analyze a lot
         MyLog.w(TAG, "will run full syntax highlighting analyze")
 
-        PLTheme.setTheme(Theme.inDarkTheme)
 
         cleanLanguage()
 
