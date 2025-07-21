@@ -1284,9 +1284,8 @@ fun DiffScreen(
                 // those code for single and multi file mode both are worked well
                 // 这段代码对single和multi file mode 都适用
                 if(scopeChanged || !item.visible) {
-                    if(!item.visible) {
-                        diffableItemList.value[itemIndex] = item.copy(visible = true)
-                    }
+                    // must copy, because we maybe using a item that from a copied list
+                    diffableItemList.value[itemIndex] = item.copy(visible = true)
 
                     requireRefreshSubList(listOf(itemIndex))
                 }
