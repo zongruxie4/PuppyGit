@@ -22,7 +22,6 @@ class HunkSyntaxHighlighter(
     val hunk: PuppyHunkAndLines,
 ) {
     val appContext: Context = AppModel.realAppContext
-    var languageScope: PLScope = PLScope.AUTO
     val analyzeLock = ReentrantLock()
     var myLang: TextMateLanguage? = null
 
@@ -32,27 +31,10 @@ class HunkSyntaxHighlighter(
     fun noMoreMemory() : Boolean {
         val disabledOrNoMore = hunk.diffItemSaver.syntaxDisabledOrNoMoreMem()
 
-        if(disabledOrNoMore) {
-            languageScope = PLScope.AUTO
-        }
-
         return disabledOrNoMore
     }
 
-
-    fun analyze(scope: PLScope = languageScope) {
-        // only left two cases: auto or not
-        val scope = if(scope == PLScope.AUTO) {
-            PLScope.guessScopeType(hunk.diffItemSaver.fileName())
-        } else {
-            scope
-        }
-
-        if(PLScope.scopeTypeInvalid(scope)) {
-            hunk.clearStyles()
-            return
-        }
-
+    fun analyze(scope: PLScope) {
         if(noMoreMemory()) {
             return
         }
@@ -67,7 +49,7 @@ class HunkSyntaxHighlighter(
         }
     }
 
-    private fun cleanLanguage() {
+    fun release() {
         TextMateUtil.cleanLanguage(myLang)
     }
 
@@ -81,10 +63,10 @@ class HunkSyntaxHighlighter(
 //        println("text: $text")
 
         // if no bug, should not trigger full syntax analyze a lot
-        MyLog.w(TAG, "will run full syntax highlighting analyze")
+        MyLog.w(TAG, "will run full syntax highlighting analyze(at Diff screen, filename: ${hunk.diffItemSaver.fileName()})")
 
 
-        cleanLanguage()
+        release()
 
         // run new analyze
         val autoComplete = false
@@ -120,7 +102,7 @@ class HunkSyntaxHighlighter(
         }
 
         // diff页面只分析一次，无需增量分析，所以拿完对象就可以释放内存了
-        cleanLanguage()
+        release()
     }
 }
 

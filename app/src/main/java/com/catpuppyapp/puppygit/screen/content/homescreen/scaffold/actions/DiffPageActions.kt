@@ -186,6 +186,19 @@ fun DiffPageActions(
 
         )
 
+        // if is multi mode, will show this at each item bar dropdown menu
+        if(!isMultiMode && syntaxHighlightEnabled.value) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.syntax_highlighting)) },
+                onClick = {
+                    request.value = PageRequest.showSyntaxHighlightingSelectLanguageDialog
+
+                    dropDownMenuExpandState.value = false
+                }
+
+            )
+        }
+
         DropdownMenuItem(
             text = { Text(stringResource(R.string.font_size)) },
             onClick = {
@@ -295,6 +308,7 @@ fun DiffPageActions(
 
         }
 
+        // 启用这个才会显示另一个同名的点击选择语言弹窗的选项
         DropdownMenuItem(
             enabled = true,
             text = { Text(stringResource(R.string.syntax_highlighting)) },

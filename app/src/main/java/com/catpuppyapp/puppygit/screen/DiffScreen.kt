@@ -59,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.codeeditor.PLFont
+import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.compose.BarContainer
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
@@ -79,6 +80,7 @@ import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ReadOnlyIcon
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
+import com.catpuppyapp.puppygit.compose.SelectSyntaxHighlightingDialog
 import com.catpuppyapp.puppygit.compose.SelectionRow
 import com.catpuppyapp.puppygit.compose.SingleLineCardButton
 import com.catpuppyapp.puppygit.compose.TwoLineTextCardButton
@@ -1235,6 +1237,61 @@ fun DiffScreen(
     val fileActuallyReadOnly = { diffableItem: DiffableItem -> readOnlyModeOn.value || !diffableItem.toFile().exists()}
 
 
+
+    val showSelectSyntaxLangDialog = rememberSaveable { mutableStateOf(false) }
+    val diffableItemIndexForSelctSyntaxLangDialog = rememberSaveable { mutableStateOf(0) }
+    val plScopeForSelctSyntaxLangDialog = rememberSaveable { mutableStateOf(PLScope.AUTO) }
+    val switchVisibleForSelectSyntaxLangDialog = mutableCustomStateOf<(() -> Unit)?>(stateKeyTag, "switchVisibleForSelectSyntaxLangDialog") { null }
+    val diffableItemForSelectSyntaxLangDialog = mutableCustomStateOf<DiffableItem?>(stateKeyTag, "diffableItemForSelectSyntaxLangDialog") { null }
+    // isshld is varibale name abbrev
+    val initSelectSyntaxHighlightLanguagDialog = isshld@{ diffableItem: DiffableItem, diffableItemIndex: Int, switchVisible:() -> Unit ->
+        val hunks = diffableItem.diffItemSaver.hunks
+        if(diffableItem.visible && hunks.isEmpty()) {
+            Msg.requireShowLongDuration(activityContext.getString(R.string.file_is_empty))
+            return@isshld
+        }
+
+        // make it as current item
+        curItemIndex.value = diffableItemIndex
+
+        // update dialog related states
+        diffableItemIndexForSelctSyntaxLangDialog.value = diffableItemIndex
+        diffableItemForSelectSyntaxLangDialog.value = diffableItem
+        plScopeForSelctSyntaxLangDialog.value = diffableItem.diffItemSaver.getAndUpdateScopeIfIsAuto(diffableItem.fileName)
+        switchVisibleForSelectSyntaxLangDialog.value = switchVisible
+
+        showSelectSyntaxLangDialog.value = true
+    }
+
+    if(showSelectSyntaxLangDialog.value) {
+        SelectSyntaxHighlightingDialog(
+            plScope = plScopeForSelctSyntaxLangDialog.value,
+            onCancel = { showSelectSyntaxLangDialog.value = false }
+        ) { newScope ->
+            // the null-check `?:` just in case, actually the left hand variable never be null when reached here
+            val item = diffableItemForSelectSyntaxLangDialog.value ?: getCurItem()
+
+            val scopeChanged = item.diffItemSaver.changeScope(newScope) != false
+
+            // if visible, reload;
+            //   else let it visible.
+            //   after switched visible, it will reload with new language scope
+            if(scopeChanged || !item.visible) {
+                if (item.visible) {  // visible, reload it
+                    requireRefreshSubList(listOf(diffableItemIndexForSelctSyntaxLangDialog.value))
+                } else { // invisible, switch to visible (and will reload it after swtiched)
+                    switchVisibleForSelectSyntaxLangDialog.value?.invoke()
+                }
+            }
+
+            // help gc free memory
+            diffableItemForSelectSyntaxLangDialog.value = null
+            switchVisibleForSelectSyntaxLangDialog.value = null
+
+        }
+    }
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -1479,6 +1536,17 @@ fun DiffScreen(
                                                 }
                                             )
                                         )
+
+                                        if(syntaxHighlightEnabled.value) {
+                                            add(
+                                                MenuTextItem(
+                                                    text = stringResource(R.string.syntax_highlighting),
+                                                    onClick = {
+                                                        initSelectSyntaxHighlightLanguagDialog(diffableItem, diffableItemIdx, switchVisible)
+                                                    }
+                                                )
+                                            )
+                                        }
                                     },
                                     actions = listOf(
                                         // refresh
@@ -2358,7 +2426,6 @@ fun DiffScreen(
 
     }
 
-    val noMoreMemToaster = remember { OneTimeToast() }
 
     LaunchedEffect(needRefresh.value) {
         val (requestType, requestData) = getRequestDataByState<Any?>(needRefresh.value)
@@ -2424,7 +2491,8 @@ fun DiffScreen(
             }
         }
 
-        noMoreMemToaster.reset()
+        val noMoreMemToaster = OneTimeToast()
+
 
         diffableItemList.value.toList().forEachIndexedBetter label@{ idx, item ->
             //single mode仅加载当前查看的条目

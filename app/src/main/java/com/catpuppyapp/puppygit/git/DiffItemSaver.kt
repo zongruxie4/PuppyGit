@@ -7,9 +7,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import com.catpuppyapp.puppygit.codeeditor.HunkSyntaxHighlighter
 import com.catpuppyapp.puppygit.codeeditor.LineStylePart
+import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.codeeditor.PLTheme
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StrCons
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.msg.OneTimeToast
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.compare.CmpUtil
@@ -100,7 +102,67 @@ data class DiffItemSaver (
     private val stylesMapLock: ReentrantReadWriteLock = ReentrantReadWriteLock(),
     // {PuppyLine.key: StylesResult}
     private val stylesMap: SnapshotStateMap<String, List<LineStylePart>> = mutableStateMapOf(),
+
+    internal val languageScope:Box<PLScope> = Box(PLScope.AUTO)
+
 ) {
+    fun getAndUpdateScopeIfIsAuto(fileNameForGuessLangScope: String, scope: PLScope = languageScope.value): PLScope {
+        val scope = if(scope == PLScope.AUTO) {
+            PLScope.guessScopeType(fileNameForGuessLangScope)
+        } else {
+            scope
+        }
+
+        languageScope.value = scope
+
+        return scope
+    }
+
+    fun changeScopeThenAnalyze(
+        newScope: PLScope,
+        noMoreMemToaster: OneTimeToast,
+        syntaxHighlightEnabled: State<Boolean>,
+        requireAnalyze: Boolean
+    ) {
+        if(changeScope(newScope) != true) {
+            return
+        }
+
+        // if valid, re-analyze
+        if(requireAnalyze) {
+            startAnalyzeSyntaxHighlight(noMoreMemToaster, syntaxHighlightEnabled)
+        }
+
+    }
+
+
+    // true means changed and scope valid, false means no change, null means changed but newScope is invalid
+    fun changeScope(newScope: PLScope) : Boolean? {
+        // no change
+        if(languageScope.value == newScope) {
+            return false
+        }
+
+        // update
+        languageScope.value = newScope
+
+        // if new language scope is invalid, release then return
+        return if(isLanguageScopeInvalid(newScope)) null else true
+    }
+
+
+    private fun isLanguageScopeInvalid(languageScope: PLScope) : Boolean {
+        if(PLScope.scopeTypeInvalid(languageScope)) {
+            // clean
+            operateStylesMapWithWriteLock { it.clear() }
+            hunks.forEachBetter { it.hunkSyntaxHighlighter.release() }
+
+            return true
+        }
+
+        return false
+    }
+
 
     private var cachedFileName:String? = null
     fun fileName() = cachedFileName ?: getFileNameFromCanonicalPath(relativePathUnderRepo).let { cachedFileName = it; it }
@@ -117,9 +179,16 @@ data class DiffItemSaver (
 
         // set theme first
         PLTheme.updateThemeByAppTheme()
+        // get language scope of file
+        val languageScope = getAndUpdateScopeIfIsAuto(fileName())
+
+        // check language scope valid or not
+        if(isLanguageScopeInvalid(languageScope)) {
+            return
+        }
 
         for(h in hunks) {
-            h.hunkSyntaxHighlighter.analyze()
+            h.hunkSyntaxHighlighter.analyze(languageScope)
         }
     }
 
@@ -203,6 +272,7 @@ class PuppyHunkAndLines(
     private val mergedAddDelLine:MutableSet<Int> = mutableSetOf()
 
     val hunkSyntaxHighlighter = HunkSyntaxHighlighter(this)
+
 
     class MergeAddDelLineResult (
         //是否已经显示过此行，若已显示过，不会在显示，例如第12行只有末尾是否有换行符的区别，遍历到+12时，显示12行作为context，下次遍历到-12，则直接不显示
