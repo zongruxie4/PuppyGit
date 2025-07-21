@@ -688,18 +688,9 @@ fun DiffRow (
                                 }
                             }
                         } ?: stringPartList.forEachIndexedBetter { idx, it ->
-//                            val text = content.substring(it.start, it.end)
-//                            //末尾会有个换行符，移除下，不然显示会多个行
-//                            val textNoLineSeparator = if(idx == lastIndex) text.removeSuffix(Cons.lineBreak) else text
-
-                            val textNoLineSeparator = content.substring(it.start, it.end)
-
-                            if(it.modified) {  //为修改的内容设置高亮颜色
-                                withStyle(style = SpanStyle(background = bgColor)) {
-                                    append(textNoLineSeparator)
-                                }
-                            }else {  //没修改的内容不用设置颜色，直接用默认的背景色即可
-                                append(textNoLineSeparator)
+                            //为修改的内容设置高亮颜色，如果是没修改的内容则不用设置颜色，直接用默认的背景色即可
+                            withStyle(style = SpanStyle(background = if(it.modified) bgColor else Color.Unspecified)) {
+                                append(content.substring(it.start, it.end))
                             }
                         }
                     },
