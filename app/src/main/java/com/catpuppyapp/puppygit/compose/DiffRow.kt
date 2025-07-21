@@ -719,7 +719,7 @@ fun DiffRow (
                                 append(content.substring(it.range))
                             }
 
-                        } ?: content
+                        } ?: append(content)
                     },
                     fontFamily = PLFont.diffCodeFont(),
 
