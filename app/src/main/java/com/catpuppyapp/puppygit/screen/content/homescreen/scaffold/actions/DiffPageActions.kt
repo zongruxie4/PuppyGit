@@ -177,9 +177,9 @@ fun DiffPageActions(
     ) {
 
         DropdownMenuItem(
-            text = { Text(stringResource(R.string.create_patch)) },
+            text = { Text(stringResource(R.string.create_patch) +" (${stringResource(R.string.all)})") },
             onClick = {
-                request.value = PageRequest.createPatch
+                request.value = PageRequest.createPatchForAllItems
 
                 dropDownMenuExpandState.value = false
             }
@@ -187,17 +187,15 @@ fun DiffPageActions(
         )
 
         // if is multi mode, will show this at each item bar dropdown menu
-        if(!isMultiMode && syntaxHighlightEnabled.value) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.syntax_highlighting)) },
-                onClick = {
-                    request.value = PageRequest.showSyntaxHighlightingSelectLanguageDialogForCurItem
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.syntax_highlighting)) },
+            onClick = {
+                request.value = PageRequest.showSyntaxHighlightingSelectLanguageDialogForCurItem
 
-                    dropDownMenuExpandState.value = false
-                }
+                dropDownMenuExpandState.value = false
+            }
 
-            )
-        }
+        )
 
         DropdownMenuItem(
             text = { Text(stringResource(R.string.font_size)) },

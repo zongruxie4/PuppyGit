@@ -50,7 +50,7 @@ object PageRequest {
     const val safDiff = "safDiff"
     const val safExport = "safExport"
     const val safImport = "safImport"
-    const val createPatch = "createPatch"
+    const val createPatchForAllItems = "createPatchForAllItems"
     const val indexToWorkTree_CommitAll = "indexToWorkTree_CommitAll"
     const val goToUpstream = "goToUpstream"
     const val editorQuitSelectionMode = "editorQuitSelectionMode"

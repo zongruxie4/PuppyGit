@@ -988,7 +988,7 @@ fun DiffScreen(
 
 
 
-    if(pageRequest.value == PageRequest.createPatch) {
+    if(pageRequest.value == PageRequest.createPatchForAllItems) {
         PageRequest.clearStateThenDoAct(pageRequest) {
             //从顶栏发起的请求，针对所有条目
             initCreatePatchDialog(diffableItemList.value.map { it.relativePath })
