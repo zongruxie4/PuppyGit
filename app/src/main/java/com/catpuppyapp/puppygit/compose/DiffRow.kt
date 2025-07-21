@@ -681,12 +681,11 @@ fun DiffRow (
                 //注意：这里不能改成用多个Text组件，不然若超过屏幕宽度软换行会失效
                 Text(
                     text = buildAnnotatedString {
-                        stylePartList?.forEach { stylePart ->
-                            这算法不对，需要合并一下两个range
-                            val found = stringPartList.find { it.start <= stylePart.range.start && it.end > stylePart.range.endInclusive }
-                            val style = if(found != null && found.modified) stylePart.style.merge(SpanStyle(background = bgColor)) else stylePart.style
-                            withStyle(style) {
-                                append(content.substring(stylePart.range))
+                        stylePartList?.let { stylePartList ->
+                            PuppyLine.mergeStringAndStylePartList(stringPartList, stylePartList, bgColor).forEachBetter {
+                                withStyle(it.style) {
+                                    append(content.substring(it.range))
+                                }
                             }
                         } ?: stringPartList.forEachIndexedBetter { idx, it ->
 //                            val text = content.substring(it.start, it.end)

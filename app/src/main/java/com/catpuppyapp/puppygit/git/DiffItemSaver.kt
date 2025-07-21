@@ -2,6 +2,8 @@ package com.catpuppyapp.puppygit.git
 
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
 import com.catpuppyapp.puppygit.codeeditor.HunkSyntaxHighlighter
 import com.catpuppyapp.puppygit.codeeditor.LineStylePart
 import com.catpuppyapp.puppygit.constants.Cons
@@ -11,6 +13,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.compare.CmpUtil
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
+import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getShortUUID
@@ -500,6 +503,43 @@ data class PuppyLine (
 //    }
 
 ){
+    companion object {
+        fun mergeStringAndStylePartList(stringPartList: List<IndexStringPart>, stylePartList: List<LineStylePart>, modifiedBgColor: Color): List<LineStylePart> {
+            val retStylePartList = mutableListOf<LineStylePart>()
+            val stringPartMutableList = stringPartList.toMutableList()
+            stylePartList.forEachBetter { stylePart ->
+                var start = stylePart.range.start
+                val iterator = stringPartMutableList.iterator()
+                while (iterator.hasNext()) {
+                    val stringPart = iterator.next()
+                    val reachedEnd = stringPart.end > stylePart.range.endInclusive
+                    val end = if(reachedEnd) stylePart.range.endInclusive else (stringPart.end - 1)
+                    retStylePartList.add(
+                        LineStylePart(
+                            range = IntRange(start, end),
+                            style = if(stringPart.modified) stylePart.style.merge(SpanStyle(background = modifiedBgColor)) else stylePart.style
+                        )
+                    )
+
+                    start = end + 1
+                    iterator.remove()
+
+                    if(reachedEnd) {
+                        if(start < stringPart.end) {
+                            stringPartMutableList.add(0, IndexStringPart(start, stringPart.end, stringPart.modified))
+                        }
+                        break
+                    }
+
+
+                }
+            }
+
+            return retStylePartList
+
+        }
+    }
+
     private var contentNoBreak:String? = null
     fun getContentNoLineBreak():String {  // not safe for concurrency
         return contentNoBreak ?: content.removeSuffix("\n").removeSuffix("\r").let { contentNoBreak = it; it }
