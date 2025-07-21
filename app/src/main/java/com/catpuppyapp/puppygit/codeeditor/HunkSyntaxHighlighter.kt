@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.annotation.WorkerThread
 import androidx.compose.ui.text.SpanStyle
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
+import com.catpuppyapp.puppygit.msg.OneTimeToast
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
@@ -27,21 +28,20 @@ class HunkSyntaxHighlighter(
 
 
     // Don't call this on main thread
+    // But this annotation is not enforced, it just a mark....
     @WorkerThread
-    fun noMoreMemory() : Boolean {
-        val disabledOrNoMore = hunk.diffItemSaver.syntaxDisabledOrNoMoreMem()
-
-        return disabledOrNoMore
+    fun noMoreMemory(noMoreMemToaster: OneTimeToast) : Boolean {
+        return hunk.diffItemSaver.syntaxDisabledOrNoMoreMem(noMoreMemToaster)
     }
 
-    fun analyze(scope: PLScope) {
-        if(noMoreMemory()) {
+    fun analyze(scope: PLScope, noMoreMemToaster: OneTimeToast) {
+        if(noMoreMemory(noMoreMemToaster)) {
             return
         }
 
 
         analyzeLock.withLock {
-            if(noMoreMemory()) {
+            if(noMoreMemory(noMoreMemToaster)) {
                 return
             }
 

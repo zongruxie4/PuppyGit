@@ -49,7 +49,7 @@ fun DiffPageActions(
     groupDiffContentByLineNum:MutableState<Boolean>,
     enableSelectCompare:MutableState<Boolean>,
     matchByWords:MutableState<Boolean>,
-    syntaxHighlightEnabled:MutableState<Boolean>,
+//    syntaxHighlightEnabled:MutableState<Boolean>,
 ) {
 
 //    val navController = AppModel.navController
@@ -177,7 +177,8 @@ fun DiffPageActions(
     ) {
 
         DropdownMenuItem(
-            text = { Text(stringResource(R.string.create_patch) +" (${stringResource(R.string.all)})") },
+            // append a "All" suffix to clarify it is for all items when multi files mode on
+            text = { Text(stringResource(R.string.create_patch) + (if(isMultiMode) " (${stringResource(R.string.all)})" else "")) },
             onClick = {
                 request.value = PageRequest.createPatchForAllItems
 
@@ -306,24 +307,25 @@ fun DiffPageActions(
 
         }
 
+        // disabled reason: almost useless and must update syntax highlighting for all items when switched, maintenance it is too much...
         // 启用这个才会显示另一个同名的点击选择语言弹窗的选项
-        DropdownMenuItem(
-            enabled = true,
-            text = { Text(stringResource(R.string.syntax_highlighting)) },
-            trailingIcon = {
-                SimpleCheckBox(syntaxHighlightEnabled.value)
-            },
-            onClick = {
-                syntaxHighlightEnabled.value = !syntaxHighlightEnabled.value
-
-                SettingsUtil.update {
-                    it.diff.syntaxHighlightEnabled = syntaxHighlightEnabled.value
-                }
-
-                refreshPage()
-            }
-
-        )
+//        DropdownMenuItem(
+//            enabled = true,
+//            text = { Text(stringResource(R.string.syntax_highlighting)) },
+//            trailingIcon = {
+//                SimpleCheckBox(syntaxHighlightEnabled.value)
+//            },
+//            onClick = {
+//                syntaxHighlightEnabled.value = !syntaxHighlightEnabled.value
+//
+//                SettingsUtil.update {
+//                    it.diff.syntaxHighlightEnabled = syntaxHighlightEnabled.value
+//                }
+//
+//                refreshPage()
+//            }
+//
+//        )
 
         DropdownMenuItem(
             enabled = readOnlyModeSwitchable,

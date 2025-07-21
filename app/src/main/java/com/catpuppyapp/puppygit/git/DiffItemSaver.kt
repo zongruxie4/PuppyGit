@@ -150,13 +150,13 @@ data class DiffItemSaver (
     private var cachedFileName:String? = null
     fun fileName() = cachedFileName ?: getFileNameFromCanonicalPath(relativePathUnderRepo).let { cachedFileName = it; it }
 
-    private var cachedNoMoreMemToaster: OneTimeToast? = null
-    private var cachedSyntaxHighlightEnabledState: State<Boolean>? = null
+//    private var cachedNoMoreMemToaster: OneTimeToast? = null
+//    private var cachedSyntaxHighlightEnabledState: State<Boolean>? = null
     // `oneTimeNoMoreMemNotify` should ensure only call once
-    fun startAnalyzeSyntaxHighlight(noMoreMemToaster: OneTimeToast, syntaxHighlightEnabled: State<Boolean>) {
-        cachedNoMoreMemToaster = noMoreMemToaster
-        cachedSyntaxHighlightEnabledState = syntaxHighlightEnabled
-        if(syntaxDisabledOrNoMoreMem()) {
+    fun startAnalyzeSyntaxHighlight(noMoreMemToaster: OneTimeToast) {
+//        cachedNoMoreMemToaster = noMoreMemToaster
+//        cachedSyntaxHighlightEnabledState = syntaxHighlightEnabled
+        if(syntaxDisabledOrNoMoreMem(noMoreMemToaster)) {
             return
         }
 
@@ -171,17 +171,20 @@ data class DiffItemSaver (
         }
 
         for(h in hunks) {
-            h.hunkSyntaxHighlighter.analyze(languageScope)
+            h.hunkSyntaxHighlighter.analyze(languageScope, noMoreMemToaster)
         }
     }
 
-    fun syntaxDisabledOrNoMoreMem(): Boolean {
+    fun syntaxDisabledOrNoMoreMem(noMoreMemToaster: OneTimeToast): Boolean {
         // only clear current diffItemSaver, but memory maybe still intense,
         //   because other diffItemSaver and their styles still in the memory
-        if(!(cachedSyntaxHighlightEnabledState?.value ?: SettingsUtil.isDiffSyntaxHighlightEnabled())
-            || noMoreHeapMemThenDoAct {
-                    cachedNoMoreMemToaster?.show(StrCons.syntaxHightDisabledDueToNoMoreMem)
-               }
+        if(
+            // user can select language scope even disabled, so this condition should remove
+//            !SettingsUtil.isDiffSyntaxHighlightEnabled()
+//            ||
+            noMoreHeapMemThenDoAct {
+                noMoreMemToaster.show(StrCons.syntaxHightDisabledDueToNoMoreMem)
+            }
         ) {
             operateStylesMapWithWriteLock { it.clear() }
             return true
