@@ -323,7 +323,7 @@ class MyCodeEditor(
         // if no bug, should not trigger full syntax analyze a lot
         MyLog.w(TAG, "will run full syntax highlighting analyze")
 
-        PLTheme.setTheme(Theme.inDarkTheme)
+        PLTheme.updateThemeByAppTheme()
 
 
 //            clearStylesChannel()

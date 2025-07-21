@@ -105,7 +105,7 @@ data class DiffItemSaver (
         }
 
         // set theme first
-        PLTheme.setTheme(Theme.inDarkTheme)
+        PLTheme.updateThemeByAppTheme()
 
         for(h in hunks) {
             h.hunkSyntaxHighlighter.analyze()

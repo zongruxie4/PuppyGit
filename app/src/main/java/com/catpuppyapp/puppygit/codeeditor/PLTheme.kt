@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.codeeditor
 
 import androidx.compose.ui.graphics.Color
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.model.ThemeModel
@@ -38,6 +39,9 @@ object PLTheme {
 
     fun getBackground(inDarkTheme: Boolean) = if(inDarkTheme) BG_DARK else BG_LIGHT
 
+    fun updateThemeByAppTheme() {
+        setTheme(Theme.inDarkTheme)
+    }
 
     /**
      * Load default textmate themes
