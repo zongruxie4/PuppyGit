@@ -5,14 +5,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import io.github.rosemoe.sora.lang.analysis.AnalyzeManager
-import io.github.rosemoe.sora.lang.analysis.StyleReceiver
-import io.github.rosemoe.sora.lang.analysis.StyleUpdateRange
-import io.github.rosemoe.sora.lang.brackets.BracketsProvider
-import io.github.rosemoe.sora.lang.diagnostic.DiagnosticsContainer
 import io.github.rosemoe.sora.lang.styling.Styles
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.withLock
 
 private const val TAG = "MyEditorStyleDelegate"
 
@@ -22,28 +15,10 @@ class MyEditorStyleDelegate(
     val stylesMap: MutableMap<String, StylesResult>,
     val editorState: TextEditorState?,
     val languageScope: PLScope,
-): StyleReceiver {
-    override fun setStyles(sourceManager: AnalyzeManager, styles: Styles?) {
-        setStyles(sourceManager, styles, null)
-    }
+): MyStyleReceiver(TAG,  codeEditor.myLang?.analyzeManager) {
 
-    override fun setStyles(sourceManager: AnalyzeManager, styles: Styles?, action: Runnable?) {
-        val expectedAnalyzeManager = codeEditor.myLang?.analyzeManager
-        if(sourceManager != expectedAnalyzeManager) {
-            MyLog.w(TAG, "sourceManager doesn't match: sourceManager=$sourceManager, expectedAnalyzeManager=$expectedAnalyzeManager")
-            return
-        }
-
-//        val requester = codeEditor.stylesUpdateRequestChannel.tryReceive().getOrNull()
-//        if(requester == null || requester.ignoreThis) {
-//            return
-//        }
-
+    override fun handleStyles(styles: Styles) {
         if(editorState == null || editorState.fieldsId.isBlank()) {
-            return
-        }
-
-        if(styles == null) {
             return
         }
 
@@ -52,7 +27,7 @@ class MyEditorStyleDelegate(
         //    并且，其时间戳早于editor state状态变量的时间戳，就在这里直接返回
         // 这个检测可节省内存，但同时可能导致性能问题，若有性能问题，可尝试禁用，对app影响不大，就是多费点内存
         // this check can save memory, but may cause performance issue, if happened, disabled it is ok, just maybe will use more memories
-        val latestFieldsId = codeEditor.editorState?.value?.fieldsId
+        val latestFieldsId = codeEditor.editorState.value.fieldsId
         val carriedFieldsId = editorState.fieldsId
 
         if(AppModel.devModeOn) {
@@ -96,22 +71,5 @@ class MyEditorStyleDelegate(
             // apply copied for editor state to avoid styles changed when applying
             editorState.applySyntaxHighlighting(copiedStyles)
         }
-    }
-
-    //received styles is full spans, not a part
-    override fun updateStyles(
-        sourceManager: AnalyzeManager,
-        styles: Styles,
-        range: StyleUpdateRange
-    ) {
-        setStyles(sourceManager, styles)
-    }
-
-    override fun setDiagnostics(sourceManager: AnalyzeManager, diagnostics: DiagnosticsContainer?) {
-
-    }
-
-    override fun updateBracketProvider(sourceManager: AnalyzeManager, provider: BracketsProvider?) {
-
     }
 }
