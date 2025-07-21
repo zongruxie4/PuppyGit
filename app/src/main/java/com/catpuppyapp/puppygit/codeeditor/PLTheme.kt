@@ -57,9 +57,7 @@ object PLTheme {
                         FileProviderRegistry.getInstance().tryGetInputStream(path), path, null
                     ), name
                 ).apply {
-                    if (name != THEME_LIGHT) {
-                        isDark = true
-                    }
+                    isDark = name != THEME_LIGHT
                 }
             )
         }
