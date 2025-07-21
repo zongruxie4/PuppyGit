@@ -1276,10 +1276,15 @@ fun DiffScreen(
             // if visible, reload;
             //   else let it visible.
             //   after switched visible, it will reload with new language scope
+            // those code for single and multi file mode both are worked well
+            // 这段代码对single和multi file mode 都适用
             if(scopeChanged || !item.visible) {
+                // multi mode may into if or else
                 if (item.visible) {  // visible, reload it
+                    // sinlgle mode will only possible reached here
                     requireRefreshSubList(listOf(diffableItemIndexForSelctSyntaxLangDialog.value))
                 } else { // invisible, switch to visible (and will reload it after swtiched)
+                    // only multi mode have a chance reached here
                     switchVisibleForSelectSyntaxLangDialog.value?.invoke()
                 }
             }
@@ -1290,6 +1295,14 @@ fun DiffScreen(
 
         }
     }
+
+
+    if(pageRequest.value == PageRequest.showSyntaxHighlightingSelectLanguageDialogForCurItem) {
+        PageRequest.clearStateThenDoAct(pageRequest) {
+            initSelectSyntaxHighlightLanguagDialog(getCurItem(), curItemIndex.intValue, { changeStateTriggerRefreshPage(needRefresh) })
+        }
+    }
+
 
 
     Scaffold(

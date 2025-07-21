@@ -191,7 +191,7 @@ fun DiffPageActions(
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.syntax_highlighting)) },
                 onClick = {
-                    request.value = PageRequest.showSyntaxHighlightingSelectLanguageDialog
+                    request.value = PageRequest.showSyntaxHighlightingSelectLanguageDialogForCurItem
 
                     dropDownMenuExpandState.value = false
                 }
