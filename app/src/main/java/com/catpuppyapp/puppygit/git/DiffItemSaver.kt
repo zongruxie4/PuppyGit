@@ -103,7 +103,7 @@ data class DiffItemSaver (
     // {PuppyLine.key: StylesResult}
     private val stylesMap: SnapshotStateMap<String, List<LineStylePart>> = mutableStateMapOf(),
 
-    internal val languageScope:Box<PLScope> = Box(PLScope.AUTO)
+    internal val languageScope:Box<PLScope> = if(SettingsUtil.isDiffSyntaxHighlightEnabled()) Box(PLScope.AUTO) else Box(PLScope.NONE)
 
 ) {
     fun getAndUpdateScopeIfIsAuto(fileNameForGuessLangScope: String, scope: PLScope = languageScope.value): PLScope {
