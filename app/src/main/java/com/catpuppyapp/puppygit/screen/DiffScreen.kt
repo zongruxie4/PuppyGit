@@ -1244,11 +1244,14 @@ fun DiffScreen(
     val diffableItemForSelectSyntaxLangDialog = mutableCustomStateOf<DiffableItem?>(stateKeyTag, "diffableItemForSelectSyntaxLangDialog") { null }
     // isshld is varibale name abbrev
     val initSelectSyntaxHighlightLanguagDialog = isshld@{ diffableItem: DiffableItem, diffableItemIndex: Int ->
-        val hunks = diffableItem.diffItemSaver.hunks
-        if(diffableItem.visible && hunks.isEmpty()) {
-            Msg.requireShowLongDuration(activityContext.getString(R.string.file_is_empty))
-            return@isshld
-        }
+        // disabled reason: even let user select language for an empty file, still nothing goes terrible, just will reload file once, no big deal
+        // 禁用原因：如果用户停留在本app的diff页面，然后在外部改变了文件，这时如果用户点语法高亮选单，期望的是文件展开并以他选择的语法高亮语言显示最新的修改，
+        //   如果继续用旧数据是否为空来判定，就会误判；最关键的是，就算文件内容为空，让用户选一下语言，其实也没什么坏的影响, no big deal
+        // 如果文件已展开且hunks为空，应该没东西，直接返回即可；如果文件未展开，可能未加载，无法判断是否有内容。
+//        if(diffableItem.visible && diffableItem.diffItemSaver.hunks.isEmpty()) {
+//            Msg.requireShowLongDuration(activityContext.getString(R.string.file_is_empty))
+//            return@isshld
+//        }
 
         // make it as current item
         curItemIndex.value = diffableItemIndex
@@ -1256,6 +1259,7 @@ fun DiffScreen(
         // update dialog related states
         diffableItemIndexForSelctSyntaxLangDialog.value = diffableItemIndex
         diffableItemForSelectSyntaxLangDialog.value = diffableItem
+        // 如果文件没展开,diffableItem.diffItemSaver没东西，所以这里保险起见，应该用diffableItem.fileName
         plScopeForSelctSyntaxLangDialog.value = diffableItem.diffItemSaver.getAndUpdateScopeIfIsAuto(diffableItem.fileName)
 
         showSelectSyntaxLangDialog.value = true
