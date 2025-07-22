@@ -186,7 +186,13 @@ fun BranchListScreen(
     val showRebaseOrMergeDialog = rememberSaveable { mutableStateOf(false)}
     val rebaseOrMergeSrc = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "rebaseOrMergeSrc", initValue = BranchNameAndTypeDto())
     val requireRebase = rememberSaveable { mutableStateOf(false)}
-    val initRebaseOrMergeDialog = iromd@{ isRebase: Boolean, src: BranchNameAndTypeDto?, calledByCurrentBranchAndSrcIsUpstreamOfIt:Boolean ->
+    fun initRebaseOrMergeDialog(
+        isRebase: Boolean,
+        src: BranchNameAndTypeDto?,
+        caller:BranchNameAndTypeDto,
+    ) {
+        val calledByCurrentBranchAndSrcIsUpstreamOfIt = caller.isCurrent
+
         if(src == null) {
             if(calledByCurrentBranchAndSrcIsUpstreamOfIt) {
                 // current branch upstream is null, this maybe happen
@@ -196,7 +202,13 @@ fun BranchListScreen(
                 Msg.requireShowLongDuration(activityContext.getString(R.string.resolve_reference_failed))
             }
 
-            return@iromd
+            return
+        }
+
+        // 如果是当前分支调用的本方法，并且src是他的上游分支，并且它不落后于上游分支，则不需要合并
+        if(calledByCurrentBranchAndSrcIsUpstreamOfIt && caller.behind == 0) {
+            Msg.requireShow(activityContext.getString(R.string.already_up_to_date))
+            return
         }
 
         requireRebase.value = isRebase
@@ -664,17 +676,21 @@ fun BranchListScreen(
     }
 
     // if is current branch, find is upstream; else, merge selected branch into current (merge `curObjInPage` into current branch)
-    val resolveMergeSrc = {
-        if(curObjInPage.value.isCurrent) {
-            val upstreamFullName = curObjInPage.value.upstream?.remoteBranchRefsRemotesFullRefSpec
+    val resolveMergeSrc = { target: BranchNameAndTypeDto, branchList: List<BranchNameAndTypeDto> ->
+        // avoid mistake use
+        val curObjInPage = Unit
+        val list = Unit
+
+        if(target.isCurrent) {
+            val upstreamFullName = target.upstream?.remoteBranchRefsRemotesFullRefSpec
 
             if(upstreamFullName == null) {
                 null
             }else {
-                list.value.find { it.fullName == upstreamFullName}
+                branchList.find { it.fullName == upstreamFullName}
             }
         } else {
-            curObjInPage.value
+            target
         }
     }
 
@@ -1695,9 +1711,16 @@ fun BranchListScreen(
                         // if is current branch, merge upstream into, else merge into current
                         textDesc = if(curObjInPage.value.isCurrent) stringResource(R.string.upstream) else stringResource(R.string.merge_into_current),
 //                        enabled = curObjInPage.value.isCurrent.not()
-                    ){
+                    ) {
+                        val curObjInPage = curObjInPage.value
+                        val list = list.value
+
                         doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
-                            initRebaseOrMergeDialog(false, resolveMergeSrc(), curObjInPage.value.isCurrent)
+                            initRebaseOrMergeDialog(
+                                isRebase = false,
+                                src = resolveMergeSrc(curObjInPage, list),
+                                caller = curObjInPage,
+                            )
                         }
                     }
 
@@ -1706,9 +1729,16 @@ fun BranchListScreen(
 //                        textDesc = repoCurrentActiveBranchOrShortDetachedHashForShown.value+(if(curRepoIsDetached.value) "[Detached]" else ""),
                             textDesc = if(curObjInPage.value.isCurrent) stringResource(R.string.upstream) else stringResource(R.string.rebase_current_onto),
 //                            enabled = curObjInPage.value.isCurrent.not()
-                        ){
+                        ) {
+                            val curObjInPage = curObjInPage.value
+                            val list = list.value
+
                             doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
-                                initRebaseOrMergeDialog(true, resolveMergeSrc(), curObjInPage.value.isCurrent)
+                                initRebaseOrMergeDialog(
+                                    isRebase = true,
+                                    src = resolveMergeSrc(curObjInPage, list),
+                                    caller = curObjInPage
+                                )
                             }
                         }
                     }
