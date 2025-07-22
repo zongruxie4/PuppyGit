@@ -180,12 +180,30 @@ fun BranchListScreen(
     val needRefresh = rememberSaveable { mutableStateOf("")}
     val branchName = rememberSaveable { mutableStateOf("")}
 //    val curCommit = rememberSaveable{ mutableStateOf(CommitDto()) }
-    val curObjInPage = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curObjInPage", initValue =BranchNameAndTypeDto())  //如果是detached
+    val curObjInPage = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curObjInPage", initValue = BranchNameAndTypeDto())
     val curRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curRepo", initValue = RepoEntity(id=""))
 
     val showRebaseOrMergeDialog = rememberSaveable { mutableStateOf(false)}
+    val rebaseOrMergeSrc = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "rebaseOrMergeSrc", initValue = BranchNameAndTypeDto())
     val requireRebase = rememberSaveable { mutableStateOf(false)}
+    val initRebaseOrMergeDialog = iromd@{ isRebase: Boolean, src: BranchNameAndTypeDto?, calledByCurrentBranchAndSrcIsUpstreamOfIt:Boolean ->
+        if(src == null) {
+            if(calledByCurrentBranchAndSrcIsUpstreamOfIt) {
+                // current branch upstream is null, this maybe happen
+                Msg.requireShowLongDuration(activityContext.getString(R.string.upstream_not_set_or_not_published))
+            }else {
+                // branch is null, this should never happen
+                Msg.requireShowLongDuration(activityContext.getString(R.string.resolve_reference_failed))
+            }
 
+            return@iromd
+        }
+
+        requireRebase.value = isRebase
+        rebaseOrMergeSrc.value = src
+
+        showRebaseOrMergeDialog.value = true
+    }
 
     // username and email start
     val username = rememberSaveable { mutableStateOf("") }
@@ -293,9 +311,13 @@ fun BranchListScreen(
 
 
 
-    suspend fun doMerge(trueMergeFalseRebase:Boolean):Ret<Unit?>{
+    // merge param `src` into current branch of repo
+    suspend fun doMerge(trueMergeFalseRebase:Boolean, src: BranchNameAndTypeDto):Ret<Unit?> {
+        // avoid mistake use
+        val curObjInPage = Unit
+
         //如果选中条目和仓库当前活跃分支一样，则不用合并
-        if(curObjInPage.value.oidStr == repoCurrentActiveBranchOrDetachedHeadFullHashForDoAct.value) {
+        if(src.oidStr == repoCurrentActiveBranchOrDetachedHeadFullHashForDoAct.value) {
 //            requireShowToast(appContext.getString(R.string.merge_failed_src_and_target_same))
             Msg.requireShow(activityContext.getString(R.string.already_up_to_date))
             return Ret.createSuccess(null)  //源和目标一样不算错误，返回true
@@ -310,11 +332,11 @@ fun BranchListScreen(
             }
 
 
-            val targetRefName= curObjInPage.value.fullName  //如果是detached这个值是空，会用后面的hash来进行合并，如果非detached，即使这个传长引用名在冲突文件里显示的依然是短引用名
-            val username= usernameFromConfig
-            val email= emailFromConfig
-            val requireMergeByRevspec= curRepoIsDetached.value  //如果是detached head，没当前分支，用下面的revspec（commit hash）进行合并，否则用上面的targetRefName(分支短或全名）进行合并
-            val revspec= curObjInPage.value.oidStr
+            val targetRefName = src.fullName  //如果是detached这个值是空，会用后面的hash来进行合并，如果非detached，即使这个传长引用名在冲突文件里显示的依然是短引用名
+            val username = usernameFromConfig
+            val email = emailFromConfig
+            val requireMergeByRevspec = curRepoIsDetached.value  //如果是detached head，没当前分支，用下面的revspec（commit hash）进行合并，否则用上面的targetRefName(分支短或全名）进行合并
+            val revspec = src.oidStr
 
             val mergeResult = if(trueMergeFalseRebase) {
                 Libgit2Helper.mergeOneHead(
@@ -641,49 +663,53 @@ fun BranchListScreen(
         )
     }
 
+    // if is current branch, find is upstream; else, merge selected branch into current (merge `curObjInPage` into current branch)
+    val resolveMergeSrc = {
+        if(curObjInPage.value.isCurrent) {
+            val upstreamFullName = curObjInPage.value.upstream?.remoteBranchRefsRemotesFullRefSpec
+
+            if(upstreamFullName == null) {
+                null
+            }else {
+                list.value.find { it.fullName == upstreamFullName}
+            }
+        } else {
+            curObjInPage.value
+        }
+    }
+
     if(showRebaseOrMergeDialog.value) {
-        ConfirmDialog2(title = stringResource(if(requireRebase.value) R.string.rebase else R.string.merge),
+        // avoid mistake use
+        val curObjInPage = Unit
+
+        ConfirmDialog2(
+            title = stringResource(if(requireRebase.value) R.string.rebase else R.string.merge),
             requireShowTextCompose = true,
             textCompose = {
-                          ScrollableColumn {
-//                              Row {
-//                                  Text(text = appContext.getString(R.string.warn_please_commit_your_change_before_checkout_or_merge),
-//                                      color= Color.Red
-//                                  )
-//                              }
-//                              Spacer(modifier = Modifier.padding(5.dp))
-//                              Row {
-//                                  Text(text = stringResource(if(requireRebase.value) R.string.will_rebase else R.string.will_merge)+":")
-//                              }
-//                              Spacer(modifier = Modifier.padding(5.dp))
-//                              //if branch show "merge branch_a into branch_b"
-                              Row(
-                                  modifier = Modifier.fillMaxWidth(),
-                                  horizontalArrangement = Arrangement.Center,
-                                  verticalAlignment = Alignment.CenterVertically
-                              ) {
-                                  val left = if(!requireRebase.value) curObjInPage.value.shortName else if(curRepoIsDetached.value) Cons.gitDetachedHead else repoCurrentActiveBranchOrShortDetachedHashForShown.value
-                                  val right = if(requireRebase.value) curObjInPage.value.shortName else if(curRepoIsDetached.value) Cons.gitDetachedHead else repoCurrentActiveBranchOrShortDetachedHashForShown.value
-                                  val text = if(requireRebase.value) {
-                                      replaceStringResList(stringResource(R.string.rebase_left_onto_right), listOf(left, right))
-                                  }else{
-                                      replaceStringResList(stringResource(R.string.merge_left_into_right), listOf(left, right))
-                                  }
+                ScrollableColumn {
+//                //if branch show "merge branch_a into branch_b"
+                  Row(
+                      modifier = Modifier.fillMaxWidth(),
+                      horizontalArrangement = Arrangement.Center,
+                      verticalAlignment = Alignment.CenterVertically
+                  ) {
+                      val left = if(!requireRebase.value) rebaseOrMergeSrc.value.shortName else if(curRepoIsDetached.value) Cons.gitDetachedHead else repoCurrentActiveBranchOrShortDetachedHashForShown.value
+                      val right = if(requireRebase.value) rebaseOrMergeSrc.value.shortName else if(curRepoIsDetached.value) Cons.gitDetachedHead else repoCurrentActiveBranchOrShortDetachedHashForShown.value
+                      val text = if(requireRebase.value) {
+                          replaceStringResList(stringResource(R.string.rebase_left_onto_right), listOf(left, right))
+                      }else{
+                          replaceStringResList(stringResource(R.string.merge_left_into_right), listOf(left, right))
+                      }
 
-                                  Text(text = text,
-                                      softWrap = true,
-                                      overflow = TextOverflow.Visible
-                                  )
+                      Text(
+                          text = text,
+                          softWrap = true,
+                          overflow = TextOverflow.Visible
+                      )
 
-//                                  if(curRepoIsDetached.value) {
-//                                      Text(text = " "+stringResource(id = R.string.into))
-//                                      Text(text = " HEAD",
-//                                          fontWeight = FontWeight.ExtraBold,
-//                                          )
-//                                  }
-                              }
+                  }
 
-                          }
+                }
             },
             onCancel = { showRebaseOrMergeDialog.value = false }
         ) {  //onOk
@@ -694,7 +720,7 @@ fun BranchListScreen(
                 loadingText = if(requireRebase.value) activityContext.getString(R.string.rebasing) else activityContext.getString(R.string.merging),
             )  job@{
                 try {
-                    val mergeRet = doMerge(trueMergeFalseRebase = !requireRebase.value)
+                    val mergeRet = doMerge(trueMergeFalseRebase = !requireRebase.value, rebaseOrMergeSrc.value)
                     if(mergeRet.hasError()) {
                         throw RuntimeException(mergeRet.msg)
                     }
@@ -1666,26 +1692,23 @@ fun BranchListScreen(
                     BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.merge),
 //                        textDesc = repoCurrentActiveBranchOrShortDetachedHashForShown.value+(if(curRepoIsDetached.value) "[Detached]" else ""),
 //                    textDesc = replaceStringResList(stringResource(id = R.string.merge_branch1_into_branch2), listOf(getStrShorterThanLimitLength(curObjInPage.value.shortName), (if(curRepoIsDetached.value) "Detached HEAD" else getStrShorterThanLimitLength(repoCurrentActiveBranchOrShortDetachedHashForShown.value)))) ,
-                        textDesc = stringResource(R.string.merge_into_current),
-                        enabled = curObjInPage.value.isCurrent.not()
+                        // if is current branch, merge upstream into, else merge into current
+                        textDesc = if(curObjInPage.value.isCurrent) stringResource(R.string.upstream) else stringResource(R.string.merge_into_current),
+//                        enabled = curObjInPage.value.isCurrent.not()
                     ){
                         doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
-                            requireRebase.value = false
-                            //弹出确认框，如果确定，执行merge，否则不执行
-                            showRebaseOrMergeDialog.value = true
+                            initRebaseOrMergeDialog(false, resolveMergeSrc(), curObjInPage.value.isCurrent)
                         }
                     }
 
                     if(UserUtil.isPro() && (dev_EnableUnTestedFeature || rebaseTestPassed)) {
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.rebase),
 //                        textDesc = repoCurrentActiveBranchOrShortDetachedHashForShown.value+(if(curRepoIsDetached.value) "[Detached]" else ""),
-                            textDesc = stringResource(R.string.rebase_current_onto),
-                            enabled = curObjInPage.value.isCurrent.not()
+                            textDesc = if(curObjInPage.value.isCurrent) stringResource(R.string.upstream) else stringResource(R.string.rebase_current_onto),
+//                            enabled = curObjInPage.value.isCurrent.not()
                         ){
                             doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
-                                requireRebase.value = true
-                                //弹出确认框，如果确定，执行操作，否则不执行
-                                showRebaseOrMergeDialog.value = true
+                                initRebaseOrMergeDialog(true, resolveMergeSrc(), curObjInPage.value.isCurrent)
                             }
                         }
                     }
