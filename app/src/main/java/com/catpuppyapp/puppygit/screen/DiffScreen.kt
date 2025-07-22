@@ -47,6 +47,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -79,6 +81,7 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.MySelectionContainerPlaceHolder
+import com.catpuppyapp.puppygit.compose.OneTimeFocusRightNow
 import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
@@ -1412,6 +1415,8 @@ fun DiffScreen(
 
 
     if(showEditLineDialog.value) {
+        val focusRequester = remember { FocusRequester() }
+
         ConfirmDialogAndDisableSelection(
             //禁用点击弹窗外部区域或按返回键关闭弹窗，这样可避免误操作而丢失正在编辑的数据
             onDismiss = {},
@@ -1442,6 +1447,7 @@ fun DiffScreen(
 
                     TextField(
                         modifier = Modifier
+                            .focusRequester(focusRequester)
                             .fillMaxWidth()
                             .then(
                                 if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
@@ -1492,6 +1498,8 @@ fun DiffScreen(
                 }
             }
         }
+
+        OneTimeFocusRightNow(focusRequester)
 
     }
 
@@ -1550,6 +1558,8 @@ fun DiffScreen(
     }
 
     if(showRestoreLineDialog.value) {
+        val focusRequester = remember { FocusRequester() }
+
         ConfirmDialogAndDisableSelection(
             onDismiss = {},
 
@@ -1587,6 +1597,7 @@ fun DiffScreen(
 
                     TextField(
                         modifier = Modifier
+                            .focusRequester(focusRequester)
                             .fillMaxWidth()
                             .then(
                                 if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
@@ -1642,6 +1653,8 @@ fun DiffScreen(
                 }
             }
         }
+
+        OneTimeFocusRightNow(focusRequester)
     }
 
 

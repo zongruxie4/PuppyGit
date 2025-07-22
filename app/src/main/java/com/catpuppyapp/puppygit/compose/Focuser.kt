@@ -23,3 +23,11 @@ fun Focuser(
         }
     }
 }
+
+
+@Composable
+fun OneTimeFocusRightNow(focusRequester: FocusRequester) {
+    LaunchedEffect(Unit) {
+        runCatching { focusRequester.requestFocus() }
+    }
+}
