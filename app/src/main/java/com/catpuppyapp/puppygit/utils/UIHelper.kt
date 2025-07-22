@@ -412,7 +412,7 @@ object UIHelper {
     }
 
     fun getLastClickedColor(): Color {
-        return if(Theme.inDarkTheme) Color.DarkGray.copy(alpha = .2f) else Color.LightGray.copy(alpha=.2f)
+        return if(Theme.inDarkTheme) Color.Gray.copy(alpha = .2f) else Color.LightGray.copy(alpha=.2f)
     }
 
 
