@@ -3,35 +3,24 @@ package com.catpuppyapp.puppygit.compose
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ClipboardManager
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
@@ -49,17 +38,14 @@ import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.getClipboardText
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
-import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
-import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.addTopPaddingIfIsFirstLine
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
-import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
@@ -91,7 +77,6 @@ fun DiffRow (
     clipboardManager: ClipboardManager,
     loadingOn:(String)->Unit,
     loadingOff:()->Unit,
-    refreshPage:()->Unit,
     repoId:String,
     showLineNum:Boolean,
     showOriginType:Boolean,
@@ -110,6 +95,9 @@ fun DiffRow (
     activityContext:Context,
     lineClickedMenuOffset: DpOffset,
     diffItemSaver: DiffItemSaver,
+    initEditLineDialog: (content:String, lineNum:Int, prependOrAppendOrReplace:Boolean?, filePath:String) -> Unit,
+    initDelLineDialog: (lineNum:Int, filePath:String) -> Unit,
+    initRestoreLineDialog: (content:String, lineNum:Int, trueRestoreFalseReplace_param:Boolean, filePath:String) -> Unit,
 ) {
     val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
@@ -123,37 +111,6 @@ fun DiffRow (
     val lineClickable = enableLineCopy || enableLineEditActions || enableSelectCompare
 
 
-    //不能用默认的rememberSaveable，但能用重写了saver的
-    val showEditLineDialog = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "showEditLineDialog") { false }
-    val showRestoreLineDialog = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "showRestoreLineDialog") { false }
-
-//    println("diffrow: $stringPartList")
-
-    val view = LocalView.current
-    val density = LocalDensity.current
-
-    val isKeyboardVisible = remember { mutableStateOf(false) }
-    //indicate keyboard covered component
-    val isKeyboardCoveredComponent = remember { mutableStateOf(false) }
-    // which component expect adjust heghit or padding when softkeyboard shown
-    val componentHeight = remember { mutableIntStateOf(0) }
-    // the padding value when softkeyboard shown
-    val keyboardPaddingDp = remember { mutableIntStateOf(0) }
-
-    // this code gen by chat-gpt, wow
-    // except: this code may not work when use use a float keyboard or softkeyboard with single-hand mode
-    // 监听键盘的弹出和隐藏 (listening keyboard visible/hidden)
-    SoftkeyboardVisibleListener(
-        view = view,
-        isKeyboardVisible = isKeyboardVisible,
-        isKeyboardCoveredComponent = isKeyboardCoveredComponent,
-        componentHeight = componentHeight,
-        keyboardPaddingDp = keyboardPaddingDp,
-        density = density,
-        skipCondition = {
-            !(showEditLineDialog.value || showRestoreLineDialog.value)
-        }
-    )
 
 
 
@@ -201,272 +158,6 @@ fun DiffRow (
         ""
     }
 
-
-    val lineContentOfEditLineDialog = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "lineContentOfEditLineDialog") { "" }
-    val lineNumOfEditLineDialog = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "lineNumOfEditLineDialog") { LineNum.invalidButNotEof }  // this is line number not index, should start from 1
-    val lineNumStrOfEditLineDialog = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "lineNumStrOfEditLineDialog") { "" }  // this is line number not index, should start from 1
-
-    //因为自定义存储器会把数据存到mutableState里，所以Cache里存的实际不是null，因此可以存null值
-    val truePrependFalseAppendNullReplace = mutableCustomStateOf<Boolean?>(keyTag = stateKeyTag, keyName = "truePrependFalseAppendNullReplace") { null }
-    val showDelLineDialog = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "showDelLineDialog") { false }
-    val trueRestoreFalseReplace = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "trueRestoreFalseReplace") { false }
-
-    val initEditLineDialog = {content:String, lineNum:Int, prependOrApendOrReplace:Boolean? ->
-        if(lineNum == LineNum.invalidButNotEof){
-            Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
-        }else {
-            truePrependFalseAppendNullReplace.value = prependOrApendOrReplace
-            lineContentOfEditLineDialog.value = content
-            lineNumOfEditLineDialog.value = lineNum
-            showEditLineDialog.value = true
-        }
-    }
-    val initDelLineDialog = {lineNum:Int ->
-        if(lineNum == LineNum.invalidButNotEof){
-            Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
-        }else {
-            lineNumOfEditLineDialog.value = lineNum
-            showDelLineDialog.value = true
-        }
-    }
-    val initRestoreLineDialog = {content:String, lineNum:Int, trueRestoreFalseReplace_param:Boolean ->
-        if(lineNum == LineNum.invalidButNotEof){
-            Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
-        }else {
-            lineContentOfEditLineDialog.value = content
-            lineNumOfEditLineDialog.value = lineNum
-            lineNumStrOfEditLineDialog.value = ""+lineNum
-            trueRestoreFalseReplace.value = trueRestoreFalseReplace_param
-            showRestoreLineDialog.value = true
-        }
-    }
-
-
-    if(showEditLineDialog.value) {
-        ConfirmDialogAndDisableSelection(
-            //禁用点击弹窗外部区域或按返回键关闭弹窗，这样可避免误操作而丢失正在编辑的数据
-            onDismiss = {},
-
-            title = if(truePrependFalseAppendNullReplace.value == true) stringResource(R.string.insert) else if(truePrependFalseAppendNullReplace.value == false) stringResource(R.string.append) else stringResource(R.string.edit),
-            requireShowTextCompose = true,
-            textCompose = {
-                Column(
-                    // get height for add bottom padding when showing softkeyboard
-                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
-//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
-                        // 获取组件的高度
-                        // unit is px ( i am not very sure)
-                        componentHeight.intValue = layoutCoordinates.size.height
-                    }
-                ) {
-                    MySelectionContainer {
-                        Text(
-                            replaceStringResList(
-                                stringResource(if (truePrependFalseAppendNullReplace.value == null) R.string.line_at_n else R.string.new_line_at_n),
-                                listOf(""+(if(lineNumOfEditLineDialog.value == LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else if (truePrependFalseAppendNullReplace.value != false) lineNumOfEditLineDialog.value else { lineNumOfEditLineDialog.value + 1 }))
-                            )
-                        )
-                    }
-
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .then(
-                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
-                            ),
-                        value = lineContentOfEditLineDialog.value,
-                        onValueChange = {
-                            lineContentOfEditLineDialog.value = it
-                        },
-                        label = {
-                            Text(stringResource(R.string.content))
-                        },
-                    )
-                }
-            },
-            okBtnText = stringResource(R.string.save),
-            cancelTextColor = MyStyleKt.TextColor.danger(),
-            onCancel = {showEditLineDialog.value = false}
-        ) {
-            showEditLineDialog.value = false
-            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.saving)) job@{
-                try {
-                    val lineNum = lineNumOfEditLineDialog.value
-                    if(lineNum<1 && lineNum!=LineNum.EOF.LINE_NUM) {
-                        Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
-                        return@job
-                    }
-
-                    val lines = FsUtils.stringToLines(lineContentOfEditLineDialog.value)
-                    val file = FilePath(fileFullPath).toFuckSafFile(activityContext)
-                    if(truePrependFalseAppendNullReplace.value == true) {
-                        FsUtils.prependLinesToFile(file, lineNum, lines, settings)
-                    }else if (truePrependFalseAppendNullReplace.value == false) {
-                        FsUtils.appendLinesToFile(file, lineNum, lines, settings)
-                    }else {
-                        FsUtils.replaceLinesToFile(file, lineNum, lines, settings)
-                    }
-
-                    Msg.requireShow(activityContext.getString(R.string.success))
-
-                    refreshPage()
-                }catch (e:Exception) {
-                    val errMsg = e.localizedMessage ?:"err"
-                    Msg.requireShowLongDuration(errMsg)
-                    createAndInsertError(repoId, errMsg)
-                }
-            }
-        }
-
-    }
-
-    if(showDelLineDialog.value) {
-        ConfirmDialogAndDisableSelection(
-            title = stringResource(R.string.delete),
-            requireShowTextCompose = true,
-            textCompose = {
-                ScrollableColumn {
-                    MySelectionContainer {
-                        Text(
-                            replaceStringResList(
-                                stringResource(R.string.line_at_n),
-                                listOf(
-                                    if (lineNumOfEditLineDialog.value != LineNum.EOF.LINE_NUM) {
-                                        "" + lineNumOfEditLineDialog.value
-                                    } else {
-                                        LineNum.EOF.TEXT
-                                    }
-                                )
-                            )
-                        )
-                    }
-                }
-            },
-            okBtnText = stringResource(R.string.delete),
-            okTextColor = MyStyleKt.TextColor.danger(),
-            onCancel = {showDelLineDialog.value = false}
-        ) {
-            showDelLineDialog.value = false
-
-            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.deleting)) job@{
-                try {
-                    val lineNum = lineNumOfEditLineDialog.value
-                    if(lineNum<1 && lineNum!=LineNum.EOF.LINE_NUM) {
-                        Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
-                        return@job
-                    }
-
-                    val file = FilePath(fileFullPath).toFuckSafFile(activityContext)
-                    FsUtils.deleteLineToFile(file, lineNum, settings)
-
-                    Msg.requireShow(activityContext.getString(R.string.success))
-
-                    refreshPage()
-
-                }catch (e:Exception) {
-                    val errMsg = e.localizedMessage ?:"err"
-                    Msg.requireShowLongDuration(errMsg)
-                    createAndInsertError(repoId, errMsg)
-                }
-            }
-        }
-    }
-
-    if(showRestoreLineDialog.value) {
-        ConfirmDialogAndDisableSelection(
-            onDismiss = {},
-
-            title = if(trueRestoreFalseReplace.value) stringResource(R.string.restore) else stringResource(R.string.replace),
-            requireShowTextCompose = true,
-            textCompose = {
-                Column(
-                    // get height for add bottom padding when showing softkeyboard
-                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
-//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
-                        // 获取组件的高度
-                        // unit is px ( i am not very sure)
-                        componentHeight.intValue = layoutCoordinates.size.height
-                    }
-                ) {
-                    MySelectionContainer {
-                        Text(stringResource(R.string.note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file), color = MyStyleKt.TextColor.getHighlighting())
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        value = lineNumStrOfEditLineDialog.value,
-                        onValueChange = {
-                            lineNumStrOfEditLineDialog.value = it
-                        },
-                        label = {
-                            Text(stringResource(R.string.line_number))
-                        },
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .then(
-                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
-                            ),
-                        value = lineContentOfEditLineDialog.value,
-                        onValueChange = {
-                            lineContentOfEditLineDialog.value = it
-                        },
-                        label = {
-                            Text(stringResource(R.string.content))
-                        },
-                    )
-                }
-            },
-            okBtnText = if(trueRestoreFalseReplace.value) stringResource(R.string.restore) else stringResource(R.string.replace),
-            cancelTextColor = MyStyleKt.TextColor.danger(),
-
-            onCancel = {showRestoreLineDialog.value = false}
-        ) {
-            showRestoreLineDialog.value = false
-
-            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.restoring)) job@{
-                try {
-                    var lineNum = try {
-                        lineNumStrOfEditLineDialog.value.toInt()
-                    }catch (_:Exception) {
-                        LineNum.invalidButNotEof
-                    }
-
-                    if(lineNum<1) {
-                        // for append content to EOF
-                        lineNum=LineNum.EOF.LINE_NUM
-                    }
-
-                    val lines = FsUtils.stringToLines(lineContentOfEditLineDialog.value)
-                    val file = FilePath(fileFullPath).toFuckSafFile(activityContext)
-                    if(trueRestoreFalseReplace.value) {
-                        FsUtils.prependLinesToFile(file, lineNum, lines, settings)
-                    }else {
-                        FsUtils.replaceLinesToFile(file, lineNum, lines, settings)
-                    }
-
-                    Msg.requireShow(activityContext.getString(R.string.success))
-
-                    refreshPage()
-
-                }catch (e:Exception) {
-                    val errMsg = e.localizedMessage ?:"err"
-                    Msg.requireShowLongDuration(errMsg)
-                    createAndInsertError(repoId, errMsg)
-                }
-            }
-        }
-    }
 
     val expandedMenu = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "expandedMenu") { false }
 
@@ -755,7 +446,7 @@ fun DiffRow (
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.edit))},
                                 onClick = {
-                                    initEditLineDialog(line.getContentNoLineBreak(), line.lineNum, null)
+                                    initEditLineDialog(line.getContentNoLineBreak(), line.lineNum, null, fileFullPath)
 
                                     expandedMenu.value = false
                                 }
@@ -763,7 +454,7 @@ fun DiffRow (
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.insert))},
                                 onClick = {
-                                    initEditLineDialog("", line.lineNum, true)
+                                    initEditLineDialog("", line.lineNum, true, fileFullPath)
 
                                     expandedMenu.value = false
                                 }
@@ -771,7 +462,7 @@ fun DiffRow (
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.append))},
                                 onClick = {
-                                    initEditLineDialog("", line.lineNum, false)
+                                    initEditLineDialog("", line.lineNum, false, fileFullPath)
 
                                     expandedMenu.value = false
                                 }
@@ -779,7 +470,7 @@ fun DiffRow (
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.delete))},
                                 onClick = {
-                                    initDelLineDialog(line.lineNum)
+                                    initDelLineDialog(line.lineNum, fileFullPath)
                                     expandedMenu.value = false
                                 }
                             )
@@ -788,14 +479,14 @@ fun DiffRow (
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.restore))},
                                 onClick = {
-                                    initRestoreLineDialog(line.getContentNoLineBreak(), line.lineNum, true)
+                                    initRestoreLineDialog(line.getContentNoLineBreak(), line.lineNum, true, fileFullPath)
                                     expandedMenu.value = false
                                 }
                             )
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.replace))},
                                 onClick = {
-                                    initRestoreLineDialog(line.getContentNoLineBreak(), line.lineNum, false)
+                                    initRestoreLineDialog(line.getContentNoLineBreak(), line.lineNum, false, fileFullPath)
                                     expandedMenu.value = false
                                 }
                             )

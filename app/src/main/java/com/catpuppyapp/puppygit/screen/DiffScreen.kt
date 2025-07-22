@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -52,16 +54,19 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.codeeditor.PLFont
 import com.catpuppyapp.puppygit.codeeditor.PLScope
 import com.catpuppyapp.puppygit.compose.BarContainer
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.ConfirmDialogAndDisableSelection
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.DiffRow
@@ -83,6 +88,7 @@ import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SelectSyntaxHighlightingDialog
 import com.catpuppyapp.puppygit.compose.SelectionRow
 import com.catpuppyapp.puppygit.compose.SingleLineCardButton
+import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.compose.TwoLineTextCardButton
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
@@ -107,12 +113,14 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.DiffScr
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
+import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -185,9 +193,52 @@ fun DiffScreen(
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 
     val configuration = AppModel.getCurActivityConfig()
-    val density = LocalDensity.current
     val activityContext = LocalContext.current
     val navController = AppModel.navController
+
+    val clipboardManager = LocalClipboardManager.current
+
+
+
+
+
+
+
+    val showEditLineDialog = rememberSaveable { mutableStateOf(false) }
+    val showRestoreLineDialog = rememberSaveable { mutableStateOf(false) }
+
+
+    // BEGIN: SoftKb visible Listener
+    // softkeyboard listener for adjust height of component when softkb visible
+    val view = LocalView.current
+    val density = LocalDensity.current
+
+    val isKeyboardVisible = remember { mutableStateOf(false) }
+    //indicate keyboard covered component
+    val isKeyboardCoveredComponent = remember { mutableStateOf(false) }
+    // which component expect adjust heghit or padding when softkeyboard shown
+    val componentHeight = remember { mutableIntStateOf(0) }
+    // the padding value when softkeyboard shown
+    val keyboardPaddingDp = remember { mutableIntStateOf(0) }
+
+    // this code gen by chat-gpt, wow
+    // except: this code may not work when use use a float keyboard or softkeyboard with single-hand mode
+    // 监听键盘的弹出和隐藏 (listening keyboard visible/hidden)
+    SoftkeyboardVisibleListener(
+        view = view,
+        isKeyboardVisible = isKeyboardVisible,
+        isKeyboardCoveredComponent = isKeyboardCoveredComponent,
+        componentHeight = componentHeight,
+        keyboardPaddingDp = keyboardPaddingDp,
+        density = density,
+        skipCondition = {
+            !(showEditLineDialog.value || showRestoreLineDialog.value)
+        }
+    )
+    // END: SoftKb visible Listener
+
+
+
 
 //    val screenHeightPx = remember (configuration.screenHeightDp) { UIHelper.dpToPx(configuration.screenHeightDp, density) }
 
@@ -211,7 +262,6 @@ fun DiffScreen(
         }
     }
 
-    val clipboardManager = LocalClipboardManager.current
 
     val treeOid1Str = rememberSaveable { mutableStateOf(
         if(fromTo == Cons.gitDiffFromIndexToWorktree) {
@@ -704,12 +754,13 @@ fun DiffScreen(
     //用remember是为了确保组件生命周期内只创建一个channel实例, 用 mutableStateOf() 是因为切换文件后需要创建新Channel
 //    val loadChannelLock = Mutex()
 
+    val refreshPage = { changeStateTriggerRefreshPage(needRefresh) }
 
-    val refreshPageIfComparingWithLocal={
-        if(isDiffToLocal) {
-            changeStateTriggerRefreshPage(needRefresh)
-        }
-    }
+//    val refreshPageIfComparingWithLocal = {
+//        if(isDiffToLocal) {
+//            changeStateTriggerRefreshPage(needRefresh)
+//        }
+//    }
 
     val getCurItem = {
         diffableItemList.value.getOrNull(curItemIndex.intValue) ?: DiffableItem.anInvalidInstance()
@@ -1315,6 +1366,289 @@ fun DiffScreen(
 
 
 
+
+    val filePathOfEditLineDialog = rememberSaveable { mutableStateOf("") }
+    val lineContentOfEditLineDialog = rememberSaveable { mutableStateOf("") }
+    val lineNumOfEditLineDialog = rememberSaveable { mutableStateOf(LineNum.invalidButNotEof) }  // this is line number not index, should start from 1
+    val lineNumStrOfEditLineDialog = rememberSaveable { mutableStateOf("") }  // this is line number not index, should start from 1
+
+    //因为自定义存储器会把数据存到mutableState里，所以Cache里存的实际不是null，因此可以存null值
+    val truePrependFalseAppendNullReplace = rememberSaveable { mutableStateOf<Boolean?>(null) }
+    val showDelLineDialog = rememberSaveable { mutableStateOf(false) }
+    val trueRestoreFalseReplace = rememberSaveable { mutableStateOf(false) }
+
+    val initEditLineDialog = { content:String, lineNum:Int, prependOrAppendOrReplace:Boolean?, filePath:String ->
+        if(lineNum == LineNum.invalidButNotEof){
+            Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
+        }else {
+            filePathOfEditLineDialog.value = filePath
+            truePrependFalseAppendNullReplace.value = prependOrAppendOrReplace
+            lineContentOfEditLineDialog.value = content
+            lineNumOfEditLineDialog.value = lineNum
+            showEditLineDialog.value = true
+        }
+    }
+    val initDelLineDialog = { lineNum:Int, filePath:String ->
+        if(lineNum == LineNum.invalidButNotEof){
+            Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
+        }else {
+            filePathOfEditLineDialog.value = filePath
+            lineNumOfEditLineDialog.value = lineNum
+            showDelLineDialog.value = true
+        }
+    }
+    val initRestoreLineDialog = { content:String, lineNum:Int, trueRestoreFalseReplace_param:Boolean, filePath:String ->
+        if(lineNum == LineNum.invalidButNotEof){
+            Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
+        }else {
+            filePathOfEditLineDialog.value = filePath
+            lineContentOfEditLineDialog.value = content
+            lineNumOfEditLineDialog.value = lineNum
+            lineNumStrOfEditLineDialog.value = ""+lineNum
+            trueRestoreFalseReplace.value = trueRestoreFalseReplace_param
+            showRestoreLineDialog.value = true
+        }
+    }
+
+
+    if(showEditLineDialog.value) {
+        ConfirmDialogAndDisableSelection(
+            //禁用点击弹窗外部区域或按返回键关闭弹窗，这样可避免误操作而丢失正在编辑的数据
+            onDismiss = {},
+
+            title = if(truePrependFalseAppendNullReplace.value == true) stringResource(R.string.insert) else if(truePrependFalseAppendNullReplace.value == false) stringResource(R.string.append) else stringResource(R.string.edit),
+            requireShowTextCompose = true,
+            textCompose = {
+                Column(
+                    // get height for add bottom padding when showing softkeyboard
+                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                        // 获取组件的高度
+                        // unit is px ( i am not very sure)
+                        componentHeight.intValue = layoutCoordinates.size.height
+                    }
+                ) {
+                    MySelectionContainer {
+                        Text(
+                            replaceStringResList(
+                                stringResource(if (truePrependFalseAppendNullReplace.value == null) R.string.line_at_n else R.string.new_line_at_n),
+                                listOf(""+(if(lineNumOfEditLineDialog.value == LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else if (truePrependFalseAppendNullReplace.value != false) lineNumOfEditLineDialog.value else { lineNumOfEditLineDialog.value + 1 }))
+                            )
+                        )
+                    }
+
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(
+                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
+                            ),
+                        value = lineContentOfEditLineDialog.value,
+                        onValueChange = {
+                            lineContentOfEditLineDialog.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.content))
+                        },
+                    )
+                }
+            },
+            okBtnText = stringResource(R.string.save),
+            cancelTextColor = MyStyleKt.TextColor.danger(),
+            onCancel = {showEditLineDialog.value = false}
+        ) {
+            showEditLineDialog.value = false
+
+            val fileFullPath = filePathOfEditLineDialog.value
+
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.saving)) job@{
+                try {
+                    val lineNum = lineNumOfEditLineDialog.value
+                    if(lineNum<1 && lineNum!=LineNum.EOF.LINE_NUM) {
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
+                        return@job
+                    }
+
+                    val lines = FsUtils.stringToLines(lineContentOfEditLineDialog.value)
+                    val file = FilePath(fileFullPath).toFuckSafFile(activityContext)
+                    if(truePrependFalseAppendNullReplace.value == true) {
+                        FsUtils.prependLinesToFile(file, lineNum, lines, settings)
+                    }else if (truePrependFalseAppendNullReplace.value == false) {
+                        FsUtils.appendLinesToFile(file, lineNum, lines, settings)
+                    }else {
+                        FsUtils.replaceLinesToFile(file, lineNum, lines, settings)
+                    }
+
+                    Msg.requireShow(activityContext.getString(R.string.success))
+
+                    refreshPage()
+                }catch (e:Exception) {
+                    val errMsg = e.localizedMessage ?:"err"
+                    Msg.requireShowLongDuration(errMsg)
+                    createAndInsertError(repoId, errMsg)
+                }
+            }
+        }
+
+    }
+
+    if(showDelLineDialog.value) {
+        ConfirmDialogAndDisableSelection(
+            title = stringResource(R.string.delete),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    MySelectionContainer {
+                        Text(
+                            replaceStringResList(
+                                stringResource(R.string.line_at_n),
+                                listOf(
+                                    if (lineNumOfEditLineDialog.value != LineNum.EOF.LINE_NUM) {
+                                        "" + lineNumOfEditLineDialog.value
+                                    } else {
+                                        LineNum.EOF.TEXT
+                                    }
+                                )
+                            )
+                        )
+                    }
+                }
+            },
+            okBtnText = stringResource(R.string.delete),
+            okTextColor = MyStyleKt.TextColor.danger(),
+            onCancel = {showDelLineDialog.value = false}
+        ) {
+            showDelLineDialog.value = false
+
+            val fileFullPath = filePathOfEditLineDialog.value
+
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.deleting)) job@{
+                try {
+                    val lineNum = lineNumOfEditLineDialog.value
+                    if(lineNum<1 && lineNum!=LineNum.EOF.LINE_NUM) {
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
+                        return@job
+                    }
+
+                    val file = FilePath(fileFullPath).toFuckSafFile(activityContext)
+                    FsUtils.deleteLineToFile(file, lineNum, settings)
+
+                    Msg.requireShow(activityContext.getString(R.string.success))
+
+                    refreshPage()
+
+                }catch (e:Exception) {
+                    val errMsg = e.localizedMessage ?:"err"
+                    Msg.requireShowLongDuration(errMsg)
+                    createAndInsertError(repoId, errMsg)
+                }
+            }
+        }
+    }
+
+    if(showRestoreLineDialog.value) {
+        ConfirmDialogAndDisableSelection(
+            onDismiss = {},
+
+            title = if(trueRestoreFalseReplace.value) stringResource(R.string.restore) else stringResource(R.string.replace),
+            requireShowTextCompose = true,
+            textCompose = {
+                Column(
+                    // get height for add bottom padding when showing softkeyboard
+                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                        // 获取组件的高度
+                        // unit is px ( i am not very sure)
+                        componentHeight.intValue = layoutCoordinates.size.height
+                    }
+                ) {
+                    MySelectionContainer {
+                        Text(stringResource(R.string.note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file), color = MyStyleKt.TextColor.getHighlighting())
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    TextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        value = lineNumStrOfEditLineDialog.value,
+                        onValueChange = {
+                            lineNumStrOfEditLineDialog.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.line_number))
+                        },
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(
+                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
+                            ),
+                        value = lineContentOfEditLineDialog.value,
+                        onValueChange = {
+                            lineContentOfEditLineDialog.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.content))
+                        },
+                    )
+                }
+            },
+            okBtnText = if(trueRestoreFalseReplace.value) stringResource(R.string.restore) else stringResource(R.string.replace),
+            cancelTextColor = MyStyleKt.TextColor.danger(),
+
+            onCancel = {showRestoreLineDialog.value = false}
+        ) {
+            showRestoreLineDialog.value = false
+
+            val fileFullPath = filePathOfEditLineDialog.value
+
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.restoring)) job@{
+                try {
+                    var lineNum = try {
+                        lineNumStrOfEditLineDialog.value.toInt()
+                    }catch (_:Exception) {
+                        LineNum.invalidButNotEof
+                    }
+
+                    if(lineNum<1) {
+                        // for append content to EOF
+                        lineNum=LineNum.EOF.LINE_NUM
+                    }
+
+                    val lines = FsUtils.stringToLines(lineContentOfEditLineDialog.value)
+                    val file = FilePath(fileFullPath).toFuckSafFile(activityContext)
+                    if(trueRestoreFalseReplace.value) {
+                        FsUtils.prependLinesToFile(file, lineNum, lines, settings)
+                    }else {
+                        FsUtils.replaceLinesToFile(file, lineNum, lines, settings)
+                    }
+
+                    Msg.requireShow(activityContext.getString(R.string.success))
+
+                    refreshPage()
+
+                }catch (e:Exception) {
+                    val errMsg = e.localizedMessage ?:"err"
+                    Msg.requireShowLongDuration(errMsg)
+                    createAndInsertError(repoId, errMsg)
+                }
+            }
+        }
+    }
+
+
+
+
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -1370,7 +1704,7 @@ fun DiffScreen(
                         DiffPageActions(
                             isMultiMode = isMultiMode,
                             fromTo=fromTo,
-                            refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
+                            refreshPage = refreshPage,
                             request = pageRequest,
 //                            fileFullPath = getCurItem().fullPath,
                             requireBetterMatchingForCompare = requireBetterMatchingForCompare,
@@ -1845,7 +2179,6 @@ fun DiffScreen(
                                                         clipboardManager = clipboardManager,
                                                         loadingOn = loadingOnParent,
                                                         loadingOff = loadingOffParent,
-                                                        refreshPage = refreshPageIfComparingWithLocal,
                                                         repoId = repoId,
                                                         showOriginType = showOriginType,
                                                         showLineNum = showLineNum,
@@ -1863,7 +2196,10 @@ fun DiffScreen(
                                                         activityContext = activityContext,
                                                         stateKeyTag = stateKeyTag,
                                                         lineClickedMenuOffset = lineClickedMenuOffset,
-                                                        diffItemSaver = diffItem
+                                                        diffItemSaver = diffItem,
+                                                        initEditLineDialog = initEditLineDialog,
+                                                        initDelLineDialog = initDelLineDialog,
+                                                        initRestoreLineDialog = initRestoreLineDialog,
                                                     )
                                                 }
                                             } else {  // add or del
@@ -1890,7 +2226,6 @@ fun DiffScreen(
                                                                 clipboardManager = clipboardManager,
                                                                 loadingOn = loadingOnParent,
                                                                 loadingOff = loadingOffParent,
-                                                                refreshPage = refreshPageIfComparingWithLocal,
                                                                 repoId = repoId,
                                                                 showOriginType = showOriginType,
                                                                 showLineNum = showLineNum,
@@ -1909,7 +2244,10 @@ fun DiffScreen(
                                                                 activityContext = activityContext,
                                                                 stateKeyTag = stateKeyTag,
                                                                 lineClickedMenuOffset = lineClickedMenuOffset,
-                                                                diffItemSaver = diffItem
+                                                                diffItemSaver = diffItem,
+                                                                initEditLineDialog = initEditLineDialog,
+                                                                initDelLineDialog = initDelLineDialog,
+                                                                initRestoreLineDialog = initRestoreLineDialog,
                                                             )
                                                         }
                                                     }
@@ -1952,7 +2290,6 @@ fun DiffScreen(
                                                         clipboardManager = clipboardManager,
                                                         loadingOn = loadingOnParent,
                                                         loadingOff = loadingOffParent,
-                                                        refreshPage = refreshPageIfComparingWithLocal,
                                                         repoId = repoId,
                                                         showOriginType = showOriginType,
                                                         showLineNum = showLineNum,
@@ -1971,7 +2308,10 @@ fun DiffScreen(
                                                         activityContext = activityContext,
                                                         stateKeyTag = stateKeyTag,
                                                         lineClickedMenuOffset = lineClickedMenuOffset,
-                                                        diffItemSaver = diffItem
+                                                        diffItemSaver = diffItem,
+                                                        initEditLineDialog = initEditLineDialog,
+                                                        initDelLineDialog = initDelLineDialog,
+                                                        initRestoreLineDialog = initRestoreLineDialog,
                                                     )
                                                 }
                                             }
@@ -2069,7 +2409,6 @@ fun DiffScreen(
                                                             clipboardManager = clipboardManager,
                                                             loadingOn = loadingOnParent,
                                                             loadingOff = loadingOffParent,
-                                                            refreshPage = refreshPageIfComparingWithLocal,
                                                             repoId = repoId,
                                                             showOriginType = showOriginType,
                                                             showLineNum = showLineNum,
@@ -2088,7 +2427,10 @@ fun DiffScreen(
                                                             activityContext = activityContext,
                                                             stateKeyTag = stateKeyTag,
                                                             lineClickedMenuOffset = lineClickedMenuOffset,
-                                                            diffItemSaver = diffItem
+                                                            diffItemSaver = diffItem,
+                                                            initEditLineDialog = initEditLineDialog,
+                                                            initDelLineDialog = initDelLineDialog,
+                                                            initRestoreLineDialog = initRestoreLineDialog,
                                                         )
                                                     }
                                                 }
@@ -2107,7 +2449,6 @@ fun DiffScreen(
                                                             clipboardManager = clipboardManager,
                                                             loadingOn = loadingOnParent,
                                                             loadingOff = loadingOffParent,
-                                                            refreshPage = refreshPageIfComparingWithLocal,
                                                             repoId = repoId,
                                                             showOriginType = showOriginType,
                                                             showLineNum = showLineNum,
@@ -2126,7 +2467,10 @@ fun DiffScreen(
                                                             activityContext = activityContext,
                                                             stateKeyTag = stateKeyTag,
                                                             lineClickedMenuOffset = lineClickedMenuOffset,
-                                                            diffItemSaver = diffItem
+                                                            diffItemSaver = diffItem,
+                                                            initEditLineDialog = initEditLineDialog,
+                                                            initDelLineDialog = initDelLineDialog,
+                                                            initRestoreLineDialog = initRestoreLineDialog,
                                                         )
                                                     }
                                                 }
@@ -2170,7 +2514,6 @@ fun DiffScreen(
                                                         clipboardManager = clipboardManager,
                                                         loadingOn = loadingOnParent,
                                                         loadingOff = loadingOffParent,
-                                                        refreshPage = refreshPageIfComparingWithLocal,
                                                         repoId = repoId,
                                                         showOriginType = showOriginType,
                                                         showLineNum = showLineNum,
@@ -2189,7 +2532,10 @@ fun DiffScreen(
                                                         activityContext = activityContext,
                                                         stateKeyTag = stateKeyTag,
                                                         lineClickedMenuOffset = lineClickedMenuOffset,
-                                                        diffItemSaver = diffItem
+                                                        diffItemSaver = diffItem,
+                                                        initEditLineDialog = initEditLineDialog,
+                                                        initDelLineDialog = initDelLineDialog,
+                                                        initRestoreLineDialog = initRestoreLineDialog,
                                                     )
 
                                                 }
@@ -2220,7 +2566,6 @@ fun DiffScreen(
                                                         clipboardManager = clipboardManager,
                                                         loadingOn = loadingOnParent,
                                                         loadingOff = loadingOffParent,
-                                                        refreshPage = refreshPageIfComparingWithLocal,
                                                         repoId = repoId,
                                                         showOriginType = showOriginType,
                                                         showLineNum = showLineNum,
@@ -2239,7 +2584,10 @@ fun DiffScreen(
                                                         activityContext = activityContext,
                                                         stateKeyTag = stateKeyTag,
                                                         lineClickedMenuOffset = lineClickedMenuOffset,
-                                                        diffItemSaver = diffItem
+                                                        diffItemSaver = diffItem,
+                                                        initEditLineDialog = initEditLineDialog,
+                                                        initDelLineDialog = initDelLineDialog,
+                                                        initRestoreLineDialog = initRestoreLineDialog,
                                                     )
                                                 }
                                             }
@@ -2271,7 +2619,6 @@ fun DiffScreen(
                                                     clipboardManager = clipboardManager,
                                                     loadingOn = loadingOnParent,
                                                     loadingOff = loadingOffParent,
-                                                    refreshPage = refreshPageIfComparingWithLocal,
                                                     repoId = repoId,
                                                     showOriginType = showOriginType,
                                                     showLineNum = showLineNum,
@@ -2290,7 +2637,10 @@ fun DiffScreen(
                                                     activityContext = activityContext,
                                                     stateKeyTag = stateKeyTag,
                                                     lineClickedMenuOffset = lineClickedMenuOffset,
-                                                    diffItemSaver = diffItem
+                                                    diffItemSaver = diffItem,
+                                                    initEditLineDialog = initEditLineDialog,
+                                                    initDelLineDialog = initDelLineDialog,
+                                                    initRestoreLineDialog = initRestoreLineDialog,
                                                 )
                                             }
                                         }
@@ -2320,7 +2670,6 @@ fun DiffScreen(
                                                 clipboardManager = clipboardManager,
                                                 loadingOn = loadingOnParent,
                                                 loadingOff = loadingOffParent,
-                                                refreshPage = refreshPageIfComparingWithLocal,
                                                 repoId = repoId,
                                                 showOriginType = showOriginType,
                                                 showLineNum = showLineNum,
@@ -2339,7 +2688,10 @@ fun DiffScreen(
                                                 activityContext = activityContext,
                                                 stateKeyTag = stateKeyTag,
                                                 lineClickedMenuOffset = lineClickedMenuOffset,
-                                                diffItemSaver = diffItem
+                                                diffItemSaver = diffItem,
+                                                initEditLineDialog = initEditLineDialog,
+                                                initDelLineDialog = initDelLineDialog,
+                                                initRestoreLineDialog = initRestoreLineDialog,
                                             )
                                         }
                                     }
@@ -2773,6 +3125,7 @@ fun DiffScreen(
             }
         }
     }
+
 }
 
 
