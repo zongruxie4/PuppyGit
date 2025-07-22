@@ -14,8 +14,8 @@ private const val TAG = "UndoStack"
 // big size, small interval = more mem use but more steps
 // size越小，间隔越大，越省内存记录的步骤越粗略;
 // size越大，间隔越小，越费内存，记录的步骤越精细
-private const val defaultSizeLimit = 15
-private const val defaultSaveIntervalInSec = 20
+private const val defaultSizeLimit = 12
+private const val defaultSaveIntervalInSec = 60
 
 class UndoStack(
     /**
