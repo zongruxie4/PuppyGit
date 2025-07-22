@@ -53,7 +53,7 @@
 				"variable.other"
 			],
 			"settings": {
-				"foreground": "#268BD2"
+				"foreground": "#165acf"
 			}
 		},
 		{
@@ -88,7 +88,7 @@
 			"name": "Function name",
 			"scope": "entity.name.function",
 			"settings": {
-				"foreground": "#268BD2"
+				"foreground": "#165acf"
 			}
 		},
 		{
@@ -154,7 +154,7 @@
 			"name": "Tag name",
 			"scope": "entity.name.tag",
 			"settings": {
-				"foreground": "#268BD2"
+				"foreground": "#165acf"
 			}
 		},
 		{
@@ -175,7 +175,7 @@
 			"name": "Library function",
 			"scope": "support.function",
 			"settings": {
-				"foreground": "#268BD2"
+				"foreground": "#165acf"
 			}
 		},
 		{
@@ -230,7 +230,7 @@
 			],
 			"settings": {
 				"fontStyle": "italic",
-				"foreground": "#268BD2"
+				"foreground": "#165acf"
 			}
 		},
 		{
@@ -313,7 +313,7 @@
 			"scope": "markup.heading",
 			"settings": {
 				"fontStyle": "bold",
-				"foreground": "#268BD2"
+				"foreground": "#165acf"
 			}
 		},
 		{
@@ -321,7 +321,7 @@
 			"scope": "markup.heading.setext",
 			"settings": {
 				"fontStyle": "",
-				"foreground": "#268BD2"
+				"foreground": "#165acf"
 			}
 		}
 	],
@@ -396,7 +396,7 @@
 		"terminal.ansiRed": "#dc322f",
 		"terminal.ansiGreen": "#586204",
 		"terminal.ansiYellow": "#614a05",
-		"terminal.ansiBlue": "#268bd2",
+		"terminal.ansiBlue": "#165acf",
 		"terminal.ansiMagenta": "#d33682",
 		"terminal.ansiCyan": "#166b94",
 		"terminal.ansiWhite": "#eee8d5",
