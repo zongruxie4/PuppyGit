@@ -60,7 +60,7 @@
 			"name": "Keyword",
 			"scope": "keyword",
 			"settings": {
-				"foreground": "#859900"
+				"foreground": "#586204"
 			}
 		},
 		{
@@ -95,7 +95,7 @@
 			"name": "Variable start",
 			"scope": "punctuation.definition.variable",
 			"settings": {
-				"foreground": "#859900"
+				"foreground": "#586204"
 			}
 		},
 		{
@@ -200,7 +200,7 @@
 				"support.class"
 			],
 			"settings": {
-				"foreground": "#859900"
+				"foreground": "#586204"
 			}
 		},
 		{
@@ -253,14 +253,14 @@
 			"name": "diff: inserted",
 			"scope": "markup.inserted",
 			"settings": {
-				"foreground": "#859900"
+				"foreground": "#586204"
 			}
 		},
 		{
 			"name": "Markup Quote",
 			"scope": "markup.quote",
 			"settings": {
-				"foreground": "#859900"
+				"foreground": "#586204"
 			}
 		},
 		{
@@ -394,7 +394,7 @@
 		"extensionButton.prominentHoverBackground": "#584c27aa",
 		"terminal.ansiBlack": "#073642",
 		"terminal.ansiRed": "#dc322f",
-		"terminal.ansiGreen": "#859900",
+		"terminal.ansiGreen": "#586204",
 		"terminal.ansiYellow": "#b58900",
 		"terminal.ansiBlue": "#268bd2",
 		"terminal.ansiMagenta": "#d33682",
