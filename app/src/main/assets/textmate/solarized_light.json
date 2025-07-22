@@ -115,7 +115,7 @@
 				"meta.preprocessor"
 			],
 			"settings": {
-				"foreground": "#B58900"
+				"foreground": "#614a05"
 			}
 		},
 		{
@@ -267,7 +267,7 @@
 			"name": "Markup Lists",
 			"scope": "markup.list",
 			"settings": {
-				"foreground": "#B58900"
+				"foreground": "#614a05"
 			}
 		},
 		{
@@ -332,7 +332,7 @@
 		"input.placeholderForeground": "#586E75AA",
 		"inputOption.activeBorder": "#D3AF86",
 		"badge.background": "#B58900AA",
-		"progressBar.background": "#B58900",
+		"progressBar.background": "#614a05",
 		"dropdown.background": "#EEE8D5",
 		"dropdown.border": "#D3AF86",
 		"button.background": "#AC9D57",
@@ -342,7 +342,7 @@
 		"quickInputList.focusBackground": "#DFCA8866",
 		"list.hoverBackground": "#DFCA8844",
 		"list.inactiveSelectionBackground": "#D1CBB8",
-		"list.highlightForeground": "#B58900",
+		"list.highlightForeground": "#614a05",
 		"editor.background": "#FDF6E3",
 		"editor.foreground": "#49595f",
 		"notebook.cellEditorBackground": "#F7F0E0",
@@ -359,7 +359,7 @@
 		"peekViewResult.background": "#EEE8D5",
 		"peekViewEditor.background": "#FFFBF2",
 		"peekViewTitle.background": "#EEE8D5",
-		"peekView.border": "#B58900",
+		"peekView.border": "#614a05",
 		"peekViewEditor.matchHighlightBackground": "#7744AA40",
 		"titleBar.activeBackground": "#EEE8D5",
 		"editorGroup.border": "#DDD6C1",
@@ -373,7 +373,7 @@
 		"tab.lastPinnedBorder": "#FDF6E3",
 		"activityBar.background": "#DDD6C1",
 		"activityBar.foreground": "#584c27",
-		"activityBarBadge.background": "#B58900",
+		"activityBarBadge.background": "#614a05",
 		"panel.border": "#DDD6C1",
 		"sideBar.background": "#EEE8D5",
 		"sideBarTitle.foreground": "#586E75",
@@ -390,12 +390,12 @@
 		"debugExceptionWidget.border": "#AB395B",
 		"pickerGroup.border": "#2AA19899",
 		"pickerGroup.foreground": "#2AA19899",
-		"extensionButton.prominentBackground": "#b58900",
+		"extensionButton.prominentBackground": "#614a05",
 		"extensionButton.prominentHoverBackground": "#584c27aa",
 		"terminal.ansiBlack": "#073642",
 		"terminal.ansiRed": "#dc322f",
 		"terminal.ansiGreen": "#586204",
-		"terminal.ansiYellow": "#b58900",
+		"terminal.ansiYellow": "#614a05",
 		"terminal.ansiBlue": "#268bd2",
 		"terminal.ansiMagenta": "#d33682",
 		"terminal.ansiCyan": "#2aa198",
