@@ -14,6 +14,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ClipboardManager
@@ -44,14 +46,12 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.addTopPaddingIfIsFirstLine
-import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.paddingLineNumber
 import com.catpuppyapp.puppygit.utils.replaceStringResList
-import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Diff
 
 
@@ -99,7 +99,13 @@ fun DiffRow (
     initDelLineDialog: (lineNum:Int, filePath:String) -> Unit,
     initRestoreLineDialog: (content:String, lineNum:Int, trueRestoreFalseReplace_param:Boolean, filePath:String) -> Unit,
 ) {
-    val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
+    // better don't use `mutableCustomState` in this page,
+    //   because if have many lines or even haven't,
+    //   just scrolling the screen again and again,
+    //   then maybe will store many data
+    //   in to the cache map, even it will release when back to HomeScreen,
+    //   but still is a waste
+//    val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
     // disable for EOF, the EOF showing sometimes false-added
     // 禁用EOF点击菜单，EOF有时候假添加，就是明明没有eof，但显示新增了eof，可能是libgit2 bug
@@ -159,7 +165,8 @@ fun DiffRow (
     }
 
 
-    val expandedMenu = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "expandedMenu") { false }
+//    val expandedMenu = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "expandedMenu") { false }
+    val expandedMenu = remember { mutableStateOf(false) }
 
 
     //用来实现设置行为no matched和all matched
