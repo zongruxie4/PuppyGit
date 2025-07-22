@@ -1610,7 +1610,7 @@ fun BranchListScreen(
             if(showBottomSheet.value) {
                 BottomSheet(showBottomSheet, sheetState, curObjInPage.value.shortName) {
                     BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.checkout),textDesc= stringResource(R.string.switch_branch),
-                        enabled = curObjInPage.value.shortName != repoCurrentActiveBranchOrShortDetachedHashForShown.value
+                        enabled = curObjInPage.value.isCurrent.not()
                     ){
                         val curObjInPage = curObjInPage.value
                         doJobThenOffLoading {
@@ -1667,7 +1667,7 @@ fun BranchListScreen(
 //                        textDesc = repoCurrentActiveBranchOrShortDetachedHashForShown.value+(if(curRepoIsDetached.value) "[Detached]" else ""),
 //                    textDesc = replaceStringResList(stringResource(id = R.string.merge_branch1_into_branch2), listOf(getStrShorterThanLimitLength(curObjInPage.value.shortName), (if(curRepoIsDetached.value) "Detached HEAD" else getStrShorterThanLimitLength(repoCurrentActiveBranchOrShortDetachedHashForShown.value)))) ,
                         textDesc = stringResource(R.string.merge_into_current),
-                        enabled = curObjInPage.value.shortName != repoCurrentActiveBranchOrShortDetachedHashForShown.value
+                        enabled = curObjInPage.value.isCurrent.not()
                     ){
                         doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
                             requireRebase.value = false
@@ -1680,7 +1680,7 @@ fun BranchListScreen(
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.rebase),
 //                        textDesc = repoCurrentActiveBranchOrShortDetachedHashForShown.value+(if(curRepoIsDetached.value) "[Detached]" else ""),
                             textDesc = stringResource(R.string.rebase_current_onto),
-                            enabled = curObjInPage.value.shortName != repoCurrentActiveBranchOrShortDetachedHashForShown.value
+                            enabled = curObjInPage.value.isCurrent.not()
                         ){
                             doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
                                 requireRebase.value = true
@@ -1810,7 +1810,7 @@ fun BranchListScreen(
 
                     BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger(),
                         //只能删除非当前分支，不过如果是detached，所有分支都能删。这个不做检测了，因为就算界面出了问题，用户针对当前分支执行了删除操作，libgit2也会抛异常，所以还是不会被执行。
-                        enabled = curObjInPage.value.shortName != repoCurrentActiveBranchOrShortDetachedHashForShown.value
+                        enabled = curObjInPage.value.isCurrent.not()
                     ){
                         // onClick()
 //                        该写删除了，别忘了删除上游的逻辑和提示删除远程分支需要联网
