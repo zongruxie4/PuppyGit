@@ -29,7 +29,7 @@
 			"name": "String",
 			"scope": "string",
 			"settings": {
-				"foreground": "#2AA198"
+				"foreground": "#166b94"
 			}
 		},
 		{
@@ -305,7 +305,7 @@
 			"scope": "markup.inline.raw",
 			"settings": {
 				"fontStyle": "",
-				"foreground": "#2AA198"
+				"foreground": "#166b94"
 			}
 		},
 		{
@@ -398,7 +398,7 @@
 		"terminal.ansiYellow": "#614a05",
 		"terminal.ansiBlue": "#268bd2",
 		"terminal.ansiMagenta": "#d33682",
-		"terminal.ansiCyan": "#2aa198",
+		"terminal.ansiCyan": "#166b94",
 		"terminal.ansiWhite": "#eee8d5",
 		"terminal.ansiBrightBlack": "#002b36",
 		"terminal.ansiBrightRed": "#9c3a11",
