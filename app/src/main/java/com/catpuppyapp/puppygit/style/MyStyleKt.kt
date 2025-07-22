@@ -489,4 +489,9 @@ object MyStyleKt{
         }
 
     }
+    
+    object LastClickedItem {
+        val bgColorDark = Color.Gray.copy(alpha = .2f) 
+        val bgColorLight = Color.LightGray.copy(alpha=.2f)
+    }
 }
