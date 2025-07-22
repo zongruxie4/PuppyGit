@@ -36,14 +36,14 @@
 			"name": "Regexp",
 			"scope": "string.regexp",
 			"settings": {
-				"foreground": "#DC322F"
+				"foreground": "#941d1b"
 			}
 		},
 		{
 			"name": "Number",
 			"scope": "constant.numeric",
 			"settings": {
-				"foreground": "#D33682"
+				"foreground": "#b72c6f"
 			}
 		},
 		{
@@ -60,7 +60,7 @@
 			"name": "Keyword",
 			"scope": "keyword",
 			"settings": {
-				"foreground": "#586204"
+				"foreground": "#128200"
 			}
 		},
 		{
@@ -95,7 +95,7 @@
 			"name": "Variable start",
 			"scope": "punctuation.definition.variable",
 			"settings": {
-				"foreground": "#586204"
+				"foreground": "#128200"
 			}
 		},
 		{
@@ -105,7 +105,7 @@
 				"punctuation.section.embedded.end"
 			],
 			"settings": {
-				"foreground": "#DC322F"
+				"foreground": "#941d1b"
 			}
 		},
 		{
@@ -142,7 +142,7 @@
 			"name": "Inherited class",
 			"scope": "entity.other.inherited-class",
 			"settings": {
-				"foreground": "#6C71C4"
+				"foreground": "#4d519c"
 			}
 		},
 		{
@@ -182,7 +182,7 @@
 			"name": "Continuation",
 			"scope": "punctuation.separator.continuation",
 			"settings": {
-				"foreground": "#DC322F"
+				"foreground": "#941d1b"
 			}
 		},
 		{
@@ -200,7 +200,7 @@
 				"support.class"
 			],
 			"settings": {
-				"foreground": "#586204"
+				"foreground": "#128200"
 			}
 		},
 		{
@@ -219,7 +219,7 @@
 			"name": "Invalid",
 			"scope": "invalid",
 			"settings": {
-				"foreground": "#DC322F"
+				"foreground": "#941d1b"
 			}
 		},
 		{
@@ -238,7 +238,7 @@
 			"scope": "markup.deleted",
 			"settings": {
 				"fontStyle": "",
-				"foreground": "#DC322F"
+				"foreground": "#941d1b"
 			}
 		},
 		{
@@ -253,14 +253,14 @@
 			"name": "diff: inserted",
 			"scope": "markup.inserted",
 			"settings": {
-				"foreground": "#586204"
+				"foreground": "#128200"
 			}
 		},
 		{
 			"name": "Markup Quote",
 			"scope": "markup.quote",
 			"settings": {
-				"foreground": "#586204"
+				"foreground": "#128200"
 			}
 		},
 		{
@@ -277,7 +277,7 @@
 				"markup.italic"
 			],
 			"settings": {
-				"foreground": "#D33682"
+				"foreground": "#b72c6f"
 			}
 		},
 		{
@@ -393,11 +393,11 @@
 		"extensionButton.prominentBackground": "#614a05",
 		"extensionButton.prominentHoverBackground": "#584c27aa",
 		"terminal.ansiBlack": "#073642",
-		"terminal.ansiRed": "#dc322f",
-		"terminal.ansiGreen": "#586204",
+		"terminal.ansiRed": "#941d1b",
+		"terminal.ansiGreen": "#128200",
 		"terminal.ansiYellow": "#614a05",
 		"terminal.ansiBlue": "#165acf",
-		"terminal.ansiMagenta": "#d33682",
+		"terminal.ansiMagenta": "#b72c6f",
 		"terminal.ansiCyan": "#166b94",
 		"terminal.ansiWhite": "#eee8d5",
 		"terminal.ansiBrightBlack": "#002b36",
@@ -405,7 +405,7 @@
 		"terminal.ansiBrightGreen": "#586e75",
 		"terminal.ansiBrightYellow": "#49595f",
 		"terminal.ansiBrightBlue": "#839496",
-		"terminal.ansiBrightMagenta": "#6c71c4",
+		"terminal.ansiBrightMagenta": "#4d519c",
 		"terminal.ansiBrightCyan": "#717a7a",
 		"terminal.ansiBrightWhite": "#fdf6e3",
 		"terminal.background": "#FDF6E3",
