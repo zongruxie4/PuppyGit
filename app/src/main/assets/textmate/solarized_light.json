@@ -81,7 +81,7 @@
 			],
 			"settings": {
 				"fontStyle": "",
-				"foreground": "#CB4B16"
+				"foreground": "#9c3a11"
 			}
 		},
 		{
@@ -125,7 +125,7 @@
 				"keyword.other.new"
 			],
 			"settings": {
-				"foreground": "#CB4B16"
+				"foreground": "#9c3a11"
 			}
 		},
 		{
@@ -135,7 +135,7 @@
 				"constant.other"
 			],
 			"settings": {
-				"foreground": "#CB4B16"
+				"foreground": "#9c3a11"
 			}
 		},
 		{
@@ -207,7 +207,7 @@
 			"name": "Library Exception",
 			"scope": "support.type.exception",
 			"settings": {
-				"foreground": "#CB4B16"
+				"foreground": "#9c3a11"
 			}
 		},
 		{
@@ -246,7 +246,7 @@
 			"scope": "markup.changed",
 			"settings": {
 				"fontStyle": "",
-				"foreground": "#CB4B16"
+				"foreground": "#9c3a11"
 			}
 		},
 		{
@@ -369,7 +369,7 @@
 		"tab.activeBackground": "#FDF6E3",
 		"tab.inactiveForeground": "#586E75",
 		"tab.inactiveBackground": "#D3CBB7",
-		"tab.activeModifiedBorder": "#cb4b16",
+		"tab.activeModifiedBorder": "#9c3a11",
 		"tab.lastPinnedBorder": "#FDF6E3",
 		"activityBar.background": "#DDD6C1",
 		"activityBar.foreground": "#584c27",
@@ -401,7 +401,7 @@
 		"terminal.ansiCyan": "#2aa198",
 		"terminal.ansiWhite": "#eee8d5",
 		"terminal.ansiBrightBlack": "#002b36",
-		"terminal.ansiBrightRed": "#cb4b16",
+		"terminal.ansiBrightRed": "#9c3a11",
 		"terminal.ansiBrightGreen": "#586e75",
 		"terminal.ansiBrightYellow": "#49595f",
 		"terminal.ansiBrightBlue": "#839496",
