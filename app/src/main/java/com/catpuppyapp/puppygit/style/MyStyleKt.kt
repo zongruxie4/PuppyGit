@@ -161,6 +161,8 @@ object MyStyleKt{
         //Editor font color
         private val lineNum_forEditorInLightTheme = Color.Gray
         private val lineNum_forEditorInDarkTheme = Color(0xFF5D5D5D)
+        private val lineNum_focused_forEditorInLightTheme = Color.DarkGray
+        private val lineNum_focused_forEditorInDarkTheme = Color(0xFF949494)
 
         // 行号背景色
         private val lineNumBg_forEditorInLightTheme = Color(0x65E7E7E7)
@@ -177,8 +179,12 @@ object MyStyleKt{
 
         fun danger() = error()
 
-        fun lineNumColor(inDarkTheme:Boolean = Theme.inDarkTheme):Color {
-            return if(inDarkTheme) lineNum_forEditorInDarkTheme else lineNum_forEditorInLightTheme
+        fun lineNumColor(inDarkTheme: Boolean = Theme.inDarkTheme, isFocused: Boolean):Color {
+            return if(isFocused) {
+                if(inDarkTheme) lineNum_focused_forEditorInDarkTheme else lineNum_focused_forEditorInLightTheme
+            }else {
+                if(inDarkTheme) lineNum_forEditorInDarkTheme else lineNum_forEditorInLightTheme
+            }
         }
 
         fun lineNumBgColor(inDarkTheme:Boolean = Theme.inDarkTheme):Color {

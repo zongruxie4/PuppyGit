@@ -758,7 +758,7 @@ fun FileEditor(
 
                                 Text(
                                     text = paddingLineNumber((index+1).toString(), expectLength),
-                                    color = MyStyleKt.TextColor.lineNumColor(inDarkTheme),
+                                    color = MyStyleKt.TextColor.lineNumColor(inDarkTheme, textEditorState.value.focusingLineIdx == index),
                                     fontSize = lineNumFontSize.intValue.sp,
                                     fontFamily = PLFont.codeFont,  //等宽字体，和diff页面的行号保持一致
 
