@@ -1684,7 +1684,7 @@ fun BranchListScreen(
                         ){
                             doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
                                 requireRebase.value = true
-                                //弹出确认框，如果确定，执行merge，否则不执行
+                                //弹出确认框，如果确定，执行操作，否则不执行
                                 showRebaseOrMergeDialog.value = true
                             }
                         }

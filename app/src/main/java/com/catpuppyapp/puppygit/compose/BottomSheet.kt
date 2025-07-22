@@ -144,13 +144,15 @@ fun BottomSheetItem(
                 color=if(enabled) textColor else {if(inDarkTheme) MyStyleKt.TextColor.disable_DarkTheme else MyStyleKt.TextColor.disable}
             )
             if(textDesc.isNotBlank()) {
-                Text(
-                    text = "($textDesc)",
-                    textAlign = TextAlign.Center,
+                ScrollableRow {
+                    Text(
+                        text = "($textDesc)",
+                        textAlign = TextAlign.Center,
 
-                    fontSize = 12.sp,
-                    color=if(enabled) textDescColor else {if(inDarkTheme) MyStyleKt.TextColor.disable_DarkTheme else MyStyleKt.TextColor.disable}
-                )
+                        fontSize = 12.sp,
+                        color=if(enabled) textDescColor else {if(inDarkTheme) MyStyleKt.TextColor.disable_DarkTheme else MyStyleKt.TextColor.disable}
+                    )
+                }
             }
 
         }
