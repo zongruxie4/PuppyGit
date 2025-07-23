@@ -297,7 +297,7 @@ fun BottomBar(
                         )
                         //菜单列表
                         DropdownMenu(
-                            offset = DpOffset(x=(-5).dp, y=0.dp),
+//                            offset = DpOffset(x=(-5).dp, y=0.dp),
 
                             expanded = dropDownMenuExpandState.value,
                             onDismissRequest = { closeDropDownMenu() }
