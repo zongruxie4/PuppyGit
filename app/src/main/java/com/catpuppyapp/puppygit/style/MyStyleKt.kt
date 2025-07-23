@@ -491,7 +491,15 @@ object MyStyleKt{
     }
     
     object LastClickedItem {
-        val bgColorDark = Color.DarkGray.copy(alpha = .2f) 
-        val bgColorLight = Color.LightGray.copy(alpha=.2f)
+        private val bgColorDark = Color.DarkGray.copy(alpha = .2f)
+        private val bgColorLight = Color.LightGray.copy(alpha = .2f)
+
+        fun getBgColor(inDarkTheme: Boolean) = if(inDarkTheme) bgColorDark else bgColorLight
+
+        private val editorLastClickedLineBgColorDark = Color(0x20484848)
+        private val editorLastClickedLineBgColorLight = Color(0x2AB9B9B9)
+
+        fun getEditorLastClickedLineBgColor(inDarkTheme: Boolean) = if(inDarkTheme) editorLastClickedLineBgColorDark else editorLastClickedLineBgColorLight
+
     }
 }

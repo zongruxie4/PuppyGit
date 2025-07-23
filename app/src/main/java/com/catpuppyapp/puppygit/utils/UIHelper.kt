@@ -412,7 +412,7 @@ object UIHelper {
     }
 
     fun getLastClickedColor(): Color {
-        return if(Theme.inDarkTheme) MyStyleKt.LastClickedItem.bgColorDark else MyStyleKt.LastClickedItem.bgColorLight
+        return MyStyleKt.LastClickedItem.getBgColor(Theme.inDarkTheme)
     }
 
 

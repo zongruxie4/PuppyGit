@@ -1018,18 +1018,21 @@ fun FileEditor(
 }
 
 @Composable
-private fun getBackgroundColor(isSelected: Boolean, isMultiSelectionMode:Boolean, currentIdx:Int, focusingIdx:Int, inDarkTheme:Boolean, ): Color {
-//    return if (isSelected) Color(0x806456A5) else Color.White
-//    return if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified
-    return if (isMultiSelectionMode  &&  isSelected) {
+private fun getBackgroundColor(
+    isSelected: Boolean,
+    isMultiSelectionMode:Boolean,
+    currentIdx:Int,
+    focusingIdx:Int,
+    inDarkTheme:Boolean
+): Color {
+    return if (isMultiSelectionMode && isSelected) {
         MaterialTheme.colorScheme.primaryContainer
     }else if(isMultiSelectionMode.not() && currentIdx == focusingIdx) {
         //选中行颜色
-        if(inDarkTheme) Color(0x20484848) else Color(0x2AB9B9B9)
+        MyStyleKt.LastClickedItem.getEditorLastClickedLineBgColor(inDarkTheme)
     } else {
         Color.Unspecified
     }
-//    return Color.Unspecified
 }
 
 @Composable
