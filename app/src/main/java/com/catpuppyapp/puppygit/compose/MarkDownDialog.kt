@@ -112,7 +112,7 @@ fun MarkDownDialog(
                     onClick = switchBetweenRawAndRenderedContent
                 ) {
                     Icon(
-                        imageVector = if(previewModeOn.value) Icons.Filled.RemoveRedEye else Icons.AutoMirrored.Filled.Notes,
+                        imageVector = if(previewModeOn.value) Icons.AutoMirrored.Filled.Notes else Icons.Filled.RemoveRedEye,
                         contentDescription = "switch preview mode and text mode"
                     )
                 }
