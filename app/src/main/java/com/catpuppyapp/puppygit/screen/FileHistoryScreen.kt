@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.CommitListDialog
+import com.catpuppyapp.puppygit.compose.CommitMsgMarkDownDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.FileHistoryItem
@@ -617,6 +618,23 @@ fun FileHistoryScreen(
     }
 
 
+    val showItemMsgDialog = rememberSaveable { mutableStateOf(false) }
+    val textOfItemMsgDialog = rememberSaveable { mutableStateOf("") }
+    val previewModeOnOfItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgPreviewModeOn) }
+    val showItemMsg = { curItem: FileHistoryDto ->
+        textOfItemMsgDialog.value = curItem.msg
+        showItemMsgDialog.value = true
+    }
+    if(showItemMsgDialog.value) {
+        CommitMsgMarkDownDialog(
+            dialogVisibleState = showItemMsgDialog,
+            text = textOfItemMsgDialog.value,
+            previewModeOn = previewModeOnOfItemMsgDialog,
+        )
+    }
+
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -879,6 +897,10 @@ fun FileHistoryScreen(
                         }
 
 
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.msg)) {
+                            showItemMsg(curObj.value)
+                        }
+
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
                             showItemDetails(curObj.value)
                         }
@@ -1011,7 +1033,17 @@ fun FileHistoryScreen(
                         }
                     }
                 ) { idx, it ->
-                    FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx, lastClickedItemKey, shouldShowTimeZoneInfo, showItemDetails, showCommits) { thisObj ->
+                    FileHistoryItem(
+                        showBottomSheet = showBottomSheet,
+                        curCommit = curObj,
+                        curCommitIdx = curObjIndex,
+                        idx = idx,
+                        dto = it,
+                        requireBlinkIdx = requireBlinkIdx,
+                        lastClickedItemKey = lastClickedItemKey,
+                        shouldShowTimeZoneInfo = shouldShowTimeZoneInfo,
+                        showItemMsg = showItemMsg,
+                    ) { thisObj ->
                         Msg.requireShow(activityContext.getString(R.string.diff_to_local))
 
                         //导航到diffScreen

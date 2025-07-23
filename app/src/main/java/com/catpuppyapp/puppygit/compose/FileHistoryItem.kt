@@ -54,8 +54,7 @@ fun FileHistoryItem(
     lastClickedItemKey:MutableState<String>,
     shouldShowTimeZoneInfo:Boolean,
 
-    showItemDetails:(FileHistoryDto)->Unit,
-    showCommits:(FileHistoryDto)->Unit,
+    showItemMsg:(FileHistoryDto)->Unit,
     onClick:(FileHistoryDto)->Unit={}
 ) {
 
@@ -287,7 +286,7 @@ fun FileHistoryItem(
                 lastClickedItemKey.value = dto.getItemKey()
 
                 updateCurObjState()
-                showItemDetails(dto)
+                showItemMsg(dto)
             }
         }
     }
