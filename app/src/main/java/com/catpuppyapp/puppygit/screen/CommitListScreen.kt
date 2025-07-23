@@ -69,6 +69,7 @@ import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.CommitItem
+import com.catpuppyapp.puppygit.compose.CommitMsgMarkDownDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
@@ -83,7 +84,6 @@ import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadMore
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
-import com.catpuppyapp.puppygit.compose.MarkDownDialog
 import com.catpuppyapp.puppygit.compose.MultiLineClickableText
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
@@ -1328,24 +1328,10 @@ fun CommitListScreen(
         showItemMsgDialog.value = true
     }
     if(showItemMsgDialog.value) {
-        MarkDownDialog(
+        CommitMsgMarkDownDialog(
+            dialogVisibleState = showItemMsgDialog,
             text = textOfItemMsgDialog.value,
             previewModeOn = previewModeOnOfItemMsgDialog,
-            close = {
-                showItemMsgDialog.value = false
-
-                // update settings if need
-                val previewModeOn = previewModeOnOfItemMsgDialog.value
-                if(previewModeOn != settings.commitMsgPreviewModeOn) {
-                    SettingsUtil.update {
-                        it.commitMsgPreviewModeOn = previewModeOn
-                    }
-                }
-            },
-            copy = {
-                clipboardManager.setText(AnnotatedString(textOfItemMsgDialog.value))
-                Msg.requireShow(activityContext.getString(R.string.copied))
-            }
         )
     }
 

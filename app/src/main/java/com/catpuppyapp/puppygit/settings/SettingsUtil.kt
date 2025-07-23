@@ -312,4 +312,5 @@ object SettingsUtil {
     fun isEditorUseSystemFonts() = appSettings.editor.useSystemFonts
     fun isDiffUseSystemFonts() = appSettings.diff.useSystemFonts
     fun isDiffSyntaxHighlightEnabled() = appSettings.diff.syntaxHighlightEnabled
+    fun isCommitMsgPreviewModeOn() = appSettings.commitMsgPreviewModeOn
 }

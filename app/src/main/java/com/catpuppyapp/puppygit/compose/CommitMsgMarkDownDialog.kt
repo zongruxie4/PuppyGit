@@ -1,0 +1,40 @@
+package com.catpuppyapp.puppygit.compose
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.utils.Msg
+
+@Composable
+fun CommitMsgMarkDownDialog(
+    dialogVisibleState: MutableState<Boolean>,
+    text: String,
+    previewModeOn: MutableState<Boolean>,
+) {
+    val activityContext = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+
+    MarkDownDialog(
+        text = text,
+        previewModeOn = previewModeOn,
+        close = {
+            dialogVisibleState.value = false
+
+            // update settings if need
+            val previewModeOn = previewModeOn.value
+            if(previewModeOn != SettingsUtil.isCommitMsgPreviewModeOn()) {
+                SettingsUtil.update {
+                    it.commitMsgPreviewModeOn = previewModeOn
+                }
+            }
+        },
+        copy = {
+            clipboardManager.setText(AnnotatedString(text))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+        }
+    )
+}
