@@ -21,7 +21,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -43,7 +42,7 @@ fun TagItem(
     thisObj:TagDto,
     lastClickedItemKey:MutableState<String>,
     shouldShowTimeZoneInfo:Boolean,
-    showDetails:(List<TagDto>) -> Unit,
+    showItemMsg:(TagDto) -> Unit,
     isItemInSelected:(TagDto) -> Boolean,
     onLongClick:(TagDto)->Unit,
     onClick:(TagDto)->Unit
@@ -208,7 +207,7 @@ fun TagItem(
 //                Text(text = stringResource(R.string.msg) +": ")
 
                 SingleLineClickableText(text = thisObj.msg) {
-                    showDetails(listOf(thisObj))
+                    showItemMsg(thisObj)
                 }
             }
         }

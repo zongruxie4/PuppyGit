@@ -46,6 +46,7 @@ import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelectio
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
+import com.catpuppyapp.puppygit.compose.CommitMsgMarkDownDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateTagDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
@@ -662,6 +663,22 @@ fun TagListScreen(
     }
 
 
+    val showItemMsgDialog = rememberSaveable { mutableStateOf(false) }
+    val textOfItemMsgDialog = rememberSaveable { mutableStateOf("") }
+    val previewModeOnOfItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgPreviewModeOn) }
+    val showItemMsg = { curItem: TagDto ->
+        textOfItemMsgDialog.value = curItem.msg
+        showItemMsgDialog.value = true
+    }
+    if(showItemMsgDialog.value) {
+        CommitMsgMarkDownDialog(
+            dialogVisibleState = showItemMsgDialog,
+            text = textOfItemMsgDialog.value,
+            previewModeOn = previewModeOnOfItemMsgDialog,
+        )
+    }
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -870,19 +887,25 @@ fun TagListScreen(
                     forEachCb = {},
                 ){idx, it->
                     //长按会更新curObjInPage为被长按的条目
-                    TagItem(it, lastClickedItemKey, shouldShowTimeZoneInfo, showDetails, isItemInSelected, onLongClick = {
-                        if(multiSelectionMode.value) {  //多选模式
-                            //在选择模式下长按条目，执行区域选择（连续选择一个范围）
-                            UIHelper.doSelectSpan(idx, it,
-                                selectedItemList.value, list,
-                                switchItemSelected,
-                                selectItem
-                            )
-                        }else {  //非多选模式
-                            //启动多选模式
-                            switchItemSelected(it)
+                    TagItem(
+                        thisObj = it,
+                        lastClickedItemKey = lastClickedItemKey,
+                        shouldShowTimeZoneInfo = shouldShowTimeZoneInfo,
+                        showItemMsg = showItemMsg,
+                        isItemInSelected = isItemInSelected,
+                        onLongClick = {
+                            if(multiSelectionMode.value) {  //多选模式
+                                //在选择模式下长按条目，执行区域选择（连续选择一个范围）
+                                UIHelper.doSelectSpan(idx, it,
+                                    selectedItemList.value, list,
+                                    switchItemSelected,
+                                    selectItem
+                                )
+                            }else {  //非多选模式
+                                //启动多选模式
+                                switchItemSelected(it)
+                            }
                         }
-                    }
                     ) {  //onClick
                         if(multiSelectionMode.value) {  //选择模式
                             UIHelper.selectIfNotInSelectedListElseRemove(it, selectedItemList.value)
