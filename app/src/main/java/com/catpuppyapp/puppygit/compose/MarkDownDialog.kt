@@ -32,7 +32,7 @@ fun MarkDownDialog(
 
 
     val switchBetweenRawAndRenderedContent = { previewModeOn.value = !previewModeOn.value }
-    val rawOrHighlightedText = { highlightedMarkdownText.value ?:  annotatedText}
+    val rawOrHighlightedText = { highlightedMarkdownText.value ?: annotatedText}
 
     ConfirmDialog3(
         title = title,

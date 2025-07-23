@@ -324,7 +324,7 @@ class MyCodeEditor(
 //        println("text: $text")
 
         // if no bug, should not trigger full syntax analyze a lot
-        MyLog.w(TAG, "will run full syntax highlighting analyze")
+        MyLog.w(TAG, "will run full syntax highlighting analyze (at $TAG)")
 
         PLTheme.updateThemeByAppTheme()
 

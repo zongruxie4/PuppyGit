@@ -26,7 +26,9 @@ class MarkDownSyntaxHighlighter(
     var myLang: TextMateLanguage? = null
     val scope = PLScope.MARKDOWN
 
-    val lines = text.lines()
+    private var cachedLines:List<String>? = null
+
+    fun getTextLines() = cachedLines ?: text.lines().let { cachedLines = it; it }
 
     fun analyze() {
         analyzeLock.withLock {
@@ -35,15 +37,19 @@ class MarkDownSyntaxHighlighter(
     }
 
     fun release() {
+        cleanOldLanguage()
+    }
+
+    fun cleanOldLanguage() {
         TextMateUtil.cleanLanguage(myLang)
     }
 
     private fun doAnalyzeNoLock() {
         // if no bug, should not trigger full syntax analyze a lot
-        MyLog.w(TAG, "will run full syntax highlighting analyze(at MarkDownSyntaxHighlighter)")
+        MyLog.w(TAG, "will run full syntax highlighting analyze(at $TAG)")
 
 
-        release()
+        cleanOldLanguage()
 
         PLTheme.updateThemeByAppTheme()
 

@@ -52,6 +52,10 @@ class HunkSyntaxHighlighter(
     }
 
     fun release() {
+        cleanOldLanguage()
+    }
+
+    fun cleanOldLanguage() {
         TextMateUtil.cleanLanguage(myLang)
     }
 
@@ -65,10 +69,10 @@ class HunkSyntaxHighlighter(
 //        println("text: $text")
 
         // if no bug, should not trigger full syntax analyze a lot
-        MyLog.w(TAG, "will run full syntax highlighting analyze(at Diff screen, filename: ${hunk.diffItemSaver.fileName()})")
+        MyLog.w(TAG, "will run full syntax highlighting analyze(at $TAG, filename: ${hunk.diffItemSaver.fileName()})")
 
 
-        release()
+        cleanOldLanguage()
 
         // run new analyze
         val autoComplete = false

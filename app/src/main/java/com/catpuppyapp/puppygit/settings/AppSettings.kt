@@ -128,6 +128,9 @@ data class AppSettings(
      */
     var commitMsgTemplate:String = "",
 
+    /**
+     * if on, will render markdown view, else, will show raw text with syntax highlighting
+     */
     var commitMsgPreviewModeOn:Boolean = true,
 
 ) {
