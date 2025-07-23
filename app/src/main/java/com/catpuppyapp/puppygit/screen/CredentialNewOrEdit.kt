@@ -6,16 +6,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,13 +31,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.PasswordTextFiled
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -329,35 +323,11 @@ fun CredentialNewOrEdit(
 
             )
 
-            TextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
-                ,
-
-                //密码最多一行，singleLine和maxLines = 1不完全相同，singleLine还做了更多处理，有的情况无所谓，两者皆可，但这里最好用singleLine
-                singleLine = true,
-
-                value = credentialPass.value,
-                onValueChange = {
-                    credentialPass.value=it
-                },
-                label = {
-                    Text(stringResource(R.string.password_or_passphrase))
-                },
-                visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                trailingIcon = {
-                    if(!isEditMode.value || oldPassIsEmpty.value) {  //只有新建模式能查看密码，编辑模式不许看，避免被人偷看已保存的密码
-                        IconButton(onClick = { passwordVisible.value = !passwordVisible.value }) {
-                            Icon(
-                                imageVector = if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                                contentDescription = if (passwordVisible.value) stringResource(R.string.an_opened_eye) else stringResource(R.string.a_closed_eye)
-                            )
-                        }
-                    }
-                }
-
+            PasswordTextFiled(
+                password = credentialPass,
+                label = stringResource(R.string.password_or_passphrase),
+                passwordVisible = passwordVisible,
+                canSwitchPasswordVisible = !isEditMode.value || oldPassIsEmpty.value
             )
 
             //编辑模式且密码不为空会显示加密后的密码，用户看了那个长度可能会傻眼，所以给个提示

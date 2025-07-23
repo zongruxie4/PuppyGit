@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -24,8 +23,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -55,10 +52,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
@@ -71,6 +65,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.PasswordTextFiled
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.compose.SingleSelection
 import com.catpuppyapp.puppygit.compose.TokenInsteadOfPasswordHint
@@ -1021,43 +1016,20 @@ fun CloneScreen(
                         }
                     }
                 )
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    singleLine = true,
-                    value = credentialPass.value,
-                    onValueChange = {
-                        credentialPass.value=it
+                PasswordTextFiled(
+                    password = credentialPass,
+                    label = if(curCredentialType.intValue == Cons.dbCredentialTypeSsh) {
+                        stringResource(R.string.passphrase_if_have)
+                    }else{
+                        stringResource(R.string.password)
                     },
-                    label = {
-                        if(curCredentialType.intValue == Cons.dbCredentialTypeSsh) {
-                            Text(stringResource(R.string.passphrase_if_have))
-                        }else{
-                            Text(stringResource(R.string.password))
-                        }
+                    placeholder = if(curCredentialType.intValue == Cons.dbCredentialTypeSsh) {
+                        stringResource(R.string.input_passphrase_if_have)
+                    }else{
+                        stringResource(R.string.password)
                     },
-                    placeholder = {
-                        if(curCredentialType.intValue == Cons.dbCredentialTypeSsh) {
-                            Text(stringResource(R.string.input_passphrase_if_have))
-                        }else{
-                            Text(stringResource(R.string.password))
-                        }
-                    },
-                    visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    trailingIcon = {
-                        val image = if (passwordVisible.value) Icons.Filled.Visibility
-                                    else Icons.Filled.VisibilityOff
+                    passwordVisible = passwordVisible,
 
-                        // Please provide localized description for accessibility services
-                        val description = if (passwordVisible.value) stringResource(R.string.hide_password) else stringResource(R.string.show_password)
-
-                        IconButton(onClick = {passwordVisible.value = !passwordVisible.value}){
-                            // contentDescription is for accessibility
-                            Icon(imageVector=image, contentDescription=description)
-                        }
-                    }
                 )
 
                 // 若是http，提示用户可能需要用token替代密码
