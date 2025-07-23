@@ -161,12 +161,15 @@ fun ReflogItem(
         ){
 
             Text(text = stringResource(R.string.date) +": ")
-            Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(thisObj.date, thisObj.originTimeZoneOffsetInMinutes) else thisObj.date,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
 
-            )
+            ScrollableRow {
+                Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(thisObj.date, thisObj.originTimeZoneOffsetInMinutes) else thisObj.date,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
+
+                )
+            }
         }
 
         Row (
@@ -175,12 +178,15 @@ fun ReflogItem(
         ){
 
             Text(text = stringResource(R.string.author) +": ")
-            Text(text = Libgit2Helper.getFormattedUsernameAndEmail(thisObj.username, thisObj.email),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
 
-            )
+            ScrollableRow {
+                Text(text = Libgit2Helper.getFormattedUsernameAndEmail(thisObj.username, thisObj.email),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
+
+                )
+            }
         }
 
         Row (

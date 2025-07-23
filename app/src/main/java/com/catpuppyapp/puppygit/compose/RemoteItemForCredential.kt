@@ -61,23 +61,30 @@ fun RemoteItemForCredential(
             ){
 
                 Text(text = stringResource(R.string.repo) +": ")
-                Text(text = thisItem.repoName,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
-                )
+
+                ScrollableRow {
+                    Text(text = thisItem.repoName,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
+                    )
+                }
             }
 
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
                 Text(text = stringResource(R.string.remote) +": ")
-                Text(text = thisItem.remoteName,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
 
-                )
+                ScrollableRow {
+                    Text(
+                        text = thisItem.remoteName,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
+
+                    )
+                }
             }
 
             val fetchUrlTitle = stringResource(R.string.fetch_url)
@@ -122,22 +129,28 @@ fun RemoteItemForCredential(
                 verticalAlignment = Alignment.CenterVertically,
             ){
                 Text(text = stringResource(R.string.fetch_linked) +": ")
-                Text(text = thisItem.getCredentialNameOrNone(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
-                )
+
+                ScrollableRow {
+                    Text(text = thisItem.getCredentialNameOrNone(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
+                    )
+                }
             }
 
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
                 Text(text = stringResource(R.string.push_linked) +": ")
-                Text(text = thisItem.getPushCredentialNameOrNone(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
-                )
+
+                ScrollableRow {
+                    Text(text = thisItem.getPushCredentialNameOrNone(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
+                    )
+                }
             }
 
         }

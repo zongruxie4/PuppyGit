@@ -92,12 +92,15 @@ fun RemoteItem(
         ){
 
             Text(text = stringResource(R.string.name) +": ")
-            Text(text = curObj.remoteName,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
 
-            )
+            ScrollableRow {
+                Text(text = curObj.remoteName,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
+
+                )
+            }
         }
         Row (
             verticalAlignment = Alignment.CenterVertically,
@@ -105,74 +108,93 @@ fun RemoteItem(
         ){
 
             Text(text = stringResource(R.string.url) +": ")
-            Text(text = curObj.remoteUrl,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
 
-            )
+            ScrollableRow {
+                Text(
+                    text = curObj.remoteUrl,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
+
+                )
+            }
         }
         Row (
             verticalAlignment = Alignment.CenterVertically,
 
         ){
             Text(text = stringResource(R.string.push_url) +": ")
-            Text(text = if(curObj.pushUrlTrackFetchUrl) stringResource(R.string.use_url) else curObj.pushUrl,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
 
-            )
+            ScrollableRow {
+                Text(text = if(curObj.pushUrlTrackFetchUrl) stringResource(R.string.use_url) else curObj.pushUrl,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
+
+                )
+            }
         }
         Row (
             verticalAlignment = Alignment.CenterVertically,
 
         ){
             Text(text = stringResource(R.string.fetch_credential) +": ")
-            Text(text = curObj.getLinkedFetchCredentialName(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
 
-            )
+            ScrollableRow {
+                Text(text = curObj.getLinkedFetchCredentialName(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
+
+                )
+            }
         }
         Row (
             verticalAlignment = Alignment.CenterVertically,
 
         ){
             Text(text = stringResource(R.string.push_credential) +": ")
-            Text(text = curObj.getLinkedPushCredentialName(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
 
-            )
+            ScrollableRow {
+                Text(
+                    text = curObj.getLinkedPushCredentialName(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
+                )
+            }
         }
 
         Row (
             verticalAlignment = Alignment.CenterVertically,
 
-            ){
+        ){
             Text(text = stringResource(R.string.branch_mode) +": ")
-            Text(text = if(curObj.branchMode == Cons.dbRemote_Fetch_BranchMode_All) activityContext.getString(R.string.all) else activityContext.getString(R.string.custom),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
 
-            )
-        }
-        if(curObj.branchMode != Cons.dbRemote_Fetch_BranchMode_All) {
-            Row (
-                verticalAlignment = Alignment.CenterVertically,
-
-                ){
-                Text(text = (if(curObj.branchListForFetch.size > 1) stringResource(R.string.branches) else stringResource(R.string.branch)) +": ")
-                Text(text = curObj.branchListForFetch.toString(),
+            ScrollableRow {
+                Text(text = if(curObj.branchMode == Cons.dbRemote_Fetch_BranchMode_All) activityContext.getString(R.string.all) else activityContext.getString(R.string.custom),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = defaultFontWeight
 
                 )
+            }
+        }
+        if(curObj.branchMode != Cons.dbRemote_Fetch_BranchMode_All) {
+            Row (
+                verticalAlignment = Alignment.CenterVertically,
+
+            ){
+                Text(text = (if(curObj.branchListForFetch.size > 1) stringResource(R.string.branches) else stringResource(R.string.branch)) +": ")
+
+                ScrollableRow {
+                    Text(text = curObj.branchListForFetch.toString(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
+
+                    )
+                }
             }
         }
 

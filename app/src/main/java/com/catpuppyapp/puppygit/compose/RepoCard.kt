@@ -261,15 +261,17 @@ fun RepoCard(
                                 tooltipText = stringResource(R.string.state)
                             )
 
-                            Text(
-                                //如果是detached，显示分支号，否则显示“本地分支:远程分支”
-                                text = repoDto.getRepoStateStr(activityContext),  //状态为null显示错误，否则显示状态
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontWeight = defaultFontWeight,
-                                modifier = MyStyleKt.ClickableText.modifier,
+                            ScrollableRow {
+                                Text(
+                                    //如果是detached，显示分支号，否则显示“本地分支:远程分支”
+                                    text = repoDto.getRepoStateStr(activityContext),  //状态为null显示错误，否则显示状态
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontWeight = defaultFontWeight,
+                                    modifier = MyStyleKt.ClickableText.modifier,
 
-                            )
+                                )
+                            }
                         }
                     }
 
@@ -311,15 +313,15 @@ fun RepoCard(
                             icon = Icons.Filled.AccessTime,
                             tooltipText = stringResource(R.string.repo_label_last_update_time)
                         )
-                        Text(
-                            text = repoDto.cachedLastUpdateTime(),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = MyStyleKt.ClickableText.modifier,
-                            fontWeight = defaultFontWeight
-
-
-                        )
+                        ScrollableRow {
+                            Text(
+                                text = repoDto.cachedLastUpdateTime(),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = MyStyleKt.ClickableText.modifier,
+                                fontWeight = defaultFontWeight
+                            )
+                        }
                     }
 
                     if(repoStatusGood) {
@@ -332,32 +334,34 @@ fun RepoCard(
                                 icon = Icons.Filled.Commit,
                                 tooltipText = stringResource(R.string.repo_label_last_commit)
                             )
-                            ClickableText (
-                                text = (if(repoStatusGood) repoDto.lastCommitHashShort ?: "" else "") +
-                                        (repoDto.lastCommitDateTime.let { if(it.isBlank()) "" else " ($it)"})
-                                ,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
-                                    enabled = repoStatusGood,
-                                    onLongClick = {
+                            ScrollableRow {
+                                ClickableText (
+                                    text = (if(repoStatusGood) repoDto.lastCommitHashShort ?: "" else "") +
+                                            (repoDto.lastCommitDateTime.let { if(it.isBlank()) "" else " ($it)"})
+                                    ,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
+                                        enabled = repoStatusGood,
+                                        onLongClick = {
 //                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        copyAndShowCopied(activityContext, clipboardManager, repoDto.lastCommitHash)
-                                    }
-                                ) {
-                                    //打开当前仓库的提交记录页面，话说，那个树形怎么搞？可以先不搞树形，以后再弄
-                                    goToCommitListScreen(
-                                        repoId = repoDto.id,
-                                        fullOid = "",  //这里不需要传分支名，会通过HEAD解析当前分支
-                                        shortBranchName = "",
-                                        isHEAD = true,
-                                        from = CommitListFrom.FOLLOW_HEAD,
+                                            copyAndShowCopied(activityContext, clipboardManager, repoDto.lastCommitHash)
+                                        }
+                                    ) {
+                                        //打开当前仓库的提交记录页面，话说，那个树形怎么搞？可以先不搞树形，以后再弄
+                                        goToCommitListScreen(
+                                            repoId = repoDto.id,
+                                            fullOid = "",  //这里不需要传分支名，会通过HEAD解析当前分支
+                                            shortBranchName = "",
+                                            isHEAD = true,
+                                            from = CommitListFrom.FOLLOW_HEAD,
 
-                                    )
-                                },
-                                fontWeight = defaultFontWeight
+                                            )
+                                    },
+                                    fontWeight = defaultFontWeight
 
-                            )
+                                )
+                            }
                         }
                     }
 
@@ -372,55 +376,59 @@ fun RepoCard(
                             icon = Icons.Filled.Info,
                             tooltipText = stringResource(R.string.repo_label_status)
                         )
-                        //如果不写入数据库的临时中间状态 pushing/pulling 之类的 不为空，显示中间状态，否则显示写入数据库的持久状态
-                        val tmpStatus = repoDto.tmpStatus
-                        if(repoErr || repoNotReady || tmpStatus.isNotBlank() || repoDto.workStatus == Cons.dbRepoWorkStatusUpToDate) {  //不可点击的状态
-                            var nullNormalTrueUpToDateFalseError:Boolean? = null
-                            val text = if(repoErr || (repoDto.gitRepoState==null && tmpStatus.isBlank())) { nullNormalTrueUpToDateFalseError = false; stringResource(R.string.error) }else tmpStatus.ifBlank { nullNormalTrueUpToDateFalseError = true; stringResource(R.string.repo_status_uptodate) }
-                            Text(
-                                //若tmpStatus不为空，显示；否则显示up-to-date。注：日后若添加更多状态，就不能这样简单判断了
-                                text = text,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = MyStyleKt.ClickableText.modifier,
-                                fontWeight = defaultFontWeight,
-                                //出错，红色；已是最新，绿色；"加载中..."之类的非点击临时状态，默认颜色。
-                                color = if(nullNormalTrueUpToDateFalseError == null) Color.Unspecified else if(nullNormalTrueUpToDateFalseError == true) MyStyleKt.TextColor.getHighlighting() else MyStyleKt.TextColor.error(),
 
-                            )
-                        } else {  //可点击的状态
-                            ClickableText (
-                                text = (
-                                        if (repoDto.workStatus == Cons.dbRepoWorkStatusMerging
-                                            || repoDto.workStatus==Cons.dbRepoWorkStatusRebasing
-                                            || repoDto.workStatus==Cons.dbRepoWorkStatusCherrypicking
-                                        ) {
-                                            stringResource(R.string.require_actions)
-                                        } else if (repoDto.workStatus == Cons.dbRepoWorkStatusHasConflicts) {
-                                            stringResource(R.string.repo_status_has_conflict)
-                                        } else if(repoDto.workStatus == Cons.dbRepoWorkStatusNeedCommit) {
-                                            stringResource(R.string.repo_status_need_commit)
-                                        } else if (repoDto.workStatus == Cons.dbRepoWorkStatusNeedSync) {
-                                            stringResource(R.string.repo_status_need_sync)
-                                        } else if (repoDto.workStatus == Cons.dbRepoWorkStatusNeedPull) {
-                                            stringResource(R.string.repo_status_need_pull)
-                                        } else if (repoDto.workStatus == Cons.dbRepoWorkStatusNeedPush) {
-                                            stringResource(R.string.repo_status_need_push)
-                                        }else if (repoDto.workStatus == Cons.dbRepoWorkStatusNoHEAD) {
-                                            //便于用户理解，不提示no head，提示no commit
-                                            stringResource(R.string.no_commit)
-                                        } else {
-                                            ""  // 未克隆仓库可能会抵达这里
-                                        }
-                                ),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = repoStatusGood) {
-                                    workStatusOnclick(repoDto, repoDto.workStatus)  //让父级页面自己写callback吧，省得传参
-                                },
-                                fontWeight = defaultFontWeight
+                        ScrollableRow {
 
-                            )
+                            //如果不写入数据库的临时中间状态 pushing/pulling 之类的 不为空，显示中间状态，否则显示写入数据库的持久状态
+                            val tmpStatus = repoDto.tmpStatus
+                            if(repoErr || repoNotReady || tmpStatus.isNotBlank() || repoDto.workStatus == Cons.dbRepoWorkStatusUpToDate) {  //不可点击的状态
+                                var nullNormalTrueUpToDateFalseError:Boolean? = null
+                                val text = if(repoErr || (repoDto.gitRepoState==null && tmpStatus.isBlank())) { nullNormalTrueUpToDateFalseError = false; stringResource(R.string.error) }else tmpStatus.ifBlank { nullNormalTrueUpToDateFalseError = true; stringResource(R.string.repo_status_uptodate) }
+                                Text(
+                                    //若tmpStatus不为空，显示；否则显示up-to-date。注：日后若添加更多状态，就不能这样简单判断了
+                                    text = text,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = MyStyleKt.ClickableText.modifier,
+                                    fontWeight = defaultFontWeight,
+                                    //出错，红色；已是最新，绿色；"加载中..."之类的非点击临时状态，默认颜色。
+                                    color = if(nullNormalTrueUpToDateFalseError == null) Color.Unspecified else if(nullNormalTrueUpToDateFalseError == true) MyStyleKt.TextColor.getHighlighting() else MyStyleKt.TextColor.error(),
+
+                                    )
+                            } else {  //可点击的状态
+                                ClickableText (
+                                    text = (
+                                            if (repoDto.workStatus == Cons.dbRepoWorkStatusMerging
+                                                || repoDto.workStatus==Cons.dbRepoWorkStatusRebasing
+                                                || repoDto.workStatus==Cons.dbRepoWorkStatusCherrypicking
+                                            ) {
+                                                stringResource(R.string.require_actions)
+                                            } else if (repoDto.workStatus == Cons.dbRepoWorkStatusHasConflicts) {
+                                                stringResource(R.string.repo_status_has_conflict)
+                                            } else if(repoDto.workStatus == Cons.dbRepoWorkStatusNeedCommit) {
+                                                stringResource(R.string.repo_status_need_commit)
+                                            } else if (repoDto.workStatus == Cons.dbRepoWorkStatusNeedSync) {
+                                                stringResource(R.string.repo_status_need_sync)
+                                            } else if (repoDto.workStatus == Cons.dbRepoWorkStatusNeedPull) {
+                                                stringResource(R.string.repo_status_need_pull)
+                                            } else if (repoDto.workStatus == Cons.dbRepoWorkStatusNeedPush) {
+                                                stringResource(R.string.repo_status_need_push)
+                                            }else if (repoDto.workStatus == Cons.dbRepoWorkStatusNoHEAD) {
+                                                //便于用户理解，不提示no head，提示no commit
+                                                stringResource(R.string.no_commit)
+                                            } else {
+                                                ""  // 未克隆仓库可能会抵达这里
+                                            }
+                                            ),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = repoStatusGood) {
+                                        workStatusOnclick(repoDto, repoDto.workStatus)  //让父级页面自己写callback吧，省得传参
+                                    },
+                                    fontWeight = defaultFontWeight
+
+                                )
+                            }
                         }
                     }
 
@@ -502,13 +510,15 @@ fun RepoCard(
                                 icon = Icons.AutoMirrored.Filled.Notes,
                                 tooltipText = stringResource(R.string.other)
                             )
-                            Text(
-                                text = repoDto.getOther(),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
 
-                                // for now the "other text" is short, if become long in future, make clicked show full "other text" in a dialog
-                                //目前 other text短，如果以后长到无法在卡片完整显示，实现点击文字在弹窗显示完整other text
+                            ScrollableRow {
+                                Text(
+                                    text = repoDto.getOther(),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+
+                                    // for now the "other text" is short, if become long in future, make clicked show full "other text" in a dialog
+                                    //目前 other text短，如果以后长到无法在卡片完整显示，实现点击文字在弹窗显示完整other text
 //                            style = MyStyleKt.ClickableText.style,
 //                            color = MyStyleKt.ClickableText.color,
 //                            modifier = MyStyleKt.ClickableText.modifier.clickable {  // on click
@@ -516,11 +526,12 @@ fun RepoCard(
 //                                pageRequest.value = PageRequest.showOther
 //                            },
 
-                                fontWeight = defaultFontWeight,
-                                modifier = MyStyleKt.ClickableText.modifier,
+                                    fontWeight = defaultFontWeight,
+                                    modifier = MyStyleKt.ClickableText.modifier,
 
 
-                            )
+                                )
+                            }
                         }
                     }
 
@@ -534,16 +545,19 @@ fun RepoCard(
                                 icon = Icons.Outlined.Home,
                                 tooltipText = stringResource(R.string.parent_repo)
                             )
-                            ClickableText(
-                                text = repoDto.parentRepoName,
-                                maxLines = 1,
-                                modifier = MyStyleKt.ClickableText.modifier.clickable {  // on click
-                                    setCurRepo()
-                                    pageRequest.value = PageRequest.goParent
-                                },
-                                fontWeight = defaultFontWeight
 
-                            )
+                            ScrollableRow {
+                                ClickableText(
+                                    text = repoDto.parentRepoName,
+                                    maxLines = 1,
+                                    modifier = MyStyleKt.ClickableText.modifier.clickable {  // on click
+                                        setCurRepo()
+                                        pageRequest.value = PageRequest.goParent
+                                    },
+                                    fontWeight = defaultFontWeight
+
+                                )
+                            }
                         }
                     }
 

@@ -198,14 +198,15 @@ fun FileHistoryItem(
             )
 
 //            Text(text = stringResource(R.string.author) + ": ")
+            ScrollableRow {
+                Text(
+                    text = Libgit2Helper.getFormattedUsernameAndEmail(dto.authorUsername, dto.authorEmail),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
 
-            Text(
-                text = Libgit2Helper.getFormattedUsernameAndEmail(dto.authorUsername, dto.authorEmail),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
-
-            )
+                )
+            }
         }
 
         //如果committer和author不同，显示
@@ -220,14 +221,15 @@ fun FileHistoryItem(
                 )
 
 //                Text(text = stringResource(R.string.committer) + ": ")
+                ScrollableRow {
+                    Text(
+                        text = Libgit2Helper.getFormattedUsernameAndEmail(dto.committerUsername, dto.committerEmail),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
 
-                Text(
-                    text = Libgit2Helper.getFormattedUsernameAndEmail(dto.committerUsername, dto.committerEmail),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
-
-                )
+                    )
+                }
             }
         }
 
@@ -242,14 +244,15 @@ fun FileHistoryItem(
             )
 
 //            Text(text = stringResource(R.string.date) + ": ")
+            ScrollableRow {
+                Text(
+                    text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(dto.dateTime, dto.originTimeOffsetInMinutes) else dto.dateTime,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
 
-            Text(
-                text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(dto.dateTime, dto.originTimeOffsetInMinutes) else dto.dateTime,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
-
-            )
+                )
+            }
         }
 
 //        Row(

@@ -190,12 +190,14 @@ fun BranchItem(
 
 //            Text(text = stringResource(R.string.type) +": ")
 
-            Text(text = thisObj.getTypeString(activityContext, false),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
+            ScrollableRow {
+                Text(text = thisObj.getTypeString(activityContext, false),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
 
-            )
+                )
+            }
         }
         //显示上游信息
 //        if(thisObj.type == Branch.BranchType.LOCAL && thisObj.upstream!=null) { //其实只要是local就一定有upstream，不会是null，顶多里面没值
@@ -254,14 +256,16 @@ fun BranchItem(
 
 //                    Text(text = stringResource(R.string.status) + ": ")
 
-                    Text(
-                        text = thisObj.getAheadBehind(activityContext, false),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontWeight = defaultFontWeight,
-                        color = if(thisObj.alreadyUpToDate()) MyStyleKt.TextColor.getHighlighting() else Color.Unspecified
+                    ScrollableRow {
+                        Text(
+                            text = thisObj.getAheadBehind(activityContext, false),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            fontWeight = defaultFontWeight,
+                            color = if(thisObj.alreadyUpToDate()) MyStyleKt.TextColor.getHighlighting() else Color.Unspecified
 
-                    )
+                        )
+                    }
                 }
 
             }
@@ -279,12 +283,14 @@ fun BranchItem(
 
 //                Text(text = stringResource(R.string.symbolic_target) +": ")
 
-                Text(text = thisObj.symbolicTargetShortName,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
+                ScrollableRow {
+                    Text(text = thisObj.symbolicTargetShortName,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
 
-                )
+                    )
+                }
             }
         }
 

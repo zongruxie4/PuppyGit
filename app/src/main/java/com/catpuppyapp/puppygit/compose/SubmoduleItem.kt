@@ -101,12 +101,14 @@ fun SubmoduleItem(
 
 //            Text(text = stringResource(R.string.name) +": ")
 
-            Text(text = thisObj.name,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
+            ScrollableRow {
+                Text(text = thisObj.name,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
 
-            )
+                )
+            }
         }
 
         Row (
@@ -121,12 +123,14 @@ fun SubmoduleItem(
 
 //            Text(text = stringResource(R.string.url) +": ")
 
-            Text(text = thisObj.remoteUrl,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
+            ScrollableRow {
+                Text(text = thisObj.remoteUrl,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
 
-            )
+                )
+            }
         }
 
         Row (
@@ -140,12 +144,13 @@ fun SubmoduleItem(
             )
 
 //            Text(text = stringResource(R.string.path) +": ")
-
-            Text(text = thisObj.relativePathUnderParent,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
-            )
+            ScrollableRow {
+                Text(text = thisObj.relativePathUnderParent,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
+                )
+            }
         }
 
         Row (
@@ -178,11 +183,13 @@ fun SubmoduleItem(
 
 //            Text(text = stringResource(R.string.location) +": ")
 
-            Text(text = thisObj.location.toString(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
-            )
+            ScrollableRow {
+                Text(text = thisObj.location.toString(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
+                )
+            }
         }
 
         Row (
@@ -197,12 +204,14 @@ fun SubmoduleItem(
 
 //            Text(text = stringResource(R.string.status) +": ")
 
-            Text(text = thisObj.getStatus(activityContext),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight,
-                color = thisObj.getStatusColor()
-            )
+            ScrollableRow {
+                Text(text = thisObj.getStatus(activityContext),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight,
+                    color = thisObj.getStatusColor()
+                )
+            }
         }
 
         if(thisObj.hasOther()) {
@@ -216,12 +225,13 @@ fun SubmoduleItem(
                 )
 
 //                Text(text = stringResource(R.string.other) +": ")
-
-                Text(text = thisObj.getOther(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight,
-                )
+                ScrollableRow {
+                    Text(text = thisObj.getOther(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight,
+                    )
+                }
             }
         }
 

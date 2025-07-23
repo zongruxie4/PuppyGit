@@ -202,12 +202,14 @@ fun CommitItem(
 
 //            Text(text = stringResource(R.string.author) +": ")
 
-            Text(text = Libgit2Helper.getFormattedUsernameAndEmail(commitDto.author, commitDto.email),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
+            ScrollableRow {
+                Text(text = Libgit2Helper.getFormattedUsernameAndEmail(commitDto.author, commitDto.email),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
 
-            )
+                )
+            }
         }
 
         //如果committer和author不同，显示
@@ -223,12 +225,14 @@ fun CommitItem(
 
 //                Text(text = stringResource(R.string.committer) +": ")
 
-                Text(text = Libgit2Helper.getFormattedUsernameAndEmail(commitDto.committerUsername, commitDto.committerEmail),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
+                ScrollableRow {
+                    Text(text = Libgit2Helper.getFormattedUsernameAndEmail(commitDto.committerUsername, commitDto.committerEmail),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
 
-                )
+                    )
+                }
             }
         }
 
@@ -244,12 +248,14 @@ fun CommitItem(
 
 //            Text(text = stringResource(R.string.date) +": ")
 
-            Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(commitDto.dateTime, commitDto.originTimeOffsetInMinutes) else commitDto.dateTime,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
+            ScrollableRow {
+                Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(commitDto.dateTime, commitDto.originTimeOffsetInMinutes) else commitDto.dateTime,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
 
-            )
+                )
+            }
         }
         Row (
             verticalAlignment = Alignment.CenterVertically,
@@ -282,12 +288,14 @@ fun CommitItem(
 
 //                Text(text = (if(commitDto.branchShortNameList.size > 1) stringResource(R.string.branches) else stringResource(R.string.branch)) +": ")
 
-                Text(text = commitDto.cachedBranchShortNameList(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
+                ScrollableRow {
+                    Text(text = commitDto.cachedBranchShortNameList(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
 
-                )
+                    )
+                }
             }
 
         }
@@ -305,12 +313,14 @@ fun CommitItem(
 
 //                Text(text = (if(commitDto.tagShortNameList.size > 1) stringResource(R.string.tags) else stringResource(R.string.tag)) +": ")
 
-                Text(text = commitDto.cachedTagShortNameList(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
+                ScrollableRow {
+                    Text(text = commitDto.cachedTagShortNameList(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
 
-                )
+                    )
+                }
             }
 
         }
@@ -328,12 +338,14 @@ fun CommitItem(
 
 //                Text(text = (if(commitDto.parentShortOidStrList.size > 1) stringResource(R.string.parents) else stringResource(R.string.parent)) +": ")
 
-                Text(text = commitDto.cachedParentShortOidStrList(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
+                ScrollableRow {
+                    Text(text = commitDto.cachedParentShortOidStrList(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
 
-                )
+                    )
+                }
             }
 
         }
@@ -350,11 +362,13 @@ fun CommitItem(
 
 //                Text(text = stringResource(R.string.other)+": ")
 
-                Text(text = commitDto.getOther(activityContext, false),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
-                )
+                ScrollableRow {
+                    Text(text = commitDto.getOther(activityContext, false),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
+                    )
+                }
             }
 
         }

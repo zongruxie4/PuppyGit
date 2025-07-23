@@ -104,12 +104,14 @@ fun TagItem(
 
 //            Text(text = stringResource(R.string.name) +": ")
 
-            Text(text = thisObj.shortName,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = defaultFontWeight
+            ScrollableRow {
+                Text(text = thisObj.shortName,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = defaultFontWeight
 
-            )
+                )
+            }
         }
 
         Row (
@@ -169,12 +171,14 @@ fun TagItem(
 
 //                Text(text = stringResource(R.string.tagger) +": ")
 
-                Text(text = thisObj.getFormattedTaggerNameAndEmail(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
+                ScrollableRow {
+                    Text(text = thisObj.getFormattedTaggerNameAndEmail(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
 
-                )
+                    )
+                }
             }
             Row (
                 verticalAlignment = Alignment.CenterVertically,
@@ -188,12 +192,15 @@ fun TagItem(
 
 //                Text(text = stringResource(R.string.date) +": ")
 
-                Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(thisObj.getFormattedDate(), thisObj.originTimeOffsetInMinutes) else thisObj.getFormattedDate(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = defaultFontWeight
+                ScrollableRow {
+                    Text(
+                        text = if (shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(thisObj.getFormattedDate(), thisObj.originTimeOffsetInMinutes) else thisObj.getFormattedDate(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = defaultFontWeight
 
-                )
+                    )
+                }
             }
             Row (
                 verticalAlignment = Alignment.CenterVertically,

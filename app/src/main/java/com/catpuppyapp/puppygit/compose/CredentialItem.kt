@@ -167,11 +167,13 @@ fun CredentialItem(
 
                 ){
                     Text(text = stringResource(R.string.desc) +": ")
-                    Text(text = if(isMatchByDomain) stringResource(R.string.credential_match_by_domain_note_short) else stringResource(R.string.no_credential_will_be_used),
-                        overflow = TextOverflow.Ellipsis,
-                        fontWeight = defaultFontWeight
+                    ScrollableRow {
+                        Text(text = if(isMatchByDomain) stringResource(R.string.credential_match_by_domain_note_short) else stringResource(R.string.no_credential_will_be_used),
+                            overflow = TextOverflow.Ellipsis,
+                            fontWeight = defaultFontWeight
 
-                    )
+                        )
+                    }
                 }
             }
 
