@@ -39,15 +39,21 @@ fun PasswordTextFiled(
     placeholder:String = "",
     singleLine:Boolean = true,
     focusRequest:FocusRequester? = null,
-    errMsg:MutableState<String>,
+    errMsg:MutableState<String>? = null,
     enabled:Boolean = true,
     paddingValues:PaddingValues = PaddingValues(10.dp),
     keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 
+    canSwitchPasswordVisible: Boolean = true,
+
     // press keyboard enter callback
     enterPressedCallback: (()->Unit)? = null,
 ) {
+
+    val getErrMsg = { errMsg?.value ?: "" }
+    val hasErr = { getErrMsg().isNotEmpty() }
+
     TextField(
         enabled = enabled,
         modifier = Modifier
@@ -80,19 +86,19 @@ fun PasswordTextFiled(
         value = password.value,
         onValueChange = {
             password.value = it
-            errMsg.value = ""
+            errMsg?.value = ""
         },
         label = { Text(label) },
         placeholder = { Text(placeholder) },
 
 
-        isError = errMsg.value.isNotEmpty(),
+        isError = hasErr(),
         supportingText = {
-            if(errMsg.value.isNotEmpty()) {
-                //错误信息拷贝不了，不用加选择拷贝容器，一点错误信息就聚焦到输入框了
+            if(hasErr()) {
+                //错误信息拷贝不了，不用加选择拷贝容器，如果click错误信息，会触发聚焦输入框
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = errMsg.value,
+                    text = getErrMsg(),
                     color = MaterialTheme.colorScheme.error
                 )
             }
@@ -101,12 +107,14 @@ fun PasswordTextFiled(
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
         trailingIcon = {
-            IconButton(onClick = { passwordVisible.value = !passwordVisible.value }) {
-                // contentDescription is for accessibility
-                Icon(
-                    imageVector = if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                    contentDescription = if (passwordVisible.value) stringResource(R.string.an_opened_eye) else stringResource(R.string.a_closed_eye)
-                )
+            if(canSwitchPasswordVisible) {
+                IconButton(onClick = { passwordVisible.value = !passwordVisible.value }) {
+                    // contentDescription is for accessibility
+                    Icon(
+                        imageVector = if (passwordVisible.value) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = if (passwordVisible.value) "password visible now" else "password invisible now"
+                    )
+                }
             }
         }
 
