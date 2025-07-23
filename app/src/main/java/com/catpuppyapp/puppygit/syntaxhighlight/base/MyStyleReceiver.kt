@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.syntaxhighlight
+package com.catpuppyapp.puppygit.syntaxhighlight.base
 
 import com.catpuppyapp.puppygit.utils.MyLog
 import io.github.rosemoe.sora.lang.analysis.AnalyzeManager

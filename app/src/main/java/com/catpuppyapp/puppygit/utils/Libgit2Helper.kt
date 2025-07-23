@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import com.catpuppyapp.puppygit.syntaxhighlight.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity

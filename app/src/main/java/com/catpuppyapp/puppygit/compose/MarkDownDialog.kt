@@ -15,7 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import com.catpuppyapp.puppygit.syntaxhighlight.PLFont
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.syntaxhighlight.markdown.MarkDownSyntaxHighlighter
 
@@ -27,13 +27,11 @@ fun MarkDownDialog(
     close: () -> Unit,
     copy: () -> Unit,
 ) {
-    val switchBetweenRawAndRenderedContent = {
-        previewModeOn.value = !previewModeOn.value
-    }
     val highlightedMarkdownText = remember { mutableStateOf<AnnotatedString?>(null) }
-
     val annotatedText = remember { AnnotatedString(text) }
 
+
+    val switchBetweenRawAndRenderedContent = { previewModeOn.value = !previewModeOn.value }
     val rawOrHighlightedText = { highlightedMarkdownText.value ?:  annotatedText}
 
     ConfirmDialog3(
@@ -47,14 +45,16 @@ fun MarkDownDialog(
                         content = text,
                         style = LocalTextStyle.current.copy(fontFamily = PLFont.codeFont),
 
-                        // false to let default link handler take it
+                        // return false to let default link handler take it
                         onLinkClicked = { false },
                     )
                 }else {
-                    Text(
-                        text = rawOrHighlightedText(),
-                        fontFamily = PLFont.codeFont
-                    )
+                    MySelectionContainer {
+                        Text(
+                            text = rawOrHighlightedText(),
+                            fontFamily = PLFont.codeFont
+                        )
+                    }
                 }
             }
         },
@@ -97,9 +97,10 @@ fun MarkDownDialog(
 
     LaunchedEffect(previewModeOn.value) {
         if(!previewModeOn.value && highlightedMarkdownText.value == null) {
+            // will do a one time analyze, then deliver styles and release highlighter
             MarkDownSyntaxHighlighter(text) {
                 highlightedMarkdownText.value = it
-            }
+            }.analyze()
         }
     }
 }

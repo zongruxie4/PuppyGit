@@ -15,7 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.catpuppyapp.puppygit.syntaxhighlight.TextMateUtil
+import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.AppContainer

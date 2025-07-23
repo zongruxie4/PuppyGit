@@ -3,14 +3,11 @@ package com.catpuppyapp.puppygit.syntaxhighlight.markdown
 import android.content.Context
 import android.os.Bundle
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import com.catpuppyapp.puppygit.syntaxhighlight.MarkDownStyleReceiver
-import com.catpuppyapp.puppygit.syntaxhighlight.PLScope
-import com.catpuppyapp.puppygit.syntaxhighlight.TextMateUtil
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLTheme
+import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
-import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
 import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.ContentReference
@@ -22,7 +19,7 @@ private const val TAG = "MarkDownSyntaxHighlighter"
 
 class MarkDownSyntaxHighlighter(
     val text: String,
-    val onFinished: (AnnotatedString) -> Unit,
+    val onReceive: (AnnotatedString) -> Unit,
 ) {
     val appContext: Context = AppModel.realAppContext
     val analyzeLock = ReentrantLock()
@@ -31,9 +28,9 @@ class MarkDownSyntaxHighlighter(
 
     val lines = text.lines()
 
-    fun analyze(scope: PLScope) {
+    fun analyze() {
         analyzeLock.withLock {
-            doAnalyzeNoLock(scope)
+            doAnalyzeNoLock()
         }
     }
 
@@ -41,12 +38,14 @@ class MarkDownSyntaxHighlighter(
         TextMateUtil.cleanLanguage(myLang)
     }
 
-    private fun doAnalyzeNoLock(scope: PLScope) {
+    private fun doAnalyzeNoLock() {
         // if no bug, should not trigger full syntax analyze a lot
         MyLog.w(TAG, "will run full syntax highlighting analyze(at MarkDownSyntaxHighlighter)")
 
 
         release()
+
+        PLTheme.updateThemeByAppTheme()
 
         // run new analyze
         val autoComplete = false

@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.play.pro.findActivity
+import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.pref.PrefMan
 import com.catpuppyapp.puppygit.utils.pref.PrefUtil
@@ -70,6 +71,7 @@ object Theme {
 
     fun updateThemeValue(context: Context, newValue:Int) {
         val themeValue = getALegalThemeValue(newValue)
+        // `Theme.inDarkTheme` will update after state changed, so need not update it at here
         theme.value = themeValue
         PrefMan.set(context, PrefMan.Key.theme, ""+themeValue)
     }
@@ -165,6 +167,12 @@ fun PuppyGitAndroidTheme(
             LightColorScheme
         }
     }
+
+    // update text mate theme to avoid forget set it before syntax highlight analyze,
+    //   then set theme before analyze or not, will all be fine
+    TextMateUtil.updateTheme(Theme.inDarkTheme)
+
+    // actually idk code at below for what purpose, it is bundled when I created the project
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {

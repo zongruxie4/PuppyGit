@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.syntaxhighlight
+package com.catpuppyapp.puppygit.syntaxhighlight.hunk
 
 import android.content.Context
 import android.os.Bundle
@@ -6,6 +6,8 @@ import androidx.annotation.WorkerThread
 import androidx.compose.ui.text.SpanStyle
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.msg.OneTimeToast
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter

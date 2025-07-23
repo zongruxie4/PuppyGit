@@ -1,8 +1,9 @@
-package com.catpuppyapp.puppygit.syntaxhighlight
+package com.catpuppyapp.puppygit.syntaxhighlight.markdown
 
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
-import com.catpuppyapp.puppygit.syntaxhighlight.markdown.MarkDownSyntaxHighlighter
+import com.catpuppyapp.puppygit.syntaxhighlight.base.MyStyleReceiver
+import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import io.github.rosemoe.sora.lang.styling.Styles
 
@@ -37,7 +38,7 @@ class MarkDownStyleReceiver(
 
         highlighter.release()
 
-        highlighter.onFinished(result)
+        highlighter.onReceive(result)
     }
 
 }

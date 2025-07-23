@@ -1,18 +1,21 @@
-package com.catpuppyapp.puppygit.syntaxhighlight
+package com.catpuppyapp.puppygit.syntaxhighlight.codeeditor
 
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
-import com.catpuppyapp.puppygit.syntaxhighlight.PLScope.AUTO
-import com.catpuppyapp.puppygit.syntaxhighlight.PLScope.NONE
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope.AUTO
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope.NONE
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLTheme
+import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
@@ -98,13 +101,13 @@ class MyCodeEditor(
 
 
     init {
-        undoStack?.value?.codeEditor = this
+        undoStack.value.codeEditor = this
 
 
         // for clear when Activity destroy
 //        AppModel.editorCache.add(this)
 
-        analyze()
+//        analyze()
     }
 
 

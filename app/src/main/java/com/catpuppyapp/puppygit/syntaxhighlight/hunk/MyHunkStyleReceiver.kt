@@ -1,5 +1,6 @@
-package com.catpuppyapp.puppygit.syntaxhighlight
+package com.catpuppyapp.puppygit.syntaxhighlight.hunk
 
+import com.catpuppyapp.puppygit.syntaxhighlight.base.MyStyleReceiver
 import io.github.rosemoe.sora.lang.styling.Styles
 
 private const val TAG = "MyHunkStyleReceiver"

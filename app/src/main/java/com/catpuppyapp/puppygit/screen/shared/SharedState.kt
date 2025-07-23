@@ -1,7 +1,7 @@
 package com.catpuppyapp.puppygit.screen.shared
 
 import androidx.compose.runtime.mutableStateOf
-import com.catpuppyapp.puppygit.syntaxhighlight.MyCodeEditor
+import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver

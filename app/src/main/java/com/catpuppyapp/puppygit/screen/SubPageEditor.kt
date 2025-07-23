@@ -21,8 +21,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
-import com.catpuppyapp.puppygit.syntaxhighlight.MyCodeEditor
-import com.catpuppyapp.puppygit.syntaxhighlight.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.SmallFab

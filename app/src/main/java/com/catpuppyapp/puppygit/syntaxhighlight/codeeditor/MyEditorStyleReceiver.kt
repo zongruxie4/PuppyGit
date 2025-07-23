@@ -1,7 +1,9 @@
-package com.catpuppyapp.puppygit.syntaxhighlight
+package com.catpuppyapp.puppygit.syntaxhighlight.codeeditor
 
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.FieldsId
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.syntaxhighlight.base.MyStyleReceiver
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading

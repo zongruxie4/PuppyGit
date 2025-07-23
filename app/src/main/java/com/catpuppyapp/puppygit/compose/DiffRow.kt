@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.catpuppyapp.puppygit.syntaxhighlight.PLFont
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.git.CompareLinePair

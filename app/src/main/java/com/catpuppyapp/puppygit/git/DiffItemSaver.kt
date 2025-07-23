@@ -4,10 +4,10 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
-import com.catpuppyapp.puppygit.syntaxhighlight.HunkSyntaxHighlighter
-import com.catpuppyapp.puppygit.syntaxhighlight.LineStylePart
-import com.catpuppyapp.puppygit.syntaxhighlight.PLScope
-import com.catpuppyapp.puppygit.syntaxhighlight.PLTheme
+import com.catpuppyapp.puppygit.syntaxhighlight.hunk.HunkSyntaxHighlighter
+import com.catpuppyapp.puppygit.syntaxhighlight.hunk.LineStylePart
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLTheme
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dto.Box

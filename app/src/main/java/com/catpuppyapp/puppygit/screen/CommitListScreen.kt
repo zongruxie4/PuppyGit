@@ -1344,6 +1344,7 @@ fun CommitListScreen(
             },
             copy = {
                 clipboardManager.setText(AnnotatedString(textOfItemMsgDialog.value))
+                Msg.requireShow(activityContext.getString(R.string.copied))
             }
         )
     }

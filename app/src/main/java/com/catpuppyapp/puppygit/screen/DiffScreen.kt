@@ -64,8 +64,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import com.catpuppyapp.puppygit.syntaxhighlight.PLFont
-import com.catpuppyapp.puppygit.syntaxhighlight.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.compose.BarContainer
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialogAndDisableSelection

@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.syntaxhighlight
+package com.catpuppyapp.puppygit.syntaxhighlight.base
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
@@ -50,6 +50,13 @@ object TextMateUtil {
             inited = false
             MyLog.e(TAG, "$TAG#doInit err: ${e.stackTraceToString()}")
         }
+    }
+
+    // will call this method after app theme changed,
+    //   so if we forget apply theme before analyzing,
+    //   it still will use the right color theme
+    fun updateTheme(inDarkTheme:Boolean) {
+        PLTheme.setTheme(inDarkTheme)
     }
 
 
@@ -135,7 +142,7 @@ object TextMateUtil {
 //                }
             start = endExclusive
             val style = curSpan.style
-            val foregroundColor = Color(RendererUtils.getForegroundColor(curSpan, TextMateUtil.colorScheme))
+            val foregroundColor = Color(RendererUtils.getForegroundColor(curSpan, colorScheme))
 //                println("forecolor = ${RendererUtils.getForegroundColor(curSpan, colorScheme)}")
 
             // disable for avoid bg color conflicts when editor's merge mode on

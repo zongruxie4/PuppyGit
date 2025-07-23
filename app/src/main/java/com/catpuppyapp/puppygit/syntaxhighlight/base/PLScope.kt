@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.syntaxhighlight
+package com.catpuppyapp.puppygit.syntaxhighlight.base
 
 //PL is "Program Language"
 
@@ -64,8 +64,8 @@ enum class PLScope(val scope: String) {
 
     companion object {
 
-        val SCOPES = PLScope.entries.map { it.scope }
-        val SCOPES_NO_AUTO = PLScope.entries.filter { it != AUTO }
+        val SCOPES = entries.map { it.scope }
+        val SCOPES_NO_AUTO = entries.filter { it != AUTO }
 
         fun guessScopeType(fileName: String) : PLScope {
             val fileName = fileName.lowercase()
