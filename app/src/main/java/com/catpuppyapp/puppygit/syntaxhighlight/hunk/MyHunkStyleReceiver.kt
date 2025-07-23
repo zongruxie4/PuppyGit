@@ -1,10 +1,10 @@
-package com.catpuppyapp.puppygit.codeeditor
+package com.catpuppyapp.puppygit.syntaxhighlight
 
 import io.github.rosemoe.sora.lang.styling.Styles
 
-private const val TAG = "MyHunkStyleDelegate"
+private const val TAG = "MyHunkStyleReceiver"
 
-class MyHunkStyleDelegate(
+class MyHunkStyleReceiver(
     val highlighter: HunkSyntaxHighlighter,
 ) : MyStyleReceiver(TAG, highlighter.myLang?.analyzeManager) {
 

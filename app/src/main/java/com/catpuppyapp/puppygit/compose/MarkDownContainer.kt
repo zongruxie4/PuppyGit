@@ -1,12 +1,14 @@
 package com.catpuppyapp.puppygit.compose
 
 import android.text.util.Linkify
+import androidx.annotation.FontRes
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -15,11 +17,11 @@ import dev.jeziellago.compose.markdowntext.MarkdownText
 
 @Composable
 fun MarkDownContainer(
-    modifier:Modifier = Modifier,
     content:String,
-    basePathNoEndSlash:String,
-    fontSize:Int,
-    fontColor:Color,
+    modifier:Modifier = Modifier,
+    basePathNoEndSlash:String = "",
+    style: TextStyle = LocalTextStyle.current,
+    @FontRes fontResource: Int? = null,
     onLinkClicked: (String) -> Boolean = {false},
 ) {
     val activityContext = LocalContext.current
@@ -28,10 +30,11 @@ fun MarkDownContainer(
     MarkdownText(
         modifier = modifier,
         markdown = content,
+        fontResource = fontResource,
         linkifyMask = Linkify.EMAIL_ADDRESSES or Linkify.WEB_URLS,
         onLinkClicked = onLinkClicked,
         linkColor = MyStyleKt.ClickableText.getColor(),
-        style = LocalTextStyle.current.copy(fontSize = fontSize.sp, color = fontColor),
+        style = style,
         isTextSelectable = true,
         syntaxHighlightColor = if(inDarkTheme) MaterialTheme.colorScheme.surfaceBright else MaterialTheme.colorScheme.surfaceDim,
         coilStore = MdUtil.getCoilStore(context = activityContext, basePathNoEndSlash = basePathNoEndSlash)

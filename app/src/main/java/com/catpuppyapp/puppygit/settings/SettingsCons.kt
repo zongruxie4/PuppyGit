@@ -28,5 +28,6 @@ object SettingsCons {
         "makefile",
         "*.xsl",
         "*.zig",
+        "vagrantfile"
     )
 }

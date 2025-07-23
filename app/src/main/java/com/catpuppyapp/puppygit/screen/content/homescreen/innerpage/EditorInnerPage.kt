@@ -44,8 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
-import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.codeeditor.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.MyCodeEditor
+import com.catpuppyapp.puppygit.syntaxhighlight.PLScope
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2

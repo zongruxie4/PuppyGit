@@ -1,12 +1,12 @@
-package com.catpuppyapp.puppygit.codeeditor
+package com.catpuppyapp.puppygit.syntaxhighlight
 
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
-import com.catpuppyapp.puppygit.codeeditor.PLScope.AUTO
-import com.catpuppyapp.puppygit.codeeditor.PLScope.NONE
+import com.catpuppyapp.puppygit.syntaxhighlight.PLScope.AUTO
+import com.catpuppyapp.puppygit.syntaxhighlight.PLScope.NONE
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
@@ -93,7 +93,7 @@ class MyCodeEditor(
 
     val textEditorStateOnChangeLock = Mutex()
 
-    private fun genNewStyleDelegate(editorState: TextEditorState?) = MyEditorStyleDelegate(this, Theme.inDarkTheme, stylesMap, editorState, languageScope)
+    private fun genNewStyleDelegate(editorState: TextEditorState?) = MyEditorStyleReceiver(this, Theme.inDarkTheme, stylesMap, editorState, languageScope)
 
 
 

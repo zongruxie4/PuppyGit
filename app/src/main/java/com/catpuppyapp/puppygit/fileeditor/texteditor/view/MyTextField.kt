@@ -36,7 +36,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.catpuppyapp.puppygit.codeeditor.PLFont
+import com.catpuppyapp.puppygit.syntaxhighlight.PLFont
 import com.catpuppyapp.puppygit.compose.DisableSoftKeyboard
 import com.catpuppyapp.puppygit.dev.bug_Editor_WrongUpdateEditColumnIdx_Fixed
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState

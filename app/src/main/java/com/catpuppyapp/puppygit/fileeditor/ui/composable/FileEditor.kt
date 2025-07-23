@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -69,8 +70,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
-import com.catpuppyapp.puppygit.codeeditor.PLFont
-import com.catpuppyapp.puppygit.codeeditor.PLTheme
+import com.catpuppyapp.puppygit.syntaxhighlight.PLFont
+import com.catpuppyapp.puppygit.syntaxhighlight.PLTheme
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.MarkDownContainer
@@ -539,11 +540,11 @@ fun FileEditor(
                         Spacer(Modifier.addTopPaddingIfIsFirstLine(0))
 
                         MarkDownContainer(
-                            modifier = Modifier.padding(horizontal = 10.dp),
                             content = mdText.value,
+                            modifier = Modifier.padding(horizontal = 10.dp),
                             basePathNoEndSlash = basePath.value,
-                            fontSize = fontSize.intValue, //和编辑器字体大小保持一致
-                            fontColor = fontColor,
+                            fontResource = if(SettingsUtil.isEditorUseSystemFonts()) null else PLFont.codeFontResId,
+                            style = LocalTextStyle.current.copy(fontSize = fontSize.intValue.sp, color = fontColor),
                             onLinkClicked = { link ->
                                 previewLinkHandler(link)
                             }

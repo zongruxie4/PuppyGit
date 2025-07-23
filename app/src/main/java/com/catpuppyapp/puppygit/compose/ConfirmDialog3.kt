@@ -33,9 +33,9 @@ fun ConfirmDialog3(
     showCancel:Boolean = true,
     customOk:(@Composable ()->Unit)? = null,
     customCancel:(@Composable ()->Unit)? = null,
-    onCancel: () -> Unit,
+    onCancel: () -> Unit = {},
     onDismiss: ()->Unit = onCancel,  //点击非弹窗区域时执行的操作，若不指定则和onCancel行为一致
-    onOk: () -> Unit,
+    onOk: () -> Unit = {},
 ) {
     AlertDialog(
         modifier = modifier,

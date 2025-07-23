@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
-import com.catpuppyapp.puppygit.codeeditor.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.PLScope
 import com.catpuppyapp.puppygit.utils.UIHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

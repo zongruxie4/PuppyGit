@@ -128,6 +128,8 @@ data class AppSettings(
      */
     var commitMsgTemplate:String = "",
 
+    var commitMsgPreviewModeOn:Boolean = true,
+
 ) {
 
     override fun equals(other: Any?): Boolean {

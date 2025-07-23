@@ -50,8 +50,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
-import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.codeeditor.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.MyCodeEditor
+import com.catpuppyapp.puppygit.syntaxhighlight.PLScope
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab

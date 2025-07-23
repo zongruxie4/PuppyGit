@@ -1,14 +1,13 @@
 package com.catpuppyapp.puppygit.git
 
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
-import com.catpuppyapp.puppygit.codeeditor.HunkSyntaxHighlighter
-import com.catpuppyapp.puppygit.codeeditor.LineStylePart
-import com.catpuppyapp.puppygit.codeeditor.PLScope
-import com.catpuppyapp.puppygit.codeeditor.PLTheme
+import com.catpuppyapp.puppygit.syntaxhighlight.HunkSyntaxHighlighter
+import com.catpuppyapp.puppygit.syntaxhighlight.LineStylePart
+import com.catpuppyapp.puppygit.syntaxhighlight.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.PLTheme
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dto.Box

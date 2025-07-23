@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.codeeditor
+package com.catpuppyapp.puppygit.syntaxhighlight
 
 import android.content.Context
 import android.os.Bundle
@@ -77,7 +77,7 @@ class HunkSyntaxHighlighter(
 
         try {
             //闭包的receiver和给函数传参的是同一个实例
-            TextMateUtil.setReceiverThenDoAct(lang, MyHunkStyleDelegate(this)) { receiver ->
+            TextMateUtil.setReceiverThenDoAct(lang, MyHunkStyleReceiver(this)) { receiver ->
                 lang.analyzeManager.reset(ContentReference(Content(text)), Bundle(), receiver)
             }
         }catch (e: Exception) {

@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.codeeditor
+package com.catpuppyapp.puppygit.syntaxhighlight
 
 import androidx.compose.ui.graphics.Color
 import com.catpuppyapp.puppygit.ui.theme.Theme

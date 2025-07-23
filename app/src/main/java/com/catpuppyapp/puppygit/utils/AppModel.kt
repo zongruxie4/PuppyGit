@@ -15,8 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.codeeditor.TextMateUtil
+import com.catpuppyapp.puppygit.syntaxhighlight.TextMateUtil
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.AppContainer
@@ -49,7 +48,6 @@ import com.catpuppyapp.puppygit.utils.time.TimeZoneMode
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import com.github.git24j.core.Libgit2
 import io.ktor.util.collections.ConcurrentMap
-import io.ktor.util.collections.ConcurrentSet
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.time.ZoneOffset

@@ -1,6 +1,6 @@
 package com.catpuppyapp.puppygit.dto
 
-import com.catpuppyapp.puppygit.codeeditor.MyCodeEditor
+import com.catpuppyapp.puppygit.syntaxhighlight.MyCodeEditor
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.getSecFromTime

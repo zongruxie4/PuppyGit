@@ -1,7 +1,4 @@
-package com.catpuppyapp.puppygit.codeeditor
-
-import androidx.compose.runtime.MutableState
-import com.catpuppyapp.puppygit.settings.SettingsUtil
+package com.catpuppyapp.puppygit.syntaxhighlight
 
 //PL is "Program Language"
 
@@ -225,7 +222,11 @@ enum class PLScope(val scope: String) {
                 return VB
             }
 
-            if(fileName.endsWith(".rb") || fileName.endsWith(".ruby")) {
+            if(fileName.endsWith(".rb") || fileName.endsWith(".ruby")
+
+                // Vagrantfile is ruby based
+                || fileName == "vagrantfile" || fileName.endsWith(".vagrantfile")
+            ) {
                 return RUBY
             }
 

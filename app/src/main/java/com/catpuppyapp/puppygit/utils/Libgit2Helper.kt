@@ -2,10 +2,9 @@ package com.catpuppyapp.puppygit.utils
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import com.catpuppyapp.puppygit.codeeditor.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.PLScope
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
@@ -45,7 +44,6 @@ import com.catpuppyapp.puppygit.jni.LibgitTwo
 import com.catpuppyapp.puppygit.jni.SaveBlobRet
 import com.catpuppyapp.puppygit.jni.SaveBlobRetCode
 import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
-import com.catpuppyapp.puppygit.msg.OneTimeToast
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
 import com.catpuppyapp.puppygit.settings.AppSettings

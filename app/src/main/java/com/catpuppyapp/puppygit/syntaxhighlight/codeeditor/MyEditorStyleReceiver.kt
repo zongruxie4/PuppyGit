@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.codeeditor
+package com.catpuppyapp.puppygit.syntaxhighlight
 
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.FieldsId
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
@@ -7,9 +7,9 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import io.github.rosemoe.sora.lang.styling.Styles
 
-private const val TAG = "MyEditorStyleDelegate"
+private const val TAG = "MyEditorStyleReceiver"
 
-class MyEditorStyleDelegate(
+class MyEditorStyleReceiver(
     val codeEditor: MyCodeEditor,
     val inDarkTheme: Boolean,
     val stylesMap: MutableMap<String, StylesResult>,

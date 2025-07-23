@@ -15,7 +15,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
-import com.catpuppyapp.puppygit.codeeditor.IndentChar
+import com.catpuppyapp.puppygit.syntaxhighlight.base.IndentChar
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
