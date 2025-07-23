@@ -22,7 +22,7 @@
 			"scope": "comment",
 			"settings": {
 				"fontStyle": "italic",
-				"foreground": "#717a7a"
+				"foreground": "#5a6262"
 			}
 		},
 		{
@@ -161,14 +161,14 @@
 			"name": "Tag start/end",
 			"scope": "punctuation.definition.tag",
 			"settings": {
-				"foreground": "#717a7a"
+				"foreground": "#5a6262"
 			}
 		},
 		{
 			"name": "Tag attribute",
 			"scope": "entity.other.attribute-name",
 			"settings": {
-				"foreground": "#717a7a"
+				"foreground": "#5a6262"
 			}
 		},
 		{
@@ -406,7 +406,7 @@
 		"terminal.ansiBrightYellow": "#49595f",
 		"terminal.ansiBrightBlue": "#839496",
 		"terminal.ansiBrightMagenta": "#4d519c",
-		"terminal.ansiBrightCyan": "#717a7a",
+		"terminal.ansiBrightCyan": "#5a6262",
 		"terminal.ansiBrightWhite": "#fdf6e3",
 		"terminal.background": "#FDF6E3",
 		"walkThrough.embeddedEditorBackground": "#00000014",

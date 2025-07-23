@@ -20,7 +20,7 @@
       "scope": "comment",
       "settings": {
         "fontStyle": "italic",
-        "foreground": "#66797f"
+        "foreground": "#707f84"
       }
     },
     {
@@ -159,7 +159,7 @@
       "name": "Tag start/end",
       "scope": "punctuation.definition.tag",
       "settings": {
-        "foreground": "#66797f"
+        "foreground": "#707f84"
       }
     },
     {
@@ -410,7 +410,7 @@
     "terminal.ansiWhite": "#eee8d5",
     "terminal.ansiBrightBlack": "#002b36",
     "terminal.ansiBrightRed": "#d49074",
-    "terminal.ansiBrightGreen": "#66797f",
+    "terminal.ansiBrightGreen": "#707f84",
     "terminal.ansiBrightYellow": "#657b83",
     "terminal.ansiBrightBlue": "#839496",
     "terminal.ansiBrightMagenta": "#8084c8",
