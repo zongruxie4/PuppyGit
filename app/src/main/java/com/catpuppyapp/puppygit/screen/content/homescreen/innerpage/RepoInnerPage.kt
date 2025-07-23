@@ -30,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -90,6 +91,7 @@ import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.functions.goToErrScreen
 import com.catpuppyapp.puppygit.screen.functions.goToStashPage
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.screen.shared.SharedState
@@ -1832,6 +1834,72 @@ fun RepoInnerPage(
     // bottom bar block end
 
 
+
+
+    val repoIdForErrMsgDialog = rememberSaveable { mutableStateOf("") }
+    val errMsgDialogText = rememberSaveable { mutableStateOf("") }
+    val showErrMsgDialog = rememberSaveable { mutableStateOf(false) }
+    if(showErrMsgDialog.value) {
+        val closeDialog = { showErrMsgDialog.value = false }
+
+        CopyableDialog2(
+            title = stringResource(R.string.error_msg),
+            text = errMsgDialogText.value,
+            // use to dismiss dialog
+            onCancel = closeDialog,
+
+            cancelCompose = {
+                Row {
+                    TextButton(
+                        onClick = {
+                            closeDialog()
+                            goToErrScreen(repoIdForErrMsgDialog.value)
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.all),
+                        )
+                    }
+
+                    TextButton(
+                        onClick = closeDialog
+                    ) {
+                        Text(
+                            text = stringResource(R.string.close),
+                        )
+                    }
+                }
+            }
+        ) { //复制到剪贴板
+            showErrMsgDialog.value=false
+
+            clipboardManager.setText(AnnotatedString(errMsgDialogText.value))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+        }
+    }
+
+    val initErrMsgDialog = { repoEntity: RepoEntity, errMsg:String ->
+        val repoId = repoEntity.id
+
+        //设置状态变量
+        repoIdForErrMsgDialog.value = repoId
+        errMsgDialogText.value = errMsg
+
+        //显示弹窗
+        showErrMsgDialog.value = true
+
+        //清掉数据库仓库条目的错误信息
+        doJobThenOffLoading {
+            AppModel.dbContainer.repoRepository.updateErrFieldsById(repoId, Cons.dbCommonFalse, "")
+
+            //这里就不刷新仓库了，暂时仍显示错误信息，除非手动刷新页面，这么设计是为了缓解用户偶然点开错误没看完就关了，再想点开发现错误信息已被清的问题
+        }
+
+        Unit
+    }
+
+
+
     val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
 
 
@@ -2018,8 +2086,9 @@ fun RepoInnerPage(
                                 Msg.requireShow(activityContext.getString(R.string.copied))
                             },
                             doCloneSingle = doCloneSingle,
+                            initErrMsgDialog = initErrMsgDialog,
 
-                            ) workStatusOnclick@{ clickedRepo, status ->  //这个是点击status的callback，这个status其实可以不传，因为这里的lambda能捕获到数组的元素，就是当前仓库
+                        ) workStatusOnclick@{ clickedRepo, status ->  //这个是点击status的callback，这个status其实可以不传，因为这里的lambda能捕获到数组的元素，就是当前仓库
 
                             //把点击状态的仓库存下来
                             statusClickedRepo.value = clickedRepo  //其实这个clickedRepo直接用这里element替代也可，但用回调里参数感觉更合理

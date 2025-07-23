@@ -97,6 +97,7 @@ fun RepoCard(
     copyErrMsg: (String) -> Unit,
     requireDelRepo:(RepoEntity)->Unit,
     doCloneSingle:(RepoEntity)->Unit,
+    initErrMsgDialog:(RepoEntity, errMsg: String)->Unit,
     workStatusOnclick:(clickedRepo:RepoEntity, status:Int)->Unit
 ) {
     val navController = AppModel.navController
@@ -119,59 +120,6 @@ fun RepoCard(
     val defaultFontWeight = remember { MyStyleKt.TextItem.defaultFontWeight() }
 
     val clipboardManager = LocalClipboardManager.current
-    val errMsgDialogText = rememberSaveable { mutableStateOf("") }
-    val showErrMsgDialog = rememberSaveable { mutableStateOf(false) }
-    if(showErrMsgDialog.value) {
-        val closeDialog = { showErrMsgDialog.value = false }
-
-        CopyableDialog2(
-            title = stringResource(R.string.error_msg),
-            text = errMsgDialogText.value,
-            // use to dismiss dialog
-            onCancel = closeDialog,
-
-            cancelCompose = {
-                Row {
-                    TextButton(
-                        onClick = {
-                            closeDialog()
-                            goToErrScreen(repoDto.id)
-                        }
-                    ) {
-                        Text(
-                            text = stringResource(R.string.all),
-                        )
-                    }
-
-                    TextButton(
-                        onClick = closeDialog
-                    ) {
-                        Text(
-                            text = stringResource(R.string.close),
-                        )
-                    }
-                }
-            }
-        ) { //复制到剪贴板
-            showErrMsgDialog.value=false
-
-            clipboardManager.setText(AnnotatedString(errMsgDialogText.value))
-            Msg.requireShow(activityContext.getString(R.string.copied))
-        }
-    }
-
-    val initErrMsgDialog = { repoId:String, errMsg:String ->
-        //显示弹窗
-        errMsgDialogText.value = errMsg
-        showErrMsgDialog.value = true
-
-        doJobThenOffLoading {
-            //清掉错误信息
-            AppModel.dbContainer.repoRepository.updateErrFieldsById(repoId, Cons.dbCommonFalse, "")
-
-            //这里就不刷新仓库了，暂时仍显示错误信息，除非手动刷新页面，这么设计是为了缓解用户偶然点开错误没看完就关了，再想点开发现错误信息已被清的问题
-        }
-    }
 
     val setCurRepo = {
         //设置当前仓库（如果不将repo先设置为无效值，可能会导致页面获取旧值，显示过时信息）
@@ -180,7 +128,8 @@ fun RepoCard(
 
         curRepoIndex.intValue = repoDtoIndex
     }
-    val lineHeight = 30.dp
+
+//    val lineHeight = 30.dp
 
     Column (
 //        modifier = Modifier.fillMaxWidth(),
@@ -491,7 +440,7 @@ fun RepoCard(
                                             .append(repoDto.latestUncheckedErrMsg)
                                             .toString()
 
-                                        initErrMsgDialog(repoDto.id, errMsg)
+                                        initErrMsgDialog(repoDto, errMsg)
                                     }else {
                                         goToErrScreen(repoDto.id)
                                     }
@@ -704,38 +653,41 @@ private fun RepoTitle(
     }
 }
 
-@Preview
-@Composable
-private fun Preview() {
-    val repo = mutableCustomStateOf("test", "test", RepoEntity(
-        id="abc", repoName = "test", branch = "main", upstreamBranch = "origin/main", lastCommitHash = "a312345",
-    ).apply {
-        gitRepoState = Repository.StateT.NONE
-        fullSavePath = "test/workdir"
-        workStatus = Cons.dbRepoWorkStatusUpToDate
-    })
-    val context = LocalContext.current
-    AppModel.init_forPreview()
-    RepoCard(
-        itemWidth=392F,
-        requireFillMaxWidth=false,
-        showBottomSheet=remember {mutableStateOf(false)},
-        curRepo= repo,
-        curRepoIndex=remember { mutableIntStateOf(0) },
-        repoDto=repo.value,
-        repoDtoIndex=0,
-        itemSelected=false,
-        titleOnClick={},
-        goToFilesPage={},
-        //如果和curRepoIndex的值匹配则会高亮显示当前条目，用来跳转时实现闪烁一下目标条目的效果，但在preview时只会高亮，然后就不灭了，一直维持高亮状态。。。
-        requireBlinkIdx=remember { mutableIntStateOf(-1) },
-        pageRequest=remember { mutableStateOf("") },
-        isSelectionMode=false,
-        onClick={},
-        onLongClick={},
-        copyErrMsg={},
-        requireDelRepo={},
-        doCloneSingle={},
-        workStatusOnclick={p1,p2->},
-    )
-}
+
+
+//@Preview
+//@Composable
+//private fun Preview() {
+//    val repo = mutableCustomStateOf("test", "test", RepoEntity(
+//        id="abc", repoName = "test", branch = "main", upstreamBranch = "origin/main", lastCommitHash = "a312345",
+//    ).apply {
+//        gitRepoState = Repository.StateT.NONE
+//        fullSavePath = "test/workdir"
+//        workStatus = Cons.dbRepoWorkStatusUpToDate
+//    })
+//    val context = LocalContext.current
+//    AppModel.init_forPreview()
+//    RepoCard(
+//        itemWidth=392F,
+//        requireFillMaxWidth=false,
+//        showBottomSheet=remember {mutableStateOf(false)},
+//        curRepo= repo,
+//        curRepoIndex=remember { mutableIntStateOf(0) },
+//        repoDto=repo.value,
+//        repoDtoIndex=0,
+//        itemSelected=false,
+//        titleOnClick={},
+//        goToFilesPage={},
+//        //如果和curRepoIndex的值匹配则会高亮显示当前条目，用来跳转时实现闪烁一下目标条目的效果，但在preview时只会高亮，然后就不灭了，一直维持高亮状态。。。
+//        requireBlinkIdx=remember { mutableIntStateOf(-1) },
+//        pageRequest=remember { mutableStateOf("") },
+//        isSelectionMode=false,
+//        onClick={},
+//        onLongClick={},
+//        copyErrMsg={},
+//        requireDelRepo={},
+//        doCloneSingle={},
+//        initErrMsgDialog = {_, _ ->},
+//        workStatusOnclick={p1,p2->},
+//    )
+//}
