@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -20,7 +21,7 @@ import com.catpuppyapp.puppygit.syntaxhighlight.markdown.MarkDownSyntaxHighlight
 
 @Composable
 fun MarkDownDialog(
-    title: String,
+    title: String = stringResource(R.string.msg),
     text: String,
     previewModeOn: MutableState<Boolean>,
     close: () -> Unit,
@@ -44,7 +45,7 @@ fun MarkDownDialog(
                 if(previewModeOn.value) {
                     MarkDownContainer(
                         content = text,
-                        fontResource = PLFont.codeFontResId,
+                        style = LocalTextStyle.current.copy(fontFamily = PLFont.codeFont),
 
                         // false to let default link handler take it
                         onLinkClicked = { false },

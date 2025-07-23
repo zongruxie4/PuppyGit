@@ -83,6 +83,7 @@ import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadMore
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.MarkDownDialog
 import com.catpuppyapp.puppygit.compose.MultiLineClickableText
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
@@ -1319,6 +1320,34 @@ fun CommitListScreen(
         }
     }
 
+    val showItemMsgDialog = rememberSaveable { mutableStateOf(false) }
+    val textOfItemMsgDialog = rememberSaveable { mutableStateOf("") }
+    val previewModeOnOfItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgPreviewModeOn) }
+    val showItemMsg = { curCommit:CommitDto ->
+        textOfItemMsgDialog.value = curCommit.msg
+        showItemMsgDialog.value = true
+    }
+    if(showItemMsgDialog.value) {
+        MarkDownDialog(
+            text = textOfItemMsgDialog.value,
+            previewModeOn = previewModeOnOfItemMsgDialog,
+            close = {
+                showItemMsgDialog.value = false
+
+                // update settings if need
+                val previewModeOn = previewModeOnOfItemMsgDialog.value
+                if(previewModeOn != settings.commitMsgPreviewModeOn) {
+                    SettingsUtil.update {
+                        it.commitMsgPreviewModeOn = previewModeOn
+                    }
+                }
+            },
+            copy = {
+                clipboardManager.setText(AnnotatedString(textOfItemMsgDialog.value))
+            }
+        )
+    }
+
     val showItemDetails = { curCommit:CommitDto ->
         // onClick()
 //                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
@@ -2146,6 +2175,10 @@ fun CommitListScreen(
                         }
 
 
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.msg)){
+                            showItemMsg(curCommit.value)
+                        }
+
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)){
                             showItemDetails(curCommit.value)
                         }
@@ -2383,11 +2416,11 @@ fun CommitListScreen(
                             requireBlinkIdx = requireBlinkIdx,
                             lastClickedItemKey = lastClickedItemKey,
                             shouldShowTimeZoneInfo = shouldShowTimeZoneInfo,
-                            showItemDetails = showItemDetails
+                            showItemMsg = showItemMsg
                         ) { thisObj ->
                             val parents = thisObj.parentOidStrList
                             if (parents.isEmpty()) {  // 如果没父提交，例如最初的提交就没父提交，提示没parent可比较
-                                //TODO 改成没父提交时列出当前提交的所有文件
+                                //TODO 改成没父提交时列出当前提交的所有文件？
                                 Msg.requireShowLongDuration(activityContext.getString(R.string.no_parent_to_compare))
                             } else {  //有父提交，取出第一个父提交和当前提交进行比较
                                 val commit2 = thisObj.oidStr

@@ -73,7 +73,8 @@ fun CommitItem(
     lastClickedItemKey:MutableState<String>,
     shouldShowTimeZoneInfo:Boolean,
 
-    showItemDetails:(CommitDto)->Unit,
+//    showItemDetails:(CommitDto)->Unit,
+    showItemMsg:(CommitDto)->Unit,
     onClick:(CommitDto)->Unit={}
 ) {
     val clipboardManager = LocalClipboardManager.current
@@ -265,7 +266,7 @@ fun CommitItem(
                 lastClickedItemKey.value = commitDto.oidStr
 
                 updateCurObjState()
-                showItemDetails(commitDto)
+                showItemMsg(commitDto)
             }
         }
         if(commitDto.branchShortNameList.isNotEmpty()) {

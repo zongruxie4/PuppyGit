@@ -21,7 +21,6 @@ fun MarkDownContainer(
     modifier:Modifier = Modifier,
     basePathNoEndSlash:String = "",
     style: TextStyle = LocalTextStyle.current,
-    @FontRes fontResource: Int? = null,
     onLinkClicked: (String) -> Boolean = {false},
 ) {
     val activityContext = LocalContext.current
@@ -30,7 +29,6 @@ fun MarkDownContainer(
     MarkdownText(
         modifier = modifier,
         markdown = content,
-        fontResource = fontResource,
         linkifyMask = Linkify.EMAIL_ADDRESSES or Linkify.WEB_URLS,
         onLinkClicked = onLinkClicked,
         linkColor = MyStyleKt.ClickableText.getColor(),
