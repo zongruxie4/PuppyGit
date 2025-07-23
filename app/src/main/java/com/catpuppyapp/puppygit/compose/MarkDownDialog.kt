@@ -71,11 +71,13 @@ fun MarkDownDialog(
                     if(loadingForLetMarkDownContainerRefreshAfterSwitchFont.value) {
                         // just temporary display this when switch fonts
                         // 临时在切换字体时占下位置，这个markdown容器切换字体有bug，字体可能不会立刻变，必须先触发移除组件再重新渲染
+                        // 这里只是临时过渡，不需要加selection container
                         Text(
                             text = text,
                             fontFamily = font
                         )
                     }else {
+                        //这个容器自带选择拷贝，不用套selection container
                         MarkDownContainer(
                             content = text,
                             style = LocalTextStyle.current.copy(fontFamily = font),

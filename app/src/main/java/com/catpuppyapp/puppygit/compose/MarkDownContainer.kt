@@ -12,6 +12,7 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.markdown.MdUtil
 import dev.jeziellago.compose.markdowntext.MarkdownText
 
+// support selection as default, need not use `SelectionContainer` wrap it
 @Composable
 fun MarkDownContainer(
     content:String,
@@ -30,7 +31,10 @@ fun MarkDownContainer(
         onLinkClicked = onLinkClicked,
         linkColor = MyStyleKt.ClickableText.getColor(),
         style = style,
+
+        // enable selection and copy
         isTextSelectable = true,
+
         syntaxHighlightColor = if(inDarkTheme) MaterialTheme.colorScheme.surfaceBright else MaterialTheme.colorScheme.surfaceDim,
         coilStore = MdUtil.getCoilStore(context = activityContext, basePathNoEndSlash = basePathNoEndSlash)
     )
