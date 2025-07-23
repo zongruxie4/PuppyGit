@@ -2162,9 +2162,9 @@ fun CommitListScreen(
                         }
 
 
-                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.msg)){
-                            showItemMsg(curCommit.value)
-                        }
+//                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.msg)){
+//                            showItemMsg(curCommit.value)
+//                        }
 
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)){
                             showItemDetails(curCommit.value)

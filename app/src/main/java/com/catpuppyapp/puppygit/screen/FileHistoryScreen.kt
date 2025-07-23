@@ -897,9 +897,9 @@ fun FileHistoryScreen(
                         }
 
 
-                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.msg)) {
-                            showItemMsg(curObj.value)
-                        }
+//                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.msg)) {
+//                            showItemMsg(curObj.value)
+//                        }
 
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
                             showItemDetails(curObj.value)
