@@ -14,6 +14,7 @@ fun CommitMsgMarkDownDialog(
     dialogVisibleState: MutableState<Boolean>,
     text: String,
     previewModeOn: MutableState<Boolean>,
+    useSystemFonts: MutableState<Boolean>,
 ) {
     val activityContext = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -21,14 +22,19 @@ fun CommitMsgMarkDownDialog(
     MarkDownDialog(
         text = text,
         previewModeOn = previewModeOn,
+        useSystemFonts = useSystemFonts,
         close = {
             dialogVisibleState.value = false
 
             // update settings if need
             val previewModeOn = previewModeOn.value
-            if(previewModeOn != SettingsUtil.isCommitMsgPreviewModeOn()) {
+            val useSystemFonts = useSystemFonts.value
+            if(previewModeOn != SettingsUtil.isCommitMsgPreviewModeOn()
+                || useSystemFonts != SettingsUtil.isCommitMsgUseSystemFonts()
+            ) {
                 SettingsUtil.update {
                     it.commitMsgPreviewModeOn = previewModeOn
+                    it.commitMsgUseSystemFonts = useSystemFonts
                 }
             }
         },

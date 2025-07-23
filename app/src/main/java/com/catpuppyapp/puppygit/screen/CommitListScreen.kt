@@ -1323,6 +1323,7 @@ fun CommitListScreen(
     val showItemMsgDialog = rememberSaveable { mutableStateOf(false) }
     val textOfItemMsgDialog = rememberSaveable { mutableStateOf("") }
     val previewModeOnOfItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgPreviewModeOn) }
+    val useSystemFontsForItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgUseSystemFonts) }
     val showItemMsg = { curCommit:CommitDto ->
         textOfItemMsgDialog.value = curCommit.msg
         showItemMsgDialog.value = true
@@ -1332,6 +1333,8 @@ fun CommitListScreen(
             dialogVisibleState = showItemMsgDialog,
             text = textOfItemMsgDialog.value,
             previewModeOn = previewModeOnOfItemMsgDialog,
+            useSystemFonts = useSystemFontsForItemMsgDialog,
+
         )
     }
 

@@ -133,6 +133,10 @@ data class AppSettings(
      */
     var commitMsgPreviewModeOn:Boolean = true,
 
+    /**
+     * if true, will use system fonts when rendering commit msg dialog
+     */
+    var commitMsgUseSystemFonts: Boolean = false,
 ) {
 
     override fun equals(other: Any?): Boolean {

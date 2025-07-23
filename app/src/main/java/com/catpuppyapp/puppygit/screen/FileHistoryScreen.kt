@@ -621,6 +621,7 @@ fun FileHistoryScreen(
     val showItemMsgDialog = rememberSaveable { mutableStateOf(false) }
     val textOfItemMsgDialog = rememberSaveable { mutableStateOf("") }
     val previewModeOnOfItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgPreviewModeOn) }
+    val useSystemFontsForItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgUseSystemFonts) }
     val showItemMsg = { curItem: FileHistoryDto ->
         textOfItemMsgDialog.value = curItem.msg
         showItemMsgDialog.value = true
@@ -630,6 +631,8 @@ fun FileHistoryScreen(
             dialogVisibleState = showItemMsgDialog,
             text = textOfItemMsgDialog.value,
             previewModeOn = previewModeOnOfItemMsgDialog,
+            useSystemFonts = useSystemFontsForItemMsgDialog
+
         )
     }
 

@@ -666,6 +666,7 @@ fun TagListScreen(
     val showItemMsgDialog = rememberSaveable { mutableStateOf(false) }
     val textOfItemMsgDialog = rememberSaveable { mutableStateOf("") }
     val previewModeOnOfItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgPreviewModeOn) }
+    val useSystemFontsForItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgUseSystemFonts) }
     val showItemMsg = { curItem: TagDto ->
         textOfItemMsgDialog.value = curItem.msg
         showItemMsgDialog.value = true
@@ -675,6 +676,8 @@ fun TagListScreen(
             dialogVisibleState = showItemMsgDialog,
             text = textOfItemMsgDialog.value,
             previewModeOn = previewModeOnOfItemMsgDialog,
+            useSystemFonts = useSystemFontsForItemMsgDialog
+
         )
     }
 
