@@ -136,7 +136,11 @@ data class DiffItemSaver (
     private fun isLanguageScopeInvalid(languageScope: PLScope) : Boolean {
         if(PLScope.scopeTypeInvalid(languageScope)) {
             // clean
+
+            // remove cached styles
             operateStylesMapWithWriteLock { it.clear() }
+
+            // release highlighter
             hunks.forEachBetter { it.hunkSyntaxHighlighter.release() }
 
             return true

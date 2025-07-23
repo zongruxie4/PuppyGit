@@ -9,7 +9,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.AnnotatedStringResult
-import com.catpuppyapp.puppygit.syntaxhighlight.base.IndentChar
+import com.catpuppyapp.puppygit.constants.IndentChar
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.StylesResult
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.StylesUpdateRequest

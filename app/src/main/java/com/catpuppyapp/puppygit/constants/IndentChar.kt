@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.syntaxhighlight.base
+package com.catpuppyapp.puppygit.constants
 
 enum class IndentChar(val char: Char) {
     TAB('\t'),
