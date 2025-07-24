@@ -2,6 +2,14 @@
 
 
 ---
+1.1.3.5v111 - 20250724:
+- markdown support kotlin code block
+
+
+
+- markdown支持kotlin代码块
+
+---
 1.1.3.4v110 - 20250719:
 - fix editor undo stack not clear after reload file
 - Diff screen support syntax highlighting
