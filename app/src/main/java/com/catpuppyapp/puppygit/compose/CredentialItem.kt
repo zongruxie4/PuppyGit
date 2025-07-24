@@ -3,12 +3,14 @@ package com.catpuppyapp.puppygit.compose
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
@@ -20,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -60,7 +61,7 @@ fun CredentialItem(
     
 
 //    println("IDX::::::::::"+idx)
-    Row(
+    Box(
         //0.9f 占父元素宽度的百分之90
         modifier = Modifier
             .fillMaxWidth()
@@ -99,13 +100,20 @@ fun CredentialItem(
 
         ,
 
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+//        verticalAlignment = Alignment.CenterVertically,
+//        horizontalArrangement = Arrangement.SpaceBetween
 
     ) {
+        val trailIconSize = remember { MyStyleKt.trailIconSize }
+        // 若是match by domain 或none，则尾部无按钮，占满屏幕；否则给按钮留点空间
+        val padding = if(isNotMatchByDomainOrNone) PaddingValues(end = trailIconSize) else PaddingValues()
+
         Column(
-            // .8f 给按钮留点空间，matchbydomain或none无按钮，所以占满屏幕
-            modifier = if(isNotMatchByDomainOrNone) Modifier.fillMaxWidth(.8f) else Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(padding)
+                .fillMaxWidth()
+            ,
 //            horizontalAlignment = Alignment.CenterHorizontally,
 //            verticalArrangement = Arrangement.Center
         ) {
@@ -118,31 +126,42 @@ fun CredentialItem(
 
                 //x 改成设置高亮颜色了) 如果关联模式，对已绑定的前面加个*
                 Text(text = stringResource(R.string.name) + ": ")
-                Text(
-                    text = thisItem.name,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = if(linked) FontWeight.ExtraBold else defaultFontWeight,
-                    color = if(linked) MyStyleKt.DropDownMenu.selectedItemColor() else Color.Unspecified,
 
-                )
+                val iconSize = remember { trailIconSize * 2 }
 
-                // linked fetch
-                if(isLinkMode && linkedFetchId==thisItem.id) {
-                    InLineIcon(
-                        icon = Icons.Filled.Download,
-                        tooltipText = stringResource(R.string.fetch),
-                        enabled = false,
-                    ) { }
-                }
+                Box {
+                    ScrollableRow {
+                        Text(
+                            text = thisItem.name,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            fontWeight = if(linked) FontWeight.ExtraBold else defaultFontWeight,
+                            color = if(linked) MyStyleKt.DropDownMenu.selectedItemColor() else Color.Unspecified,
+                            modifier = Modifier.align(Alignment.CenterStart).padding(end = iconSize)
+                        )
+                    }
 
-                // linked push
-                if(isLinkMode && linkedPushId==thisItem.id) {
-                    InLineIcon(
-                        icon = Icons.Filled.Upload,
-                        tooltipText = stringResource(R.string.push),
-                        enabled = false,
-                    ) { }
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterEnd).width(iconSize)
+                    ) {
+                        // linked fetch
+                        if(isLinkMode && linkedFetchId==thisItem.id) {
+                            InLineIcon(
+                                icon = Icons.Filled.Download,
+                                tooltipText = stringResource(R.string.fetch),
+                                enabled = false,
+                            ) { }
+                        }
+
+                        // linked push
+                        if(isLinkMode && linkedPushId==thisItem.id) {
+                            InLineIcon(
+                                icon = Icons.Filled.Upload,
+                                tooltipText = stringResource(R.string.push),
+                                enabled = false,
+                            ) { }
+                        }
+                    }
                 }
             }
 //
@@ -199,7 +218,7 @@ fun CredentialItem(
         //显示编辑按钮
         if(isNotMatchByDomainOrNone) {
             Column(
-                modifier = Modifier.padding(end = 10.dp).size(20.dp),
+                modifier = Modifier.align(Alignment.CenterEnd).size(trailIconSize),
 //                horizontalAlignment = Alignment.CenterHorizontally,
 //                verticalArrangement = Arrangement.Center
             ) {
