@@ -3,7 +3,7 @@
   "tokenColors": [
     {
       "settings": {
-        "foreground": "#839496"
+        "foreground": "#a9bcbc"
       }
     },
     {
@@ -12,7 +12,7 @@
         "source.groovy.embedded"
       ],
       "settings": {
-        "foreground": "#839496"
+        "foreground": "#a9bcbc"
       }
     },
     {
@@ -349,7 +349,7 @@
     "list.dropBackground": "#00445488",
     "list.highlightForeground": "#1ebcc5",
     "editor.background": "#002B36",
-    "editor.foreground": "#839496",
+    "editor.foreground": "#a9bcbc",
     "editorWidget.background": "#00212B",
     "editorCursor.foreground": "#D30102",
     "editorWhitespace.foreground": "#93A1A180",
@@ -412,7 +412,7 @@
     "terminal.ansiBrightRed": "#d49074",
     "terminal.ansiBrightGreen": "#707f84",
     "terminal.ansiBrightYellow": "#657b83",
-    "terminal.ansiBrightBlue": "#839496",
+    "terminal.ansiBrightBlue": "#a9bcbc",
     "terminal.ansiBrightMagenta": "#8084c8",
     "terminal.ansiBrightCyan": "#93a1a1",
     "terminal.ansiBrightWhite": "#fdf6e3",
