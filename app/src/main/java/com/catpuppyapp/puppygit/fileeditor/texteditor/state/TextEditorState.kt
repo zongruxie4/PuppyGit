@@ -1660,6 +1660,17 @@ class TextEditorState(
 
     /**
      * note: if you want to save lines to file, recommend to use `dumpLines` instead
+     *
+     * WARN: Don't cache this function's returned value, because:
+     *   1.(the main reason) this function at most call twice,
+     *        one for syntax highlighting, one for saving, but if cache it, it will cache for every instance,
+     *        usually, it will duplicate `n * undoStack.size`, but after syntax highlighting finished,
+     *        we only need another 1 copy for saving, so other copies just waste memory.
+     *   2.(this just so so) usually users edit a small file, so `getAllText()` will run very fast,
+     *        so no need cache the returned value
+     *   (第1个理由是主要原因，第2个其实有点牵强，总之，主要还是浪费内存，所以不建议缓存)
+     *
+     *
      */
     fun getAllText(): String {
         val sb = StringBuilder()

@@ -26,9 +26,12 @@ class MarkDownSyntaxHighlighter(
     var myLang: TextMateLanguage? = null
     val scope = PLScope.MARKDOWN
 
-    private var cachedLines:List<String>? = null
+    // cache if use more than 1 times
+//    private var cachedLines:List<String>? = null
+//    fun getTextLines() = cachedLines ?: text.lines().let { cachedLines = it; it }
 
-    fun getTextLines() = cachedLines ?: text.lines().let { cachedLines = it; it }
+    // one time use, no need cache
+    fun getTextLines() = text.lines()
 
     fun analyze() {
         analyzeLock.withLock {
