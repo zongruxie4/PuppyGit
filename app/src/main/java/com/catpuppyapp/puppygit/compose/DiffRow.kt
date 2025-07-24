@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.git.CompareLinePair
@@ -42,9 +41,10 @@ import com.catpuppyapp.puppygit.screen.functions.getClipboardText
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
 import com.catpuppyapp.puppygit.ui.theme.Theme
-import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.addTopPaddingIfIsFirstLine
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -131,8 +131,8 @@ fun DiffRow (
     val inDarkTheme = Theme.inDarkTheme
     //libgit2会把连续行整合到一起，这里用getLines()获取拆分后的行
 //                    puppyLineBase.getLines().forEach { line ->
-    val bgColor = Libgit2Helper.getDiffLineBgColor(line, inDarkTheme)
-    val textColor = Libgit2Helper.getDiffLineTextColor(line, inDarkTheme)
+    val bgColor = UIHelper.getDiffLineBgColor(line, inDarkTheme)
+    val textColor = UIHelper.getDiffLineTextColor(line, inDarkTheme)
 //                        val lineTypeStr = getDiffLineTypeStr(line)
     val lineNumColor = MyStyleKt.Diff.lineNumColorForDiff(inDarkTheme)
 
@@ -292,7 +292,7 @@ fun DiffRow (
             //如果是经过compare的添加或删除行，背景半透明，然后真修改的内容用不透明，这样就能突出真修改的内容
             //alpha值越大越不透明
 //            .background(if (useStringPartList) Libgit2Helper.getMatchedTextBgColorForDiff(inDarkTheme, line) else bgColor)
-            .background(Libgit2Helper.getMatchedTextBgColorForDiff(inDarkTheme, line))
+            .background(UIHelper.getMatchedTextBgColorForDiff(inDarkTheme, line))
 
 //            .background(color)
 //                            .clickable {

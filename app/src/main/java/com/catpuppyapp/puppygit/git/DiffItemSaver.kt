@@ -516,7 +516,7 @@ class PuppyHunk {
 
 }
 
-data class PuppyLine (
+data class PuppyLine(
     var key:String = getShortUUID(),
 
     // the default compare target, it was match the compare target with line num, but sometimes line number same content totally non-related, in that case need calculate the offset the pair them
@@ -581,7 +581,7 @@ data class PuppyLine (
 //        return lines
 //    }
 
-){
+) {
     companion object {
         fun mergeStringAndStylePartList(stringPartList: List<IndexStringPart>, stylePartList: List<LineStylePart>, modifiedBgColor: Color): List<LineStylePart> {
             val retStylePartList = mutableListOf<LineStylePart>()
@@ -627,6 +627,11 @@ data class PuppyLine (
         return contentNoBreak ?: (if(!isEOF()) content.removeSuffix("\n").removeSuffix("\r") else "").let { contentNoBreak = it; it }
     }
 
+
+    fun getAValidLineNum():Int {
+        //哪个不是-1就返回哪个，和originType配合即可知道是删除还是新增行
+        return if(newLineNum < 0) oldLineNum else newLineNum
+    }
 
 
     override fun equals(other: Any?): Boolean {

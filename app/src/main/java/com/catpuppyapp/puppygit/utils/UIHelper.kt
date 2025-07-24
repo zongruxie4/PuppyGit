@@ -22,6 +22,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -31,10 +32,13 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ExpectConflictStrDto
+import com.catpuppyapp.puppygit.git.PuppyLine
+import com.catpuppyapp.puppygit.git.PuppyLineOriginType
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.github.git24j.core.Diff
 import com.github.git24j.core.Repository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -576,6 +580,94 @@ object UIHelper {
             green = green,
             blue = blue,
         )
+    }
+
+
+
+    fun getMatchedTextBgColorForDiff(inDarkTheme:Boolean = Theme.inDarkTheme, line: PuppyLine):Color {
+        if(line.originType == PuppyLineOriginType.ADDITION) {  //添加行
+            return if(inDarkTheme) MyStyleKt.Diff.hasMatchedAddedLineBgColorForDiffInDarkTheme else MyStyleKt.Diff.hasMatchedAddedLineBgColorForDiffInLightTheme
+        }else if(line.originType == PuppyLineOriginType.DELETION) {  //删除行
+            return if(inDarkTheme) MyStyleKt.Diff.hasMatchedDeletedLineBgColorForDiffInDarkTheme else MyStyleKt.Diff.hasMatchedDeletedLineBgColorForDiffInLightTheme
+        }else if(line.originType == PuppyLineOriginType.HUNK_HDR) {  //hunk header
+            // 注：后来hunk header并没用这的颜色
+            return Color.Gray
+        }else if(line.originType == PuppyLineOriginType.CONTEXT) {  //上下文
+            return Color.Unspecified
+        }else if(line.originType == PuppyLineOriginType.CONTEXT_EOFNL) {  //新旧文件都没末尾行
+            return Color.Unspecified
+        }else if(line.originType == PuppyLineOriginType.ADD_EOFNL) {  //添加了末尾行
+            return Color.Unspecified
+        }else if(line.originType == PuppyLineOriginType.DEL_EOFNL) {  //删除了末尾行
+            return Color.Unspecified
+        }else {  // unknown
+            return Color.Unspecified
+        }
+    }
+
+    fun getDiffLineBgColor(line:PuppyLine, inDarkTheme: Boolean):Color{
+        if(line.originType == PuppyLineOriginType.ADDITION) {  //添加行
+            return if(inDarkTheme) MyStyleKt.Diff.addedLineBgColorForDiffInDarkTheme else MyStyleKt.Diff.addedLineBgColorForDiffInLightTheme
+        }else if(line.originType == PuppyLineOriginType.DELETION) {  //删除行
+            return if(inDarkTheme) MyStyleKt.Diff.deletedLineBgColorForDiffInDarkTheme else MyStyleKt.Diff.deletedLineBgColorForDiffInLightTheme
+        }else if(line.originType == PuppyLineOriginType.HUNK_HDR) {  //hunk header
+            // 注：后来hunk header并没用这的颜色
+            return Color.Gray
+        }else if(line.originType == PuppyLineOriginType.CONTEXT) {  //上下文
+            return Color.Unspecified
+        }else if(line.originType == PuppyLineOriginType.CONTEXT_EOFNL) {  //新旧文件都没末尾行
+            return Color.Unspecified
+        }else if(line.originType == PuppyLineOriginType.ADD_EOFNL) {  //添加了末尾行
+            return Color.Unspecified
+        }else if(line.originType == PuppyLineOriginType.DEL_EOFNL) {  //删除了末尾行
+            return Color.Unspecified
+        }else {  // unknown
+            return Color.Unspecified
+        }
+    }
+
+    fun getDiffLineTextColor(line:PuppyLine, inDarkTheme:Boolean):Color{
+        if(line.originType == Diff.Line.OriginType.ADDITION.toString()) {  //添加行
+            return UIHelper.getFontColor(inDarkTheme)
+        }else if(line.originType == Diff.Line.OriginType.DELETION.toString()) {  //删除行
+            return UIHelper.getFontColor(inDarkTheme)
+        }else if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {  //上下文
+            return UIHelper.getFontColor(inDarkTheme)
+
+
+            //20240501:下面的其实都没用
+        }else if(line.originType == Diff.Line.OriginType.HUNK_HDR.toString()) {  //hunk header
+            return UIHelper.getFontColor(inDarkTheme)
+        }else if(line.originType == Diff.Line.OriginType.CONTEXT_EOFNL.toString()) {  //新旧文件都没末尾行
+            return UIHelper.getSecondaryFontColor(inDarkTheme)
+        }else if(line.originType == Diff.Line.OriginType.ADD_EOFNL.toString()) {  //添加了末尾行
+            return UIHelper.getSecondaryFontColor(inDarkTheme)
+        }else if(line.originType == Diff.Line.OriginType.DEL_EOFNL.toString()) {  //删除了末尾行
+            return UIHelper.getSecondaryFontColor(inDarkTheme)
+        }else {  // unknown
+            return Color.Unspecified
+        }
+    }
+
+    @Composable
+    fun getDiffLineTypeStr(line:PuppyLine): String {
+        if(line.originType == Diff.Line.OriginType.ADDITION.toString()) {
+            return stringResource(R.string.diff_line_type_add)
+        }else if(line.originType == Diff.Line.OriginType.DELETION.toString()) {
+            return stringResource(R.string.diff_line_type_del)
+        }else if(line.originType == Diff.Line.OriginType.HUNK_HDR.toString()) {
+            return stringResource(R.string.diff_line_type_hunk_header)
+        }else if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
+            return stringResource(R.string.diff_line_type_context)
+        }else if(line.originType == Diff.Line.OriginType.CONTEXT_EOFNL.toString()) {
+            return ""
+        }else if(line.originType == Diff.Line.OriginType.ADD_EOFNL.toString()) {
+            return stringResource(R.string.diff_line_type_add)
+        }else if(line.originType == Diff.Line.OriginType.DEL_EOFNL.toString()) {
+            return stringResource(R.string.diff_line_type_del)
+        }else {
+            return ""
+        }
     }
 
 }
