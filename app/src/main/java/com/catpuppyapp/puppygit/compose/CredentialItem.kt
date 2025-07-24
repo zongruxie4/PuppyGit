@@ -104,14 +104,14 @@ fun CredentialItem(
 //        horizontalArrangement = Arrangement.SpaceBetween
 
     ) {
-        val trailIconSize = remember { MyStyleKt.trailIconSize }
+        val trailIconSize = remember { MyStyleKt.trailIconSize + 10.dp }
         // 若是match by domain 或none，则尾部无按钮，占满屏幕；否则给按钮留点空间
-        val padding = if(isNotMatchByDomainOrNone) PaddingValues(end = trailIconSize) else PaddingValues()
+        val trailIconPadding = if(isNotMatchByDomainOrNone) PaddingValues(end = trailIconSize) else PaddingValues()
 
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(padding)
+                .padding(trailIconPadding)
                 .fillMaxWidth()
             ,
 //            horizontalAlignment = Alignment.CenterHorizontally,
@@ -127,22 +127,36 @@ fun CredentialItem(
                 //x 改成设置高亮颜色了) 如果关联模式，对已绑定的前面加个*
                 Text(text = stringResource(R.string.name) + ": ")
 
-                val iconSize = remember { trailIconSize * 2 }
+                val iconSize = if(linked) {
+                    if(linkedFetchId == thisItem.id && linkedPushId == thisItem.id) {
+                        trailIconSize * 2
+                    }else {
+                        trailIconSize
+                    }
+                } else {
+                    0.dp
+                }
 
                 Box {
-                    ScrollableRow {
+                    ScrollableRow(
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .padding(end = iconSize)
+                    ) {
                         Text(
                             text = thisItem.name,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             fontWeight = if(linked) FontWeight.ExtraBold else defaultFontWeight,
                             color = if(linked) MyStyleKt.DropDownMenu.selectedItemColor() else Color.Unspecified,
-                            modifier = Modifier.align(Alignment.CenterStart).padding(end = iconSize)
+
                         )
                     }
 
                     Row(
-                        modifier = Modifier.align(Alignment.CenterEnd).width(iconSize)
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .width(iconSize)
                     ) {
                         // linked fetch
                         if(isLinkMode && linkedFetchId==thisItem.id) {
@@ -218,7 +232,10 @@ fun CredentialItem(
         //显示编辑按钮
         if(isNotMatchByDomainOrNone) {
             Column(
-                modifier = Modifier.align(Alignment.CenterEnd).size(trailIconSize),
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .size(trailIconSize)
+                ,
 //                horizontalAlignment = Alignment.CenterHorizontally,
 //                verticalArrangement = Arrangement.Center
             ) {
