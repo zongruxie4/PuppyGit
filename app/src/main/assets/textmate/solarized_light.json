@@ -3,7 +3,7 @@
 	"tokenColors": [
 		{
 			"settings": {
-				"foreground": "#49595f"
+				"foreground": "#1e2021"
 			}
 		},
 		{
@@ -14,7 +14,7 @@
 				"variable.legacy.builtin.python"
 			],
 			"settings": {
-				"foreground": "#49595f"
+				"foreground": "#1e2021"
 			}
 		},
 		{
@@ -68,7 +68,7 @@
 			"scope": "storage",
 			"settings": {
 				"fontStyle": "bold",
-				"foreground": "#586E75"
+				"foreground": "#3d484c"
 			}
 		},
 		{
@@ -328,7 +328,7 @@
 	"colors": {
 		"focusBorder": "#b49471",
 		"input.background": "#DDD6C1",
-		"input.foreground": "#586E75",
+		"input.foreground": "#3d484c",
 		"input.placeholderForeground": "#586E75AA",
 		"inputOption.activeBorder": "#D3AF86",
 		"badge.background": "#B58900AA",
@@ -344,10 +344,10 @@
 		"list.inactiveSelectionBackground": "#D1CBB8",
 		"list.highlightForeground": "#614a05",
 		"editor.background": "#FDF6E3",
-		"editor.foreground": "#49595f",
+		"editor.foreground": "#1e2021",
 		"notebook.cellEditorBackground": "#F7F0E0",
 		"editorWidget.background": "#EEE8D5",
-		"editorCursor.foreground": "#49595f",
+		"editorCursor.foreground": "#1e2021",
 		"editorWhitespace.foreground": "#586E7580",
 		"editor.lineHighlightBackground": "#EEE8D5",
 		"editor.selectionBackground": "#EEE8D5",
@@ -367,7 +367,7 @@
 		"editorGroupHeader.tabsBackground": "#D9D2C2",
 		"tab.border": "#DDD6C1",
 		"tab.activeBackground": "#FDF6E3",
-		"tab.inactiveForeground": "#586E75",
+		"tab.inactiveForeground": "#3d484c",
 		"tab.inactiveBackground": "#D3CBB7",
 		"tab.activeModifiedBorder": "#9c3a11",
 		"tab.lastPinnedBorder": "#FDF6E3",
@@ -376,8 +376,8 @@
 		"activityBarBadge.background": "#614a05",
 		"panel.border": "#DDD6C1",
 		"sideBar.background": "#EEE8D5",
-		"sideBarTitle.foreground": "#586E75",
-		"statusBar.foreground": "#586E75",
+		"sideBarTitle.foreground": "#3d484c",
+		"statusBar.foreground": "#3d484c",
 		"statusBar.background": "#EEE8D5",
 		"statusBar.debuggingBackground": "#EEE8D5",
 		"statusBar.noFolderBackground": "#EEE8D5",
@@ -402,8 +402,8 @@
 		"terminal.ansiWhite": "#eee8d5",
 		"terminal.ansiBrightBlack": "#002b36",
 		"terminal.ansiBrightRed": "#9c3a11",
-		"terminal.ansiBrightGreen": "#586e75",
-		"terminal.ansiBrightYellow": "#49595f",
+		"terminal.ansiBrightGreen": "#3d484c",
+		"terminal.ansiBrightYellow": "#1e2021",
 		"terminal.ansiBrightBlue": "#839496",
 		"terminal.ansiBrightMagenta": "#4d519c",
 		"terminal.ansiBrightCyan": "#5a6262",
