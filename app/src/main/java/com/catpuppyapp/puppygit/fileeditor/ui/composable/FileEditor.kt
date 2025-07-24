@@ -378,6 +378,11 @@ fun FileEditor(
                                     return@opke true
                                 }
 
+                                if (keyEvent.isCtrlPressed && keyEvent.key == Key.G) {
+                                    requestFromParent.value = PageRequest.goToLine
+                                    return@opke true
+                                }
+
                                 if (keyEvent.isCtrlPressed && keyEvent.key == Key.MoveHome) { // go to top of file
                                     lastScrollEvent.value = ScrollEvent(0)
 
