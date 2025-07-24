@@ -35,7 +35,7 @@ fun DomainCredItem(
     thisItem:DomainCredentialDto,
     onClick:(DomainCredentialDto)->Unit
 ) {
-    val haptic = LocalHapticFeedback.current
+//    val haptic = LocalHapticFeedback.current
 
     val none = "[${stringResource(R.string.none)}]"
 
@@ -82,7 +82,7 @@ fun DomainCredItem(
         Row (
             verticalAlignment = Alignment.CenterVertically,
 
-            ){
+        ){
             Text(text = stringResource(R.string.domain) +": ")
             Text(text = thisItem.domain,
                 maxLines = 1,

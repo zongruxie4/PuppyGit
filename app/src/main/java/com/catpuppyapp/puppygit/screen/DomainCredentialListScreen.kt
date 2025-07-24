@@ -219,7 +219,7 @@ fun DomainCredentialListScreen(
                         },
                     )
 
-                    Spacer(Modifier.height(15.dp))
+                    Spacer(Modifier.height(5.dp))
 
                     CredentialSelector(credentialList.value, selectedCredentialIdx, stringResource(R.string.http_s_credential))
                     CredentialSelector(credentialList.value, selectedSshCredentialIdx, stringResource(R.string.ssh_credential))
@@ -573,7 +573,13 @@ fun DomainCredentialListScreen(
                     requireForEachWithIndex = true,
                     requirePaddingAtBottom = true
                 ) {idx, value->
-                    DomainCredItem (showBottomSheet = showBottomSheet, curCredentialState = curCredential, idx = idx, thisItem = value, lastClickedItemKey = lastClickedItemKey) {
+                    DomainCredItem(
+                        showBottomSheet = showBottomSheet,
+                        curCredentialState = curCredential,
+                        idx = idx,
+                        thisItem = value,
+                        lastClickedItemKey = lastClickedItemKey
+                    ) {
                         initCreateOrEditDialog(
                             isCreateParam = false,
                             curDomainNameParam = value.domain,
