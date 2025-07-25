@@ -128,7 +128,7 @@ enum class PLScope(val scope: String) {
                 return LUA
             }
 
-            if(fileName.endsWith(".kotlin") || fileName.endsWith(".kt") || fileName.endsWith(".kts")) {
+            if(fileName.endsWith(".kt") || fileName.endsWith(".kts") || fileName.endsWith(".kotlin")) {
                 return KOTLIN
             }
 
@@ -194,7 +194,7 @@ enum class PLScope(val scope: String) {
                 return SHELL
             }
 
-            if(fileName.endsWith(".zig")) {
+            if(fileName.endsWith(".zig") || fileName.endsWith(".zon")) {
                 return ZIG
             }
 

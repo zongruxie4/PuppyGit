@@ -125,6 +125,7 @@ private val mimeTypeToIntentMimeTypeMap = listOf(
     "application/x-raku" to "text/x-raku",
     "application/x-toml" to "text/x-toml",
     "application/x-proguard" to "text/x-proguard",
+    "application/x-zig" to "text/x-zig",
 
     // Allows matching generic
     MimeType.GENERIC.value to MimeType.ANY.value

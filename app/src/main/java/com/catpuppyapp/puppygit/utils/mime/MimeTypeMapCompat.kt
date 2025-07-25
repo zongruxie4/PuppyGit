@@ -299,6 +299,7 @@ private val extensionToMimeTypeMap = mapOf(
     "makefile" to "application/x-makefile",
     "vagrantfile" to "application/x-ruby",
     "zig" to "application/x-zig",
+    "zon" to "application/x-zig",
     "pro" to "application/x-proguard",
     "proguard" to "application/x-proguard",
     "r8" to "application/x-proguard",
