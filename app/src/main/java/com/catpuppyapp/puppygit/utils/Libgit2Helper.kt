@@ -1,10 +1,6 @@
 package com.catpuppyapp.puppygit.utils
 
 import android.content.Context
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
-import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
@@ -30,7 +26,6 @@ import com.catpuppyapp.puppygit.git.IgnoreItem
 import com.catpuppyapp.puppygit.git.PatchFile
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.git.PuppyLine
-import com.catpuppyapp.puppygit.git.PuppyLineOriginType
 import com.catpuppyapp.puppygit.git.PushFailedItem
 import com.catpuppyapp.puppygit.git.ReflogEntryDto
 import com.catpuppyapp.puppygit.git.RemoteAndCredentials
@@ -48,9 +43,8 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.template.CommitMsgTemplateUtil
-import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.cache.CommitCache
 import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.github.git24j.core.AnnotatedCommit
@@ -7543,7 +7537,40 @@ object Libgit2Helper {
     }
 
     //把msg中的\n换成空格，让\r消失，这样就没换行符了，方便单行显示尽量多的内容
-    fun zipOneLineMsg(msg:String) = msg.trim().replace('\n', ' ').replace("\r", "");
+    fun zipOneLineMsg(msg:String, limitedCharsCount: Int = 500) :String {
+        val sb = StringBuilder()
+        var started = false
+        var lastAppendChar = ' '
+        var count = 0
+        for(c in msg) {
+            if(count >= limitedCharsCount) {
+                break
+            }
+
+            // ignore start spaces
+            if(!started && c.isWhitespace()) {
+                continue
+            }
+
+            started = true
+
+            //avoid continusly spaces
+            if((c == '\n' || c == '\r' || c.isWhitespace())
+                && lastAppendChar == ' '
+            ) {
+                continue
+            }
+
+            // replace untypical space chars
+            val willAppendChar = if(c.isWhitespace()) ' ' else c
+            sb.append(willAppendChar)
+            lastAppendChar = willAppendChar
+
+            count++
+        }
+
+        return sb.toString()
+    }
 
     /**
      * @param refOrHash 长短引用名或hash皆可，但最好是长的，越完整越好，不易混淆
