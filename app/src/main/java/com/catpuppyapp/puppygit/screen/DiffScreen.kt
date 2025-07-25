@@ -2154,6 +2154,7 @@ fun DiffScreen(
                                         Text(
                                             text = hunkAndLines.hunk.cachedNoLineBreakHeader(),
                                             fontFamily = PLFont.diffCodeFont(),
+                                            fontSize = fontSize,
                                             fontStyle = FontStyle.Italic,
                                             color = UIHelper.getFontColor(),
                                         )
