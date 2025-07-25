@@ -59,7 +59,7 @@ object MyStyleKt{
         fun getStyle() = LocalTextStyle.current;  // 默认
 //        fun getStyle() = TextStyle(textDecoration = TextDecoration.Underline);  // 加下划线
 
-        private val color_light = Color(0xFF0072EC)
+        private val color_light = Color(0xFF004FD7)
         private val color_dark = Color(0xFF0096FF)
 
         fun getColor(inDarkTheme: Boolean = Theme.inDarkTheme) = if(inDarkTheme) color_dark else color_light
@@ -174,8 +174,8 @@ object MyStyleKt{
         val fontColor = Color(0xFF2D2D2D)
         val darkThemeFontColor = Color(0xFFADADAD)
 
-        private val err_light = Color.Red.copy(alpha = .8f)
-        private val err_dark = Color(0xFFF81A1A)
+        private val err_light = Color(0xFFA40000)
+        private val err_dark = Color(0xFFCE6C6C)
         fun error() = if(Theme.inDarkTheme) err_dark else err_light
 //        fun error() = Color.Red.copy(alpha = .8f)
 
