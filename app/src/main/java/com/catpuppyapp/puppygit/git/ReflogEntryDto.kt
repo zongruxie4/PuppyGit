@@ -18,6 +18,10 @@ data class ReflogEntryDto(
     private var shortNewIdCached:String? = null
     private var shortOldIdCached:String? = null
 
+    private var cached_OneLineMsg:String? = null
+    fun getCachedOneLineMsg(): String = (cached_OneLineMsg ?: Libgit2Helper.zipOneLineMsg(msg).let { cached_OneLineMsg = it; it });
+
+
     override fun getItemKey():String {
         return username+email+date+idNew+idOld+msg
     }

@@ -139,7 +139,7 @@ fun StashItem(
 
             Text(text = stringResource(R.string.msg) + ": ")
             Text(
-                text = thisObj.msg,
+                text = thisObj.getCachedOneLineMsg(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = defaultFontWeight

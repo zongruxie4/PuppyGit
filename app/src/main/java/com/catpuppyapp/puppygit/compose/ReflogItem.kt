@@ -195,7 +195,7 @@ fun ReflogItem(
         ){
 
             Text(text = stringResource(R.string.msg) +": ")
-            Text(text = thisObj.msg,
+            Text(text = thisObj.getCachedOneLineMsg(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = defaultFontWeight

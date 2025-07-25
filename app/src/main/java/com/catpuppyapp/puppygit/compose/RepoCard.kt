@@ -425,7 +425,7 @@ fun RepoCard(
                                 tooltipText = stringResource(R.string.repo_label_error)
                             )
                             ClickableText (
-                                text = if (hasUncheckedErr) repoDto.latestUncheckedErrMsg else stringResource(R.string.repo_err_no_err_or_all_checked),
+                                text = if (hasUncheckedErr) repoDto.getCachedOneLineLatestUnCheckedErrMsg() else stringResource(R.string.repo_err_no_err_or_all_checked),
                                 maxLines = 1,
                                 color = if (hasUncheckedErr) MyStyleKt.ClickableText.getErrColor() else MyStyleKt.ClickableText.getColor(),
                                 fontWeight = defaultFontWeight,

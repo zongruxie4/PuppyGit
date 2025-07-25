@@ -20,6 +20,10 @@ data class StashDto(
         return shortStashId ?: stashId.toString()
     }
 
+    private var cached_OneLineMsg:String? = null
+    fun getCachedOneLineMsg(): String = (cached_OneLineMsg ?: Libgit2Helper.zipOneLineMsg(msg).let { cached_OneLineMsg = it; it });
+
+
     override fun getItemKey():String {
         return "$index: $stashId"
     }

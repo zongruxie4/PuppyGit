@@ -111,7 +111,7 @@ fun ErrorItem(
             ){
 
             Text(text = stringResource(R.string.msg) +": ")
-            Text(text = curObj.msg,
+            Text(text = curObj.getCachedOneLineMsg(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = defaultFontWeight

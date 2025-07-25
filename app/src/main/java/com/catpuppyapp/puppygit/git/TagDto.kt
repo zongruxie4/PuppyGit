@@ -67,6 +67,10 @@ class TagDto (
         return targetShortOidStr ?: ""
     }
 
+    private var cached_OneLineMsg:String? = null
+    fun getCachedOneLineMsg(): String = (cached_OneLineMsg ?: Libgit2Helper.zipOneLineMsg(msg).let { cached_OneLineMsg = it; it });
+
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

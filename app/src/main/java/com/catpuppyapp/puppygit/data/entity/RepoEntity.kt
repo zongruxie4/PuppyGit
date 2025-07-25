@@ -155,6 +155,11 @@ data class RepoEntity(
     @Ignore
     private var lastUpdateTimeFormattedCached:String? = null
 
+
+
+    private var cached_OneLineLastestUnCheckedErrMsg:String? = null
+    fun getCachedOneLineLatestUnCheckedErrMsg(): String = (cached_OneLineLastestUnCheckedErrMsg ?: Libgit2Helper.zipOneLineMsg(latestUncheckedErrMsg).let { cached_OneLineLastestUnCheckedErrMsg = it; it });
+
     /**
      * 拷贝所有字段，包括不在data class构造器的字段
      */
