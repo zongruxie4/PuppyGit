@@ -57,6 +57,9 @@
 -keep class kotlinx.coroutines.** { *; }
 # Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.
+-dontwarn io.netty.pkitesting.CertificateBuilder$Algorithm
+-dontwarn io.netty.pkitesting.CertificateBuilder
+-dontwarn io.netty.pkitesting.X509Bundle
 -dontwarn com.aayushatharva.brotli4j.Brotli4jLoader
 -dontwarn com.aayushatharva.brotli4j.decoder.DecoderJNI$Status
 -dontwarn com.aayushatharva.brotli4j.decoder.DecoderJNI$Wrapper
