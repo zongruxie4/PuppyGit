@@ -24,7 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import com.catpuppyapp.puppygit.compose.FontSizeAdjuster
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -32,10 +32,6 @@ import com.catpuppyapp.puppygit.compose.SimpleCheckBox
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.dev.editorEnableLineSelecteModeFromMenuTestPassed
-import com.catpuppyapp.puppygit.dev.editorFontSizeTestPassed
-import com.catpuppyapp.puppygit.dev.editorHideOrShowLineNumTestPassed
-import com.catpuppyapp.puppygit.dev.editorLineNumFontSizeTestPassed
-import com.catpuppyapp.puppygit.dev.editorMergeModeTestPassed
 import com.catpuppyapp.puppygit.dev.editorSearchTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -45,7 +41,6 @@ import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.settings.util.EditorSettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.Msg
@@ -98,7 +93,7 @@ fun EditorPageActions(
         注意：如果以后需要同一个EditorInnerPage配合多个title，就不要在这执行操作了，把这里的action逻辑放到EditorInnerPage执行，在这只发request，类似ChangeList页面请求执行pull/push那样
      */
 
-    val haptic = LocalHapticFeedback.current
+//    val haptic = LocalHapticFeedback.current
 //    val scope = rememberCoroutineScope()
 
     val hasGoodKeyword = editorSearchKeyword.isNotEmpty()
@@ -268,6 +263,8 @@ fun EditorPageActions(
     }
 
     if(showMenuIcon) {
+        val softKbController = LocalSoftwareKeyboardController.current
+
         //菜单图标
         LongPressAbleIconBtn(
             //这种需展开的菜单，禁用内部的选项即可
@@ -277,8 +274,15 @@ fun EditorPageActions(
             icon = Icons.Filled.MoreVert,
             iconContentDesc = stringResource(R.string.menu),
             onClick = {
+                // hide softkb by ourself to fix the menu can't auto expand after softkb auto hidden
+                softKbController?.hide()
+
                 //切换菜单展开状态
-                dropDownMenuExpandState.value = !dropDownMenuExpandState.value
+                // if menu expanded, actually, user cant click the 3dots again,
+                //   because the menu will cover the whole screen, so if user can click the 3dots icon, the menu must be hidden,
+                //   so set the expand always to ture when clicked 3dots icon is ok
+                // 若菜单展开用户无法点开3点按钮，若用户能点菜单必然隐藏，所以这里设为true即可，如果设为切换当前状态，需确保初始值为false，否则逻辑会错
+                dropDownMenuExpandState.value = true
             }
         )
     }
