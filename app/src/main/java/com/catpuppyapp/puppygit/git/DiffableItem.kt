@@ -158,10 +158,15 @@ data class DiffableItem(
         return buildAnnotatedString {
             //若已加载过diff内容则显示添加和删除了多少行
             if(maybeLoadedAtLeastOnce()) {
-                withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItemSaver.deletedLines) }
-                withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
-                withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItemSaver.addedLines) }
-                withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
+                if(diffItemSaver.deletedLines > 0) {
+                    withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItemSaver.deletedLines) }
+                    withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
+                }
+
+                if(diffItemSaver.addedLines > 0) {
+                    withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItemSaver.addedLines) }
+                    withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
+                }
             }
 
             //当前文件的父路径，以/结尾，无文件名，若文件在仓库根目录则为/
