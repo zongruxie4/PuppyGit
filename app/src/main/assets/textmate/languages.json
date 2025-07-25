@@ -337,7 +337,7 @@
 
 
     {
-      "grammar": "textmate/zig/syntaxes/Zig.tmLanguage",
+      "grammar": "textmate/zig/syntaxes/zig.tmLanguage.json",
       "name": "zig",
       "scopeName": "source.zig",
       "languageConfiguration": "textmate/zig/language-configuration.json"
