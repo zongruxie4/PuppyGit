@@ -165,7 +165,7 @@ class MyCodeEditor(
 //    fun currentPlScope() = plScope.value
 
     fun release() {
-        cleanLanguage()
+        cleanOldLanguage()
         highlightMap.clear()
         stylesMap.clear()
     }
@@ -336,7 +336,7 @@ class MyCodeEditor(
 
 
         // Destroy old one
-        cleanLanguage()
+        cleanOldLanguage()
 
 
         // run new analyze
@@ -366,7 +366,7 @@ class MyCodeEditor(
 //            it.setText(text)
     }
 
-    private fun cleanLanguage() {
+    private fun cleanOldLanguage() {
         latestStyles = null
         val old: Language? = myLang
         myLang = null
