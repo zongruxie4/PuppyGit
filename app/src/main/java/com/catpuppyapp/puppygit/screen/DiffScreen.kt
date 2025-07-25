@@ -2173,15 +2173,15 @@ fun DiffScreen(
 
                                         hunkAndLines.lines.forEachIndexedBetter printLine@{ lineIndex, line: PuppyLine ->
                                             //若非 新增行、删除行、上下文 ，不显示
-                                            if (line.originType != Diff.Line.OriginType.ADDITION.toString()
-                                                && line.originType != Diff.Line.OriginType.DELETION.toString()
-                                                && line.originType != Diff.Line.OriginType.CONTEXT.toString()
+                                            if (line.originType != PuppyLineOriginType.ADDITION
+                                                && line.originType != PuppyLineOriginType.DELETION
+                                                && line.originType != PuppyLineOriginType.CONTEXT
                                             ) {
                                                 return@printLine
                                             }
 
                                             // true or fake context
-                                            if (line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
+                                            if (line.originType == PuppyLineOriginType.CONTEXT) {
                                                 item {
 //                                                    itemsCount.intValue++
 
@@ -2283,7 +2283,7 @@ fun DiffScreen(
                                                     )
 
                                                     if (modifyResult?.matched == true) {
-                                                        if (line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del
+                                                        if (line.originType == PuppyLineOriginType.ADDITION) modifyResult.add else modifyResult.del
                                                     } else {
                                                         null
                                                     }
@@ -2340,9 +2340,9 @@ fun DiffScreen(
 //                                            val lineIndex = lineIndex.value
 
                                             //若非 新增行、删除行、上下文 ，不显示
-                                            if (!(lines.contains(Diff.Line.OriginType.ADDITION.toString())
-                                                        || lines.contains(Diff.Line.OriginType.DELETION.toString())
-                                                        || lines.contains(Diff.Line.OriginType.CONTEXT.toString())
+                                            if (!(lines.contains(PuppyLineOriginType.ADDITION)
+                                                        || lines.contains(PuppyLineOriginType.DELETION)
+                                                        || lines.contains(PuppyLineOriginType.CONTEXT)
                                                         )
                                             ) {
                                                 return@printLine
@@ -2523,7 +2523,7 @@ fun DiffScreen(
                                                         lineNumExpectLength = lineNumExpectLength,
                                                         //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
                                                         //这里del肯定不为null，因为 mergeDelAndAddToFakeContext 的条件包含了del和add都不为null
-                                                        line = del!!.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
+                                                        line = del!!.copy(originType = PuppyLineOriginType.CONTEXT),
                                                         fileFullPath = fileFullPath,
                                                         enableLineEditActions = enableLineEditActions,
                                                         clipboardManager = clipboardManager,
@@ -2618,9 +2618,9 @@ fun DiffScreen(
                                     //遍历行
                                     hunkAndLines.lines.forEachIndexedBetter printLine@{ lineIndex, line: PuppyLine ->
                                         //若非 新增行、删除行、上下文 ，不显示
-                                        if (line.originType == Diff.Line.OriginType.ADDITION.toString()
-                                            || line.originType == Diff.Line.OriginType.DELETION.toString()
-                                            || line.originType == Diff.Line.OriginType.CONTEXT.toString()
+                                        if (line.originType == PuppyLineOriginType.ADDITION
+                                            || line.originType == PuppyLineOriginType.DELETION
+                                            || line.originType == PuppyLineOriginType.CONTEXT
                                         ) {
                                             item {
 //                                                itemsCount.intValue++
@@ -2666,8 +2666,8 @@ fun DiffScreen(
                                 //EOF_NL only appear at last hunk, so better check index avoid non-sense iterate
                                 if (hunkIndex == lastHunkIndex) {
                                     // if delete EOFNL or add EOFNL , show it
-                                    val indexOfEOFNL =
-                                        hunkAndLines.lines.indexOfFirst { it.originType == Diff.Line.OriginType.ADD_EOFNL.toString() || it.originType == Diff.Line.OriginType.DEL_EOFNL.toString() }
+                                    val indexOfEOFNL = hunkAndLines.lines.indexOfFirst { it.originType == PuppyLineOriginType.ADD_EOFNL || it.originType == PuppyLineOriginType.DEL_EOFNL }
+
                                     if (indexOfEOFNL != -1) {  // found originType EOFNL
                                         val eofLine = hunkAndLines.lines.get(indexOfEOFNL)
                                         val fakeIndex = -1
@@ -2679,7 +2679,7 @@ fun DiffScreen(
                                                 index = fakeIndex,
 
                                                 lineNumExpectLength = lineNumExpectLength,
-                                                line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType == Diff.Line.OriginType.ADD_EOFNL.toString()),
+                                                line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType == PuppyLineOriginType.ADD_EOFNL),
                                                 fileFullPath = fileFullPath,
                                                 enableLineEditActions = enableLineEditActions,
                                                 clipboardManager = clipboardManager,
