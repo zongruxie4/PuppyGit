@@ -11,9 +11,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.catpuppyapp.puppygit.compose.FileDetailItem
 import com.catpuppyapp.puppygit.compose.MyLazyVerticalStaggeredGrid
 import com.catpuppyapp.puppygit.dto.FileDetail
+import com.catpuppyapp.puppygit.screen.content.listitem.FileDetailItem
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.utils.AppModel

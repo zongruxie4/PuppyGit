@@ -44,7 +44,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.catpuppyapp.puppygit.compose.AppItem
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FilterTextField
@@ -53,7 +52,6 @@ import com.catpuppyapp.puppygit.compose.LoadingTextUnScrollable
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
-import com.catpuppyapp.puppygit.compose.RepoNameAndIdItem
 import com.catpuppyapp.puppygit.compose.SelectedUnSelectedDialog
 import com.catpuppyapp.puppygit.compose.SelectionColumn
 import com.catpuppyapp.puppygit.compose.SettingsContent
@@ -63,6 +61,8 @@ import com.catpuppyapp.puppygit.compose.SizeIcon
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.AppInfo
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.content.listitem.AppItem
+import com.catpuppyapp.puppygit.screen.content.listitem.RepoNameAndIdItem
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.PackageNameAndRepo

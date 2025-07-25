@@ -156,7 +156,7 @@ data class RepoEntity(
     private var lastUpdateTimeFormattedCached:String? = null
 
 
-
+    @Ignore
     private var cached_OneLineLastestUnCheckedErrMsg:String? = null
     fun getCachedOneLineLatestUnCheckedErrMsg(): String = (cached_OneLineLastestUnCheckedErrMsg ?: Libgit2Helper.zipOneLineMsg(latestUncheckedErrMsg).let { cached_OneLineLastestUnCheckedErrMsg = it; it });
 

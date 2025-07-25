@@ -85,7 +85,6 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog2
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
-import com.catpuppyapp.puppygit.compose.FileListItem
 import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
 import com.catpuppyapp.puppygit.compose.GrantManageStoragePermissionClickableText
 import com.catpuppyapp.puppygit.compose.LoadingTextCancellable
@@ -97,7 +96,6 @@ import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
-import com.catpuppyapp.puppygit.compose.SelectedFileListItem
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.SingleLineCardButton
 import com.catpuppyapp.puppygit.compose.SingleSelection
@@ -114,6 +112,8 @@ import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.IgnoreItem
 import com.catpuppyapp.puppygit.git.ImportRepoResult
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.content.listitem.FileListItem
+import com.catpuppyapp.puppygit.screen.content.listitem.SelectedFileListItem
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
