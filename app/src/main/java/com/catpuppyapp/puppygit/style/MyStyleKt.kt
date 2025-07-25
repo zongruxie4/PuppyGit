@@ -155,8 +155,8 @@ object MyStyleKt{
         val disable = IconColor.disable
         val disable_DarkTheme = IconColor.disable_DarkTheme
 
-        private val highlighting_green_light =Color(0xFF04880D)
-        private val highlighting_green_dark =Color(0xFF1FAB26)
+        private val highlighting_green_light = Color(0xFF00790A)
+        private val highlighting_green_dark = Color(0xFF1FAB26)
 
         fun getHighlighting(inDarkTheme: Boolean = Theme.inDarkTheme) = if(inDarkTheme) highlighting_green_dark else highlighting_green_light
 
@@ -175,7 +175,7 @@ object MyStyleKt{
         val darkThemeFontColor = Color(0xFFADADAD)
 
         private val err_light = Color(0xFFA40000)
-        private val err_dark = Color(0xFFCE6C6C)
+        private val err_dark = Color(0xFFCE6161)
         fun error() = if(Theme.inDarkTheme) err_dark else err_light
 //        fun error() = Color.Red.copy(alpha = .8f)
 
