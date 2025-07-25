@@ -140,7 +140,7 @@ dependencies {
     implementation("org.eclipse.jdt:org.eclipse.jdt.annotation:2.3.100")
     implementation("org.jruby.joni:joni:2.2.6")
     implementation("com.google.code.gson:gson:2.13.1")
-    implementation("org.snakeyaml:snakeyaml-engine:2.9")
+    implementation("org.snakeyaml:snakeyaml-engine:2.10")
 
     // end: sora editor
 
@@ -174,7 +174,7 @@ dependencies {
 
 
     // ktor for http server (git pull/push api)
-    val ktorVersion = "3.0.3"
+    val ktorVersion = "3.2.2"
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
@@ -192,7 +192,7 @@ dependencies {
 
 
     implementation("androidx.documentfile:documentfile:1.1.0")
-    val lifecycleVersion = "2.9.1"
+    val lifecycleVersion = "2.9.2"
     implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
 
@@ -207,7 +207,7 @@ dependencies {
 //    implementation("com.github.kaleidot725:text-editor-compose:0.6.0")
 
     // room start
-    val room_version = "2.7.1"
+    val room_version = "2.7.2"
     implementation("androidx.room:room-runtime:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
     // To use Kotlin Symbol Processing (KSP)
@@ -228,7 +228,7 @@ dependencies {
 
     // javax NonNull annotation for git24j
     implementation("com.google.code.findbugs:jsr305:3.0.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 // https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit
 //    implementation("org.eclipse.jgit:org.eclipse.jgit:v6.6.1.202309021850-r")
 // https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit.pgm
@@ -257,7 +257,7 @@ dependencies {
 
 
     //对应组件的实际版本号，参见：https://developer.android.com/develop/ui/compose/bom/bom-mapping
-    val composeBom = platform("androidx.compose:compose-bom:2025.06.00")
+    val composeBom = platform("androidx.compose:compose-bom:2025.07.00")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     implementation("androidx.core:core-ktx:1.16.0")
