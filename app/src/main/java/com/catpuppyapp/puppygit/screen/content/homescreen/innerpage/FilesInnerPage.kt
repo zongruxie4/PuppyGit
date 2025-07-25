@@ -1184,7 +1184,7 @@ fun FilesInnerPage(
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(10.dp)
+                            .padding(MyStyleKt.defaultItemPadding)
                             .focusRequester(focusRequester),
                         value = renameFileName.value,
                         singleLine = true,
@@ -1646,7 +1646,7 @@ fun FilesInnerPage(
                     Column(
                         modifier = Modifier
                             .baseVerticalScrollablePageModifier(contentPadding, errScrollState)
-                            .padding(10.dp),
+                            .padding(MyStyleKt.defaultItemPadding),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {

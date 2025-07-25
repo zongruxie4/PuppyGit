@@ -30,6 +30,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.listItemPadding
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 
@@ -91,7 +92,7 @@ fun ReflogItem(
                     Modifier
                 }
             )
-            .padding(10.dp)
+            .listItemPadding()
 
 
     ) {

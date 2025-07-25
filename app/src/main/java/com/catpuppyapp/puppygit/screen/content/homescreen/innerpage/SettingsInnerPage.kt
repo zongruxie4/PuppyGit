@@ -399,7 +399,7 @@ fun SettingsInnerPage(
                         TextField(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(10.dp)
+                                .padding(MyStyleKt.defaultItemPadding)
                             ,
                             singleLine = true,
 

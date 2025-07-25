@@ -125,7 +125,7 @@ fun AboutInnerPage(
     Column(
         modifier = Modifier
             .baseVerticalScrollablePageModifier(contentPadding, listState)
-            .padding(10.dp)
+            .padding(MyStyleKt.defaultItemPadding)
         ,
         horizontalAlignment = Alignment.CenterHorizontally,
 
@@ -159,7 +159,7 @@ fun AboutInnerPage(
 
         MySelectionContainer {
             Column(
-                modifier = Modifier.padding(10.dp),
+                modifier = Modifier.padding(MyStyleKt.defaultItemPadding),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -309,7 +309,7 @@ fun AboutInnerPage(
             )
         }
 
-        MyHorizontalDivider(modifier = Modifier.padding(10.dp))
+        MyHorizontalDivider(modifier = Modifier.padding(MyStyleKt.defaultItemPadding))
 
         //开源项目列表
         TitleRow(stringResource(id = R.string.powered_by_open_source))
@@ -325,7 +325,7 @@ fun AboutInnerPage(
             )
         }
 
-        MyHorizontalDivider(modifier = Modifier.padding(10.dp))
+        MyHorizontalDivider(modifier = Modifier.padding(MyStyleKt.defaultItemPadding))
 
         //开源项目列表
         TitleRow("Thanks")
@@ -347,7 +347,7 @@ fun AboutInnerPage(
 @Composable
 private fun TitleRow(title:String) {
     MySelectionContainer {
-        Row (modifier = Modifier.padding(10.dp)){
+        Row (modifier = Modifier.padding(MyStyleKt.defaultItemPadding)){
             Text(text = title, fontWeight = FontWeight.Bold)
         }
     }

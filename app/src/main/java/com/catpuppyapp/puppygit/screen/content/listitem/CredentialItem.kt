@@ -38,6 +38,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
+import com.catpuppyapp.puppygit.utils.listItemPadding
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 
@@ -99,7 +100,7 @@ fun CredentialItem(
                     Modifier.background(UIHelper.getLastClickedColor())
                 }else Modifier
             )
-            .padding(10.dp)
+            .listItemPadding()
 
         ,
 

@@ -43,6 +43,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.listItemPadding
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.github.git24j.core.Branch
 import kotlinx.coroutines.delay
@@ -117,7 +118,7 @@ fun BranchItem(
                     Modifier
                 }
             )
-            .padding(10.dp)
+            .listItemPadding()
 
 
 

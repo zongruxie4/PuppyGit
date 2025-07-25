@@ -28,6 +28,7 @@ import com.catpuppyapp.puppygit.screen.functions.fromTagToCommitHistory
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.listItemPadding
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 
@@ -86,7 +87,7 @@ fun StashItem(
                     Modifier
                 }
             )
-            .padding(10.dp)
+            .listItemPadding()
 
 
     ) {

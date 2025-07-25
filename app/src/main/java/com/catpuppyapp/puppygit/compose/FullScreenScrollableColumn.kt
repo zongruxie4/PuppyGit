@@ -8,7 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 
 @Composable
@@ -23,7 +23,7 @@ fun FullScreenScrollableColumn(
             .baseVerticalScrollablePageModifier(contentPadding, rememberScrollState())
 
             // avoid text reached screen border
-            .padding(10.dp)
+            .padding(MyStyleKt.defaultItemPadding)
         ,
         verticalArrangement = verticalArrangement,
         horizontalAlignment = horizontalAlignment,

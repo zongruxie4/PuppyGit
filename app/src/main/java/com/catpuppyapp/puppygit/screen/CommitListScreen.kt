@@ -1989,7 +1989,7 @@ fun CommitListScreen(
                 Column(
                     modifier = Modifier
                         .baseVerticalScrollablePageModifier(contentPadding, rememberScrollState())
-                        .padding(10.dp)
+                        .padding(MyStyleKt.defaultItemPadding)
                     ,
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,

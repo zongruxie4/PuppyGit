@@ -624,7 +624,7 @@ fun TextEditor(
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(10.dp)
+                            .padding(MyStyleKt.defaultItemPadding)
                             .focusRequester(focusRequester)
                             .onPreviewKeyEvent { event ->
                                 if (event.type != KeyEventType.KeyDown) {

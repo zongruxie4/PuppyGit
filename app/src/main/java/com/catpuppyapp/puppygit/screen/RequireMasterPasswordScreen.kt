@@ -125,7 +125,7 @@ fun RequireMasterPasswordScreen(
         Column(
             modifier = Modifier
                 .baseVerticalScrollablePageModifier(contentPadding, rememberScrollState())
-                .padding(10.dp)
+                .padding(MyStyleKt.defaultItemPadding)
                 .imePadding()
             ,
             verticalArrangement = Arrangement.Center,

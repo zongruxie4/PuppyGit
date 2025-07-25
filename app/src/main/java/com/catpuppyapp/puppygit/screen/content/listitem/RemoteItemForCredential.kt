@@ -24,6 +24,7 @@ import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.utils.listItemPadding
 
 
 @Composable
@@ -48,7 +49,7 @@ fun RemoteItemForCredential(
 //            .defaultMinSize(minHeight = 100.dp)
             //padding要放到 combinedClickable后面，不然点按区域也会padding
 //            .background(if (idx % 2 == 0) Color.Transparent else CommitListSwitchColor)
-            .padding(10.dp)
+            .listItemPadding()
         ,
     ) {
 

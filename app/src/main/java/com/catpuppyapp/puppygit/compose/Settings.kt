@@ -40,7 +40,7 @@ fun SettingsContent(onClick:(()->Unit)?=null, content:@Composable ()->Unit) {
         modifier = (if (onClick != null) Modifier.clickable { onClick() } else Modifier)
             .fillMaxWidth()
             .defaultMinSize(minHeight = 60.dp)
-            .padding(10.dp)
+            .padding(MyStyleKt.defaultItemPadding)
         ,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween

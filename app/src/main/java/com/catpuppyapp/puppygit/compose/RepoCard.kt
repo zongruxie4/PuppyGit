@@ -137,10 +137,9 @@ fun RepoCard(
         horizontalAlignment = Alignment.CenterHorizontally,
     ){
         MyCard(
-            //0.9f 占父元素宽度的百分之90
             modifier = Modifier
-                .padding(10.dp)
-                .fillMaxWidth(0.95F)
+                .padding(MyStyleKt.defaultItemPadding)
+                .fillMaxWidth()
 
                 //使卡片按下效果圆角，但和elevation冲突，算了，感觉elevation更有立体感比这个重要，所以禁用这个吧
 //                .clip(CardDefaults.shape)  //使按下卡片的半透明效果符合卡片轮廓，不然卡片圆角，按下是尖角，丑陋

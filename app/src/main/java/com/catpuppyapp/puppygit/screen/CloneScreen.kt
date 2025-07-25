@@ -670,7 +670,7 @@ fun CloneScreen(
             TextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
+                    .padding(MyStyleKt.defaultItemPadding)
                     .focusRequester(focusRequesterGitUrl),
                 singleLine = true,
 
@@ -732,7 +732,7 @@ fun CloneScreen(
             TextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
+                    .padding(MyStyleKt.defaultItemPadding)
                     .focusRequester(focusRequesterRepoName)
                 ,
                 value = repoName.value,
@@ -831,7 +831,7 @@ fun CloneScreen(
             TextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
+                    .padding(MyStyleKt.defaultItemPadding),
 
                 value = branch.value,
                 singleLine = true,
@@ -948,7 +948,7 @@ fun CloneScreen(
                 TextField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp)
+                        .padding(MyStyleKt.defaultItemPadding)
                         .focusRequester(focusRequesterCredentialName)
                     ,
                     isError = showCredentialNameAlreadyExistsErr.value,
@@ -987,12 +987,12 @@ fun CloneScreen(
                         Modifier
                             .fillMaxWidth()
                             .heightIn(min = 300.dp, max = 300.dp)
-                            .padding(10.dp)
+                            .padding(MyStyleKt.defaultItemPadding)
 
                     }else{
                         Modifier
                             .fillMaxWidth()
-                            .padding(10.dp)
+                            .padding(MyStyleKt.defaultItemPadding)
                     }
                         ,
                     singleLine = curCredentialType.intValue != Cons.dbCredentialTypeSsh,
@@ -1041,7 +1041,7 @@ fun CloneScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp)
+                        .padding(MyStyleKt.defaultItemPadding)
 //                        .wrapContentSize(Alignment.Center)
                     ,
 

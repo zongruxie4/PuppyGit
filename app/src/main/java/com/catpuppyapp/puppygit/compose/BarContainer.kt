@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.dto.MenuIconBtnItem
 import com.catpuppyapp.puppygit.dto.MenuTextItem
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.UIHelper
 
 @Composable
@@ -62,7 +63,7 @@ fun BarContainer(
             )
             .background(MaterialTheme.colorScheme.surfaceDim)
             .fillMaxWidth()
-            .padding(10.dp)
+            .padding(MyStyleKt.defaultItemPadding)
         ,
         horizontalArrangement = horizontalArrangement,
         verticalAlignment = verticalAlignment,

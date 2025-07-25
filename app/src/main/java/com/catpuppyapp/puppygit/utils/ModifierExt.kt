@@ -59,3 +59,5 @@ fun Modifier.dropDownItemContainerColor(selected:Boolean):Modifier {
         this
     }
 }
+
+fun Modifier.listItemPadding() = padding(MyStyleKt.defaultItemPadding)

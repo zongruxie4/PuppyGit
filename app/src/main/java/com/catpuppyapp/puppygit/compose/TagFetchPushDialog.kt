@@ -184,14 +184,14 @@ fun TagFetchPushDialog(
                 }
 
                 if(!requireDel || requireDelRemoteChecked.value) {
-                    SelectionRow(modifier = Modifier.padding(10.dp)) {
+                    SelectionRow(modifier = Modifier.padding(MyStyleKt.defaultItemPadding)) {
                         Text(text = stringResource(R.string.select_remotes) +":")
                     }
 
                     RemoteCheckBoxList(itemList = remoteList, selectedList = selectedRemoteList, remoteCheckedList)
 
                     if(showForce) {
-                        SelectionRow(modifier = Modifier.padding(10.dp)) {
+                        SelectionRow(modifier = Modifier.padding(MyStyleKt.defaultItemPadding)) {
                             Text(text = stringResource(R.string.options) +":")
                         }
 

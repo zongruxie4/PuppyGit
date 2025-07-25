@@ -272,7 +272,7 @@ fun CredentialNewOrEdit(
             TextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
+                    .padding(MyStyleKt.defaultItemPadding)
                     .focusRequester(focusRequesterCredentialName)
                 ,
                 isError = showCredentialNameAlreadyExistsErr.value,
@@ -311,7 +311,7 @@ fun CredentialNewOrEdit(
 
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
+                    .padding(MyStyleKt.defaultItemPadding)
                         ,
                 value = credentialVal.value,
                 onValueChange = {

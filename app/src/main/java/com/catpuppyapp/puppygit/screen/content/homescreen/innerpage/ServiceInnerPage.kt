@@ -273,7 +273,7 @@ fun ServiceInnerPage(
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(10.dp),
+                            .padding(MyStyleKt.defaultItemPadding),
                         singleLine = true,
                         value = listenHostBuf.value,
                         onValueChange = {
@@ -345,7 +345,7 @@ fun ServiceInnerPage(
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(10.dp),
+                            .padding(MyStyleKt.defaultItemPadding),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         value = listenPortBuf.value,

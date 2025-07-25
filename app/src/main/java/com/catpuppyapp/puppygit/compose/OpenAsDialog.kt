@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -23,8 +21,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.forEachBetter
@@ -80,7 +78,7 @@ fun OpenAsDialog(
     PlainDialog(onClose = close) {
         Column(modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp)  //这个padding可以有，而且就应该在滚动修饰符上面，不然文字靠近弹窗边框，难看
+            .padding(MyStyleKt.defaultItemPadding)  //这个padding可以有，而且就应该在滚动修饰符上面，不然文字靠近弹窗边框，难看
             .verticalScroll(rememberScrollState())
             ,
         ) {

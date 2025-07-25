@@ -37,6 +37,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.listItemPadding
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 
 
@@ -91,7 +92,7 @@ fun TagItem(
             )
             //padding要放到 combinedClickable后面，不然点按区域也会padding；
             // padding要放到背景颜色后面，不然padding的区域不会着色
-            .padding(10.dp)
+            .listItemPadding()
 
 
 
