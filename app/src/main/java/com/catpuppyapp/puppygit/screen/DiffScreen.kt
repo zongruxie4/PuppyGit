@@ -64,8 +64,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
-import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
+import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.BarContainer
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialogAndDisableSelection
@@ -121,6 +120,8 @@ import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
@@ -2121,9 +2122,9 @@ fun DiffScreen(
 
                             val showOriginType = showOriginType.value
                             val showLineNum = showLineNum.value
-                            val fontSize = fontSize.value
+                            val fontSize = fontSize.intValue.sp
                             val lastHunkIndex = diffItem.hunks.size - 1;
-                            val lineNumSize = lineNumFontSize.intValue
+                            val lineNumSize = lineNumFontSize.intValue.sp
                             val getComparePairBuffer = { diffableItem.compareLinePair }
                             val setComparePairBuffer = { newCompareLinePair:CompareLinePair ->
                                 diffableItemList[diffableItemIdx] = diffableItemList[diffableItemIdx].copy(compareLinePair = newCompareLinePair)

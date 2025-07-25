@@ -26,8 +26,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.dev.DevFeature
@@ -80,8 +80,8 @@ fun DiffRow (
     repoId:String,
     showLineNum:Boolean,
     showOriginType:Boolean,
-    fontSize:Int,
-    lineNumSize:Int,
+    fontSize: TextUnit,
+    lineNumSize: TextUnit,
     getComparePairBuffer:() -> CompareLinePair,
     setComparePairBuffer: (CompareLinePair) -> Unit,
 //    comparePair:CustomStateSaveable<CompareLinePair>,
@@ -322,7 +322,7 @@ fun DiffRow (
             Text(
                 text = prefix,
                 color = lineNumColor,
-                fontSize = lineNumSize.sp,
+                fontSize = lineNumSize,
 //                fontFamily = FontFamily.Monospace, // 使用系统自带的等宽字体，不然那个+和-不等宽，看着难受
                 fontFamily = PLFont.codeFont,  // line number always use mono font for align +-（行号总是使用等宽字体，不然+-符号对不齐）
                 modifier = Modifier
@@ -395,7 +395,7 @@ fun DiffRow (
                     color = textColor,
                     overflow = TextOverflow.Visible,
                     softWrap = true,
-                    fontSize = fontSize.sp,
+                    fontSize = fontSize,
 
 
 
@@ -422,7 +422,7 @@ fun DiffRow (
                     color = textColor,
                     overflow = TextOverflow.Visible,
                     softWrap = true,
-                    fontSize = fontSize.sp,
+                    fontSize = fontSize,
                 )
 
             }
