@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.compose
+package com.catpuppyapp.puppygit.screen.content.listitem
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.catpuppyapp.puppygit.compose.SelectedItemDialog3
+import com.catpuppyapp.puppygit.compose.SizeIcon
+import com.catpuppyapp.puppygit.compose.TwoLineTextsAndIcons
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
