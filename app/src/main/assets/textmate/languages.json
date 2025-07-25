@@ -229,6 +229,12 @@
       "languageConfiguration": "textmate/powershell/language-configuration.json"
     },
     {
+      "grammar": "textmate/proguard/syntaxes/proguard.tmLanguage.json",
+      "name": "proguard",
+      "scopeName": "source.proguard",
+      "languageConfiguration": "textmate/proguard/language-configuration.json"
+    },
+    {
       "grammar": "textmate/python/syntaxes/python.tmLanguage.json",
       "name": "python",
       "scopeName": "source.python",

@@ -42,6 +42,7 @@ enum class PLScope(val scope: String) {
     PERL("source.perl"),
     PHP("source.php"),
     POWER_SHELL("source.powershell"),
+    PROGUARD("source.proguard"),
     PYTHON("source.python"),
     RAKU("source.perl.6"),
     RUBY("source.ruby"),
@@ -254,6 +255,10 @@ enum class PLScope(val scope: String) {
 
             if(fileName.endsWith(".sql")) {
                 return SQL
+            }
+
+            if(fileName.endsWith(".pro") || fileName.endsWith(".proguard") || fileName.endsWith(".r8")) {
+                return PROGUARD
             }
 
             if(fileName.endsWith(".swift")) {
