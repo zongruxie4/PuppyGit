@@ -544,13 +544,11 @@ fun FileEditor(
                         // 预览md的内容都是一整块，没有索引，所以这个顶部padding是固定添加的
                         Spacer(Modifier.addTopPaddingIfIsFirstLine(0))
 
-                        val mdContainerFont = if(SettingsUtil.isEditorUseSystemFonts()) null else PLFont.codeFont
-
                         MarkDownContainer(
                             content = mdText.value,
                             modifier = Modifier.padding(horizontal = 10.dp),
                             basePathNoEndSlash = basePath.value,
-                            style = LocalTextStyle.current.copy(fontSize = fontSize.intValue.sp, color = fontColor, fontFamily = mdContainerFont),
+                            style = LocalTextStyle.current.copy(fontSize = fontSize.intValue.sp, color = fontColor, fontFamily = PLFont.editorCodeFont()),
                             onLinkClicked = { link ->
                                 previewLinkHandler(link)
                             }

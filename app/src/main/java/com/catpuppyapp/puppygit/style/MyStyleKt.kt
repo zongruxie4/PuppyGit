@@ -170,7 +170,7 @@ object MyStyleKt{
 //        val lineNum_forEditorInDarkTheme = Color(0xFF535353)
 
         val fontColor = Color.Unspecified
-        val darkThemeFontColor = Color.Gray
+        val darkThemeFontColor = Color(0xFFADADAD)
 
         private val err_light = Color.Red.copy(alpha = .8f)
         private val err_dark = Color(0xFFF81A1A)
