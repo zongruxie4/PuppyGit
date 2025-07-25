@@ -20,7 +20,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -42,7 +42,6 @@ import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.settings.util.EditorSettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
@@ -84,14 +83,18 @@ fun EditorTitle(
 
     editorNeedSave: Boolean,
 ) {
-    val haptic = LocalHapticFeedback.current
+//    val haptic = LocalHapticFeedback.current
     val activityContext = LocalContext.current
 
-    val inDarkTheme = remember { Theme.inDarkTheme }
+//    val inDarkTheme = remember { Theme.inDarkTheme }
 
+    val softKbController = LocalSoftwareKeyboardController.current
     val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
     val closeMenu = { dropDownMenuExpandState.value = false }
-    val switchDropDownMenu = { dropDownMenuExpandState.apply { value = !value } }
+    val switchDropDownMenu = {
+        softKbController?.hide()
+        dropDownMenuExpandState.value = true
+    }
 
     val enableMenuItem = editorPageShowingFilePath.value.isNotBlank()
 
