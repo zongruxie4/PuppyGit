@@ -1418,7 +1418,7 @@ object FsUtils {
         // if content updated, replace the origin file
         if(found.not() && trueInsertFalseReplaceNullDelete==null){  // no update, remove temp file
             tempFile.delete()
-        }else {  // updated, move temp file to origin file, temp file will delete after move
+        }else {  // updated, move temp file to origin file, temp file will delete after moved
             tempFile.renameTo(file)
         }
     }
