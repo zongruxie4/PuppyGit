@@ -4,10 +4,14 @@
 ---
 1.1.3.5v111 - 20250724:
 - markdown support kotlin code block
+- fix editor menu can't full expanded after ime hidden
+- update dependencies
 
 
 
 - markdown支持kotlin代码块
+- 修复编辑器菜单在输入法隐藏后无法完全展开的bug
+- 升级依赖
 
 ---
 1.1.3.4v110 - 20250719:
