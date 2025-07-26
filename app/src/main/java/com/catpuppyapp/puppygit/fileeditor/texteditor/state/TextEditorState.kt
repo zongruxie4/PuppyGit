@@ -1871,8 +1871,10 @@ class TextEditorState(
         val cursorAt = if (fv.selection.collapsed) fv.selection.start else 0
         val sb = StringBuilder(fv.text.substring(0, cursorAt))
         val newText = sb.append(tabToSpaces(tabIndentSpacesCount)).append(fv.text.substring(cursorAt, fv.text.length)).toString()
-        val newSelection = if (fv.selection.collapsed) TextRange(cursorAt + tabIndentSpacesCount)
-        else TextRange(start = fv.selection.start + tabIndentSpacesCount, end = fv.selection.end + tabIndentSpacesCount)
+        //at least 1char, because even set tabIndentSpacesCount to less than 0, it still will insert a real tab
+        val cursorOffset = tabIndentSpacesCount.coerceAtLeast(1)
+        val newSelection = if (fv.selection.collapsed) TextRange(cursorAt + cursorOffset)
+        else TextRange(start = fv.selection.start + cursorOffset, end = fv.selection.end + cursorOffset)
 
         return HandleTabRet(newText, newSelection, true)
     }
