@@ -1897,11 +1897,13 @@ class TextEditorState(
         // when reached here, must starts with at least 1 tab or space
 
         var useSubString = false
-
+        var leftSub = ""
         val text = if(fv.selection.collapsed && fv.selection.start.let { it > 0 && it < fv.text.length }) {
-            fv.text.substring(fv.selection.start).let {
+            leftSub = fv.text.substring(0, fv.selection.start)
+            val rightSub = fv.text.substring(fv.selection.start)
+            rightSub.let {
                 // here should use isBlank() rather than isEmpty()
-                if(it.isBlank() || (it.startsWith(IndentChar.SPACE.char).not() && it.startsWith(IndentChar.TAB.char).not())) {
+                if(leftSub.isNotBlank() || it.isBlank() || (it.startsWith(IndentChar.SPACE.char).not() && it.startsWith(IndentChar.TAB.char).not())) {
                     useSubString = false
                     fv.text
                 } else {
@@ -1937,7 +1939,7 @@ class TextEditorState(
 
         val newText = if(useSubString) {
             StringBuilder().apply {
-                append(fv.text.substring(0, fv.selection.start))
+                append(leftSub)
                 append(newTextTmp)
             }.toString()
         }else {
