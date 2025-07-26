@@ -62,6 +62,7 @@ import com.catpuppyapp.puppygit.compose.AddRepoDropDownMenu
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialog
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomBar
+import com.catpuppyapp.puppygit.compose.CommitMsgMarkDownDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
@@ -87,6 +88,7 @@ import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.etc.Ret
+import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
@@ -1878,6 +1880,26 @@ fun RepoInnerPage(
         }
     }
 
+
+    val showItemMsgDialog = rememberSaveable { mutableStateOf(false) }
+    val textOfItemMsgDialog = rememberSaveable { mutableStateOf("") }
+    val previewModeOnOfItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgPreviewModeOn) }
+    val useSystemFontsForItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgUseSystemFonts) }
+    val showItemMsg = { repoDto: RepoEntity ->
+        textOfItemMsgDialog.value = repoDto.latestCommitMsg
+        showItemMsgDialog.value = true
+    }
+
+    if(showItemMsgDialog.value) {
+        CommitMsgMarkDownDialog(
+            dialogVisibleState = showItemMsgDialog,
+            text = textOfItemMsgDialog.value,
+            previewModeOn = previewModeOnOfItemMsgDialog,
+            useSystemFonts = useSystemFontsForItemMsgDialog,
+
+        )
+    }
+
     val initErrMsgDialog = { repoEntity: RepoEntity, errMsg:String ->
         val repoId = repoEntity.id
 
@@ -2006,6 +2028,7 @@ fun RepoInnerPage(
                             || it.cachedLastUpdateTime().lowercase().contains(keyword)
                             || it.latestUncheckedErrMsg.lowercase().contains(keyword)
                             || it.tmpStatus.lowercase().contains(keyword)
+                            || it.getOrUpdateCachedOneLineLatestCommitMsg().lowercase().contains(keyword)
                             || it.createErrMsgForView(activityContext).lowercase().contains(keyword)
                             || it.getOther().lowercase().contains(keyword)
                             || it.getRepoStateStr(activityContext).lowercase().contains(keyword)
@@ -2088,6 +2111,7 @@ fun RepoInnerPage(
                             },
                             doCloneSingle = doCloneSingle,
                             initErrMsgDialog = initErrMsgDialog,
+                            initCommitMsgDialog = showItemMsg,
 
                         ) workStatusOnclick@{ clickedRepo, status ->  //这个是点击status的callback，这个status其实可以不传，因为这里的lambda能捕获到数组的元素，就是当前仓库
 

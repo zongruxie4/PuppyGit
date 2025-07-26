@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
+import androidx.compose.material.icons.automirrored.outlined.Message
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Commit
 import androidx.compose.material.icons.filled.Delete
@@ -27,14 +28,10 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,7 +44,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -60,7 +56,6 @@ import com.catpuppyapp.puppygit.screen.shared.CommitListFrom
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -68,7 +63,6 @@ import com.catpuppyapp.puppygit.utils.copyAndShowCopied
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
 import kotlinx.coroutines.delay
 
@@ -98,6 +92,7 @@ fun RepoCard(
     requireDelRepo:(RepoEntity)->Unit,
     doCloneSingle:(RepoEntity)->Unit,
     initErrMsgDialog:(RepoEntity, errMsg: String)->Unit,
+    initCommitMsgDialog:(RepoEntity)->Unit,
     workStatusOnclick:(clickedRepo:RepoEntity, status:Int)->Unit
 ) {
     val navController = AppModel.navController
@@ -307,6 +302,31 @@ fun RepoCard(
                                             )
                                     },
                                     fontWeight = defaultFontWeight
+
+                                )
+                            }
+                        }
+
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            InLineIcon(
+                                icon = Icons.AutoMirrored.Outlined.Message,
+                                tooltipText = stringResource(R.string.msg)
+                            )
+
+                            ScrollableRow {
+                                ClickableText (
+                                    text = repoDto.getOrUpdateCachedOneLineLatestCommitMsg(),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontWeight = defaultFontWeight,
+                                    modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
+                                        enabled = repoStatusGood,
+                                    ) {
+                                        initCommitMsgDialog(repoDto)
+                                    },
 
                                 )
                             }
