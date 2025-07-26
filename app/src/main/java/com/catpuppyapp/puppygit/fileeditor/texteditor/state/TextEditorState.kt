@@ -1881,6 +1881,8 @@ class TextEditorState(
 
     /**
      * @return new text and new selection for `fields[idx]`
+     *
+     * the outdent behavior just like jet brains ide
      */
     private fun doShiftTab(
         tabIndentSpacesCount: Int,
@@ -1894,9 +1896,26 @@ class TextEditorState(
 
         // when reached here, must starts with at least 1 tab or space
 
-        val text = fv.text
+        var useSubString = false
+
+        val text = if(fv.selection.collapsed && fv.selection.start.let { it > 0 && it < fv.text.length }) {
+            fv.text.substring(fv.selection.start).let {
+                // here should use isBlank() rather than isEmpty()
+                if(it.isBlank() || (it.startsWith(IndentChar.SPACE.char).not() && it.startsWith(IndentChar.TAB.char).not())) {
+                    useSubString = false
+                    fv.text
+                } else {
+                    useSubString = true
+                    it
+                }
+            }
+        } else {
+            useSubString = false
+            fv.text
+        }
+
         // remove till non-space char
-        val (newText, removedCount) = if (tabIndentSpacesCount < 1 || text.startsWith(IndentChar.TAB.char)) {  // remove a tab or a space
+        val (newTextTmp, removedCount) = if (tabIndentSpacesCount < 1 || text.startsWith(IndentChar.TAB.char)) {  // remove a tab or a space
             // if `tabIndentSpacesCount < 1`, then it means use a real tab instead of few spaces,
             // in logically, we should remove a tab at here,
             // but, in practically, we expect remove a space or a tab after pressed shift+tab
@@ -1916,12 +1935,26 @@ class TextEditorState(
             Pair(if (removed == 0) text else text.substring(removed, text.length), removed)
         }
 
+        val newText = if(useSubString) {
+            StringBuilder().apply {
+                append(fv.text.substring(0, fv.selection.start))
+                append(newTextTmp)
+            }.toString()
+        }else {
+            newTextTmp
+        }
+
 
         return if (removedCount < 1) {
             HandleTabRet(newText = newText, newSelection = fv.selection, changed = false)
         } else {
             val newSelection = if (fv.selection.collapsed) {
-                TextRange((fv.selection.start - removedCount).coerceAtLeast(0))
+                if(useSubString) {
+                    // if use sub string, we operate the sub string which on the right side of the text, so the cursor haven't moved
+                    TextRange(fv.selection.start)
+                } else {
+                    TextRange((fv.selection.start - removedCount).coerceAtLeast(0))
+                }
             } else {
                 TextRange(start = (fv.selection.start - removedCount).coerceAtLeast(0), end = (fv.selection.end - removedCount).coerceAtLeast(0))
             }
