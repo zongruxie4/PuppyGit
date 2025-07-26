@@ -372,7 +372,7 @@ fun FileEditor(
                                         val index = focusedLineIndex
                                         val event = keyEvent
 
-                                        // delete
+                                        // backspace
                                         if (onPreviewDelKeyEvent(event, selection) {
                                                 doJobThenOffLoading {
                                                     try {
@@ -383,7 +383,24 @@ fun FileEditor(
                                                         MyLog.e(TAG, "#onDeleteNewLine err: "+e.stackTraceToString())
                                                     }
                                                 }
-                                            }) {
+                                        }) {
+                                            return@opke true
+                                        }
+
+                                        // Delete key
+                                        if (onPreviewForwardDelKeyEvent(event, selection, textFieldValue) {
+                                                // delete current line's end equals to delete next line's start, so plus 1
+                                                val index = index + 1
+                                                doJobThenOffLoading {
+                                                    try {
+                                                        textEditorState.deleteNewLine(targetIndex = index)
+                                                        if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
+                                                    }catch (e:Exception) {
+                                                        Msg.requireShowLongDuration("forward delete err: "+e.localizedMessage)
+                                                        MyLog.e(TAG, "#onDeleteNewLine err: forward delete err: "+e.stackTraceToString())
+                                                    }
+                                                }
+                                        }) {
                                             return@opke true
                                         }
 
