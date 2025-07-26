@@ -2500,14 +2500,14 @@ class TextEditorState(
     suspend fun moveCursor(
         trueToLeftFalseRight: Boolean,
         textFieldState: TextFieldState,
-        idx: Int,
+        targetFieldIndex: Int,
         headOrTail: Boolean
     ) {
         if(isMultipleSelectionMode) {
             return
         }
 
-        if(idx < 0 || idx >= fields.size) {
+        if(targetFieldIndex < 0 || targetFieldIndex >= fields.size) {
             return
         }
 
@@ -2518,8 +2518,8 @@ class TextEditorState(
 
         val atLineHead = textRange.start == 0
         val atLineTail = textRange.start == textFieldState.value.text.length
-        val atFileHead = idx == 0
-        val atFileTail = idx == fields.lastIndex
+        val atFileHead = targetFieldIndex == 0
+        val atFileTail = targetFieldIndex == fields.lastIndex
 
         if(atLineHead && atFileHead && trueToLeftFalseRight) {
             return
@@ -2531,7 +2531,7 @@ class TextEditorState(
 
         if(atLineHead && trueToLeftFalseRight) {
             selectField(
-                targetIndex = idx - 1,
+                targetIndex = targetFieldIndex - 1,
                 option = SelectionOption.LAST_POSITION
             )
             return
@@ -2540,7 +2540,7 @@ class TextEditorState(
 
         if(atLineTail && !trueToLeftFalseRight) {
             selectField(
-                targetIndex = idx + 1,
+                targetIndex = targetFieldIndex + 1,
                 option = SelectionOption.FIRST_POSITION
             )
             return
@@ -2558,7 +2558,7 @@ class TextEditorState(
             }
 
             val newFields = fields.toMutableList()
-            newFields[idx] = newFields[idx].copy(value = textFieldState.value.copy(selection = newTextRange))
+            newFields[targetFieldIndex] = newFields[targetFieldIndex].copy(value = textFieldState.value.copy(selection = newTextRange))
 
             val newState = internalCreate(
                 fields = newFields,

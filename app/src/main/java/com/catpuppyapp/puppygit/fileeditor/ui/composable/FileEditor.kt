@@ -1,5 +1,10 @@
 package com.catpuppyapp.puppygit.fileeditor.ui.composable
 
+import android.view.KeyEvent.KEYCODE_DEL
+import android.view.KeyEvent.KEYCODE_DPAD_DOWN
+import android.view.KeyEvent.KEYCODE_DPAD_LEFT
+import android.view.KeyEvent.KEYCODE_DPAD_RIGHT
+import android.view.KeyEvent.KEYCODE_DPAD_UP
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -51,8 +56,11 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isAltPressed
 import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
@@ -64,14 +72,14 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
-import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
-import com.catpuppyapp.puppygit.syntaxhighlight.base.PLTheme
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.MarkDownContainer
@@ -81,6 +89,7 @@ import com.catpuppyapp.puppygit.compose.SwipeIcon
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
 import com.catpuppyapp.puppygit.play.pro.R
@@ -91,6 +100,8 @@ import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
@@ -349,6 +360,156 @@ fun FileEditor(
 
                                 val textEditorState = textEditorState.value
                                 val lastScrollEvent = editorLastScrollEvent
+
+
+                                if(keyEvent.isCtrlPressed.not() && keyEvent.isShiftPressed.not() && readOnlyMode.not() && textEditorState.isMultipleSelectionMode.not()) {
+
+                                    val (focusedLineIndex, textFieldState) = textEditorState.getCurrentField()
+
+                                    if(focusedLineIndex != null && textFieldState != null && lastScrollEvent.value.let { it == null || it.isConsumed }) {
+                                        val textFieldValue = textFieldState.value
+                                        val selection = textFieldValue.selection
+                                        val index = focusedLineIndex
+                                        val event = keyEvent
+
+                                        // delete
+                                        if (onPreviewDelKeyEvent(event, selection) {
+                                                doJobThenOffLoading {
+                                                    try {
+                                                        textEditorState.deleteNewLine(targetIndex = index)
+                                                        if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
+                                                    }catch (e:Exception) {
+                                                        Msg.requireShowLongDuration("#onDeleteNewLine err: "+e.localizedMessage)
+                                                        MyLog.e(TAG, "#onDeleteNewLine err: "+e.stackTraceToString())
+                                                    }
+                                                }
+                                            }) {
+                                            return@opke true
+                                        }
+
+                                        if (onPreviewUpKeyEvent(event) {
+                                                doJobThenOffLoading {
+                                                    try {
+                                                        textEditorState.selectPrevOrNextField(
+                                                            isNext = false,
+                                                            updateLastCursorAtColumn,
+                                                            getLastCursorAtColumnValue,
+                                                        )
+                                                        if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
+                                                    }catch (e:Exception) {
+                                                        Msg.requireShowLongDuration("#onUpFocus err: "+e.localizedMessage)
+                                                        MyLog.e(TAG, "#onUpFocus err: "+e.stackTraceToString())
+                                                    }
+                                                }
+                                            }) {
+                                            return@opke true
+                                        }
+
+
+                                        if (onPreviewDownKeyEvent(event) {
+                                                doJobThenOffLoading {
+                                                    try {
+                                                        textEditorState.selectPrevOrNextField(
+                                                            isNext = true,
+                                                            updateLastCursorAtColumn,
+                                                            getLastCursorAtColumnValue,
+                                                        )
+                                                        if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
+                                                    }catch (e:Exception) {
+                                                        Msg.requireShowLongDuration("#onDownFocus err: "+e.localizedMessage)
+                                                        MyLog.e(TAG, "#onDownFocus err: "+e.stackTraceToString())
+                                                    }
+                                                }
+                                            }) {
+                                            return@opke true
+                                        }
+
+
+                                        if (onPreviewLeftKeyEvent(event, textFieldState) {
+                                                doJobThenOffLoading {
+                                                    try {
+                                                        textEditorState.moveCursor(
+                                                            trueToLeftFalseRight = true,
+                                                            textFieldState = textFieldState,
+                                                            targetFieldIndex = index,
+                                                            headOrTail = false,
+                                                        )
+
+                                                        if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
+                                                    }catch (e:Exception) {
+                                                        Msg.requireShowLongDuration("#onLeftPressed err: "+e.localizedMessage)
+                                                        MyLog.e(TAG, "#onLeftPressed err: "+e.stackTraceToString())
+                                                    }
+                                                }
+
+                                        }) {
+                                            return@opke true
+                                        }
+
+                                        if (onPreviewRightKeyEvent(event, textFieldState) {
+                                                doJobThenOffLoading {
+                                                    try {
+                                                        textEditorState.moveCursor(
+                                                            trueToLeftFalseRight = false,
+                                                            textFieldState = textFieldState,
+                                                            targetFieldIndex = index,
+                                                            headOrTail = false,
+                                                        )
+
+                                                        if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
+                                                    } catch (e: Exception) {
+                                                        Msg.requireShowLongDuration("#onRightPressed err: " + e.localizedMessage)
+                                                        MyLog.e(TAG, "#onRightPressed err: " + e.stackTraceToString())
+                                                    }
+                                                }
+                                        }) {
+                                            return@opke true
+                                        }
+
+                                        if (onPreviewHomeKeyEvent(event, textFieldState) {
+                                                doJobThenOffLoading {
+                                                    try {
+                                                        textEditorState.moveCursor(
+                                                            trueToLeftFalseRight = true,
+                                                            textFieldState = textFieldState,
+                                                            targetFieldIndex = index,
+                                                            headOrTail = true,
+                                                        )
+
+                                                        if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
+                                                    }catch (e:Exception) {
+                                                        Msg.requireShowLongDuration("#onLeftPressed err: "+e.localizedMessage)
+                                                        MyLog.e(TAG, "#onLeftPressed err: "+e.stackTraceToString())
+                                                    }
+                                                }
+                                        }) {
+                                            return@opke true
+                                        }
+
+                                        if (onPreviewEndKeyEvent(event, textFieldState) {
+                                                doJobThenOffLoading {
+                                                    try {
+                                                        textEditorState.moveCursor(
+                                                            trueToLeftFalseRight = false,
+                                                            textFieldState = textFieldState,
+                                                            targetFieldIndex = index,
+                                                            headOrTail = true,
+                                                        )
+
+                                                        if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
+                                                    } catch (e: Exception) {
+                                                        Msg.requireShowLongDuration("#onRightPressed err: " + e.localizedMessage)
+                                                        MyLog.e(TAG, "#onRightPressed err: " + e.stackTraceToString())
+                                                    }
+                                                }
+                                        }) {
+                                            return@opke true
+                                        }
+
+                                    }
+
+                                }
+
 
 
                                 if (keyEvent.isCtrlPressed && keyEvent.key == Key.S) { // save
@@ -1091,4 +1252,151 @@ private fun Modifier.changeTypeIndicator(
         )
 
     }
+}
+
+
+private fun onPreviewHomeKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+    return onPreviewHomeOrEndKeyEvent(event, textFieldState, trueHomeFalseEnd = true, invoke)
+}
+
+private fun onPreviewEndKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+    return onPreviewHomeOrEndKeyEvent(event, textFieldState, trueHomeFalseEnd = false, invoke)
+}
+
+private fun onPreviewLeftKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+    return onPreviewLeftOrRightKeyEvent(event, textFieldState, trueLeftFalseRight = true, invoke)
+}
+
+private fun onPreviewRightKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+    return onPreviewLeftOrRightKeyEvent(event, textFieldState, trueLeftFalseRight = false, invoke)
+}
+
+private fun onPreviewUpKeyEvent(event: KeyEvent, invoke: () -> Unit): Boolean {
+    return onPreviewUpOrDownKeyEvent(event, trueUpFalseDown = true, invoke)
+}
+
+private fun onPreviewDownKeyEvent(event: KeyEvent, invoke: () -> Unit): Boolean {
+    return onPreviewUpOrDownKeyEvent(event, trueUpFalseDown = false, invoke)
+}
+
+
+// backspace
+private fun onPreviewDelKeyEvent(
+    event: KeyEvent,
+    selection: TextRange,
+    invoke: () -> Unit
+): Boolean {
+    //不是删除不响应
+    val isDelKey = event.nativeKeyEvent.keyCode == KEYCODE_DEL
+    if (!isDelKey) return false
+
+    //没删除到行开头不响应，这时由TextField负责更新数据，
+    // 若删除到行开头则需要在TextFiled外部将当前TextField从列表移除，所以需要外部处理
+    val isEmpty = selection == TextRange.Zero
+    if (!isEmpty) return false
+
+    //处理事件
+    invoke()
+    return true
+}
+
+// Delete
+private fun onPreviewForwardDelKeyEvent(
+    event: KeyEvent,
+    selection: TextRange,
+    field: TextFieldValue,
+    invoke: () -> Unit
+): Boolean {
+    if (event.key != Key.Delete || selection.collapsed.not() || selection.start != field.text.length) {
+        return false
+    }
+
+    //处理事件
+    invoke()
+    return true
+}
+
+private fun onPreviewUpOrDownKeyEvent(
+    event: KeyEvent,
+
+    trueUpFalseDown: Boolean,
+    invoke: () -> Unit,
+): Boolean {
+    if(event.isCtrlPressed || event.isShiftPressed || event.isAltPressed || event.isMetaPressed) return false
+
+    val expectedKey = if (trueUpFalseDown) KEYCODE_DPAD_UP else KEYCODE_DPAD_DOWN
+    val isExpectedKey = event.nativeKeyEvent.keyCode == expectedKey
+    if (!isExpectedKey) return false
+
+//    val atStartOfLine = selection == TextRange.Zero
+//    if (!atStartOfLine) return false
+
+    invoke()
+    return true
+}
+
+private fun onPreviewLeftOrRightKeyEvent(
+    event: KeyEvent,
+    field: TextFieldState,
+    trueLeftFalseRight: Boolean,
+    invoke: () -> Unit,
+): Boolean {
+    if(event.isCtrlPressed || event.isShiftPressed || event.isAltPressed || event.isMetaPressed || field.value.selection.collapsed.not()) return false
+
+    val expectedKey = if(trueLeftFalseRight) KEYCODE_DPAD_LEFT else KEYCODE_DPAD_RIGHT
+    val isExceptedKey = event.nativeKeyEvent.keyCode == expectedKey
+    if (!isExceptedKey) return false
+
+
+    invoke()
+
+    return true
+}
+
+
+private fun onPreviewHomeOrEndKeyEvent(
+    event: KeyEvent,
+    field: TextFieldState,
+    trueHomeFalseEnd: Boolean,
+    invoke: () -> Unit,
+): Boolean {
+    if(event.isShiftPressed || event.isAltPressed || event.isMetaPressed || field.value.selection.collapsed.not()) return false
+
+    val expectedKey = if(trueHomeFalseEnd) Key.MoveHome else Key.MoveEnd
+    val isExpectedKey = event.key == expectedKey
+    if (!isExpectedKey) return false
+
+    val pos = field.value.selection.start
+    if((event.isCtrlPressed && (pos != 0 && pos != field.value.text.length))) return false
+
+    invoke()
+    return true
+}
+
+
+@Deprecated("due to `BasicTextField` can handle \\n by it self, so no need this function")
+private fun insertNewLineAtCursor(textFieldValue: TextFieldValue):String {
+    val splitPosition = textFieldValue.selection.start  //光标位置，有可能在行末尾，这时和text.length相等，并不会越界
+    val maxOfPosition = textFieldValue.text.length
+
+    //这个情况不应该发生
+    if (splitPosition < 0 || splitPosition > maxOfPosition) {  //第2个判断没错，就是大于最大位置，不是大于等于，没写错，光标位置有可能在行末尾，这时其索引和text.length相等，所以只有大于才有问题
+        val errMsg = "splitPosition '$splitPosition' out of range '[0, $maxOfPosition]'"
+        MyLog.e(TAG, "#getNewTextOfLine: $errMsg")
+        throw RuntimeException(errMsg)
+    }
+
+    // 在光标位置插入个换行符然后返回就行了
+    return textFieldValue.text.let {
+        val sb = StringBuilder()
+        sb.append(it.substring(0, splitPosition))
+        sb.append("\n")
+
+        //这里不需要判断，string.substring() 可用的startIndex最大值即为string.length，
+        // 若是length，会返回空字符串，与期望一致
+        sb.append(it.substring(splitPosition))
+
+        sb.toString()
+    }
+
 }

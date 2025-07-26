@@ -1087,7 +1087,6 @@ fun TextEditor(
                                     .then(modifier)
                             ) {
                                 MyTextField(
-                                    idx = index,
                                     scrollIfInvisible = {
                                         scrollIfIndexInvisible(index)
                                     },
@@ -1155,40 +1154,6 @@ fun TextEditor(
                                         }
 
                                     },
-                                    onAddNewLine = cb@{ newText ->
-
-                                        if (lastScrollEvent.value?.isConsumed == false) return@cb
-
-                                        doJobThenOffLoading {
-                                            try {
-                                                textEditorState.splitNewLine(
-                                                    targetIndex = index,
-                                                    textFieldValue = newText
-                                                )
-
-                                                lastScrollEvent.value = ScrollEvent(index + 1)
-                                            }catch (e:Exception) {
-                                                Msg.requireShowLongDuration("#onAddNewLine err: "+e.localizedMessage)
-                                                MyLog.e(TAG, "#onAddNewLine err: "+e.stackTraceToString())
-                                            }
-                                        }
-
-                                    },
-                                    onDeleteNewLine = cb@{
-                                        //这是要确保上一个滚动事件已被消费？有必要吗？
-                                        if (lastScrollEvent.value?.isConsumed == false) return@cb
-
-                                        doJobThenOffLoading {
-                                            try {
-                                                textEditorState.deleteNewLine(targetIndex = index)
-                                                if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
-                                            }catch (e:Exception) {
-                                                Msg.requireShowLongDuration("#onDeleteNewLine err: "+e.localizedMessage)
-                                                MyLog.e(TAG, "#onDeleteNewLine err: "+e.stackTraceToString())
-                                            }
-                                        }
-
-                                    },
                                     onFocus = {
                                         doJobThenOffLoading {
                                             try {
@@ -1203,80 +1168,7 @@ fun TextEditor(
                                         }
 
                                     },
-                                    onUpFocus = cb@{
-                                        if (lastScrollEvent.value?.isConsumed == false) return@cb
 
-                                        doJobThenOffLoading {
-                                            try {
-                                                textEditorState.selectPrevOrNextField(
-                                                    isNext = false,
-                                                    updateLastCursorAtColumn,
-                                                    getLastCursorAtColumnValue,
-                                                )
-                                                if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
-                                            }catch (e:Exception) {
-                                                Msg.requireShowLongDuration("#onUpFocus err: "+e.localizedMessage)
-                                                MyLog.e(TAG, "#onUpFocus err: "+e.stackTraceToString())
-                                            }
-                                        }
-
-                                    },
-                                    onDownFocus = cb@{
-                                        if (lastScrollEvent.value?.isConsumed == false) return@cb
-                                        doJobThenOffLoading {
-                                            try {
-                                                textEditorState.selectPrevOrNextField(
-                                                    isNext = true,
-                                                    updateLastCursorAtColumn,
-                                                    getLastCursorAtColumnValue,
-                                                )
-                                                if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
-                                            }catch (e:Exception) {
-                                                Msg.requireShowLongDuration("#onDownFocus err: "+e.localizedMessage)
-                                                MyLog.e(TAG, "#onDownFocus err: "+e.stackTraceToString())
-                                            }
-                                        }
-
-                                    },
-                                    onLeftPressed = cb@{ it, idx, headOrTail ->
-                                        if (lastScrollEvent.value?.isConsumed == false) return@cb
-
-                                        doJobThenOffLoading {
-                                            try {
-                                                textEditorState.moveCursor(
-                                                    trueToLeftFalseRight = true,
-                                                    it,
-                                                    idx,
-                                                    headOrTail = headOrTail,
-                                                )
-                                                if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
-                                            }catch (e:Exception) {
-                                                Msg.requireShowLongDuration("#onLeftPressed err: "+e.localizedMessage)
-                                                MyLog.e(TAG, "#onLeftPressed err: "+e.stackTraceToString())
-                                            }
-                                        }
-
-                                    },
-                                    onRightPressed = cb@{ it, idx, headOrTail ->
-                                        if (lastScrollEvent.value?.isConsumed == false) return@cb
-
-                                        doJobThenOffLoading {
-                                            try {
-                                                textEditorState.moveCursor(
-                                                    trueToLeftFalseRight = false,
-                                                    it,
-                                                    idx,
-                                                    headOrTail = headOrTail,
-
-                                                    )
-                                                if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
-                                            }catch (e:Exception) {
-                                                Msg.requireShowLongDuration("#onRightPressed err: "+e.localizedMessage)
-                                                MyLog.e(TAG, "#onRightPressed err: "+e.stackTraceToString())
-                                            }
-                                        }
-
-                                    },
                                 )
                             }
                         }
