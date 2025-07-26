@@ -1011,7 +1011,9 @@ fun TextEditor(
                 val bottomHalfStopIndex = size
 
                 //fields本身就是toList()出来的，无需再toList()
-                textEditorState.fields.forEachIndexedBetter { index, textFieldState ->
+                for(index in 0 until topHalfStopIndex) {
+                    val textFieldState = textEditorState.fields.getOrNull(index) ?: continue
+
                     val curLineText = textFieldState.value.text
 
                     // patch开头的行（+ -）和merge开头的行（7个=号）并不冲突
