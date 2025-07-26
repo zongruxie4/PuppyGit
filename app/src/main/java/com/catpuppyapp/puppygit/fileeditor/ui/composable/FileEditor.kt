@@ -366,7 +366,7 @@ fun FileEditor(
 
                                     val (focusedLineIndex, textFieldState) = textEditorState.getCurrentField()
 
-                                    if(focusedLineIndex != null && textFieldState != null && lastScrollEvent.value.let { it == null || it.isConsumed }) {
+                                    if(focusedLineIndex != null && textFieldState != null) {
                                         val textFieldValue = textFieldState.value
                                         val selection = textFieldValue.selection
                                         val index = focusedLineIndex
@@ -377,7 +377,6 @@ fun FileEditor(
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.deleteNewLine(targetIndex = index)
-                                                        if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onDeleteNewLine err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onDeleteNewLine err: "+e.stackTraceToString())
@@ -394,7 +393,6 @@ fun FileEditor(
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.deleteNewLine(targetIndex = index)
-                                                        if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("forward delete err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onDeleteNewLine err: forward delete err: "+e.stackTraceToString())
@@ -412,7 +410,6 @@ fun FileEditor(
                                                             updateLastCursorAtColumn,
                                                             getLastCursorAtColumnValue,
                                                         )
-                                                        if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onUpFocus err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onUpFocus err: "+e.stackTraceToString())
@@ -431,7 +428,6 @@ fun FileEditor(
                                                             updateLastCursorAtColumn,
                                                             getLastCursorAtColumnValue,
                                                         )
-                                                        if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onDownFocus err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onDownFocus err: "+e.stackTraceToString())
@@ -452,7 +448,6 @@ fun FileEditor(
                                                             headOrTail = false,
                                                         )
 
-                                                        if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onLeftPressed err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onLeftPressed err: "+e.stackTraceToString())
@@ -473,7 +468,6 @@ fun FileEditor(
                                                             headOrTail = false,
                                                         )
 
-                                                        if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
                                                     } catch (e: Exception) {
                                                         Msg.requireShowLongDuration("#onRightPressed err: " + e.localizedMessage)
                                                         MyLog.e(TAG, "#onRightPressed err: " + e.stackTraceToString())
@@ -493,7 +487,6 @@ fun FileEditor(
                                                             headOrTail = true,
                                                         )
 
-                                                        if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onLeftPressed err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onLeftPressed err: "+e.stackTraceToString())
@@ -513,7 +506,6 @@ fun FileEditor(
                                                             headOrTail = true,
                                                         )
 
-                                                        if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
                                                     } catch (e: Exception) {
                                                         Msg.requireShowLongDuration("#onRightPressed err: " + e.localizedMessage)
                                                         MyLog.e(TAG, "#onRightPressed err: " + e.stackTraceToString())
