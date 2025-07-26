@@ -1887,34 +1887,35 @@ class TextEditorState(
         f: TextFieldState
     ): HandleTabRet {
         val fv = f.value
-        if(fv.text.isEmpty()) {
+        // if empty or not starts with tab or space, return
+        if(fv.text.let { it.isEmpty() || (it.startsWith(IndentChar.SPACE.char).not() && it.startsWith(IndentChar.TAB.char).not()) }) {
             return HandleTabRet(newText = fv.text, newSelection = fv.selection, changed = false)
         }
 
-        val (newText, removedCount) = if (fv.text.startsWith(IndentChar.TAB.char)) {  // remove a tab
-            Pair(fv.text.substring(1, fv.text.length), 1)
-        } else {  // remove till non-space char
-            if (tabIndentSpacesCount < 1) {  // a tab to 0 spaces, means nothing need to replace
-                Pair(fv.text, 0)
-            } else {
-                var removed = 0
-                for (i in fv.text) {
-                    if (i == IndentChar.SPACE.char) {
-                        if (++removed >= tabIndentSpacesCount) {
-                            break
-                        }
-                    } else {
+        // when reached here, must starts with at least 1 tab or space
+
+        val text = fv.text
+        // remove till non-space char
+        val (newText, removedCount) = if (tabIndentSpacesCount < 1 || text.startsWith(IndentChar.TAB.char)) {  // remove a tab or a space
+            // if `tabIndentSpacesCount < 1`, then it means use a real tab instead of few spaces,
+            // in logically, we should remove a tab at here,
+            // but, in practically, we expect remove a space or a tab after pressed shift+tab
+            Pair(text.substring(1, text.length), 1)
+        } else {  // remove spaces
+            var removed = 0
+            for (i in text) {
+                if (i == IndentChar.SPACE.char) {
+                    if (++removed >= tabIndentSpacesCount) {
                         break
                     }
-                }
-
-                if (removed == 0) {
-                    Pair(fv.text, 0)
                 } else {
-                    Pair(fv.text.substring(removed, fv.text.length), removed)
+                    break
                 }
             }
+
+            Pair(if (removed == 0) text else text.substring(removed, text.length), removed)
         }
+
 
         return if (removedCount < 1) {
             HandleTabRet(newText = newText, newSelection = fv.selection, changed = false)
