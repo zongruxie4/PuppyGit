@@ -391,7 +391,7 @@ fun RepoCard(
 
                         ScrollableRow {
                             ClickableText (
-                                text = FsUtils.getPathWithInternalOrExternalPrefix(fullPath = repoDto.fullSavePath),
+                                text = repoDto.cachedAppRelatedPath(),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = MyStyleKt.ClickableText.modifier.combinedClickable(

@@ -101,6 +101,7 @@ fun FileDetailList(
             it.file.name.lowercase().let {
                 it.contains(keyword) || RegexUtil.matchWildcard(it, keyword)
             } || it.file.path.ioPath.lowercase().contains(keyword)
+                    || it.cachedAppRelatedPath().lowercase().contains(keyword)
                     || it.shortContent.lowercase().contains(keyword)
         }
     )

@@ -12,6 +12,7 @@ import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.dbIntToBool
@@ -236,4 +237,8 @@ data class RepoEntity(
             context.getString(R.string.error) + ": " + createErrMsg
         }
     }
+
+    @Ignore
+    private var cached_appRelatedPath:String? = null
+    fun cachedAppRelatedPath() = cached_appRelatedPath ?: FsUtils.getPathWithInternalOrExternalPrefix(fullPath = fullSavePath).let { cached_appRelatedPath = it; it }
 }

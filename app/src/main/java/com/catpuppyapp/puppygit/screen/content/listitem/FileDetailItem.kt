@@ -66,7 +66,7 @@ fun FileDetailItem(
                 Text(item.file.name, fontSize = MyStyleKt.Title.firstLineFontSize, color = fontColor, fontWeight = FontWeight.Bold)
             }
             ScrollableRow {
-                Text(FsUtils.getPathWithInternalOrExternalPrefixAndRemoveFileNameAndEndSlash(item.file.path.ioPath, item.file.name), fontSize = MyStyleKt.Title.secondLineFontSize, color = fontColor, fontWeight = FontWeight.Light)
+                Text(item.cachedAppRelatedPath(), fontSize = MyStyleKt.Title.secondLineFontSize, color = fontColor, fontWeight = FontWeight.Light)
             }
         }
 
