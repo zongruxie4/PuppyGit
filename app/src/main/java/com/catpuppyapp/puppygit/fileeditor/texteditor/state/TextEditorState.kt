@@ -339,6 +339,7 @@ class TextEditorState(
     suspend fun splitNewLine(
         targetIndex: Int,
         textFieldValue: TextFieldValue,
+        textFieldValueState: MutableState<TextFieldValue>? = null,
 
         // do some changes for new text field states, will call it after new fields added to newFields
         updater:((newLinesRange: IntRange, newFields: MutableList<TextFieldState>, newSelectedIndices: MutableList<Int>) -> Unit)? = null
@@ -381,6 +382,9 @@ class TextEditorState(
                     // this是拷贝了新内容的新字段，如果新字段的文本和旧字段的文本不同，说明内容改变了，更新changeType，否则不用更新
                     updateLineChangeType(LineChangeType.UPDATED)
                 } // else 在旧行末尾添加了换行符，无需处理
+
+                // update state for view
+                textFieldValueState?.value = this.value
             }
 
             //追加新行（注意：新行从第二行开始，并且，如果新行是从旧行的中间分割的，则新行的第一行可能有旧行的后半段内容）

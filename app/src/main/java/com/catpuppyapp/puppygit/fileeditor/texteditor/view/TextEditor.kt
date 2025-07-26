@@ -1132,7 +1132,7 @@ fun TextEditor(
                                 //改用onFocus定位最后编辑行了，这里不需要了，实际上现在的最后编辑行就是光标最后所在行
 //                                            lastScrollEvent = ScrollEvent(index)
                             },
-                            onContainNewLine = cb@{ newText ->
+                            onContainNewLine = cb@{ newText, textFieldValueState ->
                                 //这里为什么要判断这个东西？无所谓，反正没毛病，不用改
                                 if (lastScrollEvent.value?.isConsumed == false) return@cb
 
@@ -1140,7 +1140,8 @@ fun TextEditor(
                                     try {
                                         textEditorState.splitNewLine(
                                             targetIndex = index,
-                                            textFieldValue = newText
+                                            textFieldValue = newText,
+                                            textFieldValueState = textFieldValueState,
                                         )
 
                                         lastScrollEvent.value = ScrollEvent(index + 1)

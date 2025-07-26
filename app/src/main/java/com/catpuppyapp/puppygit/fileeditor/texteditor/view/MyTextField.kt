@@ -25,7 +25,7 @@ import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
 import com.catpuppyapp.puppygit.ui.theme.Theme
 
 
-private const val TAG = "MyTextField"
+//private const val TAG = "MyTextField"
 
 
 @Composable
@@ -36,7 +36,7 @@ internal fun MyTextField(
     textFieldState: TextFieldState,
     enabled: Boolean,
     onUpdateText: (TextFieldValue) -> Unit,
-    onContainNewLine: (TextFieldValue) -> Unit,
+    onContainNewLine: (TextFieldValue, MutableState<TextFieldValue>) -> Unit,
     onFocus: () -> Unit,
     modifier: Modifier = Modifier,
     needShowCursorHandle:MutableState<Boolean>,
@@ -92,8 +92,12 @@ internal fun MyTextField(
                 scrollIfInvisible()
             }
 
-            currentTextField.value = newState
-            if (newState.text.contains('\n')) onContainNewLine(newState) else onUpdateText(newState)
+            if (newState.text.contains('\n')) {
+                onContainNewLine(newState, currentTextField)
+            } else {
+                currentTextField.value = newState
+                onUpdateText(newState)
+            }
         },
         //字体样式:字体颜色、字体大小、背景颜色等
         textStyle = textStyle.copy(
