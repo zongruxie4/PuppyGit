@@ -361,8 +361,7 @@ fun FileEditor(
                                 val textEditorState = textEditorState.value
                                 val lastScrollEvent = editorLastScrollEvent
 
-
-                                if(keyEvent.isCtrlPressed.not() && keyEvent.isShiftPressed.not() && readOnlyMode.not() && textEditorState.isMultipleSelectionMode.not()) {
+                                if(readOnlyMode.not() && textEditorState.isMultipleSelectionMode.not()) {
 
                                     val (focusedLineIndex, textFieldState) = textEditorState.getCurrentField()
 
@@ -1264,6 +1263,7 @@ private fun Modifier.changeTypeIndicator(
 }
 
 
+// BEGIN: text field keyboard event handler
 private fun onPreviewHomeKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
     return onPreviewHomeOrEndKeyEvent(event, textFieldState, trueHomeFalseEnd = true, invoke)
 }
@@ -1296,8 +1296,7 @@ private fun onPreviewDelKeyEvent(
     invoke: () -> Unit
 ): Boolean {
     //不是删除不响应
-    val isDelKey = event.nativeKeyEvent.keyCode == KEYCODE_DEL
-    if (!isDelKey) return false
+    if (event.key != Key.Backspace) return false
 
     //没删除到行开头不响应，这时由TextField负责更新数据，
     // 若删除到行开头则需要在TextFiled外部将当前TextField从列表移除，所以需要外部处理
@@ -1334,11 +1333,8 @@ private fun onPreviewUpOrDownKeyEvent(
     if(event.isCtrlPressed || event.isShiftPressed || event.isAltPressed || event.isMetaPressed) return false
 
     val expectedKey = if (trueUpFalseDown) KEYCODE_DPAD_UP else KEYCODE_DPAD_DOWN
-    val isExpectedKey = event.nativeKeyEvent.keyCode == expectedKey
-    if (!isExpectedKey) return false
+    if (event.nativeKeyEvent.keyCode != expectedKey) return false
 
-//    val atStartOfLine = selection == TextRange.Zero
-//    if (!atStartOfLine) return false
 
     invoke()
     return true
@@ -1353,8 +1349,7 @@ private fun onPreviewLeftOrRightKeyEvent(
     if(event.isCtrlPressed || event.isShiftPressed || event.isAltPressed || event.isMetaPressed || field.value.selection.collapsed.not()) return false
 
     val expectedKey = if(trueLeftFalseRight) KEYCODE_DPAD_LEFT else KEYCODE_DPAD_RIGHT
-    val isExceptedKey = event.nativeKeyEvent.keyCode == expectedKey
-    if (!isExceptedKey) return false
+    if (event.nativeKeyEvent.keyCode != expectedKey) return false
 
 
     invoke()
@@ -1369,14 +1364,10 @@ private fun onPreviewHomeOrEndKeyEvent(
     trueHomeFalseEnd: Boolean,
     invoke: () -> Unit,
 ): Boolean {
-    if(event.isShiftPressed || event.isAltPressed || event.isMetaPressed || field.value.selection.collapsed.not()) return false
+    if(event.isCtrlPressed || event.isShiftPressed || event.isAltPressed || event.isMetaPressed || field.value.selection.collapsed.not()) return false
 
     val expectedKey = if(trueHomeFalseEnd) Key.MoveHome else Key.MoveEnd
-    val isExpectedKey = event.key == expectedKey
-    if (!isExpectedKey) return false
-
-    val pos = field.value.selection.start
-    if((event.isCtrlPressed && (pos != 0 && pos != field.value.text.length))) return false
+    if (event.key != expectedKey) return false
 
     invoke()
     return true
@@ -1409,3 +1400,4 @@ private fun insertNewLineAtCursor(textFieldValue: TextFieldValue):String {
     }
 
 }
+// END: text field keyboard event handler
