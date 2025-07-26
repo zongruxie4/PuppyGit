@@ -1000,8 +1000,10 @@ fun TextEditor(
         val size = textEditorState.fields.size
         val lastIndexOfFields = size - 1
 
+        val topHalfStopIndex = currentFocusedIndex ?: size
+        val bottomHalfStartIndex = currentFocusedIndex?.let { it + 1 } ?: size
 
-        //fields本身就是toList()出来的，无需再toList()
+
         val createItem: LazyListScope.(Int)->Unit = ci@{ index:Int ->
             val textFieldState = textEditorState.fields.getOrNull(index) ?: return@ci
 
@@ -1238,11 +1240,6 @@ fun TextEditor(
                 modifier = modifier.fillMaxSize(),
                 contentPadding = contentPaddingValues
             ) {
-
-
-
-                val topHalfStopIndex = currentFocusedIndex ?: size
-                val bottomHalfStartIndex = currentFocusedIndex?.let { it + 1 } ?: size
                 for(index in 0 until topHalfStopIndex) {
                     createItem(index)
                 }
