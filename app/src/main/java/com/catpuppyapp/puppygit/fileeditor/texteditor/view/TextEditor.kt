@@ -35,6 +35,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -992,6 +993,10 @@ fun TextEditor(
         expectConflictStrDto.value.reset()
 
         DisableSoftKeyboard(disableSoftKb.value) {
+            val currentIdxAndField = textEditorState.getCurrentField()
+            val currentFocusedIndex = rememberUpdatedState(currentIdxAndField.first)
+            val currentFocusedField = rememberUpdatedState(currentIdxAndField.second?.value)
+
 
             LazyColumn(
                 state = listState,
@@ -1001,6 +1006,9 @@ fun TextEditor(
             ) {
                 val size = textEditorState.fields.size
                 val lastIndexOfFields = size - 1
+
+                val topHalfStopIndex = currentFocusedIndex.value ?: size
+                val bottomHalfStopIndex = size
 
                 //fields本身就是toList()出来的，无需再toList()
                 textEditorState.fields.forEachIndexedBetter { index, textFieldState ->
