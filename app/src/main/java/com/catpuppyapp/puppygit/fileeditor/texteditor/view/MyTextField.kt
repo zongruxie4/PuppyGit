@@ -84,10 +84,13 @@ internal fun MyTextField(
             // no change
             if (lastTextField == newState) return@BasicTextField
 
+            // used for some checks
+            val contentChanged = lastTextField.text.length != newState.text.length || lastTextField.text != newState.text
+
             // scroll if invisible
             if(lastTextField.selection.start != newState.selection.start
                 || lastTextField.selection.end != newState.selection.end
-                || lastTextField.text != newState.text
+                || contentChanged
             ) {
                 scrollIfInvisible()
             }
@@ -98,7 +101,15 @@ internal fun MyTextField(
                 // only update state when no linebreak,
                 //   if has line break, still update, will got unexpected line break,
                 //   for avoid it, just wait the text field list updated it, nothing need to do here
-                currentTextField.value = newState
+
+                currentTextField.value = if(contentChanged) {
+                    newState
+                } else {
+                    // copy to avoid lost highlighting styles when text no changes,
+                    // if styles still lost, try use `textFieldState.value` as `lastTextField`
+                    lastTextField.copy(selection = newState.selection)
+                }
+
                 onUpdateText(newState)
             }
         },

@@ -582,7 +582,7 @@ class TextEditorState(
 
             val oldField = fields[targetIndex]
             //检查字段内容是否改变，由于没改变也会调用此方法，所以必须判断下才能知道内容是否改变
-            val contentChanged = oldField.value.text != newText  // 旧值 != 新值
+            val contentChanged = oldField.value.text.let { it.length != newText.length || it != newText }  // 旧值 != 新值
 
             //没什么意义，两者总是不相等，似乎相等根本不会触发updateField
 //            if(oldField.equals(textFieldValue)) {
