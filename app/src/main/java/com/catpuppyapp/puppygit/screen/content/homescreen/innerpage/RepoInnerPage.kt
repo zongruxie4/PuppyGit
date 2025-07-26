@@ -810,7 +810,7 @@ fun RepoInnerPage(
         doActIfIndexGood(idx,repoList) {
 //            it.tmpStatus = status
             //必须copy一下，要不然还得刷新页面才能显示状态（ps：刷新页面显示状态是通过map存临时状态实现的，比这个操作重量级，应能避免则避免）
-            repoList[idx] = it.copyAllFields(it.copy(tmpStatus = status), settings)
+            repoList[idx] = it.copyAllFields(settings, it.copy(tmpStatus = status))
 //            repoList.requireRefreshView()
         }
         //设置仓库临时状态(把临时状态设置到缓存里，不退出app都有效，目的是为了使重新查列表后临时状态亦可见)，这样重新加载页面时依然能看到临时状态
@@ -838,9 +838,16 @@ fun RepoInnerPage(
                 if(reQueriedRepoInfo.pendingTask == RepoPendingTask.NEED_CHECK_UNCOMMITED_CHANGES) {
                     //捕获当前页面刷新状态值，相当于session id
                     val curRefreshValue = needRefreshRepoPage.value
-                    checkGitStatusAndUpdateItemInList(reQueriedRepoInfo, idx, repoList, activityContext.getString(R.string.loading), pageChanged = {
-                        needRefreshRepoPage.value != curRefreshValue
-                    })
+                    checkGitStatusAndUpdateItemInList(
+                        settings = settings,
+                        item = reQueriedRepoInfo,
+                        idx = idx,
+                        repoList = repoList,
+                        loadingText = activityContext.getString(R.string.loading),
+                        pageChanged = {
+                            needRefreshRepoPage.value != curRefreshValue
+                        }
+                    )
                 }else { //不需要检查git status，直接更新卡片条目
                     repoList[idx] = reQueriedRepoInfo
                 }
@@ -2871,7 +2878,14 @@ private suspend fun doInit(
 
 
         }else if(item.pendingTask == RepoPendingTask.NEED_CHECK_UNCOMMITED_CHANGES) {
-            checkGitStatusAndUpdateItemInList(item, idx, repoDtoList.value, loadingText, pageChanged)
+            checkGitStatusAndUpdateItemInList(
+                settings = settings,
+                item = item,
+                idx = idx,
+                repoList = repoDtoList.value,
+                loadingText = loadingText,
+                pageChanged = pageChanged
+            )
         } else {
             //TODO: check git status with lock of every repo, get lock then query repo info from db,
             // if updatetime field changed, then update item in repodtolist, else do git status,
@@ -2898,7 +2912,14 @@ private fun updateRepoListByIndexOrId(newItem:RepoEntity, idx: Int, list:Mutable
 /**
  * 检查仓库是否有未提交修改并在检查完毕且页面没刷新时更新list中的对应条目
  */
-private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList:MutableList<RepoEntity>, loadingText:String, pageChanged:()->Boolean) {
+private fun checkGitStatusAndUpdateItemInList(
+    settings: AppSettings,
+    item: RepoEntity,
+    idx: Int,
+    repoList: MutableList<RepoEntity>,
+    loadingText: String,
+    pageChanged: () -> Boolean
+) {
     val funName = "checkGitStatusAndUpdateItemInList"
     val repoLock = Libgit2Helper.getRepoLock(item.id)
 
@@ -2917,7 +2938,7 @@ private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList
     val needUpdateTmpStatus = item.tmpStatus.isBlank()
 
     if(needUpdateTmpStatus) {
-        val newRepo = item.copyAllFields()
+        val newRepo = item.copyAllFields(settings)
 
         //更新临时状态
         //这的状态直接更新到列表条目不会走 RepoStatusUtil 设置到Cache里，所以如果Cache里有其他状态，必然是其他任务设置的
@@ -2938,7 +2959,7 @@ private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList
 
                 //如果页面没改变（没重新刷新） 且 仓库没有在执行其他操作（例如 pull），则 更新列表
                 if(pageChanged().not() && RepoStatusUtil.getRepoStatus(item.id).let{ it == null || it.isBlank() }) {
-                    val newRepo = item.copyAllFields()
+                    val newRepo = item.copyAllFields(settings)
                     //操作已经执行完毕，清空需要执行的操作
                     newRepo.pendingTask = RepoPendingTask.NONE
 

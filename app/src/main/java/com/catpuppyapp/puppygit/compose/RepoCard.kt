@@ -316,20 +316,18 @@ fun RepoCard(
                                 tooltipText = stringResource(R.string.msg)
                             )
 
-                            ScrollableRow {
-                                ClickableText (
-                                    text = repoDto.getOrUpdateCachedOneLineLatestCommitMsg(),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    fontWeight = defaultFontWeight,
-                                    modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
-                                        enabled = repoStatusGood,
-                                    ) {
-                                        initCommitMsgDialog(repoDto)
-                                    },
+                            ClickableText (
+                                text = repoDto.getOrUpdateCachedOneLineLatestCommitMsg(),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                fontWeight = defaultFontWeight,
+                                modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
+                                    enabled = repoStatusGood,
+                                ) {
+                                    initCommitMsgDialog(repoDto)
+                                },
 
-                                )
-                            }
+                            )
                         }
                     }
 

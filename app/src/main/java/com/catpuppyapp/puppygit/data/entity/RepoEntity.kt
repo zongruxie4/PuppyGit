@@ -165,8 +165,8 @@ data class RepoEntity(
      * 拷贝所有字段，包括不在data class构造器的字段
      */
     fun copyAllFields(
+        settings: AppSettings,
         newInstance: RepoEntity = copy(),
-        settings: AppSettings = SettingsUtil.getSettingsSnapshot()
     ):RepoEntity {
         newInstance.gitRepoState = gitRepoState
         newInstance.parentRepoName = parentRepoName
@@ -174,6 +174,7 @@ data class RepoEntity(
         newInstance.otherText = otherText
         newInstance.pendingTask = pendingTask
         newInstance.lastCommitDateTime = lastCommitDateTime
+        newInstance.latestCommitMsg = latestCommitMsg
 
         updateLastCommitHashShort()
         updateCommitDateTime(settings)

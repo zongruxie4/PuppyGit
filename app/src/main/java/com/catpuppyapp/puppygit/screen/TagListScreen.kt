@@ -323,11 +323,12 @@ fun TagListScreen(
                 if(isDetached) {
                     curRepo.value = curRepo.value.let {
                         it.copyAllFields(
+                            settings,
+
                             it.copy(
                                 isDetached = Cons.dbCommonTrue,
                                 lastCommitHash = item.targetFullOidStr
                             ),
-                            settings
                         )
                     }
                 }
