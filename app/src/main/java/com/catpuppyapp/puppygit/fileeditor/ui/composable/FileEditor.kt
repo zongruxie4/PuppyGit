@@ -1315,6 +1315,7 @@ private fun onPreviewForwardDelKeyEvent(
     field: TextFieldValue,
     invoke: () -> Unit
 ): Boolean {
+    // 不在当前行末尾不需要处理，这时默认处理机制即可，会自动删除光标后面的字符
     if (event.key != Key.Delete || selection.collapsed.not() || selection.start != field.text.length) {
         return false
     }
@@ -1374,30 +1375,30 @@ private fun onPreviewHomeOrEndKeyEvent(
 }
 
 
-@Deprecated("due to `BasicTextField` can handle \\n by it self, so no need this function")
-private fun insertNewLineAtCursor(textFieldValue: TextFieldValue):String {
-    val splitPosition = textFieldValue.selection.start  //光标位置，有可能在行末尾，这时和text.length相等，并不会越界
-    val maxOfPosition = textFieldValue.text.length
-
-    //这个情况不应该发生
-    if (splitPosition < 0 || splitPosition > maxOfPosition) {  //第2个判断没错，就是大于最大位置，不是大于等于，没写错，光标位置有可能在行末尾，这时其索引和text.length相等，所以只有大于才有问题
-        val errMsg = "splitPosition '$splitPosition' out of range '[0, $maxOfPosition]'"
-        MyLog.e(TAG, "#getNewTextOfLine: $errMsg")
-        throw RuntimeException(errMsg)
-    }
-
-    // 在光标位置插入个换行符然后返回就行了
-    return textFieldValue.text.let {
-        val sb = StringBuilder()
-        sb.append(it.substring(0, splitPosition))
-        sb.append("\n")
-
-        //这里不需要判断，string.substring() 可用的startIndex最大值即为string.length，
-        // 若是length，会返回空字符串，与期望一致
-        sb.append(it.substring(splitPosition))
-
-        sb.toString()
-    }
-
-}
+//@Deprecated("due to `BasicTextField` can handle \\n by it self, so no need this function")
+//private fun insertNewLineAtCursor(textFieldValue: TextFieldValue):String {
+//    val splitPosition = textFieldValue.selection.start  //光标位置，有可能在行末尾，这时和text.length相等，并不会越界
+//    val maxOfPosition = textFieldValue.text.length
+//
+//    //这个情况不应该发生
+//    if (splitPosition < 0 || splitPosition > maxOfPosition) {  //第2个判断没错，就是大于最大位置，不是大于等于，没写错，光标位置有可能在行末尾，这时其索引和text.length相等，所以只有大于才有问题
+//        val errMsg = "splitPosition '$splitPosition' out of range '[0, $maxOfPosition]'"
+//        MyLog.e(TAG, "#getNewTextOfLine: $errMsg")
+//        throw RuntimeException(errMsg)
+//    }
+//
+//    // 在光标位置插入个换行符然后返回就行了
+//    return textFieldValue.text.let {
+//        val sb = StringBuilder()
+//        sb.append(it.substring(0, splitPosition))
+//        sb.append("\n")
+//
+//        //这里不需要判断，string.substring() 可用的startIndex最大值即为string.length，
+//        // 若是length，会返回空字符串，与期望一致
+//        sb.append(it.substring(splitPosition))
+//
+//        sb.toString()
+//    }
+//
+//}
 // END: text field keyboard event handler
