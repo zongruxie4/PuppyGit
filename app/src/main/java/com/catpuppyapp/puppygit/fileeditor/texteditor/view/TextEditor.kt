@@ -994,14 +994,9 @@ fun TextEditor(
         expectConflictStrDto.value.reset()
 
 
-        val currentIdxAndField = textEditorState.getCurrentField()
-        val currentFocusedIndex = rememberUpdatedState(currentIdxAndField.first).value
-//        val currentFocusedField = currentIdxAndField.second.let { remember(it) { mutableStateOf(it) } }
         val size = textEditorState.fields.size
         val lastIndexOfFields = size - 1
 
-        val topHalfStopIndex = currentFocusedIndex ?: size
-        val bottomHalfStartIndex = currentFocusedIndex?.let { it + 1 } ?: size
 
 
         val createItem: LazyListScope.(Int)->Unit = ci@{ index:Int ->
@@ -1240,21 +1235,10 @@ fun TextEditor(
                 modifier = modifier.fillMaxSize(),
                 contentPadding = contentPaddingValues
             ) {
-                for(index in 0 until topHalfStopIndex) {
+                for(index in 0 until size) {
                     createItem(index)
                 }
-
-                if(currentFocusedIndex != null) {
-                    createItem(currentFocusedIndex)
-                }
-
-                for(index in bottomHalfStartIndex until size) {
-                    createItem(index)
-                }
-
             }
-
-
         }
 
 
