@@ -1,3 +1,14 @@
+
+
+---
+文本编辑器键盘用户体验优化：使用键盘选择行 20250726：
+只读或选择模式时启用键盘选择操作：
+1. 按回车，选中某行；
+2. shift 回车，选中区间；
+3. 按住shift+上或下，切换行并选中；
+4. esc退出选择模式。
+
+---
 TODO sha256 support 20250607:
 1. waiting for libgit2 sha256 feature become stable
 2. UI: add menu item to RepoCard menu to allow users switch hash method, then save settings into .gitconfig (need test if were switched to sha256, then, still can switch back to sha1?)
