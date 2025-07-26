@@ -8,9 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -56,15 +55,16 @@ internal fun MyTextField(
 //    currentTextField.value = textFieldState  //重组会重新执行，这样通过value就能获取到最新值了（当然，第一次执行这个也会执行，所以和上面的mutableState()加起来等于执行了两次赋值，但state值相同不会触发更新，所以重复执行无所谓
 
     //写法2，这种写法等同于写法1，之所以使用currentTextFiled的地方能获取到重组后最新的值是因为本质上by是state.value的语法糖，所以使用by后的值等于 获取 state.value ，所以value一旦更新，调用state.value就能获取到最新值
-    val currentTextField by rememberUpdatedState(newValue = textFieldState.value)
+    val currentTextField = textFieldState.value.let { remember(it) { mutableStateOf(it) } }
 
     val inDarkTheme = Theme.inDarkTheme
 
     BasicTextField(
-        value = currentTextField,
+        value = currentTextField.value,
         readOnly = readOnly,
         enabled = enabled,
-        onValueChange = {
+        onValueChange = { newState ->
+            val lastTextField = currentTextField.value
 //            println("start:${it.selection.start}, end:${it.selection.end}")  //test2024081116726433
             //更新最后编辑列
             //废弃，因为检查是否更新了文本浪费性能，反正启动也不定位到列，干脆不更新了，不过维护此值对性能影响不大，所以没删这段代码) 注：search且没更新文本，不更新光标，因为更新光标有bug，例如我搜索后定位到2行3列，但这里可能会自动变成3行4列，然后导致搜索不跳转，很傻逼
@@ -72,25 +72,28 @@ internal fun MyTextField(
 
             //目前仅在非searchMode时更新最后编辑列，日后修复更新列错误的bug后，改下flag变量即可，这的逻辑不用改。
             //ps: mergeMode也要用到搜索，所以也需要判断
-            if((it.selection.start == it.selection.end) && ((!searchMode && !mergeMode) || bug_Editor_WrongUpdateEditColumnIdx_Fixed)) {  // start == end 说明不是选中状态而是点击某列，这时更新最后编辑列
-                lastEditedColumnIndexState.intValue = it.selection.start
+            if((newState.selection.start == newState.selection.end)
+                && ((!searchMode && !mergeMode) || bug_Editor_WrongUpdateEditColumnIdx_Fixed)
+            ) {  // start == end 说明不是选中状态而是点击某列，这时更新最后编辑列
+                lastEditedColumnIndexState.intValue = newState.selection.start
             }
 
             //存在选中文本时，显示光标拖手和背景颜色（handle
-            needShowCursorHandle.value = it.selection.start != it.selection.end
+            needShowCursorHandle.value = newState.selection.start != newState.selection.end
 
             // no change
-            if (currentTextField == it) return@BasicTextField
+            if (lastTextField == newState) return@BasicTextField
 
             // scroll if invisible
-            if(currentTextField.selection.start != it.selection.start
-                || currentTextField.selection.end != it.selection.end
-                || currentTextField.text != it.text
+            if(lastTextField.selection.start != newState.selection.start
+                || lastTextField.selection.end != newState.selection.end
+                || lastTextField.text != newState.text
             ) {
                 scrollIfInvisible()
             }
 
-            if (it.text.contains('\n')) onContainNewLine(it) else onUpdateText(it)
+            currentTextField.value = newState
+            if (newState.text.contains('\n')) onContainNewLine(newState) else onUpdateText(newState)
         },
         //字体样式:字体颜色、字体大小、背景颜色等
         textStyle = textStyle.copy(
