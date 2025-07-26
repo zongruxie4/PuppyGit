@@ -1,0 +1,2 @@
+- support filter repos and recent files by app related path
+- show latest commit msg in repo card

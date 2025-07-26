@@ -2,6 +2,17 @@
 
 
 ---
+1.1.3.6v112 - 20250726:
+- support filter repos and recent files by app related path
+- show latest commit msg in repo card
+
+
+
+- 支持根据app相关路径过滤仓库和最近文件
+- 在仓库卡片显示最新提交信息
+
+
+---
 1.1.3.5v111 - 20250724:
 - markdown support kotlin code block
 - fix editor menu can't full expanded after ime hidden
