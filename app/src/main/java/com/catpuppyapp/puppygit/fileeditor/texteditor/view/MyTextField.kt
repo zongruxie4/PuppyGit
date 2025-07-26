@@ -46,7 +46,7 @@ internal fun MyTextField(
     mergeMode:Boolean,
     fontSize:Int,
     fontColor:Color,
-    bgColor:Color = Color.Unspecified,
+//    bgColor:Color = Color.Unspecified,
 ) {
     val focusRequester = remember { FocusRequester() }
     val textStyle = LocalTextStyle.current
@@ -96,7 +96,7 @@ internal fun MyTextField(
         textStyle = textStyle.copy(
             fontSize = fontSize.sp,
             color = fontColor,
-            background = bgColor,
+//            background = bgColor,
             fontFamily = PLFont.editorCodeFont(),
         ),
         //光标颜色
