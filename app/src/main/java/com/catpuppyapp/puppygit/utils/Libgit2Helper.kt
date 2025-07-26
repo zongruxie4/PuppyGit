@@ -4077,6 +4077,7 @@ object Libgit2Helper {
         return resolveRefByName(repo, "HEAD")
     }
 
+    // trueUseDwimFalseUseLookup: 为true使用lookup全名查找，否则支持短名. ps：dwim is `do what i want`，意思是让程序猜人的想法
     fun resolveRefByName(repo:Repository, refNameShortOrFull:String, trueUseDwimFalseUseLookup:Boolean=true):Reference? {
         try {
             MyLog.v(TAG, "#resolveRefByName(refNameShortOrFull=$refNameShortOrFull, trueUseDwimFalseUseLookup=$trueUseDwimFalseUseLookup)")
@@ -5109,10 +5110,19 @@ object Libgit2Helper {
                 //查询仓库最新信息
                 val head = resolveHEAD(repo)
                 repoFromDb.branch = head?.shorthand()?:""
-                repoFromDb.lastCommitHash = head?.id()?.toString() ?: ""  // no commit hash will show empty str
+                val lastCommitHashFull = head?.id()?.toString() ?: ""  // no commit hash will show empty str
+                repoFromDb.lastCommitHash = lastCommitHashFull
                 repoFromDb.updateLastCommitHashShort()
 
                 repoFromDb.updateCommitDateTimeWithRepo(repo, settings)
+
+                // resolve commit and set msg filed
+                val headCommit = resolveCommitByHash(repo, lastCommitHashFull);
+                if(headCommit != null) {
+                    repoFromDb.latestCommitMsg = headCommit.message()
+
+                    repoFromDb.getOrUpdateCachedOneLineLatestCommitMsg()
+                }
 
                 repoFromDb.isDetached = boolToDbInt(repo.headDetached())
                 if(!dbIntToBool(repoFromDb.isDetached)) {  //只有非detached才有upstream

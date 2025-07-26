@@ -241,4 +241,11 @@ data class RepoEntity(
     @Ignore
     private var cached_appRelatedPath:String? = null
     fun cachedAppRelatedPath() = cached_appRelatedPath ?: FsUtils.getPathWithInternalOrExternalPrefix(fullPath = fullSavePath).let { cached_appRelatedPath = it; it }
+
+    @Ignore
+    var latestCommitMsg = ""
+    @Ignore
+    private var cached_oneLineLatestCommitMsg:String? = null
+    fun getOrUpdateCachedOneLineLatestCommitMsg() = cached_oneLineLatestCommitMsg ?: Libgit2Helper.zipOneLineMsg(latestCommitMsg).let { cached_oneLineLatestCommitMsg = it; it }
+
 }
