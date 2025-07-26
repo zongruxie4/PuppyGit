@@ -36,7 +36,7 @@ internal fun MyTextField(
     textFieldState: TextFieldState,
     enabled: Boolean,
     onUpdateText: (TextFieldValue) -> Unit,
-    onContainNewLine: (TextFieldValue, MutableState<TextFieldValue>) -> Unit,
+    onContainNewLine: (TextFieldValue) -> Unit,
     onFocus: () -> Unit,
     modifier: Modifier = Modifier,
     needShowCursorHandle:MutableState<Boolean>,
@@ -93,8 +93,11 @@ internal fun MyTextField(
             }
 
             if (newState.text.contains('\n')) {
-                onContainNewLine(newState, currentTextField)
+                onContainNewLine(newState)
             } else {
+                // only update state when no linebreak,
+                //   if has line break, still update, will got unexpected line break,
+                //   for avoid it, just wait the text field list updated it, nothing need to do here
                 currentTextField.value = newState
                 onUpdateText(newState)
             }
