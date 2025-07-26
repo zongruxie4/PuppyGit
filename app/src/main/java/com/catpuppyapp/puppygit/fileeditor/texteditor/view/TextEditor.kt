@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -992,12 +993,13 @@ fun TextEditor(
 
         expectConflictStrDto.value.reset()
 
+
+        val currentIdxAndField = textEditorState.getCurrentField()
+        val currentFocusedIndex = rememberUpdatedState(currentIdxAndField.first).value
+//        val currentFocusedField = currentIdxAndField.second.let { remember(it) { mutableStateOf(it) } }
+
+
         DisableSoftKeyboard(disableSoftKb.value) {
-            val currentIdxAndField = textEditorState.getCurrentField()
-            val currentFocusedIndex = rememberUpdatedState(currentIdxAndField.first)
-            val currentFocusedField = rememberUpdatedState(currentIdxAndField.second?.value)
-
-
             LazyColumn(
                 state = listState,
                 //fillMaxSize是为了点哪都能触发滚动，这样点哪都能隐藏顶栏
@@ -1007,12 +1009,10 @@ fun TextEditor(
                 val size = textEditorState.fields.size
                 val lastIndexOfFields = size - 1
 
-                val topHalfStopIndex = currentFocusedIndex.value ?: size
-                val bottomHalfStopIndex = size
 
                 //fields本身就是toList()出来的，无需再toList()
-                for(index in 0 until topHalfStopIndex) {
-                    val textFieldState = textEditorState.fields.getOrNull(index) ?: continue
+                val createItem: LazyListScope.(Int)->Unit = ci@{ index:Int ->
+                    val textFieldState = textEditorState.fields.getOrNull(index) ?: return@ci
 
                     val curLineText = textFieldState.value.text
 
@@ -1238,6 +1238,21 @@ fun TextEditor(
 
 
 
+                }
+
+
+                val topHalfStopIndex = currentFocusedIndex ?: size
+                val bottomHalfStartIndex = currentFocusedIndex?.let { it + 1 } ?: size
+                for(index in 0 until topHalfStopIndex) {
+                    createItem(index)
+                }
+
+                if(currentFocusedIndex != null) {
+                    createItem(currentFocusedIndex)
+                }
+
+                for(index in bottomHalfStartIndex until size) {
+                    createItem(index)
                 }
 
             }
