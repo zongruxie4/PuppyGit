@@ -847,7 +847,7 @@ fun FileEditor(
                         //如果指定行不在可见范围内，滚动到指定行以使其可见
                         if (end != null && (index < first || index > end)) {
                             //滚动到指定行
-                            UIHelper.scrollToItem(scope, editorListState, index)
+                            UIHelper.scrollToItem(scope, editorListState, index + lineNumOffsetForGoToEditor)
                         }
                     }catch (e: Exception) {
                         MyLog.d(TAG, "#scrollIfIndexInvisible err: ${e.stackTraceToString()}")
@@ -858,7 +858,7 @@ fun FileEditor(
 
                 // Show Text Editor
                 val showLineNum = showLineNum.value
-                val bottomLineWidth = remember { 1.dp }
+//                val bottomLineWidth = remember { 1.dp }
                 val changeTypeWidth = remember(showLineNum) { if(showLineNum) 5.dp else 10.dp }
 
                 TextEditor(
@@ -1122,7 +1122,7 @@ fun FileEditor(
 
                                     // after pasted, scroll to the last line
                                     afterReplacedAllThenDoAct = { newFields ->
-                                        val scrollTarget = (newFields.lastIndex + lineNumOffsetForGoToEditor).coerceAtLeast(0)
+                                        val scrollTarget = newFields.lastIndex
 
                                         doJobThenOffLoading {
                                             delay(200)
@@ -1160,7 +1160,7 @@ fun FileEditor(
                                     afterAppendThenDoAct = { targetIndex ->
                                         doJobThenOffLoading {
                                             delay(100)
-                                            scrollIfIndexInvisible((targetIndex + lineNumOffsetForGoToEditor).coerceAtLeast(0))
+                                            scrollIfIndexInvisible(targetIndex)
                                         }
                                     }
                                 )
@@ -1228,7 +1228,7 @@ fun FileEditor(
                                                 textEditorState.value.selectField(targetIndex = it, forceAdd = true)
 
                                                 // scroll if need
-                                                scrollIfIndexInvisible(it + lineNumOffsetForGoToEditor)
+                                                scrollIfIndexInvisible(it)
 
                                                 // close dialog
                                                 closeDialog()
