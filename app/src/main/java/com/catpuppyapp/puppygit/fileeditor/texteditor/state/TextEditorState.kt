@@ -2474,11 +2474,11 @@ class TextEditorState(
         val atFileHead = targetFieldIndex == 0
         val atFileTail = targetFieldIndex == fields.lastIndex
 
-        if(atLineHead && atFileHead && trueToLeftFalseRight) {
+        if(trueToLeftFalseRight && ((headOrTail && atLineHead) || (!headOrTail && atLineHead && atFileHead))) {
             return
         }
 
-        if(atLineTail && atFileTail && !trueToLeftFalseRight) {
+        if(!trueToLeftFalseRight && ((headOrTail && atLineTail) || (!headOrTail && atLineTail && atFileTail))) {
             return
         }
 
