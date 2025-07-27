@@ -441,7 +441,7 @@ fun FileEditor(
                                                             getLastCursorAtColumnValue,
                                                         )
 
-                                                        scrollIfIndexInvisible(index)
+                                                        scrollIfIndexInvisible(index - 1)
 
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onUpFocus err: "+e.localizedMessage)
@@ -462,7 +462,7 @@ fun FileEditor(
                                                             getLastCursorAtColumnValue,
                                                         )
 
-                                                        scrollIfIndexInvisible(index)
+                                                        scrollIfIndexInvisible(index + 1)
 
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onDownFocus err: "+e.localizedMessage)
@@ -474,7 +474,7 @@ fun FileEditor(
                                         }
 
 
-                                        if (goLeftPressed(event, textFieldState) {
+                                        if (goLeftPressed(event, textFieldState) { lineSwitched ->
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.moveCursor(
@@ -484,7 +484,8 @@ fun FileEditor(
                                                             headOrTail = false,
                                                         )
 
-                                                        scrollIfIndexInvisible(index)
+                                                        scrollIfIndexInvisible(if(lineSwitched) index - 1 else index)
+
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onLeftPressed err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onLeftPressed err: "+e.stackTraceToString())
@@ -495,7 +496,7 @@ fun FileEditor(
                                             return@opke true
                                         }
 
-                                        if (goRightPressed(event, textFieldState) {
+                                        if (goRightPressed(event, textFieldState) { lineSwitched ->
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.moveCursor(
@@ -505,7 +506,8 @@ fun FileEditor(
                                                             headOrTail = false,
                                                         )
 
-                                                        scrollIfIndexInvisible(index)
+                                                        scrollIfIndexInvisible(if(lineSwitched) index + 1 else index)
+
 
                                                     } catch (e: Exception) {
                                                         Msg.requireShowLongDuration("#onRightPressed err: " + e.localizedMessage)
@@ -516,7 +518,7 @@ fun FileEditor(
                                             return@opke true
                                         }
 
-                                        if (goHomePressed(event, textFieldState) {
+                                        if (goHomePressed(event, textFieldState) { lineSwitched ->
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.moveCursor(
@@ -526,7 +528,7 @@ fun FileEditor(
                                                             headOrTail = true,
                                                         )
 
-                                                        scrollIfIndexInvisible(index)
+                                                        scrollIfIndexInvisible(if(lineSwitched) index - 1 else index)
 
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onLeftPressed err: "+e.localizedMessage)
@@ -537,7 +539,7 @@ fun FileEditor(
                                             return@opke true
                                         }
 
-                                        if (goEndPressed(event, textFieldState) {
+                                        if (goEndPressed(event, textFieldState) { lineSwitched ->
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.moveCursor(
@@ -547,7 +549,7 @@ fun FileEditor(
                                                             headOrTail = true,
                                                         )
 
-                                                        scrollIfIndexInvisible(index)
+                                                        scrollIfIndexInvisible(if(lineSwitched) index + 1 else index)
 
                                                     } catch (e: Exception) {
                                                         Msg.requireShowLongDuration("#onRightPressed err: " + e.localizedMessage)
@@ -1377,19 +1379,20 @@ private fun Modifier.changeTypeIndicator(
 
 
 // BEGIN: text field keyboard event handler
-private fun goHomePressed(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+// if go to head of line then press Home, will switch to prev line
+private fun goHomePressed(event: KeyEvent, textFieldState: TextFieldState, invoke: (lineSwitched: Boolean) -> Unit): Boolean {
     return onPreviewHomeOrEndKeyEvent(event, textFieldState, trueHomeFalseEnd = true, invoke)
 }
 
-private fun goEndPressed(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+private fun goEndPressed(event: KeyEvent, textFieldState: TextFieldState, invoke: (lineSwitched: Boolean) -> Unit): Boolean {
     return onPreviewHomeOrEndKeyEvent(event, textFieldState, trueHomeFalseEnd = false, invoke)
 }
 
-private fun goLeftPressed(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+private fun goLeftPressed(event: KeyEvent, textFieldState: TextFieldState, invoke: (lineSwitched: Boolean) -> Unit): Boolean {
     return onPreviewLeftOrRightKeyEvent(event, textFieldState, trueLeftFalseRight = true, invoke)
 }
 
-private fun goRightPressed(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+private fun goRightPressed(event: KeyEvent, textFieldState: TextFieldState, invoke: (lineSwitched: Boolean) -> Unit): Boolean {
     return onPreviewLeftOrRightKeyEvent(event, textFieldState, trueLeftFalseRight = false, invoke)
 }
 
@@ -1458,7 +1461,7 @@ private fun onPreviewLeftOrRightKeyEvent(
     event: KeyEvent,
     field: TextFieldState,
     trueLeftFalseRight: Boolean,
-    invoke: () -> Unit,
+    invoke: (lineSwitched: Boolean) -> Unit,
 ): Boolean {
     if(event.isCtrlPressed || event.isShiftPressed || event.isAltPressed || event.isMetaPressed || field.value.selection.collapsed.not()) return false
 
@@ -1466,7 +1469,7 @@ private fun onPreviewLeftOrRightKeyEvent(
     if (event.nativeKeyEvent.keyCode != expectedKey) return false
 
 
-    invoke()
+    invoke((trueLeftFalseRight && field.value.selection == TextRange.Zero) || (trueLeftFalseRight.not() && field.value.selection.start == field.value.text.length))
 
     return true
 }
@@ -1476,14 +1479,14 @@ private fun onPreviewHomeOrEndKeyEvent(
     event: KeyEvent,
     field: TextFieldState,
     trueHomeFalseEnd: Boolean,
-    invoke: () -> Unit,
+    invoke: (lineSwitched: Boolean) -> Unit,
 ): Boolean {
     if(event.isCtrlPressed || event.isShiftPressed || event.isAltPressed || event.isMetaPressed || field.value.selection.collapsed.not()) return false
 
     val expectedKey = if(trueHomeFalseEnd) Key.MoveHome else Key.MoveEnd
     if (event.key != expectedKey) return false
 
-    invoke()
+    invoke((trueHomeFalseEnd && field.value.selection == TextRange.Zero) || (trueHomeFalseEnd.not() && field.value.selection.start == field.value.text.length))
     return true
 }
 
