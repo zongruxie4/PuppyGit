@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.material.icons.Icons
@@ -19,6 +20,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -152,7 +159,34 @@ fun EditorTitle(
                 .widthIn(min = MyStyleKt.Title.clickableTitleMinWidth)
         ) {
             if(editorSearchMode) {
-                    FilterTextField(filterKeyWord = editorSearchKeyword)
+                    FilterTextField(
+                        filterKeyWord = editorSearchKeyword,
+                        containerModifier = Modifier
+                            .fillMaxWidth()
+                            .onPreviewKeyEvent opke@{ keyEvent ->
+
+                                // return true to stop key event propaganda
+                                if (keyEvent.type != KeyEventType.KeyDown) {
+                                    return@opke false
+                                }
+
+
+                                // F3
+                                if(keyEvent.key == Key.F3 && !keyEvent.isShiftPressed) {
+                                    editorPageRequestFromParent.value = PageRequest.findNext
+                                    return@opke true
+                                }
+
+                                // Shift+F3
+                                if(keyEvent.key == Key.F3 && keyEvent.isShiftPressed) {
+                                    editorPageRequestFromParent.value = PageRequest.findPrevious
+                                    return@opke true
+                                }
+
+
+                                return@opke false
+                            }
+                    )
             }else {
                 ScrollableRow {
                     if(isPreviewModeOn) {
