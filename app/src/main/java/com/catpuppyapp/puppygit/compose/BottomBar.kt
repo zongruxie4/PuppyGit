@@ -266,7 +266,7 @@ fun BottomBar(
                         // trying scroll to the most right of the list
                         //  200 is a guessed number, any number is ok,
                         //  just make sure it big enough to reach the end of the list
-                        UIHelper.scrollTo(scope, scrollableIconListState, 200 * iconTextList.size, animation = true)
+                        UIHelper.scrollTo(scope, scrollableIconListState, 200 * iconTextList.size)
                     }
                 }
 
