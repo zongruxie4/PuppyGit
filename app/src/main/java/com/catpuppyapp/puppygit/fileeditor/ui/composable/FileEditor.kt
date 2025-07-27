@@ -737,6 +737,20 @@ fun FileEditor(
                                     }
                                 }
 
+                                // F3
+                                if(keyEvent.key == Key.F3 && !keyEvent.isShiftPressed) {
+                                    requestFromParent.value = if(searchMode.value) {
+                                        PageRequest.findNext
+                                    }else {
+                                        PageRequest.requireSearch
+                                    }
+                                }
+
+                                // Shift+F3
+                                if(keyEvent.key == Key.F3 && keyEvent.isShiftPressed) {
+                                    requestFromParent.value = PageRequest.findPrevious
+                                }
+
 
                                 return@opke false
                             }

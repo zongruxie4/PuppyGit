@@ -297,6 +297,10 @@ fun TextEditor(
     }
 
     suspend fun doSearch(key:String, toNext:Boolean, startPos: SearchPos) {
+        if(key.isEmpty()) {
+            return
+        }
+
         val keyLen = key.length
 
         val posResult = textEditorState.doSearch(key.lowercase(), toNext = toNext, startPos = startPos)
@@ -436,7 +440,11 @@ fun TextEditor(
         }
     }
     if(requestFromParent.value==PageRequest.findPrevious) {
-        PageRequest.clearStateThenDoAct(requestFromParent) {
+        PageRequest.clearStateThenDoAct(requestFromParent) findPrevious@{
+            if(searchKeyword.isEmpty()) {
+                return@findPrevious
+            }
+
             doJobThenOffLoading {
                 initSearchPos()
                 doSearch(searchKeyword, toNext = false, nextSearchPos.value)
@@ -444,7 +452,11 @@ fun TextEditor(
         }
     }
     if(requestFromParent.value==PageRequest.findNext) {
-        PageRequest.clearStateThenDoAct(requestFromParent) {
+        PageRequest.clearStateThenDoAct(requestFromParent) findNext@{
+            if(searchKeyword.isEmpty()) {
+                return@findNext
+            }
+
             doJobThenOffLoading {
                 initSearchPos()
                 doSearch(searchKeyword, toNext = true, nextSearchPos.value)
