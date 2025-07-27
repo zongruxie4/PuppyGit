@@ -2609,7 +2609,16 @@ class TextEditorState(
                     focusingLineIdx = newFields.lastIndex
                 )
 
+                //更新状态变量
+                isContentEdited?.value=true
+                editorPageIsContentSnapshoted?.value=false
+                EditCache.writeToFile(text)
+
+                // update state
                 onChanged(newState, true, true, this, null)
+
+                // analyze syntax highlighting
+                codeEditor?.startAnalyzeWhenUserStopInputForAWhile(newState)
 
                 afterReplacedAllThenDoAct?.invoke(newFields)
             }
