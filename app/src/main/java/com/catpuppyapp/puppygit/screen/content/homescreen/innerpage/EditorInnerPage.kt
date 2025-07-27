@@ -2147,6 +2147,8 @@ private suspend fun doInit(
                 // syntax highlightings
                 codeEditor.updatePlScopeThenAnalyze()
 
+                // init last saved fields id
+                // 刚打开文件，肯定没修改，等同于当前状态已保存
                 lastSavedFieldsId.value = newState.fieldsId
             }
 
