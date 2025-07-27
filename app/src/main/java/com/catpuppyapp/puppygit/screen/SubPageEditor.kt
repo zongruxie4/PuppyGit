@@ -389,13 +389,13 @@ fun SubPageEditor(
                     }else {
                         LongPressAbleIconBtn(
                             tooltipText = stringResource(R.string.back),
-                            icon = Icons.AutoMirrored.Filled.ArrowBack,
+                            icon = if(editorNeedSave) Icons.Filled.Save else Icons.AutoMirrored.Filled.ArrowBack,
                             iconContentDesc = stringResource(R.string.back),
                         ) {
                             doJobThenOffLoading {
 //                            isTimeNaviUp.value=false
                                 //未保存，先保存，再点击，再返回
-                                if(editorPageIsEdited.value && !editorReadOnlyMode.value && lastSavedFieldsId.value != editorPageTextEditorState.value.fieldsId) {
+                                if(editorNeedSave) {
 //                                doSave()这个得改一下，不要在外部保存
                                     editorPageRequestFromParent.value = PageRequest.requireSave
                                     return@doJobThenOffLoading
