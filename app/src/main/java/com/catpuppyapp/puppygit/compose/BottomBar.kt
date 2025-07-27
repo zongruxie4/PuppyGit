@@ -31,9 +31,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isAltPressed
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -133,6 +141,23 @@ fun BottomBar(
         modifier = Modifier
             .fillMaxSize()
             .systemBarsPadding()
+            .onPreviewKeyEvent opke@{ keyEvent ->
+                if (keyEvent.type != KeyEventType.KeyDown) {
+                    return@opke false
+                }
+
+                if (keyEvent.key == Key.Escape
+                    && !keyEvent.isCtrlPressed
+                    && !keyEvent.isShiftPressed
+                    && !keyEvent.isAltPressed
+                    && !keyEvent.isMetaPressed
+                ) {
+                    quitSelectionMode()
+                    return@opke true
+                }
+
+                return@opke false
+            }
             .then(modifier)
         ,
     ) {
@@ -181,9 +206,11 @@ fun BottomBar(
                     //选择的条目数
                     Text(
                         text = ""+getSelectedFilesCount(),
-                        modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = countNumOnClickEnabled) {
-                            countNumOnClick()
-                        }.padding(horizontal = 10.dp)
+                        modifier = MyStyleKt.ClickableText.modifier
+                            .clickable(enabled = countNumOnClickEnabled) {
+                                countNumOnClick()
+                            }
+                            .padding(horizontal = 10.dp)
                     )
                 }
 
