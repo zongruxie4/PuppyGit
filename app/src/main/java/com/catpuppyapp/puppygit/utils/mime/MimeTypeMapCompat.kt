@@ -259,8 +259,7 @@ private val extensionToMimeTypeMap = mapOf(
     "kpt" to "application/x-kpresenter",
     "ksp" to "application/x-kspread",
 
-    // start: I add
-    //kotlin这个是我(Bandeapart1964)添加的，目前没有kotlin文件的mime type，先用java的凑合吧
+    // START: I added
     "iml" to "text/xml",
     "mdown" to "text/markdown",
     "kt" to "application/x-kotlin",
@@ -303,9 +302,10 @@ private val extensionToMimeTypeMap = mapOf(
     "pro" to "application/x-proguard",
     "proguard" to "application/x-proguard",
     "r8" to "application/x-proguard",
+    "vue" to "application/x-vue",
 
 
-    // end: I add
+    // END: I added
 
     "kwd" to "application/x-kword",
     "kwt" to "application/x-kword",

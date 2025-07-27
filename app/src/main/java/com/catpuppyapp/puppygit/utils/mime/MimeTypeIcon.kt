@@ -92,6 +92,7 @@ private val mimeTypeToIconMap = mapOf(
     "application/x-makefile" to MimeTypeIcon.CODE,
     "application/x-zig" to MimeTypeIcon.CODE,
     "application/x-proguard" to MimeTypeIcon.CODE,
+    "application/x-vue" to MimeTypeIcon.CODE,
 
 
     "application/vnd.android.package-archive" to MimeTypeIcon.APK,
