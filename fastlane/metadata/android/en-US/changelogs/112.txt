@@ -4,3 +4,4 @@
 - fix sometimes ime state lost in editor
 - Editor: hide save button if current content already saved
 - Editor: fix undo stack push logic incorrect in some cases
+- upgrade target sdk to latest android version

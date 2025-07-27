@@ -33,13 +33,13 @@ android {
     val packageName = "com.catpuppyapp.puppygit.play.pro"
 
     namespace = packageName  // 这个值和包名有所不同，但是最好把这个值和包名设成一样的 或 让此值在系统中唯一，绝对不要不同或相同包名的app拥有相同namespace！如果包名不同但此值相同，会删除已安装的app！或者冲突，安装失败。（R.string 那个R需要在这个作用域下运行）
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = packageName
         //ndk编译的库不能大于minSdk值，否则会不支持
         minSdk = 26 //26，安卓8(Oreo, O)
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 112
         versionName = "1.1.3.6"
 
