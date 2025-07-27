@@ -807,7 +807,7 @@ class TextEditorState(
         highlightingStartIndex: Int = -1,
         highlightingEndExclusiveIndex: Int = -1,
         requireLock: Boolean = true,
-
+        forceAdd: Boolean = false,
     ) {
 
         val act = suspend {
@@ -828,6 +828,7 @@ class TextEditorState(
                 requireSelectLine = requireSelectLine,
                 highlightingStartIndex = highlightingStartIndex,
                 highlightingEndExclusiveIndex = highlightingEndExclusiveIndex,
+                forceAdd = forceAdd,
             )
 
             val newState = internalCreate(
@@ -1616,9 +1617,21 @@ class TextEditorState(
         return Pair(oneLineHowManyChars, luckyOffset)
     }
 
+    fun focusingLineIndexInvalid() = focusingLineIdx == null || focusingLineIdx < 0 || focusingLineIdx >= fields.size
+
     /**
      * 若forceAppend为假：如果当前行为空行，用text替换当前行；否则追加到当前行后面。
      * 若forceAppend为真：强制追加，无论当前行是否为空行。
+     *
+     * targetIndex: `focusingLineIdx` 有效则用它，无效则用 `selectedIndices` 最后一个条目，两个都无效则直接返回
+     *
+     *
+     * If `forceAppend` is false: If the current line is empty, replace the current line with text; otherwise, append text to the end of the current line.
+     * If `forceAppend` is true: Force append, regardless of whether the current line is empty or not.
+     *
+     * targetIndex: will use `focusingLineIdx` if it is valid, or last item of `selectedIndices`, if both are invalid, will return
+     *
+     *
      */
     suspend fun appendTextToLastSelectedLine(
         text: String,
@@ -1635,12 +1648,13 @@ class TextEditorState(
 
         //因为要粘贴到选中行后边，所以必须得有选中条目
         val selectedIndices = selectedIndices
-        if(selectedIndices.isEmpty()) {
+        val focusedLineInvalid = focusingLineIndexInvalid()
+        if(focusedLineInvalid && selectedIndices.isEmpty()) {
             return
         }
 
         //selectedIndices里存的是fields的索引，若是无效索引，直接返回
-        val lastSelectedIndexOfLine = selectedIndices.last()
+        val lastSelectedIndexOfLine = if(focusedLineInvalid) selectedIndices.last() else (focusingLineIdx!!)
         if(lastSelectedIndexOfLine < 0 || lastSelectedIndexOfLine >= fields.size) {
             MyLog.w(TAG, "#appendTextToLastSelectedLine: invalid index '$lastSelectedIndexOfLine' of `fields`")
             return

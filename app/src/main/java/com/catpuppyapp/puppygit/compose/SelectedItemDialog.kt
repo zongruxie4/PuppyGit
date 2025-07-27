@@ -5,6 +5,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,7 +35,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.forEachBetter
 
 
-private val trailingIconSize = 40.dp
+private val trailingIconSize = MyStyleKt.defaultIconSize
 
 @Composable
 fun <T> SelectedItemDialog(
@@ -150,7 +151,7 @@ private fun <T> SelectedItemDialog2(
 fun <T> SelectedItemDialog3(
     title: String = stringResource(R.string.selected_str),
     selectedItems:List<T>,
-    switchItemSelected:(T)->Unit,  //用switch而不是单纯的remove是为了日后可实现撤销删除方便，只要再把条目传给switchItemSelected函数，就能重新选中条目，但这样的话，恢复后的条目会在列表末尾，若想回到原位呢？难道删除后做整个列表的备份？或者这个函数改成能指定索引的？
+    switchItemSelected:(T)->Unit = {},  //用switch而不是单纯的remove是为了日后可实现撤销删除方便，只要再把条目传给switchItemSelected函数，就能重新选中条目，但这样的话，恢复后的条目会在列表末尾，若想回到原位呢？难道删除后做整个列表的备份？或者这个函数改成能指定索引的？
 
     //自定义text
     text:@Composable RowScope.(T) -> Unit,
@@ -160,6 +161,7 @@ fun <T> SelectedItemDialog3(
     customText:@Composable (BoxScope.(T) -> Unit)? = null,
     customTrailIcon:@Composable (BoxScope.(T) -> Unit)? = null,
 
+    textPadding: PaddingValues = PaddingValues(start = 5.dp, end = trailingIconSize),
     //清空条目列表
     clearAll:()->Unit,
 
@@ -180,7 +182,7 @@ fun <T> SelectedItemDialog3(
                 customText(it)
             }else {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(start = 5.dp, end = trailingIconSize).align(Alignment.CenterStart).horizontalScroll(rememberScrollState()),
+                    modifier = Modifier.fillMaxWidth().padding(textPadding).align(Alignment.CenterStart).horizontalScroll(rememberScrollState()),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     MySelectionContainer {

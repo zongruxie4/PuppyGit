@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
@@ -33,9 +34,13 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.PanToolAlt
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -1190,9 +1195,14 @@ fun FileEditor(
 
                     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false) }
                     if(showSelectedItemsShortDetailsDialog.value) {
+                        val trailingIconSize = MyStyleKt.defaultIconSize
+                        val trailIconsWidth = trailingIconSize * 2
+
+                        val closeDialog = { showSelectedItemsShortDetailsDialog.value = false }
+
                         SelectedItemDialog3(
                             selectedItems = textEditorState.value.selectedIndices,
-
+                            textPadding = PaddingValues(start = 5.dp, end = trailIconsWidth),
                             //预览的时候带行号，拷贝的时候不带
                             text = {
                                 // "行号: 行内容"
@@ -1201,9 +1211,53 @@ fun FileEditor(
                             },
                             textFormatterForCopy = { textEditorState.value.getContentOfLineIndex(it) },
 
-                            switchItemSelected = { doJobThenOffLoading { textEditorState.value.selectField(targetIndex = it) } },
                             clearAll = { textEditorState.value.clearSelectedItemList() },
-                            closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
+                            closeDialog = closeDialog,
+
+                            customTrailIcon = {
+                                Row(
+                                    modifier = Modifier.size(height = trailingIconSize, width = trailIconsWidth).align(Alignment.CenterEnd),
+                                    horizontalArrangement = Arrangement.End,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    // go to line
+                                    IconButton(
+                                        onClick = {
+                                            doJobThenOffLoading {
+                                                // update focusing line index index
+                                                textEditorState.value.selectField(targetIndex = it, forceAdd = true)
+
+                                                // scroll if need
+                                                scrollIfIndexInvisible(it + lineNumOffsetForGoToEditor)
+
+                                                // close dialog
+                                                closeDialog()
+                                            }
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.PanToolAlt,
+                                            contentDescription = "go to line button"
+                                        )
+                                    }
+
+
+                                    // unselect
+                                    IconButton(
+                                        onClick = {
+                                            doJobThenOffLoading {
+                                                textEditorState.value.selectField(targetIndex = it)
+                                            }
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.DeleteOutline,
+                                            contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
+                                        )
+                                    }
+                                }
+
+                            }
                         )
                     }
 
