@@ -2588,12 +2588,45 @@ class TextEditorState(
     }
 
 
+    /**
+     * if selected all, replace; else append to the last selected line
+     * after pasted, will select pasted content
+     */
+    suspend fun paste(
+        text: String,
+        afterReplacedAllThenDoAct: ((newFields: List<TextFieldState>) -> Unit)? = null
+    ) {
+        if(isSelectedAllFields()) {  // replace all
+            lock.withLock {
+                val newFields = textToFields(text, initValueOfIsSelected = true)
+                val newSelectedIndices = newFields.indices.toList()
+                val newState = copy(
+                    fieldsId = newId(),
+                    fields = newFields,
+                    selectedIndices = newSelectedIndices,
+
+                    // focus last line of pasted content
+                    focusingLineIdx = newFields.lastIndex
+                )
+
+                onChanged(newState, true, true, this, null)
+
+                afterReplacedAllThenDoAct?.invoke(newFields)
+            }
+        }else {  // append to last selected line
+            appendTextToLastSelectedLine(text)
+        }
+    }
+
+    fun isSelectedAllFields() = isMultipleSelectionMode && selectedIndices.size == fields.size
+
+
     companion object {
-        fun linesToFields(lines: List<String>) = createInitTextFieldStates(lines)
+        fun linesToFields(lines: List<String>, initValueOfIsSelected: Boolean = false) = createInitTextFieldStates(lines, initValueOfIsSelected)
 
-        fun fuckSafFileToFields(file: FuckSafFile) = linesToFields(FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true))
+        fun fuckSafFileToFields(file: FuckSafFile, initValueOfIsSelected: Boolean = false) = linesToFields(FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true), initValueOfIsSelected)
 
-        fun textToFields(text: String) = linesToFields(text.lines())
+        fun textToFields(text: String, initValueOfIsSelected: Boolean = false) = linesToFields(text.lines(), initValueOfIsSelected)
 
 
         fun newId():String {
@@ -2604,12 +2637,12 @@ class TextEditorState(
 }
 
 
-private fun createInitTextFieldStates(list:List<String>): List<TextFieldState> {
-    if (list.isEmpty()) return listOf(TextFieldState(isSelected = false))
-    return list.mapIndexed { _, s ->
+private fun createInitTextFieldStates(list:List<String>, initValueOfIsSelected: Boolean = false): List<TextFieldState> {
+    if (list.isEmpty()) return listOf(TextFieldState(isSelected = initValueOfIsSelected))
+    return list.map { s ->
         TextFieldState(
-            value = TextFieldValue(s, TextRange.Zero),
-            isSelected = false
+            value = TextFieldValue(s),
+            isSelected = initValueOfIsSelected
         )
     }
 }

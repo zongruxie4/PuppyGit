@@ -91,6 +91,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
+import com.catpuppyapp.puppygit.fileeditor.texteditor.view.lineNumOffsetForGoToEditor
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.getClipboardText
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
@@ -115,6 +116,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.paddingLineNumber
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
@@ -1095,7 +1097,19 @@ fun FileEditor(
                             }
 
                             doJobThenOffLoading {
-                                textEditorState.value.appendTextToLastSelectedLine(clipboardText)
+                                textEditorState.value.paste(
+                                    text = clipboardText,
+
+                                    // after pasted, scroll to the last line
+                                    afterReplacedAllThenDoAct = { newFields ->
+                                        val scrollTarget = (newFields.lastIndex + lineNumOffsetForGoToEditor).coerceAtLeast(0)
+
+                                        doJobThenOffLoading {
+                                            delay(200)
+                                            editorLastScrollEvent.value = ScrollEvent(scrollTarget)
+                                        }
+                                    }
+                                )
                             }
 
                             Unit
