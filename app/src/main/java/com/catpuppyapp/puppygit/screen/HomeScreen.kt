@@ -672,7 +672,10 @@ fun HomeScreen(
     }
 
 
-    val needRefreshRepoPage = rememberSaveable { mutableStateOf("")}
+    val needRefreshRepoPage = rememberSaveable { mutableStateOf("") }
+
+    val lastSavedFieldsId = rememberSaveable { mutableStateOf("") }
+
     val doSave: suspend () -> Unit = FsUtils.getDoSaveForEditor(
         editorPageShowingFilePath = editorPageShowingFilePath,
         editorPageLoadingOn = editorPageLoadingOn,
@@ -687,7 +690,9 @@ fun HomeScreen(
         editorPageFileDto = editorPageShowingFileDto,
         isSubPageMode = false,
         isContentSnapshoted = editorPageIsContentSnapshoted,
-        snapshotedFileInfo = editorPageSnapshotedFileInfo
+        snapshotedFileInfo = editorPageSnapshotedFileInfo,
+        lastSavedFieldsId = lastSavedFieldsId,
+
     )
 
     val goToServicePage = {
@@ -984,7 +989,7 @@ fun HomeScreen(
         val changeListHasErr = rememberSaveable { mutableStateOf(false) }
 
         //文件未就绪时没有打开，所以不能保存
-        val editorNeedSave = editorPageShowingFileIsReady.value && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value
+        val editorNeedSave = editorPageShowingFileIsReady.value && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value && lastSavedFieldsId.value != editorPageTextEditorState.value.fieldsId
 
         Scaffold(
             modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -1272,7 +1277,15 @@ fun HomeScreen(
                         listLastPosition = editorPreviewLastScrollPosition,
                         showFab = editorPreviewPageScrolled
                     )
-                } else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && (editorIsPreviewModeOn.value.not() && editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank() && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value)) {
+                } else if(currentHomeScreen.intValue == Cons.selectedItem_Editor
+                    && (editorIsPreviewModeOn.value.not()
+                            && editorPageShowingFileIsReady.value
+                            && editorPageShowingFilePath.value.isNotBlank()
+                            && editorPageIsEdited.value
+                            && !editorPageIsSaving.value
+                            && !editorReadOnlyMode.value
+                            && lastSavedFieldsId.value != editorPageTextEditorState.value.fieldsId
+                    )) {
                     SmallFab(modifier = MyStyleKt.Fab.getFabModifierForEditor(editorPageTextEditorState.value.isMultipleSelectionMode, UIHelper.isPortrait()),
                         icon = Icons.Filled.Save, iconDesc = stringResource(id = R.string.save)
                     ) {
@@ -1473,6 +1486,7 @@ fun HomeScreen(
 //                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
                     stateKeyTag = stateKeyTag,
 
+                    lastSavedFieldsId = lastSavedFieldsId,
                     codeEditor = codeEditor,
                     plScope = editorPlScope,
 

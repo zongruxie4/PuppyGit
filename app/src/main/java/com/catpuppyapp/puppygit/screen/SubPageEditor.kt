@@ -259,6 +259,8 @@ fun SubPageEditor(
 //        changeStateTriggerRefreshPage(needRefreshEditorPage)
     }
 
+    val lastSavedFieldsId = rememberSaveable { mutableStateOf("") }
+
     val doSave:suspend ()->Unit = FsUtils.getDoSaveForEditor(
         editorPageShowingFilePath = editorPageShowingFilePath,
         editorPageLoadingOn = loadingOn,
@@ -273,7 +275,8 @@ fun SubPageEditor(
         editorPageFileDto = editorPageShowingFileDto,
         isSubPageMode = true,
         isContentSnapshoted =editorPageIsContentSnapshoted,
-        snapshotedFileInfo = editorPageSnapshotedFileInfo
+        snapshotedFileInfo = editorPageSnapshotedFileInfo,
+        lastSavedFieldsId = lastSavedFieldsId,
     )
 
 
@@ -318,7 +321,7 @@ fun SubPageEditor(
 
     val editorRecentListScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
 
-    val editorNeedSave = editorPageShowingFileIsReady.value && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value
+    val editorNeedSave = editorPageShowingFileIsReady.value && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value && lastSavedFieldsId.value != editorPageTextEditorState.value.fieldsId
 
 
     Scaffold(
@@ -392,7 +395,7 @@ fun SubPageEditor(
                             doJobThenOffLoading {
 //                            isTimeNaviUp.value=false
                                 //未保存，先保存，再点击，再返回
-                                if(editorPageIsEdited.value && !editorReadOnlyMode.value) {
+                                if(editorPageIsEdited.value && !editorReadOnlyMode.value && lastSavedFieldsId.value != editorPageTextEditorState.value.fieldsId) {
 //                                doSave()这个得改一下，不要在外部保存
                                     editorPageRequestFromParent.value = PageRequest.requireSave
                                     return@doJobThenOffLoading
@@ -479,7 +482,13 @@ fun SubPageEditor(
                     listLastPosition = editorPreviewLastScrollPosition,
                     showFab = editorPreviewPageScrolled
                 )
-            }else if(editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank() && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value) {
+            }else if(editorPageShowingFileIsReady.value
+                && editorPageShowingFilePath.value.isNotBlank()
+                && editorPageIsEdited.value
+                && !editorPageIsSaving.value
+                && !editorReadOnlyMode.value
+                && lastSavedFieldsId.value != editorPageTextEditorState.value.fieldsId
+            ) {
                 SmallFab(
                     modifier= MyStyleKt.Fab.getFabModifierForEditor(editorPageTextEditorState.value.isMultipleSelectionMode, UIHelper.isPortrait()),
                     icon = Icons.Filled.Save, iconDesc = stringResource(id = R.string.save)
@@ -512,6 +521,8 @@ fun SubPageEditor(
         EditorInnerPage(
 //            stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
             stateKeyTag = stateKeyTag,
+
+            lastSavedFieldsId = lastSavedFieldsId,
 
             codeEditor = codeEditor,
             plScope = editorPlScope,

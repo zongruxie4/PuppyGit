@@ -14,6 +14,7 @@ import androidx.documentfile.provider.DocumentFile
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.LineNum
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.EditorPayload
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.etc.Ret
@@ -823,6 +824,7 @@ object FsUtils {
         isSubPageMode:Boolean,
         isContentSnapshoted: MutableState<Boolean>,
         snapshotedFileInfo: CustomStateSaveable<FileSimpleDto>,  //用来粗略判断是否已创建文件的快照，之所以说是粗略判断是因为其只能保证打开一个文件后，再不更换文件的情况下不会重复创建同一文件的快照，但一切换文件就作废了，即使已经有某个文件的快照，还是会重新创建其快照
+        lastSavedFieldsId: MutableState<String>,
     ): suspend () -> Unit {
         val doSave: suspend () -> Unit = doSave@{
             val funName ="doSave"  // for log
@@ -830,6 +832,12 @@ object FsUtils {
             //让页面知道正在保存文件
             editorPageIsSaving.value = true
             editorPageLoadingOn(activityContext.getString(R.string.saving))
+
+            // here use Box is for reduce changes the code, because `Box.value` in code is same as `State.value`, is convenience to replace
+            //   here expect get current state pointed instance, if get the value then assign to a variable, must remove all .value, so use a Box to avoid many changes
+            // 这里使用box是为了避免以后直接用State.value还得多改代码，因为Box.value和State.value代码一样，方便替换
+            //   这里期望的是获取当前状态的实例，直接替换常量比较符合直觉，但是还得逐个把.value删除，有点麻烦，所以用box简化修改
+            val editorPageTextEditorState = Box(editorPageTextEditorState.value)
 
             try {
                 // 先把filePath和content取出来
@@ -1001,6 +1009,8 @@ object FsUtils {
 
                     //如果保存成功，将isEdited设置为假
                     editorPageIsEdited.value = false
+
+                    lastSavedFieldsId.value = editorPageTextEditorState.value.fieldsId
 
                     //提示保存成功
                     Msg.requireShow(activityContext.getString(R.string.file_saved))

@@ -129,6 +129,7 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 fun EditorInnerPage(
     stateKeyTag:String,
 
+    lastSavedFieldsId: MutableState<String>,
     codeEditor: CustomStateSaveable<MyCodeEditor>,
     plScope: MutableState<PLScope>,
 
@@ -341,11 +342,13 @@ fun EditorInnerPage(
         derivedStateOf {editorPageShowingFileHasErr.value && !editorPageShowingFileIsReady.value}
     }.value
 
+    val needAndReadyDoSave:()->Boolean = { isEdited.value && !readOnlyMode.value && editorPageTextEditorState.value.fieldsId != lastSavedFieldsId.value }  //因为用了锁，只要拿到锁，肯定别人没在保存，所以无需判断isSaving，只判断文件是否编辑过即可，若没编辑过，说明之前保存成功后没动过，否则，应保存文件
+
     //打开主页抽屉的时候，触发保存文件。子页面永远不会触发，子页面的保存已经写到点返回箭头里了，这里不用管它
     val justForSave = remember {
         derivedStateOf {
             val drawIsOpen = drawerState?.isOpen == true
-            val needRequireSave = drawIsOpen && isEdited.value && !readOnlyMode.value
+            val needRequireSave = drawIsOpen && needAndReadyDoSave()
             if (needRequireSave) {
                 requestFromParent.value = PageRequest.requireSave
             }
@@ -357,7 +360,6 @@ fun EditorInnerPage(
 
 //    val needAndReadyDoSave = remember{derivedStateOf { isEdited.value && !isSaving.value }}
 //    val needAndReadyDoSave:()->Boolean = { isEdited.value && !isSaving.value }
-    val needAndReadyDoSave:()->Boolean = { isEdited.value && !readOnlyMode.value }  //因为用了锁，只要拿到锁，肯定别人没在保存，所以无需判断isSaving，只判断文件是否编辑过即可，若没编辑过，说明之前保存成功后没动过，否则，应保存文件
 
     val doSaveInCoroutine = {
 //        if(readyForSave.value) {
@@ -407,13 +409,14 @@ fun EditorInnerPage(
                         isSaving.value=true
 
                         val filePath = editorPageShowingFilePath.value
+                        val editorState = editorPageTextEditorState.value
 //                        val fileContent = editorPageTextEditorState.value.getAllText()
 //                        val fileContent = null
 
                         val ret = FsUtils.simpleSafeFastSave(
                             context = activityContext,
                             content = null,
-                            editorState = editorPageTextEditorState.value,
+                            editorState = editorState,
                             trueUseContentFalseUseEditorState = false,
                             targetFilePath = filePath,
                             requireBackupContent = requireBackupContent,
@@ -424,6 +427,8 @@ fun EditorInnerPage(
 
                         if(ret.success()) {
                             isEdited.value=false
+
+                            lastSavedFieldsId.value = editorState.fieldsId
 
                             //更新用于判断是否重载的dto，不然每次修改内容再切到后台保存后再回来都会重载
                             editorPageShowingFileDto.value = FileSimpleDto.genByFile(editorPageShowingFilePath.value.toFuckSafFile(activityContext))
@@ -493,7 +498,7 @@ fun EditorInnerPage(
 
     if(showCloseDialog.value) {
         //若没编辑过直接关闭，否则需要弹窗确认
-        if(!isEdited.value) {
+        if(!needAndReadyDoSave()) {
             showCloseDialog.value=false
             closeFile()
         }else {
@@ -586,7 +591,7 @@ fun EditorInnerPage(
     //重新加载文件确认弹窗
     if(showReloadDialog.value) {
         //未编辑过文件，直接重载
-        if(!isEdited.value) {
+        if(!needAndReadyDoSave()) {
             showReloadDialog.value=false  //立即关弹窗避免重入
 
             //检查源文件是否被外部修改过，若修改过，创建快照，然后再重载
@@ -1870,6 +1875,7 @@ fun EditorInnerPage(
 
                 doActWithLockIfFree(loadLock, "EditorInnerPage#Init#${needRefreshEditorPage.value}#${editorPageShowingFilePath.value.ioPath}") {
                     doInit(
+                        lastSavedFieldsId = lastSavedFieldsId,
                         codeEditor = codeEditor.value,
                         resetLastCursorAtColumn = resetLastCursorAtColumn,
                         requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
@@ -1938,6 +1944,7 @@ fun EditorInnerPage(
 
 
 private suspend fun doInit(
+    lastSavedFieldsId: MutableState<String>,
     codeEditor: MyCodeEditor,
     resetLastCursorAtColumn: ()->Unit,
     requirePreviewScrollToEditorCurPos: MutableState<Boolean>,
@@ -2133,11 +2140,14 @@ private suspend fun doInit(
                     ),
 //                    temporaryStyles = null,
                 )
+
                 editorPageTextEditorState.value = newState
 //                lastTextEditorState.value = newState
 
                 // syntax highlightings
                 codeEditor.updatePlScopeThenAnalyze()
+
+                lastSavedFieldsId.value = newState.fieldsId
             }
 
 
