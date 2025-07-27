@@ -401,7 +401,7 @@ fun FileEditor(
                                         val event = keyEvent
 
                                         // backspace
-                                        if (onPreviewDelKeyEvent(event, selection) {
+                                        if (backspacePressed(event, selection) {
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.deleteNewLine(targetIndex = index)
@@ -416,7 +416,7 @@ fun FileEditor(
                                         }
 
                                         // Delete key
-                                        if (onPreviewForwardDelKeyEvent(event, selection, textFieldValue) {
+                                        if (forwardDeletePressed(event, selection, textFieldValue) {
                                                 // delete current line's end equals to delete next line's start, so plus 1
                                                 val index = index + 1
                                                 doJobThenOffLoading {
@@ -432,7 +432,7 @@ fun FileEditor(
                                             return@opke true
                                         }
 
-                                        if (onPreviewUpKeyEvent(event) {
+                                        if (goUpKeyPressed(event) {
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.selectPrevOrNextField(
@@ -453,7 +453,7 @@ fun FileEditor(
                                         }
 
 
-                                        if (onPreviewDownKeyEvent(event) {
+                                        if (goDownKeyPressed(event) {
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.selectPrevOrNextField(
@@ -474,7 +474,7 @@ fun FileEditor(
                                         }
 
 
-                                        if (onPreviewLeftKeyEvent(event, textFieldState) {
+                                        if (goLeftPressed(event, textFieldState) {
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.moveCursor(
@@ -495,7 +495,7 @@ fun FileEditor(
                                             return@opke true
                                         }
 
-                                        if (onPreviewRightKeyEvent(event, textFieldState) {
+                                        if (goRightPressed(event, textFieldState) {
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.moveCursor(
@@ -516,7 +516,7 @@ fun FileEditor(
                                             return@opke true
                                         }
 
-                                        if (onPreviewHomeKeyEvent(event, textFieldState) {
+                                        if (goHomePressed(event, textFieldState) {
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.moveCursor(
@@ -537,7 +537,7 @@ fun FileEditor(
                                             return@opke true
                                         }
 
-                                        if (onPreviewEndKeyEvent(event, textFieldState) {
+                                        if (goEndPressed(event, textFieldState) {
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.moveCursor(
@@ -1377,33 +1377,33 @@ private fun Modifier.changeTypeIndicator(
 
 
 // BEGIN: text field keyboard event handler
-private fun onPreviewHomeKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+private fun goHomePressed(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
     return onPreviewHomeOrEndKeyEvent(event, textFieldState, trueHomeFalseEnd = true, invoke)
 }
 
-private fun onPreviewEndKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+private fun goEndPressed(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
     return onPreviewHomeOrEndKeyEvent(event, textFieldState, trueHomeFalseEnd = false, invoke)
 }
 
-private fun onPreviewLeftKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+private fun goLeftPressed(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
     return onPreviewLeftOrRightKeyEvent(event, textFieldState, trueLeftFalseRight = true, invoke)
 }
 
-private fun onPreviewRightKeyEvent(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+private fun goRightPressed(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
     return onPreviewLeftOrRightKeyEvent(event, textFieldState, trueLeftFalseRight = false, invoke)
 }
 
-private fun onPreviewUpKeyEvent(event: KeyEvent, invoke: () -> Unit): Boolean {
+private fun goUpKeyPressed(event: KeyEvent, invoke: () -> Unit): Boolean {
     return onPreviewUpOrDownKeyEvent(event, trueUpFalseDown = true, invoke)
 }
 
-private fun onPreviewDownKeyEvent(event: KeyEvent, invoke: () -> Unit): Boolean {
+private fun goDownKeyPressed(event: KeyEvent, invoke: () -> Unit): Boolean {
     return onPreviewUpOrDownKeyEvent(event, trueUpFalseDown = false, invoke)
 }
 
 
 // backspace
-private fun onPreviewDelKeyEvent(
+private fun backspacePressed(
     event: KeyEvent,
     selection: TextRange,
     invoke: () -> Unit
@@ -1422,7 +1422,7 @@ private fun onPreviewDelKeyEvent(
 }
 
 // Delete
-private fun onPreviewForwardDelKeyEvent(
+private fun forwardDeletePressed(
     event: KeyEvent,
     selection: TextRange,
     field: TextFieldValue,
