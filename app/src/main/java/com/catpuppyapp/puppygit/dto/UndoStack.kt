@@ -132,7 +132,7 @@ class UndoStack(
 
         //在时间间隔内只存一版
         // force || disabled save interval || first time push || over the save interval
-        if(force || undoSaveIntervalInSec == 0 || undoLastSaveAt == 0L || (now - undoLastSaveAt) > undoSaveIntervalInSec) {
+        if(force || undoStackIsEmpty() || undoSaveIntervalInSec == 0 || undoLastSaveAt == 0L || (now - undoLastSaveAt) > undoSaveIntervalInSec) {
             push(undoStack, state)
             undoLastSaveAt = now
 
