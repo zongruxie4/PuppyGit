@@ -55,6 +55,7 @@ enum class PLScope(val scope: String) {
     TS("source.ts"),
     TSX("source.tsx"),
     VB("source.asp.vb.net"),
+    VUE("source.vue"),
     XML("text.xml"),
     XSL("text.xml.xsl"),
     YAML("source.yaml"),
@@ -70,6 +71,13 @@ enum class PLScope(val scope: String) {
 
         fun guessScopeType(fileName: String) : PLScope {
             val fileName = fileName.lowercase()
+
+            //note: must use lower case extensions to match
+            //note: must use lower case extensions to match
+            //note: must use lower case extensions to match
+            //note: must use lower case extensions to match
+            //note: must use lower case extensions to match
+            //note: must use lower case extensions to match
 
             if(fileName.endsWith(".txt") || fileName.endsWith(".text")) {
                 return NONE
@@ -122,6 +130,10 @@ enum class PLScope(val scope: String) {
 
             if(fileName.endsWith(".ini") || fileName == "config" || fileName.endsWith(".gitconfig") || fileName.endsWith(".gitmodules")) {
                 return INI
+            }
+
+            if(fileName.endsWith(".vue")) {
+                return VUE
             }
 
             if(fileName.endsWith(".lua")) {
