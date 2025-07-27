@@ -284,8 +284,6 @@ fun TextEditor(
         goColumn: Boolean=false,
         columnStartIndex:Int=0,
         columnEndIndexExclusive:Int=columnStartIndex,
-        highlightingStartIndex:Int = -1,
-        highlightingEndExclusiveIndex:Int = -1,
         requireHideKeyboard:Boolean = false
     ){
         lastScrollEvent.value = ScrollEvent(
@@ -294,8 +292,6 @@ fun TextEditor(
             goColumn = goColumn,
             columnStartIndexInclusive = columnStartIndex,
             columnEndIndexExclusive = columnEndIndexExclusive,
-            highlightingStartIndex = highlightingStartIndex,
-            highlightingEndExclusiveIndex = highlightingEndExclusiveIndex,
             requireHideKeyboard = requireHideKeyboard
         )
     }
@@ -339,10 +335,6 @@ fun TextEditor(
 //                columnEndIndexExclusive = keywordEndExclusiveAtLine,
                 columnEndIndexExclusive = keywordStartAtLine,
 
-                //这个高亮关键字也有bug，闪一下就没了，因为TextFieldValue更新后会丢样式
-                //高亮关键字
-                highlightingStartIndex = keywordStartAtLine,
-                highlightingEndExclusiveIndex = keywordEndExclusiveAtLine,
 
                 //请求关掉键盘，不然高亮会被textFieldValue的onValueChange事件刷新掉，不过就算关了键盘，当前正在编辑的行也无法取消聚焦，还是有可能会被刷新掉高亮颜色
 //                requireHideKeyboard = true
@@ -1028,14 +1020,14 @@ fun TextEditor(
                 decorationBox(
                     index,
                     size,
-                    textFieldState.isSelected,
+                    textEditorState.isFieldSelected(index),
                     textFieldState,
 
                     //用来判断是否选中当前行，若选中则加背景颜色，如果为null就当作-1，-1为无效索引，这样就不会选中任何行
                     textEditorState.focusingLineIdx ?: -1,
                     textEditorState.isMultipleSelectionMode,
 
-                    ) { modifier ->
+                ) { modifier ->
 
                     // FileEditor里的innerTextFiled()会执行这的代码
                     Box(
@@ -1376,8 +1368,8 @@ fun TextEditor(
                                     //如果选中某行子字符串的功能修复了，就使用正常的endIndex；否则使用startIndex，定位光标到关键字出现的位置但不选中关键字
                                     columnEndIndexExclusive = if(bug_Editor_SelectColumnRangeOfLine_Fixed) lastScrollEvent!!.columnEndIndexExclusive else lastScrollEvent!!.columnStartIndexInclusive,
                                     requireSelectLine = false,
-                                    highlightingStartIndex = lastScrollEvent.highlightingStartIndex,
-                                    highlightingEndExclusiveIndex = lastScrollEvent.highlightingEndExclusiveIndex,
+//                                    highlightingStartIndex = lastScrollEvent.highlightingStartIndex,
+//                                    highlightingEndExclusiveIndex = lastScrollEvent.highlightingEndExclusiveIndex,
                                 )
 
                                 //请求失焦则关闭键盘
@@ -1436,17 +1428,13 @@ fun getPreviousKeyWordForConflict(curKeyWord:String, settings: AppSettings):Stri
     }
 }
 
-data class ScrollEvent(
+class ScrollEvent(
     val index: Int = -1,
-    //这为什么还要time？
-    val time: Long = System.currentTimeMillis(),
     val forceGo:Boolean = false,
     val goColumn:Boolean=false,
     val columnStartIndexInclusive:Int=0,
     val columnEndIndexExclusive:Int=columnStartIndexInclusive,
 
-    val highlightingStartIndex:Int = -1,
-    val highlightingEndExclusiveIndex:Int = -1,
     val requireHideKeyboard:Boolean = false
 
 ) {

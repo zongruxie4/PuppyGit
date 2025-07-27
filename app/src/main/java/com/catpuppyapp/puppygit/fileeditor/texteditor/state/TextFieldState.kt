@@ -20,10 +20,6 @@ class TextFieldState(
 
     val value: TextFieldValue = TextFieldValue(),
 
-    //为避免已选择list和条目list数量都过大时判断某行是否选中的性能差，所以保留这个字段，耗内存但在选中行和文件全部行数都很大时性能更好，不然判断一行是否被选中需要最大遍历两个list.size相乘的次数
-    //另外，不要用此变量判断某行是否被聚焦，改用TextEditorState的focusingLineIndex去判断，
-    // 不然每次聚焦一行都要先解除其他所有行的isSelected状态，这种方式需要全量浅拷贝，浪费性能
-    val isSelected: Boolean = false,
 
     //用来指示当前行是编辑过，还是新增行，就像notepad++那样，这个状态和git无关，只针对当前会话，临时的，若实现成和git有关的话，有点麻烦，算了
     var changeType:LineChangeType = LineChangeType.NONE,
@@ -32,19 +28,17 @@ class TextFieldState(
 ) {
     fun copy(
         value: TextFieldValue = this.value,
-        isSelected: Boolean = this.isSelected,
         changeType: LineChangeType = this.changeType,
 
     ) = TextFieldState(
         value = value,
-        isSelected = isSelected,
         changeType = changeType,
         syntaxHighlightId = if(value.text != this.value.text || this.syntaxHighlightId.isBlank()) getRandomUUID() else this.syntaxHighlightId,
 
     )
 
     override fun toString(): String {
-        return "TextFieldState(syntaxHighlightId=$syntaxHighlightId, value=$value, isSelected=$isSelected, changeType=$changeType)"
+        return "TextFieldState(syntaxHighlightId=$syntaxHighlightId, value=$value, changeType=$changeType)"
     }
 
 
@@ -57,7 +51,6 @@ class TextFieldState(
         other as TextFieldState
 
         if (syntaxHighlightId != other.syntaxHighlightId) return false
-        if (isSelected != other.isSelected) return false
         if (changeType != other.changeType) return false
         if (value != other.value) return false
 
@@ -65,8 +58,7 @@ class TextFieldState(
     }
 
     override fun hashCode(): Int {
-        var result = isSelected.hashCode()
-        result = 31 * result + syntaxHighlightId.hashCode()
+        var result = syntaxHighlightId.hashCode()
         result = 31 * result + value.hashCode()
         result = 31 * result + changeType.hashCode()
         return result

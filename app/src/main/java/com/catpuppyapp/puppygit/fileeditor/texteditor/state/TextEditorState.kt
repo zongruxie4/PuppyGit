@@ -387,7 +387,7 @@ class TextEditorState(
             //追加新行（注意：新行从第二行开始，并且，如果新行是从旧行的中间分割的，则新行的第一行可能有旧行的后半段内容）
             val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
             //把新内容转换成text field对象，其类型必然是NEW，因为是新增的
-            val newSplitFieldStates = newSplitFieldValues.map { TextFieldState(value = it, isSelected = false, changeType = LineChangeType.NEW) }
+            val newSplitFieldStates = newSplitFieldValues.map { TextFieldState(value = it, changeType = LineChangeType.NEW) }
 
             //如果是从头部插入的新行，则需要检查最后一行的内容是否和旧行的内容相同，如果相同，其changeType应维持旧行，否则改成updated，但不管怎么，它都不应该是NEW，因为本质上它是原来的旧行修改而来的
             if(newLineAtOldLineHead) {
@@ -698,10 +698,7 @@ class TextEditorState(
             newSelectedIndices.clear()
 
             for(i in newFields.indices) {
-                if(((trueAppendFalseReplace && i <= newLinesRange.start) || (trueAppendFalseReplace.not() && i < newLinesRange.start)) || i > newLinesRange.endInclusive) {
-                    newFields[i] = newFields[i].copy(isSelected = false)
-                }else {
-                    newFields[i] = newFields[i].copy(isSelected = true)
+                if(!(((trueAppendFalseReplace && i <= newLinesRange.start) || (trueAppendFalseReplace.not() && i < newLinesRange.start)) || i > newLinesRange.endInclusive)) {
                     newSelectedIndices.add(i)
                 }
             }
@@ -742,7 +739,7 @@ class TextEditorState(
 
             val concatSelection = TextRange(toText.count())  // end of `toText`
             val concatTextFieldValue = TextFieldValue(text = concatText, selection = concatSelection)
-            val toTextFieldState = newFields[targetIndex - 1].copy(value = concatTextFieldValue, isSelected = false).apply {
+            val toTextFieldState = newFields[targetIndex - 1].copy(value = concatTextFieldValue).apply {
                 val newChangeType = if(toText.isEmpty() && fromText.isNotEmpty()) {
                     fromField.changeType
                 }else if(toText.isNotEmpty() && fromText.isEmpty()) {
@@ -804,12 +801,9 @@ class TextEditorState(
         columnStartIndexInclusive:Int=0,
         columnEndIndexExclusive:Int=columnStartIndexInclusive,
         requireSelectLine: Boolean=true, // if true, will add targetIndex into selected indices, set false if you don't want to select this line(e.g. when you just want go to line)
-        highlightingStartIndex: Int = -1,
-        highlightingEndExclusiveIndex: Int = -1,
         requireLock: Boolean = true,
         forceAdd: Boolean = false,
     ) {
-
         val act = suspend {
 //            val newFields = fields.toMutableList()
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
@@ -826,8 +820,6 @@ class TextEditorState(
                 columnStartIndexInclusive=columnStartIndexInclusive,
                 columnEndIndexExclusive=columnEndIndexExclusive,
                 requireSelectLine = requireSelectLine,
-                highlightingStartIndex = highlightingStartIndex,
-                highlightingEndExclusiveIndex = highlightingEndExclusiveIndex,
                 forceAdd = forceAdd,
             )
 
@@ -879,13 +871,13 @@ class TextEditorState(
                     return
                 }
 
-                val newFields = fields.toMutableList()
+//                val newFields = fields.toMutableList()
                 val newSelectedIndices = selectedIndices.toMutableList()
                 for(i in startIndex..<endIndexExclusive) {
                     sfiRet = selectFieldInternal(
-                        init_fields = newFields,
+                        init_fields = fields,
                         init_selectedIndices = newSelectedIndices,
-                        isMutableFields = true,
+                        isMutableFields = false,
                         isMutableSelectedIndices = true,
 //                        out_focusingLineIdx = newFocusingLineIdx,
 //                        init_focusingLineIdx = focusingLineIdx,
@@ -970,32 +962,8 @@ class TextEditorState(
     private fun getCopyTargetValue(
         targetValue: TextFieldValue,
         selection:TextRange,
-        highlightingStartIndex:Int,
-        highlightingEndExclusiveIndex:Int,
     ):TextFieldValue {
-        val targetTextLen = targetValue.text.length
-
-        // highlight range if require
-        //检查开闭索引是否都为有效索引
-        return if(isStartInclusiveEndExclusiveRangeValid(start = highlightingStartIndex, endExclusive = highlightingEndExclusiveIndex, size = targetTextLen)) {
-            val targetText = targetValue.text
-            val before = targetText.substring(0, highlightingStartIndex)
-            val highlighting = targetText.substring(highlightingStartIndex, highlightingEndExclusiveIndex)
-            val after = targetText.substring(highlightingEndExclusiveIndex)
-
-            targetValue.copy(
-                selection = selection,
-                annotatedString = buildAnnotatedString {
-                    append(before)
-                    withStyle(SpanStyle(background = MyStyleKt.Editor.highlightingBgColor)) {
-                        append(highlighting)
-                    }
-                    append(after)
-                })
-
-        }else {
-            targetValue.copy(selection = selection)
-        }
+        return targetValue.copy(selection = selection)
     }
 
     /**
@@ -1015,9 +983,6 @@ class TextEditorState(
         columnEndIndexExclusive:Int=columnStartIndexInclusive,
         requireSelectLine:Boolean = true,
 
-        // -1 或其他无效索引，就是啥都不高亮，或者两个值相等，也是啥都不高亮，或者start大于end，也不高亮，总之就是无效左闭右开区间就不高亮
-        highlightingStartIndex: Int = -1,
-        highlightingEndExclusiveIndex: Int = -1,
     ):SelectFieldInternalRet {
         try {
             targetIndexValidOrThrow(targetIndex, init_fields.size)
@@ -1057,86 +1022,54 @@ class TextEditorState(
         }
 
 
-        val requireHighlighting = isStartInclusiveEndExclusiveRangeValid(start = highlightingStartIndex, endExclusive = highlightingEndExclusiveIndex, size = textLenOfTarget)
-        val deHighlightingNonTarget = requireHighlighting
 //        val requireLossFocus = requireHighlighting  // 高亮关键字不聚焦是为了避免有的语言（例如英语）输入法，明明没编辑，也会触发onValueChange导致字段被更新，然后高亮闪一下消失，但不聚焦又不会弹出键盘和定位光标，用起来不方便，所以取消，如果想避免高亮关键字闪一下就消失，可开只读模式再搜索
-        val requireLossFocus = false  //定位光标到关键字后面，英语可能会闪烁一下就消失，具体应该取决于输入法是否自动读写光标范围内的输入
+//        val requireLossFocus = false  //定位光标到关键字后面，英语可能会闪烁一下就消失，具体应该取决于输入法是否自动读写光标范围内的输入
 
         //如果请求取消高亮非当前行，把非当前行的样式都更新下
-        val unFocusNonTarget = { mutableFields:MutableList<TextFieldState> ->
-            val ret_fields = Unit  // avoid mistake using
-
-            for(i in mutableFields.indices) {
-                if(i != targetIndex) {
-                    mutableFields[i] = mutableFields[i].let {
-                        //重新拷贝下text以取消高亮；重新拷贝下selection以取消选中。
-
-                        // （因为这里的选中范围并非像ide那样指示关键字被匹配到了，
-                        // 这里出现多个选中范围，仅仅是因为切换到下个匹配位置后没清上个而出现的“残留”，
-                        // 若不清，会对用户造成困扰，感觉上会像蓝色选中的字是匹配关键字但非当前聚焦，
-                        // 黄色高亮的是选中关键字且是当前聚焦条目，但实际并非如此）
-                        it.copy(value = it.value.copy(selection = TextRange.Zero, text = it.value.text))
-                    }
-                }
-            }
-
-        }
+//        val unFocusNonTarget = { mutableFields:MutableList<TextFieldState> ->
+//            val ret_fields = Unit  // avoid mistake using
+//
+//            for(i in mutableFields.indices) {
+//                if(i != targetIndex) {
+//                    mutableFields[i] = mutableFields[i].let {
+//                        //重新拷贝下text以取消高亮；重新拷贝下selection以取消选中。
+//
+//                        // （因为这里的选中范围并非像ide那样指示关键字被匹配到了，
+//                        // 这里出现多个选中范围，仅仅是因为切换到下个匹配位置后没清上个而出现的“残留”，
+//                        // 若不清，会对用户造成困扰，感觉上会像蓝色选中的字是匹配关键字但非当前聚焦，
+//                        // 黄色高亮的是选中关键字且是当前聚焦条目，但实际并非如此）
+//                        it.copy(value = it.value.copy(selection = TextRange.Zero, text = it.value.text))
+//                    }
+//                }
+//            }
+//
+//        }
 
 
         if(isMultipleSelectionMode && requireSelectLine) {  //多选模式，添加选中行列表或从列表移除
-            ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
+//            ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
             ret_selectedIndices = if(isMutableSelectedIndices) (ret_selectedIndices as MutableList) else ret_selectedIndices.toMutableList()
 
             if(forceAdd) {  //强制添加
-                val notSelected = ret_fields[targetIndex].isSelected.not()
-                val notInSelectedIndices = ret_selectedIndices.contains(targetIndex).not()
+//                val notSelected = ret_fields[targetIndex].isSelected.not()
+//                val notInSelectedIndices = ret_selectedIndices.contains(targetIndex).not()
                 //未添加则添加，否则什么都不做
 
-                if(notSelected || requireHighlighting) {
-                    ret_fields[targetIndex] = target.copy(
-                        isSelected = true,  //重点
-                        value = getCopyTargetValue(
-                            targetValue = target.value,
-                            selection = selection,
-                            highlightingStartIndex = highlightingStartIndex,
-                            highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
-                        )
-                    )
-                }
-
-                if(notInSelectedIndices) {
+                if(!ret_selectedIndices.contains(targetIndex)) {
                     ret_selectedIndices.add(targetIndex)
                 }
 
             }else {  //切换添加和移除
-                val isSelected = !ret_fields[targetIndex].isSelected
-                ret_fields[targetIndex] = target.copy(
-                    isSelected = isSelected,  //重点
-                    value = getCopyTargetValue(
-                        targetValue = target.value,
-                        selection = selection,
-                        highlightingStartIndex = highlightingStartIndex,
-                        highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
-                    )
-                )
-
-                if (isSelected) {
-                    if(ret_selectedIndices.contains(targetIndex).not()) {
-                        ret_selectedIndices.add(targetIndex)
-                    }
-                } else {
-                    ret_selectedIndices.remove(targetIndex)
+                // switch selected
+                if (!ret_selectedIndices.remove(targetIndex)) {
+                    ret_selectedIndices.add(targetIndex)
                 }
             }
 
-            if(deHighlightingNonTarget) {
-                unFocusNonTarget(ret_fields)
-            }
-
-        }else{  //非多选模式，定位光标到对应行，并选中行，或者定位到同一行但选中不同范围，原本是想用来高亮查找的关键字的，但有点毛病，目前实现成仅将光标定位到关键字前面，但无法选中范围，不过我忘了现在定位到关键字前面是不是依靠的这段代码了
+        }else {  //非多选模式，定位光标到对应行，并选中行，或者定位到同一行但选中不同范围，原本是想用来高亮查找的关键字的，但有点毛病，目前实现成仅将光标定位到关键字前面，但无法选中范围，不过我忘了现在定位到关键字前面是不是依靠的这段代码了
             //更新行选中范围并focus行
             val selectionRangeChanged = selection != target.value.selection
-            if(selectionRangeChanged || requireHighlighting) {
+            if(selectionRangeChanged) {
                 ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
 
                 //这里不要判断 selection != target.value.selection ，因为即使选择范围没变，也有可能请求高亮关键字，还是需要更新targetIndex对应的值
@@ -1144,13 +1077,7 @@ class TextEditorState(
                     value = getCopyTargetValue(
                         targetValue = target.value,
                         selection = selection,
-                        highlightingStartIndex = highlightingStartIndex,
-                        highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
                 ))
-
-                if(deHighlightingNonTarget) {
-                    unFocusNonTarget(ret_fields)
-                }
             }
 
             ret_focusingLineIdx = targetIndex
@@ -1162,7 +1089,7 @@ class TextEditorState(
         return SelectFieldInternalRet(
             fields = ret_fields,
             selectedIndices = ret_selectedIndices,
-            focusingLineIdx = if(requireLossFocus) null else ret_focusingLineIdx
+            focusingLineIdx = ret_focusingLineIdx
 
             //如果不传null，会自动弹键盘，会破坏请求高亮时设置的颜色，高亮颜色在弹出键盘后，闪下就没了
 //            focusingLineIdx = ret_focusingLineIdx
@@ -1319,7 +1246,7 @@ class TextEditorState(
             (baseFields ?: fields).forEachIndexedBetter { index, field ->
                 if(!indices.contains(index)) {
                     // set rest fields `isSelected` to false to avoid show wrong selected state
-                    newFields.add(field.copy(isSelected = false))
+                    newFields.add(field)
                 }
             }
 
@@ -1400,17 +1327,16 @@ class TextEditorState(
             //进入选择模式，数据不变，只是 MultipleSelectionMode 设为true且对应行的isSelected设为true
 
             //必须创建拷贝，只要调用synsState的地方都必须创建拷贝，不然会和源list冲突
-            val newFields = fields.toMutableList()
+//            val newFields = fields.toMutableList()
             val newSelectedIndices = mutableListOf<Int>()
             //若索引有效，选中对应行
-            if(targetIndex >= 0 && targetIndex < newFields.size) {
-                newFields[targetIndex] = newFields[targetIndex].copy(isSelected = true)
+            if(targetIndex >= 0 && targetIndex < fields.size) {
                 newSelectedIndices.add(targetIndex)
             }
 
             val newState = internalCreate(
                 fieldsId = fieldsId,  //这个似乎是用来判断是否需要将当前状态入撤销栈的，如果文件内容不变，不用更新此字段
-                fields = newFields,  //把当前点击而开启选择行模式的那行的选中状态设为真了
+                fields = fields,  //把当前点击而开启选择行模式的那行的选中状态设为真了
                 selectedIndices = newSelectedIndices,  //默认选中的索引包含当前选中行即可，因为肯定是点击某一行开启选中模式的，所以只会有一个索引
                 isMultipleSelectionMode = true,
                 focusingLineIdx = targetIndex
@@ -1442,18 +1368,12 @@ class TextEditorState(
 
     suspend fun createSelectAllState() {
         lock.withLock {
-            val initialCapacity = fields.size
-            val selectedIndexList = ArrayList<Int>(initialCapacity)
-            val selectedFieldList =  ArrayList<TextFieldState>(initialCapacity)  // param is `initialCapacity`
-            for((idx, f) in fields.withIndex()) {
-                selectedIndexList.add(idx)
-                //这个id要不要重新生成？我忘了这个id是指示内容是否改变还是只要任何字段变了就换新id了，不过全选能正常工作，所以这代码就这样吧，不改了
-                selectedFieldList.add(f.copy(isSelected = true))
-            }
-            //我不太确定 data类的copy是深还是浅，但我可以确定这里不需要深拷贝，所以用下面创建浅拷贝的方法创建对象
+            val selectedIndexList = fields.indices.toList()
+
+            //（更新：浅的）我不太确定 data类的copy是深还是浅，但我可以确定这里不需要深拷贝，所以用下面创建浅拷贝的方法创建对象
             val newState = internalCreate(
                 fieldsId = fieldsId,
-                fields = selectedFieldList,
+                fields = fields,
                 selectedIndices = selectedIndexList,
                 isMultipleSelectionMode = true,
                 focusingLineIdx = focusingLineIdx
@@ -1525,7 +1445,7 @@ class TextEditorState(
         lock.withLock {
             val newState = internalCreate(
                 fieldsId = fieldsId,
-                fields = fields.map { it.copy(isSelected = false) },
+                fields = fields,
                 selectedIndices = emptyList(),
                 isMultipleSelectionMode = keepSelectionModeOn,
                 focusingLineIdx = focusingLineIdx
@@ -2617,7 +2537,7 @@ class TextEditorState(
     ) {
         if(isSelectedAllFields()) {  // replace all
             lock.withLock {
-                val newFields = textToFields(text, initValueOfIsSelected = true)
+                val newFields = textToFields(text)
                 val newSelectedIndices = newFields.indices.toList()
                 val newState = copy(
                     fieldsId = newId(),
@@ -2648,13 +2568,14 @@ class TextEditorState(
 
     fun isSelectedAllFields() = isMultipleSelectionMode && selectedIndices.size == fields.size
 
+    fun isFieldSelected(idx: Int) = selectedIndices.contains(idx)
 
     companion object {
-        fun linesToFields(lines: List<String>, initValueOfIsSelected: Boolean = false) = createInitTextFieldStates(lines, initValueOfIsSelected)
+        fun linesToFields(lines: List<String>) = createInitTextFieldStates(lines)
 
-        fun fuckSafFileToFields(file: FuckSafFile, initValueOfIsSelected: Boolean = false) = linesToFields(FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true), initValueOfIsSelected)
+        fun fuckSafFileToFields(file: FuckSafFile) = linesToFields(FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true))
 
-        fun textToFields(text: String, initValueOfIsSelected: Boolean = false) = linesToFields(text.lines(), initValueOfIsSelected)
+        fun textToFields(text: String) = linesToFields(text.lines())
 
 
         fun newId():String {
@@ -2665,12 +2586,12 @@ class TextEditorState(
 }
 
 
-private fun createInitTextFieldStates(list:List<String>, initValueOfIsSelected: Boolean = false): List<TextFieldState> {
-    if (list.isEmpty()) return listOf(TextFieldState(isSelected = initValueOfIsSelected))
-    return list.map { s ->
+private fun createInitTextFieldStates(list: List<String>) = if(list.isEmpty()) {
+    listOf(TextFieldState())
+}else {
+    list.map { s ->
         TextFieldState(
             value = TextFieldValue(s),
-            isSelected = initValueOfIsSelected
         )
     }
 }
