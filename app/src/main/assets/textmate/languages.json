@@ -321,6 +321,13 @@
     },
 
     {
+      "grammar": "textmate/vue/syntaxes/vue.tmLanguage.json",
+      "name": "vue",
+      "scopeName": "source.vue",
+      "languageConfiguration": "textmate/vue/language-configuration.json"
+    },
+
+    {
       "grammar": "textmate/xml/syntaxes/xml.tmLanguage.json",
       "name": "xml",
       "scopeName": "text.xml",
