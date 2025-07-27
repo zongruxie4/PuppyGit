@@ -559,9 +559,15 @@ class TextEditorState(
 //    }
 
 
+    /**
+     * @param textChanged if already checked text change
+     *   before calling this method, then can pass the value
+     *   to avoid redundant check.
+     */
     suspend fun updateField(
         targetIndex: Int,
         textFieldValue: TextFieldValue,
+        textChanged: Boolean? = null,
         requireLock:Boolean = true,
         updater:((newLinesRange: IntRange, newFields: MutableList<TextFieldState>, newSelectedIndices: MutableList<Int>) -> Unit)? = null
     ) {
@@ -582,7 +588,7 @@ class TextEditorState(
 
             val oldField = fields[targetIndex]
             //检查字段内容是否改变，由于没改变也会调用此方法，所以必须判断下才能知道内容是否改变
-            val contentChanged = oldField.value.text.let { it.length != newText.length || it != newText }  // 旧值 != 新值
+            val textChanged = textChanged ?: oldField.value.text.let { it.length != newText.length || it != newText }  // 旧值 != 新值
 
             //没什么意义，两者总是不相等，似乎相等根本不会触发updateField
 //            if(oldField.equals(textFieldValue)) {
@@ -596,7 +602,7 @@ class TextEditorState(
             val updatedField = newFields[targetIndex].copy(value = textFieldValue);
 
             //判断文本是否相等，注意：就算文本不相等也不能在这返回，不然页面显示有问题，比如光标位置会无法更新
-            newFields[targetIndex] = if(contentChanged) {
+            newFields[targetIndex] = if(textChanged) {
                 isContentEdited?.value = true
                 editorPageIsContentSnapshoted?.value = false
                 maybeNewId = newId()
@@ -626,7 +632,7 @@ class TextEditorState(
 
             updater?.invoke(IntRange(targetIndex, targetIndex), newFields, newSelectedIndices)
 
-            if(contentChanged) {
+            if(textChanged) {
                 updateStyles(newState) { baseStyles, baseFields ->
                     // delete current line
                     updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
@@ -636,7 +642,7 @@ class TextEditorState(
                 }
             }
 
-            onChanged(newState, if(contentChanged) true else null, contentChanged, this, null)
+            onChanged(newState, if(textChanged) true else null, textChanged, this, null)
         }
 
         if(requireLock) {
@@ -707,7 +713,7 @@ class TextEditorState(
             if(text.contains(lb)) {
                 splitNewLine(targetIndex, TextFieldValue(text), updater = updater)
             }else {
-                updateField(targetIndex, TextFieldValue(text), updater = updater)
+                updateField(targetIndex = targetIndex, textFieldValue = TextFieldValue(text), updater = updater)
             }
         }
     }
@@ -1845,7 +1851,14 @@ class TextEditorState(
                 }
 
                 if(handleTabRet.changed) {
-                    updateField(idx, f.value.copy(text = handleTabRet.newText, selection = handleTabRet.newSelection), requireLock = false)
+                    updateField(
+                        targetIndex = idx,
+                        textFieldValue = f.value.copy(
+                            text = handleTabRet.newText,
+                            selection = handleTabRet.newSelection
+                        ),
+                        requireLock = false
+                    )
 
                     true
                 }else {

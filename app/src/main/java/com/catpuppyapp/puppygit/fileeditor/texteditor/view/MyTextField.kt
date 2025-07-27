@@ -35,7 +35,7 @@ internal fun MyTextField(
     focusThisLine:Boolean,
     textFieldState: TextFieldState,
     enabled: Boolean,
-    onUpdateText: (TextFieldValue) -> Unit,
+    onUpdateText: (TextFieldValue, textChanged: Boolean?) -> Unit,
     onContainNewLine: (TextFieldValue) -> Unit,
     onFocus: () -> Unit,
     modifier: Modifier = Modifier,
@@ -85,12 +85,12 @@ internal fun MyTextField(
             if (lastTextField == newState) return@BasicTextField
 
             // used for some checks
-            val contentChanged = lastTextField.text.length != newState.text.length || lastTextField.text != newState.text
+            val textChanged = lastTextField.text.length != newState.text.length || lastTextField.text != newState.text
 
             // scroll if invisible
             if(lastTextField.selection.start != newState.selection.start
                 || lastTextField.selection.end != newState.selection.end
-                || contentChanged
+                || textChanged
             ) {
                 scrollIfInvisible()
             }
@@ -102,7 +102,7 @@ internal fun MyTextField(
                 //   if has line break, still update, will got unexpected line break,
                 //   for avoid it, just wait the text field list updated it, nothing need to do here
 
-                currentTextField.value = if(contentChanged) {
+                currentTextField.value = if(textChanged) {
                     newState
                 } else {
                     // copy to avoid lost highlighting styles when text no changes,
@@ -110,7 +110,7 @@ internal fun MyTextField(
                     lastTextField.copy(selection = newState.selection)
                 }
 
-                onUpdateText(newState)
+                onUpdateText(newState, textChanged)
             }
         },
         //字体样式:字体颜色、字体大小、背景颜色等

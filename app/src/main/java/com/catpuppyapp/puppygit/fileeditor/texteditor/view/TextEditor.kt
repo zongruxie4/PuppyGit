@@ -1107,14 +1107,15 @@ fun TextEditor(
                             fontColor = fontColor,
 //                                    bgColor = bgColor,
 //                                    bgColor = Color.Unspecified,
-                            onUpdateText = { newText ->
+                            onUpdateText = { newText, textChanged ->
 
                                 doJobThenOffLoading {
                                     try{
 
                                         textEditorState.updateField(
                                             targetIndex = index,
-                                            textFieldValue = newText
+                                            textFieldValue = newText,
+                                            textChanged = textChanged
                                         )
 
                                     }catch (e:IndexOutOfBoundsException) {
