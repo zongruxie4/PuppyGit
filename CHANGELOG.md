@@ -5,11 +5,15 @@
 1.1.3.6v112 - 20250726:
 - support filter repos and recent files by app related path
 - show latest commit msg in repo card
+- support vue syntax highlighting
+- fix sometimes ime state lost in editor
 
 
 
 - 支持根据app相关路径过滤仓库和最近文件
 - 在仓库卡片显示最新提交信息
+- 支持vue语法高亮
+- 修复输入法状态在编辑器有时会丢失的bug
 
 
 ---

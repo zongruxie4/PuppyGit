@@ -1,2 +1,4 @@
 - support filter repos and recent files by app related path
 - show latest commit msg in repo card
+- support vue syntax highlighting
+- fix sometimes ime state lost in editor
