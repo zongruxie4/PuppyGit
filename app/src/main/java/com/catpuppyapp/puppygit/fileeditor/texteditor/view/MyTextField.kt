@@ -88,10 +88,8 @@ internal fun MyTextField(
             val textChanged = lastTextField.text.length != newState.text.length || lastTextField.text != newState.text
 
             // scroll if invisible
-            if(lastTextField.selection.start != newState.selection.start
-                || lastTextField.selection.end != newState.selection.end
-                || textChanged
-            ) {
+            // when input some chars but target line invisible, will scroll to that line
+            if(textChanged) {
                 scrollIfInvisible()
             }
 

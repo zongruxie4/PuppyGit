@@ -349,6 +349,24 @@ fun FileEditor(
     ) {
         val curPreviewScrollState = runBlocking { previewNavStack.value.getCurrentScrollState() }
 
+
+
+
+        val scrollIfIndexInvisible = { index:Int ->
+            try {
+                val first = editorListState.firstVisibleItemIndex
+                val end = editorListState.layoutInfo.visibleItemsInfo.maxByOrNull { it.index }?.index
+                //如果指定行不在可见范围内，滚动到指定行以使其可见
+                if (end != null && (index < first || index > end)) {
+                    //滚动到指定行
+                    UIHelper.scrollToItem(scope, editorListState, index + lineNumOffsetForGoToEditor)
+                }
+            }catch (e: Exception) {
+                MyLog.d(TAG, "#scrollIfIndexInvisible err: ${e.stackTraceToString()}")
+            }
+        }
+
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -387,6 +405,7 @@ fun FileEditor(
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.deleteNewLine(targetIndex = index)
+                                                        scrollIfIndexInvisible(index - 1)
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onDeleteNewLine err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onDeleteNewLine err: "+e.stackTraceToString())
@@ -403,6 +422,7 @@ fun FileEditor(
                                                 doJobThenOffLoading {
                                                     try {
                                                         textEditorState.deleteNewLine(targetIndex = index)
+                                                        scrollIfIndexInvisible(index - 1)
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("forward delete err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onDeleteNewLine err: forward delete err: "+e.stackTraceToString())
@@ -420,6 +440,9 @@ fun FileEditor(
                                                             updateLastCursorAtColumn,
                                                             getLastCursorAtColumnValue,
                                                         )
+
+                                                        scrollIfIndexInvisible(index)
+
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onUpFocus err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onUpFocus err: "+e.stackTraceToString())
@@ -438,6 +461,9 @@ fun FileEditor(
                                                             updateLastCursorAtColumn,
                                                             getLastCursorAtColumnValue,
                                                         )
+
+                                                        scrollIfIndexInvisible(index)
+
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onDownFocus err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onDownFocus err: "+e.stackTraceToString())
@@ -458,6 +484,7 @@ fun FileEditor(
                                                             headOrTail = false,
                                                         )
 
+                                                        scrollIfIndexInvisible(index)
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onLeftPressed err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onLeftPressed err: "+e.stackTraceToString())
@@ -478,6 +505,8 @@ fun FileEditor(
                                                             headOrTail = false,
                                                         )
 
+                                                        scrollIfIndexInvisible(index)
+
                                                     } catch (e: Exception) {
                                                         Msg.requireShowLongDuration("#onRightPressed err: " + e.localizedMessage)
                                                         MyLog.e(TAG, "#onRightPressed err: " + e.stackTraceToString())
@@ -497,6 +526,8 @@ fun FileEditor(
                                                             headOrTail = true,
                                                         )
 
+                                                        scrollIfIndexInvisible(index)
+
                                                     }catch (e:Exception) {
                                                         Msg.requireShowLongDuration("#onLeftPressed err: "+e.localizedMessage)
                                                         MyLog.e(TAG, "#onLeftPressed err: "+e.stackTraceToString())
@@ -515,6 +546,8 @@ fun FileEditor(
                                                             targetFieldIndex = index,
                                                             headOrTail = true,
                                                         )
+
+                                                        scrollIfIndexInvisible(index)
 
                                                     } catch (e: Exception) {
                                                         Msg.requireShowLongDuration("#onRightPressed err: " + e.localizedMessage)
@@ -838,21 +871,6 @@ fun FileEditor(
                 // shit code end
 
 
-
-
-                val scrollIfIndexInvisible = { index:Int ->
-                    try {
-                        val first = editorListState.firstVisibleItemIndex
-                        val end = editorListState.layoutInfo.visibleItemsInfo.maxByOrNull { it.index }?.index
-                        //如果指定行不在可见范围内，滚动到指定行以使其可见
-                        if (end != null && (index < first || index > end)) {
-                            //滚动到指定行
-                            UIHelper.scrollToItem(scope, editorListState, index + lineNumOffsetForGoToEditor)
-                        }
-                    }catch (e: Exception) {
-                        MyLog.d(TAG, "#scrollIfIndexInvisible err: ${e.stackTraceToString()}")
-                    }
-                }
 
 
 
@@ -1395,8 +1413,8 @@ private fun onPreviewDelKeyEvent(
 
     //没删除到行开头不响应，这时由TextField负责更新数据，
     // 若删除到行开头则需要在TextFiled外部将当前TextField从列表移除，所以需要外部处理
-    val isEmpty = selection == TextRange.Zero
-    if (!isEmpty) return false
+    // equals to Zero is same as selection range collapsed and index == 0
+    if (selection != TextRange.Zero) return false
 
     //处理事件
     invoke()
