@@ -989,7 +989,7 @@ fun HomeScreen(
         val changeListHasErr = rememberSaveable { mutableStateOf(false) }
 
         //文件未就绪时没有打开，所以不能保存
-        val editorNeedSave = editorPageShowingFileIsReady.value && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value && lastSavedFieldsId.value != editorPageTextEditorState.value.fieldsId
+        val editorNeedSave = { editorPageShowingFileIsReady.value && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value && lastSavedFieldsId.value != editorPageTextEditorState.value.fieldsId }
 
         Scaffold(
             modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),

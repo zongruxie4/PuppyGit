@@ -81,7 +81,7 @@ fun EditorTitle(
     showReloadDialog: MutableState<Boolean>,
     showCloseDialog: MutableState<Boolean>,
 
-    editorNeedSave: Boolean,
+    editorNeedSave: () -> Boolean,
 ) {
 //    val haptic = LocalHapticFeedback.current
     val activityContext = LocalContext.current
@@ -240,7 +240,7 @@ fun EditorTitle(
             )
 
             DropdownMenuItem(
-                enabled = enableMenuItem && editorNeedSave,
+                enabled = enableMenuItem && editorNeedSave(),
 
                 text = { Text(stringResource(R.string.save)) },
                 onClick = {
