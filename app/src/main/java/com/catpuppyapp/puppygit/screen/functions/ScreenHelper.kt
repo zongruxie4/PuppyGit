@@ -387,34 +387,6 @@ fun getEditorStateOnChange(
             val lastState = editorPageTextEditorState.value
             editorPageTextEditorState.value = newState
 
-//            val lastState = lastTextEditorState.value
-
-            // BEGIN: check whether need re analyzing the code syntax highlighting
-            // 在点击undo然后编辑内容后 或者 增量分析出错时，重新执行全量分析
-            // after "clicked undo then changed content" or incremental syntax highlighting thrown an err, do a full text re-analyze
-//            val codeEditor = newState.codeEditor
-//            val stylesMap = codeEditor.stylesMap
-//            val latestStylesFieldsId = codeEditor.latestStyles?.fieldsId
-//
-//            // if true, the styles of syntax highlighting already detached, need re run the analyzing
-//            if(latestStylesFieldsId != null && latestStylesFieldsId != caller.fieldsId && latestStylesFieldsId != newState.fieldsId && latestStylesFieldsId != lastState.fieldsId
-//                && stylesMap.get(caller.fieldsId) == null && stylesMap.get(newState.fieldsId) == null && stylesMap.get(lastState.fieldsId) == null
-//            ) {
-//                // if haven't undo, the incremental syntax highlighting should working, so need not do a full text analyzing,
-//                //   that means the program shouldn't reach here, if happened,
-//                //   maybe something wrong, usually is TextEditorState's afterDelete/afterInsert/afterDeleteALineBreak methods err,
-//                //   maybe just calculated a wrong CharPosition? idk, should check the code.
-//                if(undoStack.redoStackIsEmpty()) {
-//                    MyLog.w(TAG, "Detected the redo stack is empty, so maybe you haven't did an undo action? but now we need re-analyze full text for syntax highlighting, if you are not changed the syntax highlighting language or haven't reload the file, maybe the incremental syntax highlighting got some errs, please check the log and search keyword 'AsyncAnalyzer-' to find any err.")
-//                    // if latest fields id doesn't matched any of last/current/next, maybe have some bugs
-//                    MyLog.w(TAG, "latestStylesFieldsId: ${codeEditor.latestStyles?.fieldsId}, lastFieldsId: ${lastState.fieldsId}, currentFieldsId: ${caller.fieldsId}, nextFieldsId: ${newState.fieldsId}, from=$from")
-//                }
-//
-//
-//                codeEditor.analyze(newState)
-//            }
-            // END: check whether need re analyzing the code syntax highlighting
-
 
             // last state == null || 不等于新state的filesId，则入栈
             //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
@@ -422,31 +394,21 @@ fun getEditorStateOnChange(
                 // if content changed, reset remembered last cursor at column，then next time navigate line by Down/Up key will update the column to the expect value
                 // 如果内容改变，重置记录的光标所在列，这样下次按键盘上下键导航的位置就会重新更新为期望的值
                 resetLastCursorAtColumn()
-//                    if(lastTextEditorState.value?.fields != newState.fields) {
-                //true或null，存undo; false存redo。null本来是在选择行之类的场景的，没改内容，可以不存，但我后来感觉存上比较好
-//                if(trueSaveToUndoFalseRedoNullNoSave == null) {
-//                    //之前存这个是因为text editor state携带了语法高亮数据，后来改成用fieldsId关联外部数据了，
-//                    //  所以不需要再更新undo stack head了，就算携带数据，如果共享同一个对象实例，editor state只存引用，也不需要更新undo stack head
-//                    // fields has not changed, but maybe other state changed, so need update
-//                    undoStack.updateUndoHeadIfNeed(newState)
-//                } else
-                val saved = if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
+                if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
                     // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
                     // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
 //                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
                     //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
-                    if(clearRedoStack) {
-                        undoStack.redoStackClear()
+                    if(clearRedoStack && !undoStack.redoStackIsEmpty()) {
+                        undoStack.clearRedoStackThenPushToUndoStack(lastState, force = true)
+                    }else {
+                        undoStack.undoStackPush(lastState)
                     }
 
-                    undoStack.undoStackPush(lastState)
                 }else {  // false
                     undoStack.redoStackPush(lastState)
                 }
 
-//                if(saved) {
-//                    lastTextEditorState.value = newState
-//                }
             }
 
         }
