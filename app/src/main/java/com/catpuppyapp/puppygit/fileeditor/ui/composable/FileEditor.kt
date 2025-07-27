@@ -835,6 +835,20 @@ fun FileEditor(
 
 
 
+                val scrollIfIndexInvisible = { index:Int ->
+                    try {
+                        val first = editorListState.firstVisibleItemIndex
+                        val end = editorListState.layoutInfo.visibleItemsInfo.maxByOrNull { it.index }?.index
+                        //如果指定行不在可见范围内，滚动到指定行以使其可见
+                        if (end != null && (index < first || index > end)) {
+                            //滚动到指定行
+                            UIHelper.scrollToItem(scope, editorListState, index)
+                        }
+                    }catch (e: Exception) {
+                        MyLog.d(TAG, "#scrollIfIndexInvisible err: ${e.stackTraceToString()}")
+                    }
+                }
+
 
 
                 // Show Text Editor
@@ -869,6 +883,7 @@ fun FileEditor(
                     patchMode=patchMode,
                     fontSize=fontSize,
                     fontColor = fontColor,
+                    scrollIfIndexInvisible = scrollIfIndexInvisible,
                 ) { index, size, isSelected, currentField, focusingIdx, isMultiSelectionMode, innerTextField ->
                     //用来让行号背景填充整行高度
 //                    val lineHeight = remember { mutableStateOf(0.dp) }
@@ -1135,7 +1150,15 @@ fun FileEditor(
                             }
 
                             doJobThenOffLoading {
-                                textEditorState.value.appendTextToLastSelectedLine("")
+                                textEditorState.value.appendTextToLastSelectedLine(
+                                    text = "",
+                                    afterAppendThenDoAct = { targetIndex ->
+                                        doJobThenOffLoading {
+                                            delay(100)
+                                            scrollIfIndexInvisible((targetIndex + lineNumOffsetForGoToEditor).coerceAtLeast(0))
+                                        }
+                                    }
+                                )
                             }
 
                             Unit

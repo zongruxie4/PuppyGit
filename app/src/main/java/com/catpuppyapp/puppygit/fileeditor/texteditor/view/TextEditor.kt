@@ -201,7 +201,7 @@ fun TextEditor(
     searchKeyword:String,
     fontSize: MutableIntState,
     fontColor: Color,
-
+    scrollIfIndexInvisible: (index: Int) -> Unit,
     decorationBox: DecorationBoxComposable = { _, _, _, _, _,_, innerTextField -> innerTextField(Modifier) },
 ) {
     val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
@@ -234,20 +234,6 @@ fun TextEditor(
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
     val conflictKeyword = remember(settings.editor.conflictStartStr) { mutableStateOf(settings.editor.conflictStartStr) }
-
-    val scrollIfIndexInvisible = { index:Int ->
-        try {
-            val first = listState.firstVisibleItemIndex
-            val end = listState.layoutInfo.visibleItemsInfo.maxByOrNull { it.index }?.index
-            //如果指定行不在可见范围内，滚动到指定行以使其可见
-            if (end != null && (index < first || index > end)) {
-                //滚动到指定行
-                UIHelper.scrollToItem(scope, listState, index)
-            }
-        }catch (e: Exception) {
-            MyLog.d(TAG, "#scrollIfIndexInvisible err: ${e.stackTraceToString()}")
-        }
-    }
 
 
     //最后显示屏幕范围的第一行的索引
