@@ -300,7 +300,7 @@ enum class PLScope(val scope: String) {
             noneAsInvalid: Boolean = true
         ) = scopeInvalid(plScope?.scope, autoAsInvalid = autoAsInvalid, noneAsInvalid = noneAsInvalid)
 
-
+        fun isSupportPreview(plScope: PLScope?) = plScope == MARKDOWN
 
 
     }

@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.fileeditor.ui.composable
 
-import android.view.KeyEvent.KEYCODE_DEL
 import android.view.KeyEvent.KEYCODE_DPAD_DOWN
 import android.view.KeyEvent.KEYCODE_DPAD_LEFT
 import android.view.KeyEvent.KEYCODE_DPAD_RIGHT
@@ -101,6 +100,7 @@ import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -125,6 +125,8 @@ private const val TAG = "FileEditor"
 @Composable
 fun FileEditor(
     stateKeyTag:String,
+
+    plScope: State<PLScope>,
 
     disableSoftKb: MutableState<Boolean>,
 
@@ -311,7 +313,8 @@ fun FileEditor(
         onSwipe = { onLeftToRight() }
     )
 
-    val enableRightToLeftAct = isPreviewModeOn.value.not() || runBlocking { previewNavStack.value.aheadStackIsNotEmpty() }
+    val supportSwipeToEnablePreview = isPreviewModeOn.value.not() && PLScope.isSupportPreview(plScope.value)
+    val enableRightToLeftAct = supportSwipeToEnablePreview || (isPreviewModeOn.value && runBlocking { previewNavStack.value.aheadStackIsNotEmpty() })
 
     //右边操作不总是启用，但动画总是启用
     val rightToLeftAct = SwipeAction(
@@ -325,6 +328,7 @@ fun FileEditor(
             }
         },
         background = Color.Unspecified,
+        enableAnimation = supportSwipeToEnablePreview || isPreviewModeOn.value,
         enableAct = enableRightToLeftAct,
         onSwipe = { onRightToLeft() },
     )

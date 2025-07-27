@@ -1706,6 +1706,8 @@ fun EditorInnerPage(
             FileEditor(
                 stateKeyTag = stateKeyTag,
 
+                plScope = plScope,
+
                 disableSoftKb = disableSoftKb,
                 updateLastCursorAtColumn = updateLastCursorAtColumn,
                 getLastCursorAtColumnValue = getLastCursorAtColumnValue,
