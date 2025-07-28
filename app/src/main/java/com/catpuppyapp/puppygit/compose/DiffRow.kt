@@ -396,6 +396,8 @@ fun DiffRow (
                         }
                     }catch (e: Exception) {
                         MyLog.e(TAG, "DiffRow create substring err: lineNum=$lineNum, positionCode=1914714811075084, err=${e.localizedMessage}")
+                        e.printStackTrace()
+
                         buildAnnotatedString {
                             withStyle(bgColorSpanStyle) {
                                 append(content)
@@ -432,6 +434,8 @@ fun DiffRow (
                         }
                     }catch (e: Exception) {
                         MyLog.e(TAG, "DiffRow create substring err: lineNum=$lineNum, positionCode=1855426513892273, err=${e.localizedMessage}")
+                        e.printStackTrace()
+
                         buildAnnotatedString {
                             withStyle(bgColorSpanStyle) {
                                 append(content)
