@@ -263,16 +263,19 @@ fun TextEditor(
     val nextSearchPos = rememberSaveable { mutableStateOf(SearchPos.NotFound) }
 
     val lastFoundPos = rememberSaveable { mutableStateOf(SearchPos.NotFound) }
+    val lastFindDirectionIsToNext = rememberSaveable { mutableStateOf<Boolean?>(null) }
 
     val initSearchPos = {
         //把起始搜索位置设置为当前第一个可见行的第一列
 //        lastSearchPos.value = SearchPos(lazyColumnState.firstVisibleItemIndex, 0)
 
         //从上次编辑位置开始搜索
-        if(!searchMode.value || lastFoundPos.value== SearchPos.NotFound  //没开搜索模式，或没匹配到关键字，一律使用上次编辑行+列
-            || lastFoundPos.value.lineIndex!=lastEditedLineIndexState.intValue  //搜索并匹配后，用户点了其他行
-            || lastFoundPos.value.columnIndex!=lastEditedColumnIndexState.intValue  //搜索并匹配后，用户点了其他列
+        if(!searchMode.value || lastFoundPos.value == SearchPos.NotFound  //没开搜索模式，或没匹配到关键字，一律使用上次编辑行+列
+            || lastFoundPos.value.lineIndex != lastEditedLineIndexState.intValue  //搜索并匹配后，用户点了其他行
+            || lastFoundPos.value.columnIndex != lastEditedColumnIndexState.intValue  //搜索并匹配后，用户点了其他列
         ) {
+            // reset last find direction
+            lastFindDirectionIsToNext.value = null
             nextSearchPos.value = SearchPos(lastEditedLineIndexState.intValue, lastEditedColumnIndexState.intValue)
         }
 //        println("lasteditcis:"+lastEditedColumnIndexState.intValue)  //test1791022120240812
@@ -296,22 +299,48 @@ fun TextEditor(
         )
     }
 
-    suspend fun doSearch(key:String, toNext:Boolean, startPos: SearchPos) {
-        if(key.isEmpty()) {
+    suspend fun doSearch(keyword:String, toNext:Boolean, startPos: SearchPos) {
+        if(keyword.isEmpty()) {
             return
         }
 
-        val keyLen = key.length
+        // was found keyword, and now users changed the search direction.
+        // if `lastFindDirectionIsToNext` is null, means the search pos was reset, so no need to update search pos;
+        //   else if it is not null, means users doesn't click any column after found a keyword
+        // 如果 `lastFindDirectionIsToNext` 是null，代表搜索位置重置过，可能没搜索到关键字，或在搜索到关键字用户后点了其他地方；
+        //   如果其值非null，代表搜索到关键字后用户没编辑也没点任何地方，所以需要检测是是否调换了搜索方向
+        val startPos = if(lastFindDirectionIsToNext.value.let { it != null && it != toNext }) {
+            // user was find next, but to find previous, should swap selection start and end index
 
-        val posResult = textEditorState.doSearch(key.lowercase(), toNext = toNext, startPos = startPos)
+            // note: don't worry about index out of range, it should not happened at here,
+            //   just in case, if it happened, still no problem, it will reset in the `TextEditorState.doSearch`
+            // 正常来说不会越界，以防万一，doSearch中做了处理，稳
+            val newColumnIndex = if(toNext) {
+                // this time toNext, but swapped, so last time is find previous
+                startPos.columnIndex + keyword.length
+            }else {
+                startPos.columnIndex - keyword.length
+            }
+
+            startPos.copy(columnIndex = newColumnIndex)
+        }else {
+            // use was find next, and now still find next, no operation need
+            startPos
+        }
+
+        val keyWordLen = keyword.length
+
+        val posResult = textEditorState.doSearch(keyword.lowercase(), toNext = toNext, startPos = startPos)
         val foundPos = posResult.foundPos
         if(foundPos == SearchPos.NotFound) {
+            lastFindDirectionIsToNext.value = null
             if(!searchMode.value && mergeMode) {
                 Msg.requireShow(activityContext.getString(R.string.no_conflict_found))
             }else {
                 Msg.requireShow(activityContext.getString(R.string.not_found))
             }
         }else {  //查找到了关键字
+            lastFindDirectionIsToNext.value = toNext
 
 //            println("found:$foundPos")//test1791022120240812
 
@@ -319,7 +348,7 @@ fun TextEditor(
             needShowCursorHandle.value = true
 
             val keywordStartAtLine = foundPos.columnIndex
-            val keywordEndExclusiveAtLine = foundPos.columnIndex + keyLen
+            val keywordEndExclusiveAtLine = foundPos.columnIndex + keyWordLen
             //跳转到对应行并选中关键字
             jumpToLineIndex(
                 lineIndex = foundPos.lineIndex,
