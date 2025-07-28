@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -132,10 +131,13 @@ fun DiffRow (
     val inDarkTheme = Theme.inDarkTheme
     //libgit2会把连续行整合到一起，这里用getLines()获取拆分后的行
 //                    puppyLineBase.getLines().forEach { line ->
-    val bgColor = UIHelper.getDiffLineBgColor(line, inDarkTheme)
-    val textColor = UIHelper.getDiffLineTextColor(line, inDarkTheme)
+    val bgColor = remember { UIHelper.getDiffLineBgColor(line, inDarkTheme) }
+    val textColor = remember { UIHelper.getDiffLineTextColor(line, inDarkTheme) }
 //                        val lineTypeStr = getDiffLineTypeStr(line)
-    val lineNumColor = MyStyleKt.Diff.lineNumColorForDiff(inDarkTheme)
+    val lineNumColor = remember { MyStyleKt.Diff.lineNumColorForDiff(inDarkTheme) }
+
+    val bgColorSpanStyle = remember { SpanStyle(background = bgColor) }
+    val emptySpanStyle = remember { MyStyleKt.emptySpanStyle }
 
     val lineNum = paddingLineNumber(if(line.lineNum == LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else line.lineNum.toString(), lineNumExpectLength)
 
@@ -380,14 +382,14 @@ fun DiffRow (
                     text = try {
                         buildAnnotatedString {
                             obtainStylePartList()?.let { stylePartList ->
-                                PuppyLine.mergeStringAndStylePartList(stringPartList, stylePartList, bgColor).forEachBetter {
+                                PuppyLine.mergeStringAndStylePartList(stringPartList, stylePartList, bgColorSpanStyle).forEachBetter {
                                     withStyle(it.style) {
                                         append(content.substring(it.range))
                                     }
                                 }
                             } ?: stringPartList.forEachIndexedBetter { idx, it ->
                                 //为修改的内容设置高亮颜色，如果是没修改的内容则不用设置颜色，直接用默认的背景色即可
-                                withStyle(style = SpanStyle(background = if(it.modified) bgColor else Color.Unspecified)) {
+                                withStyle(style = if(it.modified) bgColorSpanStyle else emptySpanStyle) {
                                     append(content.substring(it.start, it.end))
                                 }
                             }
@@ -395,7 +397,7 @@ fun DiffRow (
                     }catch (e: Exception) {
                         MyLog.e(TAG, "DiffRow create substring err: lineNum=$lineNum, positionCode=1914714811075084, err=${e.localizedMessage}")
                         buildAnnotatedString {
-                            withStyle(SpanStyle(background = bgColor)) {
+                            withStyle(bgColorSpanStyle) {
                                 append(content)
                             }
                         }
@@ -431,7 +433,7 @@ fun DiffRow (
                     }catch (e: Exception) {
                         MyLog.e(TAG, "DiffRow create substring err: lineNum=$lineNum, positionCode=1855426513892273, err=${e.localizedMessage}")
                         buildAnnotatedString {
-                            withStyle(SpanStyle(background = bgColor)) {
+                            withStyle(bgColorSpanStyle) {
                                 append(content)
                             }
                         }
