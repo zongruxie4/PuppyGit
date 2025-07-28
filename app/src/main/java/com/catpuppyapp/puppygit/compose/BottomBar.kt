@@ -31,15 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.isAltPressed
-import androidx.compose.ui.input.key.isCtrlPressed
-import androidx.compose.ui.input.key.isMetaPressed
-import androidx.compose.ui.input.key.isShiftPressed
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -141,23 +132,25 @@ fun BottomBar(
         modifier = Modifier
             .fillMaxSize()
             .systemBarsPadding()
-            .onPreviewKeyEvent opke@{ keyEvent ->
-                if (keyEvent.type != KeyEventType.KeyDown) {
-                    return@opke false
-                }
-
-                if (keyEvent.key == Key.Escape
-                    && !keyEvent.isCtrlPressed
-                    && !keyEvent.isShiftPressed
-                    && !keyEvent.isAltPressed
-                    && !keyEvent.isMetaPressed
-                ) {
-                    quitSelectionMode()
-                    return@opke true
-                }
-
-                return@opke false
-            }
+            // no hardware keyboard, can't test it,
+            //   and I am not sure, if bottom bar lost focus, it can response the key event? if it can't, no need add it.
+//            .onPreviewKeyEvent opke@{ keyEvent ->
+//                if (keyEvent.type != KeyEventType.KeyDown) {
+//                    return@opke false
+//                }
+//
+//                if (keyEvent.key == Key.Escape
+//                    && !keyEvent.isCtrlPressed
+//                    && !keyEvent.isShiftPressed
+//                    && !keyEvent.isAltPressed
+//                    && !keyEvent.isMetaPressed
+//                ) {
+//                    quitSelectionMode()
+//                    return@opke true
+//                }
+//
+//                return@opke false
+//            }
             .then(modifier)
         ,
     ) {
