@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.utils.compare
 
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dto.Box
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.compare.param.CompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
@@ -17,16 +18,20 @@ object CmpUtil {
      *   并在返回结果前再调换回来，调用者只需正常传add和del即可，无需再手动调换；
      *   若传false，则在比较时不会调用add和del的顺序。
      */
-    fun <T:CharSequence> compare(
+    fun <T: CharSequence> compare(
         add: CompareParam<T>,
         del: CompareParam<T>,
         requireBetterMatching: Boolean,
         matchByWords: Boolean,
         swap: Boolean = false,
         degradeMatchByWordsToMatchByCharsIfNonMatched: Boolean = DevFeature.degradeMatchByWordsToMatchByCharsIfNonMatched.state.value,
-        treatNoWordMatchAsNoMatchedWhenMatchByWord:Boolean = DevFeature.treatNoWordMatchAsNoMatchedForDiff.state.value,
+        treatNoWordMatchAsNoMatchedWhenMatchByWord: Boolean = DevFeature.treatNoWordMatchAsNoMatchedForDiff.state.value,
 
     ): IndexModifyResult {
+        if(!SettingsUtil.isEnabledDetailsCompareForDiff()) {
+            return createEmptyIndexModifyResult(add, del)
+        }
+
         return try {
             val (add, del) = if(swap) {
                 Pair(del, add)
@@ -57,14 +62,19 @@ object CmpUtil {
         }catch (e: Exception) {
             MyLog.e(TAG, "$TAG#compare() err: ${e.stackTraceToString()}")
 
-            IndexModifyResult(
-                matched = false,
-                matchedByReverseSearch = false,
-                add = listOf(IndexStringPart(0, add.getLen(), modified = false)),
-                del = listOf(IndexStringPart(0, del.getLen(), modified = false)),
-            )
+            createEmptyIndexModifyResult(add, del)
         }
     }
+
+    private fun <T: CharSequence> createEmptyIndexModifyResult(
+        add: CompareParam<T>,
+        del: CompareParam<T>,
+    ) = IndexModifyResult(
+        matched = false,
+        matchedByReverseSearch = false,
+        add = listOf(IndexStringPart(0, add.getLen(), modified = false)),
+        del = listOf(IndexStringPart(0, del.getLen(), modified = false)),
+    )
 
     /**
      * note: order of str1 and str2 doesn't matter, should return same value

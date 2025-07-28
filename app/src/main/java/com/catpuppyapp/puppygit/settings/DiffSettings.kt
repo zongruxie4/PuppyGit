@@ -71,5 +71,11 @@ data class DiffSettings (
      */
     var useSystemFonts: Boolean = false,
 
-    var syntaxHighlightEnabled: Boolean = true
+    var syntaxHighlightEnabled: Boolean = true,
+
+    /**
+     * true, enable added and deleted line compare; false, disable
+     * true, 启用添加和删除行比较；否则禁用。
+     */
+    val enableDetailsCompare: Boolean = true,
 )
