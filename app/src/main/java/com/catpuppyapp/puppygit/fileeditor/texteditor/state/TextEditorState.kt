@@ -215,10 +215,14 @@ class TextEditorState(
                         if(!isGoodIndexForStr(nextColumn, curText)) {
                             nextLineIdx = if(toNext) nextLineIdx+1 else nextLineIdx-1
                             if(!isGoodIndexForList(nextLineIdx, f)) {
+                                // the file at least have an empty line, so the `f` never will be empty, so the else block is safe
+                                // 文件至少有个空行，所以f永远不会为空，所以else代码块至少为0，不会负数
                                 nextLineIdx = if(toNext) 0 else f.size-1
                             }
 
-                            nextColumn = if(toNext) 0 else getCurTextOfIndex(nextLineIdx, f).length-1
+                            // 20250728 fix: empty line, the elas case will got -1
+                            // 20250728 fix: 空行，else，会-1
+                            nextColumn = if(toNext) 0 else (getCurTextOfIndex(nextLineIdx, f).length - 1).coerceAtLeast(0)
                         }
 //                        println("posResult:${SearchPosResult(foundPos = curPos.copy(lineIndex = foundLineIdx, columnIndex = foundColumnIdx), nextPos = SearchPos(lineIndex =  nextLineIdx, columnIndex = nextColumn))}")  //test1791022120240812
                         return SearchPosResult(
