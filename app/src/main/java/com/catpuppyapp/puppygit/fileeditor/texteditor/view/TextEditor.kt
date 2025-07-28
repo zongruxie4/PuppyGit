@@ -260,6 +260,8 @@ fun TextEditor(
     }
 
 
+    // search states
+    // must call `initSearchPos()` before use this value to do search
     val nextSearchPos = rememberSaveable { mutableStateOf(SearchPos.NotFound) }
 
     val lastFoundPos = rememberSaveable { mutableStateOf(SearchPos.NotFound) }
@@ -382,11 +384,12 @@ fun TextEditor(
             )
 
 
-            lastFoundPos.value = posResult.foundPos.copy()
+            val foundPosCopy = posResult.foundPos.copy()
+            lastFoundPos.value = foundPosCopy
 
             //更新最后编辑行和列
-            lastEditedLineIndexState.intValue = lastFoundPos.value.lineIndex
-            lastEditedColumnIndexState.intValue = lastFoundPos.value.columnIndex
+            lastEditedLineIndexState.intValue = foundPosCopy.lineIndex
+            lastEditedColumnIndexState.intValue = foundPosCopy.columnIndex
             //选中关键字(有缺陷)
 //            editableController.selectTextInLine(foundPos.lineIndex, foundPos.columnIndex, endIndexExclusive)
 
@@ -394,6 +397,17 @@ fun TextEditor(
             nextSearchPos.value = posResult.nextPos.copy()
         }
     }
+
+
+    // reset search states when start or quit search mode
+    LaunchedEffect(searchMode.value) {
+        nextSearchPos.value = SearchPos.NotFound
+
+        lastFoundPos.value = SearchPos.NotFound
+        lastFindDirectionIsToNext.value = null
+        lastSearchKeyword.value = ""
+    }
+
 
     //每次计算依赖的状态变化就会重新计算这个变量的值
 //    val firstLineIndexState = remember { derivedStateOf {
