@@ -274,23 +274,35 @@ fun TextEditor(
 //        lastSearchPos.value = SearchPos(lazyColumnState.firstVisibleItemIndex, 0)
 
         // make sure position right before search
+        var newLineIndex = lastEditedLineIndexState.intValue
+        var newColumnIndex = lastEditedColumnIndexState.intValue
+
         val (curIndex, curField) = textEditorState.getCurrentField()
         if(curIndex != null && curField != null) {
+            // update last edited position, due to when search mode or merge mode on,
+            //   it will not auto update, wo update it after user click search
             lastEditedLineIndexState.intValue = curIndex
-            lastEditedColumnIndexState.intValue = curField.value.selection.end
+            newColumnIndex = curField.value.selection.end
+            lastEditedColumnIndexState.intValue = newColumnIndex
+
+            newColumnIndex = newColumnIndex.let { if(toNext) it + 1 else it - 1 }
+            newLineIndex = curIndex
+            if(!isGoodIndexForStr(newColumnIndex, curField.value.text)) {
+                newLineIndex = if(toNext) newLineIndex + 1 else newLineIndex - 1
+            }
         }
 
         val lastFoundPos = lastFoundPos.value
         //从上次编辑位置开始搜索
         if(!searchMode.value || lastFoundPos == SearchPos.NotFound  //没开搜索模式，或没匹配到关键字，一律使用上次编辑行+列
-            || lastFoundPos.lineIndex != lastEditedLineIndexState.intValue  //搜索并匹配后，用户点了其他行
-            || lastFoundPos.columnIndex != lastEditedColumnIndexState.intValue  //搜索并匹配后，用户点了其他列
+            || lastFoundPos.lineIndex != newLineIndex  //搜索并匹配后，用户点了其他行
+            || lastFoundPos.columnIndex != newColumnIndex  //搜索并匹配后，用户点了其他列
         ) {
             // reset last find direction
             lastFindDirectionIsToNext.value = null
 
             // set next search pos to last edited pos
-            nextSearchPos.value = SearchPos(lastEditedLineIndexState.intValue, lastEditedColumnIndexState.intValue)
+            nextSearchPos.value = SearchPos(newLineIndex, newColumnIndex)
         }
 //        println("lasteditcis:"+lastEditedColumnIndexState.intValue)  //test1791022120240812
 //        println("startPos:"+nextSearchPos.value) //test1791022120240812
@@ -318,6 +330,11 @@ fun TextEditor(
         if(keyword.isEmpty() || textEditorState.fields.isEmpty()) {
             return
         }
+        val funName = "doSearchNoCatch"
+
+        if(AppModel.devModeOn) {
+            MyLog.w(TAG, "$TAG#$funName(): before check search direction change: toNext=$toNext, lastFoundPos=${lastFoundPos.value}, startPos=$startPos")
+        }
 
         val keywordChanged = lastSearchKeyword.value != keyword
         lastSearchKeyword.value = keyword
@@ -344,11 +361,17 @@ fun TextEditor(
 
             // lineIndex and columnIndex both maybe -1, but it will handle in `TextEditorState.doSearch()`
             val newSearchPos = SearchPos(lineIndex = newLineIndex, columnIndex = newColumnIndex)
-            MyLog.d(TAG, "$TAG#doSearch: find direction changed, adjust search pos: keyword.length=${keyword.length}, newSearchPos=$newSearchPos, lastFoundPos=$lastFoundPos, nextSearchPos=$nextSearchPos ")
+            if(AppModel.devModeOn) {
+                MyLog.w(TAG, "$TAG#$funName(): found direction changed, adjust search pos: keyword.length=${keyword.length}, toNext=$toNext, newSearchPos=$newSearchPos, lastFoundPos=$lastFoundPos, startPos=$startPos")
+            }
 
             newSearchPos
         }else {
             startPos
+        }
+
+        if(AppModel.devModeOn) {
+            MyLog.w(TAG, "$TAG#$funName(): will use: toNext=$toNext, lastFoundPos=${lastFoundPos.value}, startPos=$startPos")
         }
 
         val keyWordLen = keyword.length
@@ -411,6 +434,11 @@ fun TextEditor(
             //更新下次搜索起点
             nextSearchPos.value = posResult.nextPos.copy()
         }
+
+        if(AppModel.devModeOn) {
+            MyLog.w(TAG, "$TAG#$funName(): found result: toNext=$toNext, lastFoundPos=${lastFoundPos.value}, nextSearchPos=${nextSearchPos.value}")
+        }
+
     }
 
 
