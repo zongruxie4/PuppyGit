@@ -220,9 +220,9 @@ class TextEditorState(
                                 nextLineIdx = if(toNext) 0 else f.size-1
                             }
 
-                            // 20250728 fix: empty line, the elas case will got -1
-                            // 20250728 fix: 空行，else，会-1
-                            nextColumn = if(toNext) 0 else (getCurTextOfIndex(nextLineIdx, f).length - 1).coerceAtLeast(0)
+                            // if is empty line, the else case will got -1, but is fine, when next search, if use this index, will reset,
+                            //   let this index coerceAtLeast(0) doesn't make sense, due to 0 or -1, all is invalid index for an empty line
+                            nextColumn = if(toNext) 0 else getCurTextOfIndex(nextLineIdx, f).length-1
                         }
 //                        println("posResult:${SearchPosResult(foundPos = curPos.copy(lineIndex = foundLineIdx, columnIndex = foundColumnIdx), nextPos = SearchPos(lineIndex =  nextLineIdx, columnIndex = nextColumn))}")  //test1791022120240812
                         return SearchPosResult(
