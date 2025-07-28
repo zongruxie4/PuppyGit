@@ -2,10 +2,13 @@ package com.catpuppyapp.puppygit.utils.compare
 
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dto.Box
+import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.compare.param.CompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
+import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 
 object CmpUtil {
+    private const val TAG = "CmpUtil"
 
     /**
      * @param swap (20250210之后)我调换后用了段时间发现很多时候add在前del在后匹配率更高，可能差不多，没必要调换了，调换反而浪费性能。
@@ -24,31 +27,42 @@ object CmpUtil {
         treatNoWordMatchAsNoMatchedWhenMatchByWord:Boolean = DevFeature.treatNoWordMatchAsNoMatchedForDiff.state.value,
 
     ): IndexModifyResult {
-        val (add, del) = if(swap) {
-            Pair(del, add)
-        }else {
-            Pair(add, del)
-        }
+        return try {
+            val (add, del) = if(swap) {
+                Pair(del, add)
+            }else {
+                Pair(add, del)
+            }
 
-        val result = SimilarCompare.INSTANCE.doCompare(
-            add = add,
-            del = del,
+            val result = SimilarCompare.INSTANCE.doCompare(
+                add = add,
+                del = del,
 
-            //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
-            requireBetterMatching = requireBetterMatching,
+                //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
+                requireBetterMatching = requireBetterMatching,
 
-            //根据单词匹配
-            matchByWords = matchByWords,
+                //根据单词匹配
+                matchByWords = matchByWords,
 
-            // 降级按单词匹配为按字符匹配，如果按单词匹配无匹配
-            degradeToCharMatchingIfMatchByWordFailed = degradeMatchByWordsToMatchByCharsIfNonMatched,
-            treatNoWordMatchAsNoMatchedWhenMatchByWord = treatNoWordMatchAsNoMatchedWhenMatchByWord,
-        )
+                // 降级按单词匹配为按字符匹配，如果按单词匹配无匹配
+                degradeToCharMatchingIfMatchByWordFailed = degradeMatchByWordsToMatchByCharsIfNonMatched,
+                treatNoWordMatchAsNoMatchedWhenMatchByWord = treatNoWordMatchAsNoMatchedWhenMatchByWord,
+            )
 
-        return if(swap) {
-            result.copy(add = result.del, del = result.add)
-        }else {
-            result
+            if(swap) {
+                result.copy(add = result.del, del = result.add)
+            }else {
+                result
+            }
+        }catch (e: Exception) {
+            MyLog.e(TAG, "$TAG#compare() err: ${e.stackTraceToString()}")
+
+            IndexModifyResult(
+                matched = false,
+                matchedByReverseSearch = false,
+                add = listOf(IndexStringPart(0, add.getLen(), modified = false)),
+                del = listOf(IndexStringPart(0, del.getLen(), modified = false)),
+            )
         }
     }
 
