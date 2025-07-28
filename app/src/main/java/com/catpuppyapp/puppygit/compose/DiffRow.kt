@@ -394,7 +394,11 @@ fun DiffRow (
                         }
                     }catch (e: Exception) {
                         MyLog.e(TAG, "DiffRow create substring err: lineNum=$lineNum, positionCode=1914714811075084, err=${e.localizedMessage}")
-                        buildAnnotatedString { append(content) }
+                        buildAnnotatedString {
+                            withStyle(SpanStyle(background = bgColor)) {
+                                append(content)
+                            }
+                        }
                     },
                     fontFamily = PLFont.diffCodeFont(),
 
@@ -426,7 +430,11 @@ fun DiffRow (
                         }
                     }catch (e: Exception) {
                         MyLog.e(TAG, "DiffRow create substring err: lineNum=$lineNum, positionCode=1855426513892273, err=${e.localizedMessage}")
-                        buildAnnotatedString { append(content) }
+                        buildAnnotatedString {
+                            withStyle(SpanStyle(background = bgColor)) {
+                                append(content)
+                            }
+                        }
                     },
                     fontFamily = PLFont.diffCodeFont(),
 
