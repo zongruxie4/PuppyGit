@@ -314,5 +314,6 @@ object SettingsUtil {
     fun isDiffSyntaxHighlightEnabled() = appSettings.diff.syntaxHighlightEnabled
     fun isCommitMsgPreviewModeOn() = appSettings.commitMsgPreviewModeOn
     fun isCommitMsgUseSystemFonts() = appSettings.commitMsgUseSystemFonts
+    fun isEnabledDetailsCompareForDiff() = appSettings.diff.enableDetailsCompare
 
 }

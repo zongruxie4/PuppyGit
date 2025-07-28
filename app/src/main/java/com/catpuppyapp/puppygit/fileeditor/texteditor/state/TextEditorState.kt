@@ -2150,28 +2150,7 @@ class TextEditorState(
             return raw
         }
 
-//        val funName = "obtainHighlightedTextField"
-//        MyLog.d(TAG, "#$funName: fieldsId=$fieldsId")
-        val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
-        val annotatedStringResult = sh?.get(raw.syntaxHighlightId)
-        return if(annotatedStringResult == null || annotatedStringResult.inDarkTheme != Theme.inDarkTheme) {
-//            if(stylesAppliedByView.not()) {
-//                stylesAppliedByView = true
-//                // styles exists, but haven't annotated string, maybe styles not applied
-//                val stylesResult = tryGetStylesResult()
-//                if(stylesResult != null) {
-//                    doJobThenOffLoading {
-//                        applySyntaxHighlighting(stylesResult)
-//                    }
-//                }
-//
-////            MyLog.d(TAG, "#$funName: stylesResult.fieldsId=${stylesResult?.fieldsId}, spansCount=${stylesResult?.styles?.spans?.lineCount}")
-//            }
-
-            raw
-        }else {
-            raw.copy(value = raw.value.copy(annotatedString = annotatedStringResult.annotatedString))
-        }
+        return codeEditor?.obtainSyntaxHighlight(fieldsId, raw) ?: raw
     }
 
 

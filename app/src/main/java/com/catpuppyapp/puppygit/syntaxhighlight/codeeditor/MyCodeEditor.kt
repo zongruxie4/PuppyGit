@@ -8,6 +8,7 @@ import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -423,8 +424,14 @@ class MyCodeEditor(
         highlightMap.put(fieldsId, highlights)
     }
     // 这里不用 get 而是用 obtain，是为了避免和默认的getter 名冲突
-    fun obtainSyntaxHighlight(fieldsId:String):Map<String, AnnotatedStringResult>? {
-        return highlightMap.get(fieldsId)
+    fun obtainSyntaxHighlight(fieldsId:String, textFieldState: TextFieldState) : TextFieldState {
+        val fieldsStyles = highlightMap.get(fieldsId)
+        val annotatedStringResult = fieldsStyles?.get(textFieldState.syntaxHighlightId)
+        return if(annotatedStringResult == null || annotatedStringResult.inDarkTheme != Theme.inDarkTheme) {
+            textFieldState
+        }else {
+            textFieldState.copy(value = textFieldState.value.copy(annotatedString = annotatedStringResult.annotatedString))
+        }
     }
 
 //    fun releaseAndRemoveSelfFromCache() {

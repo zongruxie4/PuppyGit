@@ -2,10 +2,14 @@ package com.catpuppyapp.puppygit.utils.compare
 
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dto.Box
+import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.compare.param.CompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
+import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 
 object CmpUtil {
+    private const val TAG = "CmpUtil"
 
     /**
      * @param swap (20250210之后)我调换后用了段时间发现很多时候add在前del在后匹配率更高，可能差不多，没必要调换了，调换反而浪费性能。
@@ -14,43 +18,63 @@ object CmpUtil {
      *   并在返回结果前再调换回来，调用者只需正常传add和del即可，无需再手动调换；
      *   若传false，则在比较时不会调用add和del的顺序。
      */
-    fun <T:CharSequence> compare(
+    fun <T: CharSequence> compare(
         add: CompareParam<T>,
         del: CompareParam<T>,
         requireBetterMatching: Boolean,
         matchByWords: Boolean,
         swap: Boolean = false,
         degradeMatchByWordsToMatchByCharsIfNonMatched: Boolean = DevFeature.degradeMatchByWordsToMatchByCharsIfNonMatched.state.value,
-        treatNoWordMatchAsNoMatchedWhenMatchByWord:Boolean = DevFeature.treatNoWordMatchAsNoMatchedForDiff.state.value,
+        treatNoWordMatchAsNoMatchedWhenMatchByWord: Boolean = DevFeature.treatNoWordMatchAsNoMatchedForDiff.state.value,
 
     ): IndexModifyResult {
-        val (add, del) = if(swap) {
-            Pair(del, add)
-        }else {
-            Pair(add, del)
+        if(!SettingsUtil.isEnabledDetailsCompareForDiff()) {
+            return createEmptyIndexModifyResult(add, del)
         }
 
-        val result = SimilarCompare.INSTANCE.doCompare(
-            add = add,
-            del = del,
+        return try {
+            val (add, del) = if(swap) {
+                Pair(del, add)
+            }else {
+                Pair(add, del)
+            }
 
-            //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
-            requireBetterMatching = requireBetterMatching,
+            val result = SimilarCompare.INSTANCE.doCompare(
+                add = add,
+                del = del,
 
-            //根据单词匹配
-            matchByWords = matchByWords,
+                //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
+                requireBetterMatching = requireBetterMatching,
 
-            // 降级按单词匹配为按字符匹配，如果按单词匹配无匹配
-            degradeToCharMatchingIfMatchByWordFailed = degradeMatchByWordsToMatchByCharsIfNonMatched,
-            treatNoWordMatchAsNoMatchedWhenMatchByWord = treatNoWordMatchAsNoMatchedWhenMatchByWord,
-        )
+                //根据单词匹配
+                matchByWords = matchByWords,
 
-        return if(swap) {
-            result.copy(add = result.del, del = result.add)
-        }else {
-            result
+                // 降级按单词匹配为按字符匹配，如果按单词匹配无匹配
+                degradeToCharMatchingIfMatchByWordFailed = degradeMatchByWordsToMatchByCharsIfNonMatched,
+                treatNoWordMatchAsNoMatchedWhenMatchByWord = treatNoWordMatchAsNoMatchedWhenMatchByWord,
+            )
+
+            if(swap) {
+                result.copy(add = result.del, del = result.add)
+            }else {
+                result
+            }
+        }catch (e: Exception) {
+            MyLog.e(TAG, "$TAG#compare() err: ${e.stackTraceToString()}")
+
+            createEmptyIndexModifyResult(add, del)
         }
     }
+
+    private fun <T: CharSequence> createEmptyIndexModifyResult(
+        add: CompareParam<T>,
+        del: CompareParam<T>,
+    ) = IndexModifyResult(
+        matched = false,
+        matchedByReverseSearch = false,
+        add = listOf(IndexStringPart(0, add.getLen(), modified = false)),
+        del = listOf(IndexStringPart(0, del.getLen(), modified = false)),
+    )
 
     /**
      * note: order of str1 and str2 doesn't matter, should return same value

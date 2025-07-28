@@ -390,6 +390,7 @@ fun FileEditor(
                                 val textEditorState = textEditorState.value
                                 val lastScrollEvent = editorLastScrollEvent
 
+                                // below keyboard events was handle in `MyTextField`, now moved to here
                                 if(readOnlyMode.not() && textEditorState.isMultipleSelectionMode.not()) {
 
                                     val (focusedLineIndex, textFieldState) = textEditorState.getCurrentField()
@@ -735,6 +736,24 @@ fun FileEditor(
                                             return@opke true
                                         }
                                     }
+                                }
+
+                                // F3
+                                if(keyEvent.key == Key.F3 && !keyEvent.isShiftPressed) {
+                                    requestFromParent.value = if(searchMode.value) {
+                                        PageRequest.findNext
+                                    }else {
+                                        PageRequest.requireSearch
+                                    }
+
+                                    return@opke true
+                                }
+
+                                // Shift+F3
+                                if(keyEvent.key == Key.F3 && keyEvent.isShiftPressed) {
+                                    requestFromParent.value = PageRequest.findPrevious
+
+                                    return@opke true
                                 }
 
 

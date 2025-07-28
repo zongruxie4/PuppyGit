@@ -22,9 +22,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+
+
+val filterTextFieldDefaultContainerModifier = Modifier.fillMaxWidth()
 
 /**
  * 关于此组件的备忘：
@@ -43,6 +46,7 @@ fun FilterTextField(
     placeholderText:String = stringResource(R.string.input_keyword),
     singleLine:Boolean = true,
     requireFocus: Boolean = true,
+    containerModifier: Modifier = filterTextFieldDefaultContainerModifier,
     trailingIcon: (@Composable ()->Unit)? = null,
     showClear:Boolean = filterKeyWord.value.text.isNotEmpty(),
     onClear:(()->Unit)? = {filterKeyWord.value = TextFieldValue("")},
@@ -68,14 +72,14 @@ fun FilterTextField(
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = containerModifier,
     ) {
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .focusRequester(focusRequester)
             ,
-            textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),  //字整小点，不然若高度不占满，可能竖着显示不全字
+            textStyle = LocalTextStyle.current.copy(fontSize = MyStyleKt.TextSize.default),  //字整小点，不然若高度不占满，可能竖着显示不全字
             value = filterKeyWord.value,
             onValueChange = { onValueChange(it) },
             placeholder = { Text(placeholderText) },

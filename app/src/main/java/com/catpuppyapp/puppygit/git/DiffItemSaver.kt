@@ -583,7 +583,7 @@ data class PuppyLine(
 
 ) {
     companion object {
-        fun mergeStringAndStylePartList(stringPartList: List<IndexStringPart>, stylePartList: List<LineStylePart>, modifiedBgColor: Color): List<LineStylePart> {
+        fun mergeStringAndStylePartList(stringPartList: List<IndexStringPart>, stylePartList: List<LineStylePart>, modifiedBgColorSpanStyle: SpanStyle): List<LineStylePart> {
             val retStylePartList = mutableListOf<LineStylePart>()
             val stringPartMutableList = stringPartList.toMutableList()
             stylePartList.forEachBetter { stylePart ->
@@ -596,7 +596,7 @@ data class PuppyLine(
                     retStylePartList.add(
                         LineStylePart(
                             range = IntRange(start, end),
-                            style = if(stringPart.modified) stylePart.style.merge(SpanStyle(background = modifiedBgColor)) else stylePart.style
+                            style = if(stringPart.modified) stylePart.style.merge(modifiedBgColorSpanStyle) else stylePart.style
                         )
                     )
 
