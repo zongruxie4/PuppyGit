@@ -956,10 +956,13 @@ fun TextEditor(
     }
 
     val lastValidFocusingLineIdx = rememberSaveable { mutableIntStateOf(0) }
+    val lastValidEditedColumnLineIndex = rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(textEditorState.focusingLineIdx) {
-        val focusingLineIdx = textEditorState.focusingLineIdx
-        if(focusingLineIdx != null && focusingLineIdx >= 0) {
-            lastValidFocusingLineIdx.intValue = focusingLineIdx
+        val (lineIdx, field) = textEditorState.getCurrentField()
+
+        if(lineIdx != null && field != null) {
+            lastValidFocusingLineIdx.intValue = lineIdx
+            lastValidEditedColumnLineIndex.intValue = field.value.selection.end
         }
     }
 
@@ -977,7 +980,7 @@ fun TextEditor(
                 val needUpdateFirstVisibleLineIndex = oldLinePos?.firstVisibleLineIndex != currentFirstVisibleIndex
 
                 //记住最后编辑列
-                val editedColumnIndex = textEditorState.fields.getOrNull(lastEditedLineIdx)?.value?.selection?.end ?: 0
+                val editedColumnIndex = lastValidEditedColumnLineIndex.intValue
 //                println("lasteditcolumnindex:"+editedColumnIndex) //test2024081116726433
                 val needUpdateLastEditedColumnIndex = oldLinePos?.columnIndex != editedColumnIndex
 
