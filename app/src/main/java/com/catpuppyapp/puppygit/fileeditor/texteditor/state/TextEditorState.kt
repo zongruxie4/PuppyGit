@@ -1778,8 +1778,10 @@ class TextEditorState(
         }
     }
 
-    // return current index and filed, both are can be null
-    fun getCurrentField() = focusingLineIdx.let { Pair(it, it?.let { fields.getOrNull(it) }) }
+    fun getFieldByIdx(idx: Int?) = Pair(idx, idx?.let { fields.getOrNull(idx) })
+
+    // return current index and filed, both are maybe null
+    fun getCurrentField() = getFieldByIdx(focusingLineIdx)
 
     /**
      * @return true means handled, false otherwise
