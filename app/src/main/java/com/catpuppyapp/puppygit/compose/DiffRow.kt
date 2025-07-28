@@ -44,6 +44,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.addTopPaddingIfIsFirstLine
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
@@ -376,19 +377,24 @@ fun DiffRow (
 
                 //注意：这里不能改成用多个Text组件，不然若超过屏幕宽度软换行会失效
                 Text(
-                    text = buildAnnotatedString {
-                        obtainStylePartList()?.let { stylePartList ->
-                            PuppyLine.mergeStringAndStylePartList(stringPartList, stylePartList, bgColor).forEachBetter {
-                                withStyle(it.style) {
-                                    append(content.substring(it.range))
+                    text = try {
+                        buildAnnotatedString {
+                            obtainStylePartList()?.let { stylePartList ->
+                                PuppyLine.mergeStringAndStylePartList(stringPartList, stylePartList, bgColor).forEachBetter {
+                                    withStyle(it.style) {
+                                        append(content.substring(it.range))
+                                    }
+                                }
+                            } ?: stringPartList.forEachIndexedBetter { idx, it ->
+                                //为修改的内容设置高亮颜色，如果是没修改的内容则不用设置颜色，直接用默认的背景色即可
+                                withStyle(style = SpanStyle(background = if(it.modified) bgColor else Color.Unspecified)) {
+                                    append(content.substring(it.start, it.end))
                                 }
                             }
-                        } ?: stringPartList.forEachIndexedBetter { idx, it ->
-                            //为修改的内容设置高亮颜色，如果是没修改的内容则不用设置颜色，直接用默认的背景色即可
-                            withStyle(style = SpanStyle(background = if(it.modified) bgColor else Color.Unspecified)) {
-                                append(content.substring(it.start, it.end))
-                            }
                         }
+                    }catch (e: Exception) {
+                        MyLog.e(TAG, "DiffRow create substring err: lineNum=$lineNum, positionCode=1914714811075084, err=${e.localizedMessage}")
+                        buildAnnotatedString { append(content) }
                     },
                     fontFamily = PLFont.diffCodeFont(),
 
@@ -409,13 +415,18 @@ fun DiffRow (
             ) {
                 //文本内容
                 Text(
-                    text = buildAnnotatedString {
-                        obtainStylePartList()?.forEachBetter {
-                            withStyle(it.style) {
-                                append(content.substring(it.range))
-                            }
+                    text = try {
+                        buildAnnotatedString {
+                            obtainStylePartList()?.forEachBetter {
+                                withStyle(it.style) {
+                                    append(content.substring(it.range))
+                                }
 
-                        } ?: append(content)
+                            } ?: append(content)
+                        }
+                    }catch (e: Exception) {
+                        MyLog.e(TAG, "DiffRow create substring err: lineNum=$lineNum, positionCode=1855426513892273, err=${e.localizedMessage}")
+                        buildAnnotatedString { append(content) }
                     },
                     fontFamily = PLFont.diffCodeFont(),
 
