@@ -261,6 +261,11 @@ fun TextEditor(
     }
 
 
+    fun getFirstVisibleLineOrFocusedLineIdx(): Int {
+        val (curIndex, _) = textEditorState.getCurrentField()
+        return curIndex ?: listState.firstVisibleItemIndex
+    }
+
     // search states
     // must call `initSearchPos()` before use this value to do search
     val nextSearchPos = rememberSaveable { mutableStateOf(SearchPos.NotFound) }
@@ -269,43 +274,30 @@ fun TextEditor(
     val lastFindDirectionIsToNext = rememberSaveable { mutableStateOf<Boolean?>(null) }
     val lastSearchKeyword = rememberSaveable { mutableStateOf("") }
 
-    fun initSearchPos(toNext:Boolean) {
+    fun resolveSearchStartPos(toNext:Boolean): SearchPos {
         //把起始搜索位置设置为当前第一个可见行的第一列
 //        lastSearchPos.value = SearchPos(lazyColumnState.firstVisibleItemIndex, 0)
 
         // make sure position right before search
-        var newLineIndex = lastEditedLineIndexState.intValue
-        var newColumnIndex = lastEditedColumnIndexState.intValue
+        var newLineIndex = 0
+        var newColumnIndex = 0
 
         val (curIndex, curField) = textEditorState.getCurrentField()
-        if(curIndex != null && curField != null) {
-            // update last edited position, due to when search mode or merge mode on,
-            //   it will not auto update, wo update it after user click search
-            lastEditedLineIndexState.intValue = curIndex
-            newColumnIndex = curField.value.selection.end
-            lastEditedColumnIndexState.intValue = newColumnIndex
 
-            newColumnIndex = newColumnIndex.let { if(toNext) it + 1 else it - 1 }
+        if(curIndex != null && curField != null) {
             newLineIndex = curIndex
+            newColumnIndex = curField.value.selection.let { if(toNext) it.max else it.min - 1 }
+
             if(!isGoodIndexForStr(newColumnIndex, curField.value.text)) {
-                newLineIndex = if(toNext) newLineIndex + 1 else newLineIndex - 1
+                // invalid column index, will reset when `TextEditorState.doSearch()`
+                newColumnIndex = -1
+                // switch line, no need check is valid or not,
+                //   it will reset in `TextEditorState.doSearch()` if it is invalid
+                if(toNext) newLineIndex++ else newLineIndex--
             }
         }
 
-        val lastFoundPos = lastFoundPos.value
-        //从上次编辑位置开始搜索
-        if(!searchMode.value || lastFoundPos == SearchPos.NotFound  //没开搜索模式，或没匹配到关键字，一律使用上次编辑行+列
-            || lastFoundPos.lineIndex != newLineIndex  //搜索并匹配后，用户点了其他行
-            || lastFoundPos.columnIndex != newColumnIndex  //搜索并匹配后，用户点了其他列
-        ) {
-            // reset last find direction
-            lastFindDirectionIsToNext.value = null
-
-            // set next search pos to last edited pos
-            nextSearchPos.value = SearchPos(newLineIndex, newColumnIndex)
-        }
-//        println("lasteditcis:"+lastEditedColumnIndexState.intValue)  //test1791022120240812
-//        println("startPos:"+nextSearchPos.value) //test1791022120240812
+        return SearchPos(newLineIndex, newColumnIndex)
     }
 
     fun jumpToLineIndex(
@@ -325,50 +317,16 @@ fun TextEditor(
         )
     }
 
-    suspend fun doSearchNoCatch(keyword:String, toNext:Boolean, startPos: SearchPos) {
+    suspend fun doSearchNoCatch(keyword:String, toNext:Boolean) {
         // editor fields should never empty, it always at least have an empty line
         if(keyword.isEmpty() || textEditorState.fields.isEmpty()) {
             return
         }
+
         val funName = "doSearchNoCatch"
 
-        if(AppModel.devModeOn) {
-            MyLog.w(TAG, "$TAG#$funName(): before check search direction change: toNext=$toNext, lastFoundPos=${lastFoundPos.value}, startPos=$startPos")
-        }
 
-        val keywordChanged = lastSearchKeyword.value != keyword
-        lastSearchKeyword.value = keyword
-
-        // handle find direction changed
-        val startPos = if(!keywordChanged && lastFindDirectionIsToNext.value.let { it != null && it != toNext }) {
-            val lastFoundPos = lastFoundPos.value
-
-//            // user was find next, but to find previous, should swap selection start and end index
-            val lastColumnIndex = lastFoundPos.columnIndex
-            val newColumnIndex = if(toNext) {
-                lastColumnIndex + keyword.length
-            }else {
-                lastColumnIndex - keyword.length
-            }
-
-            var newLineIndex = lastFoundPos.lineIndex
-            // switch line
-            // here is safe if was called `initSearchPos` before `doSearch`
-            val lastFoundField = textEditorState.fields.get(newLineIndex)
-            if(!isGoodIndexForStr(newColumnIndex, lastFoundField.value.text)) {
-                newLineIndex = if(toNext) lastFoundPos.lineIndex + 1 else lastFoundPos.lineIndex - 1
-            }
-
-            // lineIndex and columnIndex both maybe -1, but it will handle in `TextEditorState.doSearch()`
-            val newSearchPos = SearchPos(lineIndex = newLineIndex, columnIndex = newColumnIndex)
-            if(AppModel.devModeOn) {
-                MyLog.w(TAG, "$TAG#$funName(): found direction changed, adjust search pos: keyword.length=${keyword.length}, toNext=$toNext, newSearchPos=$newSearchPos, lastFoundPos=$lastFoundPos, startPos=$startPos")
-            }
-
-            newSearchPos
-        }else {
-            startPos
-        }
+        val startPos = resolveSearchStartPos(toNext)
 
         if(AppModel.devModeOn) {
             MyLog.w(TAG, "$TAG#$funName(): will use: toNext=$toNext, lastFoundPos=${lastFoundPos.value}, startPos=$startPos")
@@ -442,12 +400,11 @@ fun TextEditor(
     }
 
 
-    suspend fun doSearch(keyword:String, toNext:Boolean, startPos: SearchPos) {
+    suspend fun doSearch(keyword:String, toNext:Boolean) {
         try {
             doSearchNoCatch(
                 keyword = keyword,
                 toNext = toNext,
-                startPos = startPos
             )
         }catch (e: Exception) {
             MyLog.e(TAG, "text editor `doSearch()` err: ${e.localizedMessage}")
@@ -551,8 +508,7 @@ fun TextEditor(
             }
 
             doJobThenOffLoading {
-                initSearchPos(toNext = false)
-                doSearch(searchKeyword, toNext = false, nextSearchPos.value)
+                doSearch(searchKeyword, toNext = false)
             }
         }
     }
@@ -563,8 +519,7 @@ fun TextEditor(
             }
 
             doJobThenOffLoading {
-                initSearchPos(toNext = true)
-                doSearch(searchKeyword, toNext = true, nextSearchPos.value)
+                doSearch(searchKeyword, toNext = true)
             }
         }
     }
@@ -582,9 +537,9 @@ fun TextEditor(
     if(requestFromParent.value==PageRequest.previousConflict) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
-                initSearchPos(toNext = false)
+                val currentLineIdx = getFirstVisibleLineOrFocusedLineIdx()
 
-                val nextSearchLine = textEditorState.fields.get(nextSearchPos.value.lineIndex).value.text
+                val nextSearchLine = textEditorState.fields.get(currentLineIdx).value.text
                 if(nextSearchLine.startsWith(settings.editor.conflictStartStr)) {
                     conflictKeyword.value = settings.editor.conflictStartStr
                 }else if(nextSearchLine.startsWith(settings.editor.conflictSplitStr)) {
@@ -595,18 +550,18 @@ fun TextEditor(
 
                 val previousKeyWord = getPreviousKeyWordForConflict(conflictKeyword.value, settings)
                 conflictKeyword.value = previousKeyWord
-                doSearch(previousKeyWord, toNext = false, nextSearchPos.value)
+                doSearch(previousKeyWord, toNext = false)
             }
         }
     }
     if(requestFromParent.value==PageRequest.nextConflict) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
-                initSearchPos(toNext = true)
+                val currentLineIdx = getFirstVisibleLineOrFocusedLineIdx()
 
                 // update cur conflict keyword, if cursor on conflict str line, if dont do this, UX bad, e.g. I clicked conflict splict line, then click prev conflict, expect is go conflict start line, but if last search is start line, this time will go to end line, anti-intuition
                 // 如果光标在冲突开始、分割、结束行之一，更新搜索关键字，如果不这样做，会出现一些反直觉的bug：我点击了conflict split line，然后点上，期望是查找conflict start line，但如果上次搜索状态是start line，那这次就会去搜索end line，反直觉
-                val nextSearchLine = textEditorState.fields.get(nextSearchPos.value.lineIndex).value.text
+                val nextSearchLine = textEditorState.fields.get(currentLineIdx).value.text
                 if(nextSearchLine.startsWith(settings.editor.conflictStartStr)) {
                     conflictKeyword.value = settings.editor.conflictStartStr
                 }else if(nextSearchLine.startsWith(settings.editor.conflictSplitStr)) {
@@ -617,10 +572,11 @@ fun TextEditor(
 
                 val nextKeyWord = getNextKeyWordForConflict(conflictKeyword.value, settings)
                 conflictKeyword.value = nextKeyWord
-                doSearch(nextKeyWord, toNext = true, nextSearchPos.value)
+                doSearch(nextKeyWord, toNext = true)
             }
         }
     }
+
     if(requestFromParent.value==PageRequest.showNextConflictAndAllConflictsCount) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
