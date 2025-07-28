@@ -89,6 +89,7 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
+import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import com.catpuppyapp.puppygit.utils.parseLineAndColumn
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
@@ -305,7 +306,8 @@ fun TextEditor(
     }
 
     suspend fun doSearch(keyword:String, toNext:Boolean, startPos: SearchPos) {
-        if(keyword.isEmpty()) {
+        // editor fields should never empty, it always at least have an empty line
+        if(keyword.isEmpty() || textEditorState.fields.isEmpty()) {
             return
         }
 
@@ -317,20 +319,39 @@ fun TextEditor(
         //   else if it is not null, means users doesn't click any column after found a keyword
         // 如果 `lastFindDirectionIsToNext` 是null，代表搜索位置重置过，可能没搜索到关键字，或在搜索到关键字用户后点了其他地方；
         //   如果其值非null，代表搜索到关键字后用户没编辑也没点任何地方，所以需要检测是是否调换了搜索方向
-        val startPos = if(!keywordChanged && lastFindDirectionIsToNext.value.let { it != null && it != toNext }) {
-            // user was find next, but to find previous, should swap selection start and end index
-
-            // note: don't worry about index out of range, it should not happened at here,
-            //   just in case, if it happened, still no problem, it will reset in the `TextEditorState.doSearch`
-            // 正常来说不会越界，以防万一，doSearch中做了处理，稳
-            val newColumnIndex = if(toNext) {
-                // this time toNext, but swapped, so last time is find previous
-                startPos.columnIndex + keyword.length
+        val startPos = if(!keywordChanged && lastFoundPos.value != SearchPos.NotFound && lastFindDirectionIsToNext.value.let { it != null && it != toNext }) {
+            val lastFoundPos = lastFoundPos.value
+            val nextSearchStartAtField = textEditorState.fields.get(lastFoundPos.lineIndex)
+//            // user was find next, but to find previous, should swap selection start and end index
+            val lastColumnIndex = lastFoundPos.columnIndex
+            var newColumnIndex = if(toNext) {
+                lastColumnIndex + keyword.length
             }else {
-                startPos.columnIndex - keyword.length
+                lastColumnIndex - keyword.length
             }
 
-            startPos.copy(columnIndex = newColumnIndex)
+            var newLineIndex = lastFoundPos.lineIndex
+            // switch line
+            if(!isGoodIndexForStr(newColumnIndex, nextSearchStartAtField.value.text)) {
+                newLineIndex = (if(toNext) lastFoundPos.lineIndex + 1 else lastFoundPos.lineIndex - 1).coerceAtMost(textEditorState.fields.size - 1).coerceAtLeast(0)
+//                newColumnIndex = if(toNext) keyword.length else textEditorState.fields.get(newLineIndex).value.text.lastIndex
+            }
+
+//            val newLineIndex = if(newColumnIndex < 0) {
+//                val targetIndex = (curIndex - 1).coerceAtLeast(0)
+//                newColumnIndex = textEditorState.fields.get(targetIndex).value.text.length
+//                targetIndex
+//            }else if(newColumnIndex > curField.value.text.lastIndex) {
+//                val targetIndex = (curIndex + 1).coerceAtMost(textEditorState.fields.lastIndex)
+//                newColumnIndex = 0
+//                targetIndex
+//            }else {
+//                curIndex
+//            }
+//            println("keyword.length:${keyword.length}, newLineIndex=$newLineIndex, newColumnIndex=$newColumnIndex, "+"$lastFoundPos")
+//            println("keyword.length:${keyword.length},  newColumnIndex=$newColumnIndex, "+"$startPos")
+
+            startPos.copy(lineIndex = newLineIndex, columnIndex = newColumnIndex)
         }else {
             // use was find next, and now still find next, no operation need
             startPos
