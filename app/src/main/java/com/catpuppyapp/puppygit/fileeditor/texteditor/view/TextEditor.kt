@@ -264,6 +264,7 @@ fun TextEditor(
 
     val lastFoundPos = rememberSaveable { mutableStateOf(SearchPos.NotFound) }
     val lastFindDirectionIsToNext = rememberSaveable { mutableStateOf<Boolean?>(null) }
+    val lastSearchKeyword = rememberSaveable { mutableStateOf("") }
 
     val initSearchPos = {
         //把起始搜索位置设置为当前第一个可见行的第一列
@@ -276,6 +277,8 @@ fun TextEditor(
         ) {
             // reset last find direction
             lastFindDirectionIsToNext.value = null
+
+            // set next search pos to last edited pos
             nextSearchPos.value = SearchPos(lastEditedLineIndexState.intValue, lastEditedColumnIndexState.intValue)
         }
 //        println("lasteditcis:"+lastEditedColumnIndexState.intValue)  //test1791022120240812
@@ -304,12 +307,15 @@ fun TextEditor(
             return
         }
 
+        val keywordChanged = lastSearchKeyword.value != keyword
+        lastSearchKeyword.value = keyword
+
         // was found keyword, and now users changed the search direction.
         // if `lastFindDirectionIsToNext` is null, means the search pos was reset, so no need to update search pos;
         //   else if it is not null, means users doesn't click any column after found a keyword
         // 如果 `lastFindDirectionIsToNext` 是null，代表搜索位置重置过，可能没搜索到关键字，或在搜索到关键字用户后点了其他地方；
         //   如果其值非null，代表搜索到关键字后用户没编辑也没点任何地方，所以需要检测是是否调换了搜索方向
-        val startPos = if(lastFindDirectionIsToNext.value.let { it != null && it != toNext }) {
+        val startPos = if(!keywordChanged && lastFindDirectionIsToNext.value.let { it != null && it != toNext }) {
             // user was find next, but to find previous, should swap selection start and end index
 
             // note: don't worry about index out of range, it should not happened at here,
