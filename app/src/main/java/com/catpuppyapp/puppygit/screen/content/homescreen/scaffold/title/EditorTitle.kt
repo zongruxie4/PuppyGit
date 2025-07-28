@@ -161,6 +161,8 @@ fun EditorTitle(
             if(editorSearchMode) {
                     FilterTextField(
                         filterKeyWord = editorSearchKeyword,
+                        // avoid mistake clicked
+                        showClear = false,
                         containerModifier = Modifier
                             .fillMaxWidth()
                             .onPreviewKeyEvent opke@{ keyEvent ->
