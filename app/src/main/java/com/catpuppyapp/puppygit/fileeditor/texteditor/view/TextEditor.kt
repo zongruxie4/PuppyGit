@@ -268,11 +268,11 @@ fun TextEditor(
 
     // search states
     // must call `initSearchPos()` before use this value to do search
-    val nextSearchPos = rememberSaveable { mutableStateOf(SearchPos.NotFound) }
-
-    val lastFoundPos = rememberSaveable { mutableStateOf(SearchPos.NotFound) }
-    val lastFindDirectionIsToNext = rememberSaveable { mutableStateOf<Boolean?>(null) }
-    val lastSearchKeyword = rememberSaveable { mutableStateOf("") }
+//    val nextSearchPos = rememberSaveable { mutableStateOf(SearchPos.NotFound) }
+//
+//    val lastFoundPos = rememberSaveable { mutableStateOf(SearchPos.NotFound) }
+//    val lastFindDirectionIsToNext = rememberSaveable { mutableStateOf<Boolean?>(null) }
+//    val lastSearchKeyword = rememberSaveable { mutableStateOf("") }
 
     fun resolveSearchStartPos(toNext:Boolean): SearchPos {
         //把起始搜索位置设置为当前第一个可见行的第一列
@@ -329,7 +329,7 @@ fun TextEditor(
         val startPos = resolveSearchStartPos(toNext)
 
         if(AppModel.devModeOn) {
-            MyLog.w(TAG, "$TAG#$funName(): will use: toNext=$toNext, lastFoundPos=${lastFoundPos.value}, startPos=$startPos")
+            MyLog.w(TAG, "$TAG#$funName(): will use: toNext=$toNext, startPos=$startPos")
         }
 
         val keyWordLen = keyword.length
@@ -337,14 +337,12 @@ fun TextEditor(
         val posResult = textEditorState.doSearch(keyword.lowercase(), toNext = toNext, startPos = startPos)
         val foundPos = posResult.foundPos
         if(foundPos == SearchPos.NotFound) {
-            lastFindDirectionIsToNext.value = null
             if(!searchMode.value && mergeMode) {
                 Msg.requireShow(activityContext.getString(R.string.no_conflict_found))
             }else {
                 Msg.requireShow(activityContext.getString(R.string.not_found))
             }
         }else {  //查找到了关键字
-            lastFindDirectionIsToNext.value = toNext
 
 //            println("found:$foundPos")//test1791022120240812
 
@@ -379,22 +377,10 @@ fun TextEditor(
                 requireHideKeyboard = false,  // requireLossFocus 相关
             )
 
-
-            val foundPosCopy = posResult.foundPos.copy()
-            lastFoundPos.value = foundPosCopy
-
-            //更新最后编辑行和列
-            lastEditedLineIndexState.intValue = foundPosCopy.lineIndex
-            lastEditedColumnIndexState.intValue = foundPosCopy.columnIndex
-            //选中关键字(有缺陷)
-//            editableController.selectTextInLine(foundPos.lineIndex, foundPos.columnIndex, endIndexExclusive)
-
-            //更新下次搜索起点
-            nextSearchPos.value = posResult.nextPos.copy()
         }
 
         if(AppModel.devModeOn) {
-            MyLog.w(TAG, "$TAG#$funName(): found result: toNext=$toNext, lastFoundPos=${lastFoundPos.value}, nextSearchPos=${nextSearchPos.value}")
+            MyLog.w(TAG, "$TAG#$funName(): found result: toNext=$toNext, foundPos=$foundPos")
         }
 
     }
@@ -412,14 +398,7 @@ fun TextEditor(
         }
     }
 
-    // reset search states when start or quit search mode
-    LaunchedEffect(searchMode.value) {
-        nextSearchPos.value = SearchPos.NotFound
 
-        lastFoundPos.value = SearchPos.NotFound
-        lastFindDirectionIsToNext.value = null
-        lastSearchKeyword.value = ""
-    }
 
 
     //每次计算依赖的状态变化就会重新计算这个变量的值
