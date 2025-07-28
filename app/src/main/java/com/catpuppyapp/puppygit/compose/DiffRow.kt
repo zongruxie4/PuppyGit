@@ -136,8 +136,8 @@ fun DiffRow (
 //                        val lineTypeStr = getDiffLineTypeStr(line)
     val lineNumColor = MyStyleKt.Diff.lineNumColorForDiff(inDarkTheme)
 
-    val bgColorSpanStyle = SpanStyle(background = bgColor)
-    val emptySpanStyle = MyStyleKt.emptySpanStyle
+    val bgColorSpanStyle = remember(bgColor) { SpanStyle(background = bgColor) }
+    val emptySpanStyle = remember { MyStyleKt.emptySpanStyle }
 
     val lineNum = paddingLineNumber(if(line.lineNum == LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else line.lineNum.toString(), lineNumExpectLength)
 
