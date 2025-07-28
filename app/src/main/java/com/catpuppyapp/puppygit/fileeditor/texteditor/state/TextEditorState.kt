@@ -175,7 +175,7 @@ class TextEditorState(
             val endPosOverThis = curPos.copy()  //越过这一行这一列，就查到开头了，结束了
             var curIndexOfKeyword= if(toNext) 0 else keyword.length-1
 
-            curPos.columnIndex = if(isGoodIndexForStr(curPos.columnIndex, curText)){
+            curPos.columnIndex = if(goodIndex && isGoodIndexForStr(curPos.columnIndex, curText)){
                 curPos.columnIndex
             }else{
                 if(toNext){
