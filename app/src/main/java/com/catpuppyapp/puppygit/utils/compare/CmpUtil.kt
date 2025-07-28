@@ -60,7 +60,10 @@ object CmpUtil {
                 result
             }
         }catch (e: Exception) {
-            MyLog.e(TAG, "$TAG#compare() err: ${e.stackTraceToString()}")
+            // this method will call in view, better short err msg to avoid huge log file
+            // 这个函数在视图调用，错误信息的重复性和数量都较大，所以最好短点，避免产生大量错误信息导致log非常大
+            MyLog.e(TAG, "$TAG#compare() err: ${e.localizedMessage}")
+            e.printStackTrace()
 
             createEmptyIndexModifyResult(add, del)
         }
