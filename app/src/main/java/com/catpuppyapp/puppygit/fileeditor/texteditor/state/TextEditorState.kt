@@ -991,7 +991,7 @@ class TextEditorState(
         try {
             targetIndexValidOrThrow(targetIndex, init_fields.size)
         }catch (e: Exception) { // will throw when line dost, maybe changed by external or other cases, but it's fine, no need throw exception
-            MyLog.d(TAG, "TextEditorState.selectFieldInternal() err: ${e.stackTraceToString()}")
+            MyLog.d(TAG, "TextEditorState.selectFieldInternal() err: ${e.localizedMessage}")
         }
 
         val targetIndex = targetIndex.coerceAtMost(init_fields.lastIndex).coerceAtLeast(0)
