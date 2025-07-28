@@ -2040,6 +2040,8 @@ class TextEditorState(
 //                遍历text field时，根据其id取annotated string，
 //                若无，使用原text field，若有，使用缓存的带语法高亮的text field
 
+            // if has err, just return, then will not save the styles map, so UI will show a normal text without syntax highlighting
+            // 如果出错，让它抛，不用存shMap，省内存，页面显示普通文本，没毛病
             val shMap = mutableMapOf<String, AnnotatedStringResult>()
             try {
                 val spansReader = styles.spans.read()
@@ -2049,10 +2051,15 @@ class TextEditorState(
                     shMap.put(value.syntaxHighlightId, AnnotatedStringResult(inDarkTheme, annotatedString))
                 }
             }catch (e: Exception) {
-                MyLog.e(TAG, "#$funName: apply styles err: stylesResult=$stylesResult, err=${e.localizedMessage}")
+                MyLog.e(TAG, "#$funName: apply styles err: fieldsId=$fieldsId, stylesResult=$stylesResult, err=${e.localizedMessage}")
+                e.printStackTrace()
+
                 return
             }
 
+            // save or update styles for current's fieldsId,
+            //    usually is save, but if do analyze for same
+            //    fields more than once, then it becomes update
             codeEditor?.putSyntaxHighlight(fieldsId, shMap)
 
 //                codeEditor?.stylesMap?.put(fieldsId, stylesResult)
