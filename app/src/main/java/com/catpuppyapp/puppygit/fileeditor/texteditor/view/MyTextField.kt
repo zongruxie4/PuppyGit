@@ -72,13 +72,11 @@ internal fun MyTextField(
 
             //目前仅在非searchMode时更新最后编辑列，日后修复更新列错误的bug后，改下flag变量即可，这的逻辑不用改。
             //ps: mergeMode也要用到搜索，所以也需要判断
-            if((newState.selection.start == newState.selection.end)
-                && ((!searchMode && !mergeMode) || bug_Editor_WrongUpdateEditColumnIdx_Fixed)
-            ) {  // start == end 说明不是选中状态而是点击某列，这时更新最后编辑列
-                lastEditedColumnIndexState.intValue = newState.selection.start
+            if((!searchMode && !mergeMode) || bug_Editor_WrongUpdateEditColumnIdx_Fixed) {
+                lastEditedColumnIndexState.intValue = newState.selection.end
             }
 
-            //存在选中文本时，显示光标拖手和背景颜色（handle
+            //存在选中文本时，显示光标拖手和背景颜色（handle）
             needShowCursorHandle.value = newState.selection.start != newState.selection.end
 
             // no change
