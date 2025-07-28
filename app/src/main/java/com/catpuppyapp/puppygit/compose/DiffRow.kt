@@ -131,13 +131,13 @@ fun DiffRow (
     val inDarkTheme = Theme.inDarkTheme
     //libgit2会把连续行整合到一起，这里用getLines()获取拆分后的行
 //                    puppyLineBase.getLines().forEach { line ->
-    val bgColor = remember { UIHelper.getDiffLineBgColor(line, inDarkTheme) }
-    val textColor = remember { UIHelper.getDiffLineTextColor(line, inDarkTheme) }
+    val bgColor = UIHelper.getDiffLineBgColor(line, inDarkTheme)
+    val textColor = UIHelper.getDiffLineTextColor(line, inDarkTheme)
 //                        val lineTypeStr = getDiffLineTypeStr(line)
-    val lineNumColor = remember { MyStyleKt.Diff.lineNumColorForDiff(inDarkTheme) }
+    val lineNumColor = MyStyleKt.Diff.lineNumColorForDiff(inDarkTheme)
 
-    val bgColorSpanStyle = remember { SpanStyle(background = bgColor) }
-    val emptySpanStyle = remember { MyStyleKt.emptySpanStyle }
+    val bgColorSpanStyle = SpanStyle(background = bgColor)
+    val emptySpanStyle = MyStyleKt.emptySpanStyle
 
     val lineNum = paddingLineNumber(if(line.lineNum == LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else line.lineNum.toString(), lineNumExpectLength)
 

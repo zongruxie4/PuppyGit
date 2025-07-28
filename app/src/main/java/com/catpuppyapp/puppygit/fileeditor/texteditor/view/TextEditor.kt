@@ -958,7 +958,7 @@ fun TextEditor(
     val lastValidFocusingLineIdx = rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(textEditorState.focusingLineIdx) {
         val focusingLineIdx = textEditorState.focusingLineIdx
-        if(focusingLineIdx != null) {
+        if(focusingLineIdx != null && focusingLineIdx >= 0) {
             lastValidFocusingLineIdx.intValue = focusingLineIdx
         }
     }

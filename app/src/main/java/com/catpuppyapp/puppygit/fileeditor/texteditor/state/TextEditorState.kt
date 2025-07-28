@@ -628,10 +628,7 @@ class TextEditorState(
                 fieldsId = maybeNewId,
                 selectedIndices = newSelectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = targetIndex,
-                // -1 to skip focusing, cause `onFocus` callback of `com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextField` already focused target line, usually the onFocus call `selectField()` of this class
-                // 传 -1 跳过聚焦某行，因为onFocus()已经聚焦了，另外，通常onFocus()会调用这里的selectField()
-                focusingLineIdx = -1,
+                focusingLineIdx = targetIndex,
             )
 
             updater?.invoke(IntRange(targetIndex, targetIndex), newFields, newSelectedIndices)
