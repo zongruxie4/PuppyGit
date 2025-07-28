@@ -269,14 +269,22 @@ fun TextEditor(
     val lastFindDirectionIsToNext = rememberSaveable { mutableStateOf<Boolean?>(null) }
     val lastSearchKeyword = rememberSaveable { mutableStateOf("") }
 
-    val initSearchPos = {
+    fun initSearchPos(toNext:Boolean) {
         //把起始搜索位置设置为当前第一个可见行的第一列
 //        lastSearchPos.value = SearchPos(lazyColumnState.firstVisibleItemIndex, 0)
 
+        // make sure position right before search
+        val (curIndex, curField) = textEditorState.getCurrentField()
+        if(curIndex != null && curField != null) {
+            lastEditedLineIndexState.intValue = curIndex
+            lastEditedColumnIndexState.intValue = curField.value.selection.end
+        }
+
+        val lastFoundPos = lastFoundPos.value
         //从上次编辑位置开始搜索
-        if(!searchMode.value || lastFoundPos.value == SearchPos.NotFound  //没开搜索模式，或没匹配到关键字，一律使用上次编辑行+列
-            || lastFoundPos.value.lineIndex != lastEditedLineIndexState.intValue  //搜索并匹配后，用户点了其他行
-            || lastFoundPos.value.columnIndex != lastEditedColumnIndexState.intValue  //搜索并匹配后，用户点了其他列
+        if(!searchMode.value || lastFoundPos == SearchPos.NotFound  //没开搜索模式，或没匹配到关键字，一律使用上次编辑行+列
+            || lastFoundPos.lineIndex != lastEditedLineIndexState.intValue  //搜索并匹配后，用户点了其他行
+            || lastFoundPos.columnIndex != lastEditedColumnIndexState.intValue  //搜索并匹配后，用户点了其他列
         ) {
             // reset last find direction
             lastFindDirectionIsToNext.value = null
@@ -305,7 +313,7 @@ fun TextEditor(
         )
     }
 
-    suspend fun doSearch(keyword:String, toNext:Boolean, startPos: SearchPos) {
+    suspend fun doSearchNoCatch(keyword:String, toNext:Boolean, startPos: SearchPos) {
         // editor fields should never empty, it always at least have an empty line
         if(keyword.isEmpty() || textEditorState.fields.isEmpty()) {
             return
@@ -314,17 +322,13 @@ fun TextEditor(
         val keywordChanged = lastSearchKeyword.value != keyword
         lastSearchKeyword.value = keyword
 
-        // was found keyword, and now users changed the search direction.
-        // if `lastFindDirectionIsToNext` is null, means the search pos was reset, so no need to update search pos;
-        //   else if it is not null, means users doesn't click any column after found a keyword
-        // 如果 `lastFindDirectionIsToNext` 是null，代表搜索位置重置过，可能没搜索到关键字，或在搜索到关键字用户后点了其他地方；
-        //   如果其值非null，代表搜索到关键字后用户没编辑也没点任何地方，所以需要检测是是否调换了搜索方向
-        val startPos = if(!keywordChanged && lastFoundPos.value != SearchPos.NotFound && lastFindDirectionIsToNext.value.let { it != null && it != toNext }) {
+        // handle find direction changed
+        val startPos = if(!keywordChanged && lastFindDirectionIsToNext.value.let { it != null && it != toNext }) {
             val lastFoundPos = lastFoundPos.value
-            val nextSearchStartAtField = textEditorState.fields.get(lastFoundPos.lineIndex)
+
 //            // user was find next, but to find previous, should swap selection start and end index
             val lastColumnIndex = lastFoundPos.columnIndex
-            var newColumnIndex = if(toNext) {
+            val newColumnIndex = if(toNext) {
                 lastColumnIndex + keyword.length
             }else {
                 lastColumnIndex - keyword.length
@@ -332,28 +336,18 @@ fun TextEditor(
 
             var newLineIndex = lastFoundPos.lineIndex
             // switch line
-            if(!isGoodIndexForStr(newColumnIndex, nextSearchStartAtField.value.text)) {
-                newLineIndex = (if(toNext) lastFoundPos.lineIndex + 1 else lastFoundPos.lineIndex - 1).coerceAtMost(textEditorState.fields.size - 1).coerceAtLeast(0)
-//                newColumnIndex = if(toNext) keyword.length else textEditorState.fields.get(newLineIndex).value.text.lastIndex
+            // here is safe if was called `initSearchPos` before `doSearch`
+            val lastFoundField = textEditorState.fields.get(newLineIndex)
+            if(!isGoodIndexForStr(newColumnIndex, lastFoundField.value.text)) {
+                newLineIndex = if(toNext) lastFoundPos.lineIndex + 1 else lastFoundPos.lineIndex - 1
             }
 
-//            val newLineIndex = if(newColumnIndex < 0) {
-//                val targetIndex = (curIndex - 1).coerceAtLeast(0)
-//                newColumnIndex = textEditorState.fields.get(targetIndex).value.text.length
-//                targetIndex
-//            }else if(newColumnIndex > curField.value.text.lastIndex) {
-//                val targetIndex = (curIndex + 1).coerceAtMost(textEditorState.fields.lastIndex)
-//                newColumnIndex = 0
-//                targetIndex
-//            }else {
-//                curIndex
-//            }
-//            println("keyword.length:${keyword.length}, newLineIndex=$newLineIndex, newColumnIndex=$newColumnIndex, "+"$lastFoundPos")
-//            println("keyword.length:${keyword.length},  newColumnIndex=$newColumnIndex, "+"$startPos")
+            // lineIndex and columnIndex both maybe -1, but it will handle in `TextEditorState.doSearch()`
+            val newSearchPos = SearchPos(lineIndex = newLineIndex, columnIndex = newColumnIndex)
+            MyLog.d(TAG, "$TAG#doSearch: find direction changed, adjust search pos: keyword.length=${keyword.length}, newSearchPos=$newSearchPos, lastFoundPos=$lastFoundPos, nextSearchPos=$nextSearchPos ")
 
-            startPos.copy(lineIndex = newLineIndex, columnIndex = newColumnIndex)
+            newSearchPos
         }else {
-            // use was find next, and now still find next, no operation need
             startPos
         }
 
@@ -419,6 +413,19 @@ fun TextEditor(
         }
     }
 
+
+    suspend fun doSearch(keyword:String, toNext:Boolean, startPos: SearchPos) {
+        try {
+            doSearchNoCatch(
+                keyword = keyword,
+                toNext = toNext,
+                startPos = startPos
+            )
+        }catch (e: Exception) {
+            MyLog.e(TAG, "text editor `doSearch()` err: ${e.localizedMessage}")
+            e.printStackTrace()
+        }
+    }
 
     // reset search states when start or quit search mode
     LaunchedEffect(searchMode.value) {
@@ -516,7 +523,7 @@ fun TextEditor(
             }
 
             doJobThenOffLoading {
-                initSearchPos()
+                initSearchPos(toNext = false)
                 doSearch(searchKeyword, toNext = false, nextSearchPos.value)
             }
         }
@@ -528,7 +535,7 @@ fun TextEditor(
             }
 
             doJobThenOffLoading {
-                initSearchPos()
+                initSearchPos(toNext = true)
                 doSearch(searchKeyword, toNext = true, nextSearchPos.value)
             }
         }
@@ -547,7 +554,7 @@ fun TextEditor(
     if(requestFromParent.value==PageRequest.previousConflict) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
-                initSearchPos()
+                initSearchPos(toNext = false)
 
                 val nextSearchLine = textEditorState.fields.get(nextSearchPos.value.lineIndex).value.text
                 if(nextSearchLine.startsWith(settings.editor.conflictStartStr)) {
@@ -567,7 +574,7 @@ fun TextEditor(
     if(requestFromParent.value==PageRequest.nextConflict) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
-                initSearchPos()
+                initSearchPos(toNext = true)
 
                 // update cur conflict keyword, if cursor on conflict str line, if dont do this, UX bad, e.g. I clicked conflict splict line, then click prev conflict, expect is go conflict start line, but if last search is start line, this time will go to end line, anti-intuition
                 // 如果光标在冲突开始、分割、结束行之一，更新搜索关键字，如果不这样做，会出现一些反直觉的bug：我点击了conflict split line，然后点上，期望是查找conflict start line，但如果上次搜索状态是start line，那这次就会去搜索end line，反直觉
