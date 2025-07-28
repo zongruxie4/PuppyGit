@@ -246,8 +246,8 @@ fun TextEditor(
     val needShowCursorHandle = rememberSaveable { mutableStateOf(false) }
 
     //这俩值会在组件销毁时写入配置文件以记录滚动位置(当前画面第一个可见行)和最后编辑位置
-    val lastEditedLineIndexState  = rememberSaveable { mutableIntStateOf(lastEditedPos.lineIndex) }
-    val lastEditedColumnIndexState = rememberSaveable { mutableIntStateOf(lastEditedPos.columnIndex) }
+//    val lastEditedLineIndexState  = rememberSaveable { mutableIntStateOf(lastEditedPos.lineIndex) }
+//    val lastEditedColumnIndexState = rememberSaveable { mutableIntStateOf(lastEditedPos.columnIndex) }
 
 
     val expectConflictStrDto = rememberSaveable(settings.editor.conflictStartStr, settings.editor.conflictSplitStr, settings.editor.conflictEndStr) {
@@ -261,10 +261,7 @@ fun TextEditor(
     }
 
 
-    fun getFirstVisibleLineOrFocusedLineIdx(): Int {
-        val (curIndex, _) = textEditorState.getCurrentField()
-        return curIndex ?: listState.firstVisibleItemIndex
-    }
+    fun getFocusedLineIdxOrFirstVisibleLine() = textEditorState.focusingLineIdx ?: listState.firstVisibleItemIndex;
 
     // search states
     // must call `initSearchPos()` before use this value to do search
@@ -516,7 +513,7 @@ fun TextEditor(
     if(requestFromParent.value==PageRequest.previousConflict) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
-                val currentLineIdx = getFirstVisibleLineOrFocusedLineIdx()
+                val currentLineIdx = getFocusedLineIdxOrFirstVisibleLine()
 
                 val nextSearchLine = textEditorState.fields.get(currentLineIdx).value.text
                 if(nextSearchLine.startsWith(settings.editor.conflictStartStr)) {
@@ -536,7 +533,7 @@ fun TextEditor(
     if(requestFromParent.value==PageRequest.nextConflict) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
-                val currentLineIdx = getFirstVisibleLineOrFocusedLineIdx()
+                val currentLineIdx = getFocusedLineIdxOrFirstVisibleLine()
 
                 // update cur conflict keyword, if cursor on conflict str line, if dont do this, UX bad, e.g. I clicked conflict splict line, then click prev conflict, expect is go conflict start line, but if last search is start line, this time will go to end line, anti-intuition
                 // 如果光标在冲突开始、分割、结束行之一，更新搜索关键字，如果不这样做，会出现一些反直觉的bug：我点击了conflict split line，然后点上，期望是查找conflict start line，但如果上次搜索状态是start line，那这次就会去搜索end line，反直觉
@@ -580,21 +577,15 @@ fun TextEditor(
 
     if(requestFromParent.value==PageRequest.switchBetweenFirstLineAndLastEditLine) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-//            println("firstline:"+firstLineIndexState.value)
-//            println("lastEditedLineIndexState:"+lastEditedLineIndexState)
-
             val notAtTop = listState.firstVisibleItemIndex != 0
-            // if 不在顶部，go to 顶部 else go to 上次编辑位置
-            val position = if(notAtTop) 0 else lastEditedLineIndexState.intValue
+            // if 不在顶部，go to 顶部 else go to 上次编辑位置(当前聚焦行)
+            val position = if(notAtTop) 0 else getFocusedLineIdxOrFirstVisibleLine()
             lastScrollEvent.value = ScrollEvent(position, forceGo = true)
         }
     }
 
     if(requestFromParent.value==PageRequest.switchBetweenTopAndLastPosition) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-//            println("firstline:"+firstLineIndexState.value)
-//            println("lastEditedLineIndexState:"+lastEditedLineIndexState)
-
             val lastVisibleLine = listState.firstVisibleItemIndex
             val notAtTop = lastVisibleLine != 0
             // if 不在顶部，go to 顶部 else go to 上次编辑位置
@@ -970,13 +961,14 @@ fun TextEditor(
                 //更新配置文件记录的滚动位置（当前屏幕可见第一行）和最后编辑行
                 //如果当前索引不是上次定位的索引，更新页面状态变量和配置文件中记录的最后编辑行索引，不管是否需要滚动，反正先记上
                 //先比较一下，Settings对象从内存取不用读文件，很快，如果没变化，就不用更新配置文件了，省了磁盘IO，所以有必要检查下
+                val lastEditedLineIdx = getFocusedLineIdxOrFirstVisibleLine()
                 val oldLinePos = FileOpenHistoryMan.get(fileFullPath.ioPath)
-                val needUpdateLastEditedLineIndex = oldLinePos?.lineIndex != lastEditedLineIndexState.intValue
+                val needUpdateLastEditedLineIndex = oldLinePos?.lineIndex != lastEditedLineIdx
                 val currentFirstVisibleIndex = listState.firstVisibleItemIndex
                 val needUpdateFirstVisibleLineIndex = oldLinePos?.firstVisibleLineIndex != currentFirstVisibleIndex
 
                 //记住最后编辑列
-                val editedColumnIndex = lastEditedColumnIndexState.intValue
+                val editedColumnIndex = textEditorState.fields.getOrNull(lastEditedLineIdx)?.value?.selection?.end ?: 0
 //                println("lasteditcolumnindex:"+editedColumnIndex) //test2024081116726433
                 val needUpdateLastEditedColumnIndex = oldLinePos?.columnIndex != editedColumnIndex
 
@@ -988,7 +980,7 @@ fun TextEditor(
 //                            pos = FileEditedPos()
 //                        }
                     if(needUpdateLastEditedLineIndex) {
-                        pos.lineIndex = lastEditedLineIndexState.intValue
+                        pos.lineIndex = lastEditedLineIdx
                     }
                     if(needUpdateFirstVisibleLineIndex) {
                         pos.firstVisibleLineIndex = currentFirstVisibleIndex
@@ -996,15 +988,12 @@ fun TextEditor(
                     if(needUpdateLastEditedColumnIndex) {
                         pos.columnIndex = editedColumnIndex
                     }
-//                if(debugModeOn) {
-//                    println("editorPos will save: "+pos)
-//                }
-//                        println(pos) //test2024081116726433
+
+                    // save
                     FileOpenHistoryMan.set(fileFullPath.ioPath, pos)
-//                    }
                 }
             }catch (e:Exception) {
-                MyLog.e(TAG, "#TextEditorOnDispose@ , err: "+e.stackTraceToString())
+                MyLog.e(TAG, "#TextEditorOnDispose@ save last edit position err: "+e.stackTraceToString())
             }
         }
     }
@@ -1127,7 +1116,6 @@ fun TextEditor(
 
                             mergeMode=mergeMode,
                             searchMode = searchMode.value,
-                            lastEditedColumnIndexState=lastEditedColumnIndexState,
                             needShowCursorHandle = needShowCursorHandle,
                             textFieldState = textEditorState.obtainHighlightedTextField(textFieldState),
                             enabled = !textEditorState.isMultipleSelectionMode,
@@ -1430,21 +1418,13 @@ fun TextEditor(
                                 }
                             }
                         }else {
-                            //更新最后编辑行状态
-                            lastEditedLineIndexState.intValue = index
-//                        println("index="+index)
-                            //检查一下，如果对应索引不可见则跳转
-                            // list.minBy(item.index) 用元素的index排序，取出index最小的元素，后面跟.index，即取出最小index元素的index,maxBy和minBy异曲同工
-//                    val first = lazyColumnState.layoutInfo.visibleItemsInfo.minBy { it.index }.index
-//                    lastFirstVisibleLineIndexState = first
-
                             scrollIfIndexInvisible(index)
                         }
                     }
                 }
 
             }catch (e:Exception) {
-                MyLog.e(TAG, "#TextEditorLaunchedEffect@ , err: "+e.stackTraceToString())
+                MyLog.e(TAG, "TextEditor#LaunchedEffect err: "+e.stackTraceToString())
             }
 
 //        if(debugModeOn) {
