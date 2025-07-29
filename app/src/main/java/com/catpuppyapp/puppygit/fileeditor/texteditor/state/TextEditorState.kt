@@ -659,6 +659,19 @@ class TextEditorState(
         }
     }
 
+    fun appendClosePairIfNeed(
+        oldField: TextFieldState,
+        newField: TextFieldState,
+    ) : TextFieldState {
+        return try {
+            appendClosePairIfNeedNoCatch(oldField, newField)
+        }catch (e: Exception) {
+            MyLog.e(TAG, "#appendClosePairIfNeed err: ${e.localizedMessage}")
+            e.printStackTrace()
+
+            newField
+        }
+    }
     /**
      * append close pair if need
      * NOTE: make sure call this only when field text changed, else will have unexpected chars inserted
@@ -667,7 +680,7 @@ class TextEditorState(
      *     it will take big effect for syntax highlighting, maybe let it very slow,
      *     so I add this feature to let the pair closed if possible
      */
-    fun appendClosePairIfNeed(
+    fun appendClosePairIfNeedNoCatch(
         oldField: TextFieldState,
         newField: TextFieldState,
     ) : TextFieldState {
