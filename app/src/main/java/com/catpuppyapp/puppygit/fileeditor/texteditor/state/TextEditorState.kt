@@ -3,25 +3,23 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
-import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.AnnotatedStringResult
 import com.catpuppyapp.puppygit.constants.IndentChar
-import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.StylesResult
-import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.StylesUpdateRequest
-import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
-import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.scopeInvalid
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
+import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.AnnotatedStringResult
+import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
+import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.StylesResult
+import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.StylesUpdateRequest
+import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.scopeInvalid
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.EditCache
 import com.catpuppyapp.puppygit.utils.FsUtils
@@ -35,7 +33,6 @@ import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.getNextIndentByCurrentStr
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
-import com.catpuppyapp.puppygit.utils.isStartInclusiveEndExclusiveRangeValid
 import com.catpuppyapp.puppygit.utils.parseLongOrDefault
 import com.catpuppyapp.puppygit.utils.tabToSpaces
 import io.github.rosemoe.sora.lang.styling.Span
@@ -572,8 +569,9 @@ class TextEditorState(
         targetIndex: Int,
         textFieldValue: TextFieldValue,
         textChanged: Boolean? = null,
-        requireLock:Boolean = true,
-        updater:((newLinesRange: IntRange, newFields: MutableList<TextFieldState>, newSelectedIndices: MutableList<Int>) -> Unit)? = null
+        requireLock: Boolean = true,
+        closePairIfNeed: Boolean = true,
+        updater: ((newLinesRange: IntRange, newFields: MutableList<TextFieldState>, newSelectedIndices: MutableList<Int>) -> Unit)? = null
     ) {
         val act = suspend p@{
             try {
@@ -616,6 +614,12 @@ class TextEditorState(
 
                 //更新当前行状态为已修改
                 updatedField.apply { updateLineChangeTypeIfNone(LineChangeType.UPDATED) }
+
+                if(closePairIfNeed) {
+                    appendClosePairIfNeed(oldField, updatedField)
+                }else {
+                    updatedField
+                }
             }else {
                 updatedField
             }
@@ -639,7 +643,7 @@ class TextEditorState(
                     updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
 
                     // add new content to current line
-                    updateStylesAfterInsertLine(baseFields, baseStyles, targetIndex, ignoreThis = false, textFieldValue.text, newState)
+                    updateStylesAfterInsertLine(baseFields, baseStyles, targetIndex, ignoreThis = false, newFields[targetIndex].value.text, newState)
                 }
             }
 
@@ -653,6 +657,72 @@ class TextEditorState(
         }else {
             act()
         }
+    }
+
+    /**
+     * append close pair if need
+     *
+     * background: add this feature is not I want actually, but if user input an opened symbol(e.g. "),
+     *     it will take big effect for syntax highlighting, maybe let it very slow,
+     *     so I add this feature to let the pair closed if possible
+     */
+    fun appendClosePairIfNeed(
+        oldField: TextFieldState,
+        newField: TextFieldState,
+    ) : TextFieldState {
+        val oldText = oldField.value.text
+        val newText = newField.value.text
+        // make sure only add a symbol
+        if((newText.length - oldText.length) != 1) {
+            return newField
+        }
+
+        val newSelection = newField.value.selection
+        val cursorAt = newSelection.start
+
+        //if `start` is 0, the left of cursor is nothing, so return
+        if(!newSelection.collapsed || cursorAt <= 0) {
+            return newField
+        }
+
+//        // BEGIN: make sure char before sign is space char
+//        // selection maximum value is length, so need subtract 2 to get the char before user last input
+//        val charBeforeSign = newText.getOrNull(cursorAt - 2)
+//        val charAfterSign = newText.getOrNull(cursorAt)
+//        if((charBeforeSign != null && !charBeforeSign.isWhitespace())
+//            || (charAfterSign != null && !charAfterSign.isWhitespace())
+//        ) {
+//            return newField
+//        }
+//        // END: make sure char before sign is space char
+
+        val openedCharOfPair = newText.get(cursorAt - 1)
+        val closedCharOfPair = resolveClosedOfPair(openedCharOfPair)
+
+        if(closedCharOfPair == null) {
+            return newField
+        }
+
+        // insert close pair into current position
+        val textAddedClosedPair = StringBuilder().let {
+            it.append(newText.substring(0, newSelection.start))
+            it.append(closedCharOfPair)
+            // if start index is length of string, will not throw an exception, but returned empty string
+            it.append(newText.substring(newSelection.start))
+            it.toString()
+        }
+
+        return newField.copy(value = newField.value.copy(text = textAddedClosedPair))
+
+    }
+
+    private fun resolveClosedOfPair(openedCharOfPair: Char) : String? {
+        var closedPair = codeEditor?.myLang?.symbolPairs?.matchBestPairBySingleChar(openedCharOfPair)?.close
+        if(closedPair == null) {
+            closedPair = symbolPairsMap.get(openedCharOfPair.toString())
+        }
+
+        return closedPair
     }
 
     fun updateStyles(
@@ -711,7 +781,11 @@ class TextEditorState(
             if(text.contains(lb)) {
                 splitNewLine(targetIndex, TextFieldValue(text), updater = updater)
             }else {
-                updateField(targetIndex = targetIndex, textFieldValue = TextFieldValue(text), updater = updater)
+                updateField(
+                    targetIndex = targetIndex,
+                    textFieldValue = TextFieldValue(text),
+                    updater = updater
+                )
             }
         }
     }
@@ -2649,3 +2723,22 @@ enum class EditorStateOnChangeCallerFrom {
 
     APPLY_SYNTAX_HIGHLIGHTING,
 }
+
+val symbolPairsMap = mapOf<String, String>(
+
+    "\"" to "\"",
+    "{" to "}",
+    "(" to ")",
+    "[" to "]",
+    "\'" to "\'",
+    "`" to "`",
+    "<" to ">",
+
+    // chinese
+    "“" to "”",
+    "（" to "）",
+    "《" to "》",
+    "〈" to "〉",
+    "‘" to "’",
+    "【" to "】",
+)
