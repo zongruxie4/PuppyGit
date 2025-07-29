@@ -1184,7 +1184,14 @@ fun TextEditor(
                             onFocus = {
                                 doJobThenOffLoading {
                                     try {
-                                        textEditorState.selectField(index)
+                                        val selection = textFieldState.value.selection
+
+                                        textEditorState.selectField(
+                                            targetIndex = index,
+                                            columnStartIndexInclusive = selection.start,
+                                            columnEndIndexExclusive = selection.end,
+                                            option = SelectionOption.CUSTOM
+                                        )
 
                                         //更新最后聚焦行(最后编辑行)
                                         lastScrollEvent.value = ScrollEvent(index)
