@@ -1188,8 +1188,11 @@ fun TextEditor(
 
                                         textEditorState.selectField(
                                             targetIndex = index,
-                                            columnStartIndexInclusive = selection.start,
-                                            columnEndIndexExclusive = selection.end,
+                                            // if max as start, min as end, may cause
+                                            //    selection range invalid,
+                                            //    but I remember it was worked well?
+                                            columnStartIndexInclusive = selection.min,
+                                            columnEndIndexExclusive = selection.max,
                                             option = SelectionOption.CUSTOM
                                         )
 
