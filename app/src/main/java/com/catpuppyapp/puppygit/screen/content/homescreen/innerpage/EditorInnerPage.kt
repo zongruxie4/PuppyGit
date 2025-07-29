@@ -361,45 +361,45 @@ fun EditorInnerPage(
 //    val needAndReadyDoSave = remember{derivedStateOf { isEdited.value && !isSaving.value }}
 //    val needAndReadyDoSave:()->Boolean = { isEdited.value && !isSaving.value }
 
+    // BEGIN: save functions
     val doSaveInCoroutine = {
-//        if(readyForSave.value) {
         //离开页面时，保存文件
         doJobThenOffLoading {
             saveLock.withLock {
                 if(needAndReadyDoSave()) {
                     FileChangeListenerState.ignoreOnce(fileChangeListenerState)
-
                     doSave()
+
+                    undoStack.makeSureNextChangeMustSave()
+
                     MyLog.d(TAG, "#doSaveInCoroutine: file saved")
                 }else{
                     MyLog.w(TAG, "#doSaveInCoroutine: will not save file, cause maybe other job already saved or saving")
                 }
             }
         }
-//        }
     }
 
     val doSaveNoCoroutine = suspend {
-//        if(readyForSave.value) {
             //离开页面时，保存文件
         saveLock.withLock {
             if(needAndReadyDoSave()) {
                 FileChangeListenerState.ignoreOnce(fileChangeListenerState)
 
                 doSave()
+
+                undoStack.makeSureNextChangeMustSave()
+
                 MyLog.d(TAG, "#doSaveNoCoroutine: file saved")
             }else{
                 MyLog.w(TAG, "#doSaveNoCoroutine: will not save file, cause maybe other job already saved or saving")
             }
         }
-
-//        }
     }
 
     //requireShowMsgToUser这个变量是为后台静默自动保存做铺垫
     val doSimpleSafeFastSaveInCoroutine = { requireShowMsgToUser:Boolean, requireBackupContent:Boolean, requireBackupFile:Boolean, contentSnapshotFlag:SnapshotFileFlag, fileSnapshotFlag:SnapshotFileFlag ->
-//        if(readyForSave.value) {  //不做检查，别人有可能存，但万一存失败了呢？他失败了，我发现他在存，于是我也没存，那数据不就丢了？快速检查必然损失准确性。所以不如先拿锁，再做检查
-            //离开页面时，保存文件
+        //离开页面时，保存文件
         doJobThenOffLoading {
             saveLock.withLock {
                 if(needAndReadyDoSave()) {
@@ -433,6 +433,8 @@ fun EditorInnerPage(
                             //更新用于判断是否重载的dto，不然每次修改内容再切到后台保存后再回来都会重载
                             editorPageShowingFileDto.value = FileSimpleDto.genByFile(editorPageShowingFilePath.value.toFuckSafFile(activityContext))
 
+                            undoStack.makeSureNextChangeMustSave()
+
                             MyLog.d(TAG, "#doSimpleSafeFastSaveInCoroutine: file saved")
                             if(requireShowMsgToUser){
                                 Msg.requireShow(activityContext.getString(R.string.file_saved))
@@ -453,8 +455,8 @@ fun EditorInnerPage(
                 }
             }
         }
-//        }
     }
+    // END: save functions
 
 
 

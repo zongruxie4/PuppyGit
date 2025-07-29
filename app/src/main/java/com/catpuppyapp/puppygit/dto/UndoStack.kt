@@ -313,4 +313,8 @@ class UndoStack(
         undoStackPush(state, force)
     }
 
+    fun makeSureNextChangeMustSave() {
+        undoLastSaveAt = 0
+    }
+
 }
