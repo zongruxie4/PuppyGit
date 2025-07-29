@@ -325,34 +325,6 @@ fun DiffScreen(
 //    val itemIdxAtLazyColumn_Map = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "itemIdxAtLazyColumn_Map") { mapOf<String, Int>() }
 
 
-    val getTargetIdxOfLazyColumnByRelativePath = { relativePath:String ->
-        diffableItemList.value.toList().let {
-            var count = 0
-            for(i in it) {
-                if(relativePath == i.relativePath) {
-                    break
-                }
-
-                count += if(i.visible) {
-                    // file header 和 footer 和 用于填充的spacer占的item数
-                    // 1 header + 1 spacers + 1 footer
-                    val fileHeaderAndFooterAndSpacer = 3
-                    // hunks * 2是因为每个hunk都有一个header(diff结果的hunk header)和一个spliter，总共两个items
-                    // 最后减1是因为最后一个hunk不会显示末尾的spliter，因为有文件的footer兜底，所以到最后一个hunk就不需要显示分割线了
-                    val hunksHeadersAndSpliters = i.diffItemSaver.hunks.size * 2 - 1;
-                    // noDiffItemAvailable 只占1个条目，submoduleIsDirty 需要多加1个条目
-                    (hunksHeadersAndSpliters + i.diffItemSaver.allLines + fileHeaderAndFooterAndSpacer) + (if(i.noDiffItemAvailable || i.submoduleIsDirty) 1 else 0)
-                }else {
-                    //只有 file header
-                    1
-                }
-            }
-
-            count
-        }
-    }
-
-
 
     val firstTimeLoad = rememberSaveable { mutableStateOf(true) }
 
@@ -404,14 +376,42 @@ fun DiffScreen(
     val curItemIndex = rememberSaveable { mutableIntStateOf(curItemIndexAtDiffableItemList) }
     val curItemIndexAtDiffableItemList = Unit  // avoid mistake using
 
+
+
+    val getTargetIdxOfLazyColumnByRelativePath = { relativePath:String ->
+        diffableItemList.value.toList().let {
+            var count = 0
+            for((idx, item) in it.withIndex()) {
+                if(relativePath == item.relativePath) {
+                    // update current item index
+                    curItemIndex.intValue = idx
+                    break
+                }
+
+                count += if(item.visible) {
+                    // file header 和 footer 和 用于填充的spacer占的item数
+                    // 1 header + 1 spacers + 1 footer
+                    val fileHeaderAndFooterAndSpacer = 3
+                    // hunks * 2是因为每个hunk都有一个header(diff结果的hunk header)和一个spliter，总共两个items
+                    // 最后减1是因为最后一个hunk不会显示末尾的spliter，因为有文件的footer兜底，所以到最后一个hunk就不需要显示分割线了
+                    val hunksHeadersAndSpliters = item.diffItemSaver.hunks.size * 2 - 1;
+                    // noDiffItemAvailable 只占1个条目，submoduleIsDirty 需要多加1个条目
+                    (hunksHeadersAndSpliters + item.diffItemSaver.allLines + fileHeaderAndFooterAndSpacer) + (if(item.noDiffItemAvailable || item.submoduleIsDirty) 1 else 0)
+                }else {
+                    //只有 file header
+                    1
+                }
+            }
+
+            count
+        }
+    }
+
+
+
     val scrollToCurrentItemHeader = { relativePath:String ->
         val targetIdx = getTargetIdxOfLazyColumnByRelativePath(relativePath)
 
-        curItemIndex.intValue = targetIdx
-
-        if(AppModel.devModeOn) {
-            MyLog.d(TAG, "#scrollToCurrentItemHeader: targetIdx=$targetIdx")
-        }
 
         UIHelper.scrollToItem(scope, listState, targetIdx)
     }
