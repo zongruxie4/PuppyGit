@@ -672,6 +672,8 @@ class TextEditorState(
             newField
         }
     }
+
+
     /**
      * append close pair if need
      * NOTE: make sure call this only when field text changed, else will have unexpected chars inserted
@@ -737,6 +739,8 @@ class TextEditorState(
             }
         }
 
+
+
         // insert close pair into current position
         val textAddedClosedPair = StringBuilder().let {
             it.append(leftTextOfCursor)
@@ -751,21 +755,24 @@ class TextEditorState(
     }
 
     private fun resolveClosedStringOfPair(text: String) : String? {
-        if(text.endsWith("</")) {
-            return ">"
-        }
+        // conflicts with single match char '<'
+//        if(text.endsWith("</")) {
+//            return ">"
+//        }
 
         if(text.endsWith("/*")) {
             return "*/"
         }
 
-        if(text.endsWith("<!--")) {
-            return "-->"
-        }
+        // conflicts with single match char '<'
+//        if(text.endsWith("<!--")) {
+//            return "-->"
+//        }
 
-        if(text.endsWith("<![CDATA[")) {
-            return "]]>"
-        }
+        // conflicts with single match char '<'
+//        if(text.endsWith("<![CDATA[")) {
+//            return "]]>"
+//        }
 
         return null
     }
