@@ -1264,6 +1264,7 @@ fun FileEditor(
                                         onClick = {
                                             doJobThenOffLoading {
                                                 // update focusing line index index
+                                                // `forceAdd` to avoid lost selected status after go to line
                                                 textEditorState.value.selectField(targetIndex = it, forceAdd = true)
 
                                                 // scroll if need

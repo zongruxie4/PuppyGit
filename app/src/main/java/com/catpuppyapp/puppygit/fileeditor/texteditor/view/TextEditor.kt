@@ -1133,16 +1133,14 @@ fun TextEditor(
                             enabled = !textEditorState.isMultipleSelectionMode,
                             fontSize = fontSize.intValue,
                             fontColor = fontColor,
-//                                    bgColor = bgColor,
-//                                    bgColor = Color.Unspecified,
-                            onUpdateText = { newText, textChanged ->
+                            onUpdateText = { newTextFieldValue, textChanged ->
 
                                 doJobThenOffLoading {
                                     try{
 
                                         textEditorState.updateField(
                                             targetIndex = index,
-                                            textFieldValue = newText,
+                                            textFieldValue = newTextFieldValue,
                                             textChanged = textChanged
                                         )
 
