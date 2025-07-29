@@ -693,10 +693,11 @@ class TextEditorState(
 
         // if user deleting or paste text, don't add closed symbol
         val oldText = oldField.value.text
+        val oldSelection = oldField.value.selection
         // if length equals, maybe is select then paste, in that case, return
         // if selection is not collapse, maybe select then type open pair,
         //    e.g. select "abc", then input ", should not return if is that case
-        if(newText.length <= oldText.length && oldField.value.selection.collapsed) {
+        if(newText.length <= oldText.length && oldSelection.collapsed) {
             return newField
         }
 
@@ -739,18 +740,34 @@ class TextEditorState(
             }
         }
 
+        // when reached here, must found pair
+
+        var newSelectionRange = newSelection
+        var midText = closedCharOfPair
+        val rightText = newText.substring(newSelection.start)
+        // user selected text, then input opened symbol, e.g. select abc then input ", expected output "abc"
+        if(!oldSelection.collapsed) {
+            val oldSelectedText = oldText.substring(oldSelection.min, oldSelection.max)
+            midText = oldSelectedText + midText
+
+            // let old selected text keep selected in new text field
+            newSelectionRange = TextRange(start = newSelectionRange.start, end = newSelectionRange.end + oldSelectedText.length)
+            if(oldSelection.start > oldSelection.end) {  // the range was reversed
+                newSelectionRange = TextRange(start = newSelectionRange.end, end = newSelectionRange.start)
+            }
+        }
 
 
         // insert close pair into current position
         val textAddedClosedPair = StringBuilder().let {
             it.append(leftTextOfCursor)
-            it.append(closedCharOfPair)
+            it.append(midText)
             // if start index is length of string, will not throw an exception, but returned empty string
-            it.append(newText.substring(newSelection.start))
+            it.append(rightText)
             it.toString()
         }
 
-        return newField.copy(value = newField.value.copy(text = textAddedClosedPair))
+        return newField.copy(value = newField.value.copy(text = textAddedClosedPair, selection = newSelectionRange))
 
     }
 
