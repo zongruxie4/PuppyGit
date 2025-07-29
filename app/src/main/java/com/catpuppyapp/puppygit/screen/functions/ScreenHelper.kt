@@ -350,10 +350,10 @@ fun getFilesScreenTitle(currentPath:String, activityContext: Context):String {
 }
 
 fun getEditorStateOnChange(
-    editorPageTextEditorState:CustomStateSaveable<TextEditorState>,
-//    lastTextEditorState:CustomStateSaveable<TextEditorState>,
-    undoStack:UndoStack,
-    resetLastCursorAtColumn:()->Unit,
+    editorPageTextEditorState: CustomStateSaveable<TextEditorState>,
+    lastSavedFieldsId: MutableState<String>,
+    undoStack: UndoStack,
+    resetLastCursorAtColumn: () -> Unit,
 ): suspend (newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean, caller: TextEditorState, from: EditorStateOnChangeCallerFrom?) -> Unit {
     return { newState, trueSaveToUndoFalseRedoNullNoSave, clearRedoStack, caller, from ->
         caller.codeEditor?.textEditorStateOnChangeLock?.withLock w@{
@@ -402,7 +402,8 @@ fun getEditorStateOnChange(
                     if(clearRedoStack && !undoStack.redoStackIsEmpty()) {
                         undoStack.clearRedoStackThenPushToUndoStack(lastState, force = true)
                     }else {
-                        undoStack.undoStackPush(lastState)
+                        // if it is saved fields state, force push into stack
+                        undoStack.undoStackPush(lastState, force = lastState.fieldsId == lastSavedFieldsId.value)
                     }
 
                 }else {  // false

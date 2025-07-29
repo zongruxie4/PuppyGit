@@ -370,7 +370,6 @@ fun EditorInnerPage(
                     FileChangeListenerState.ignoreOnce(fileChangeListenerState)
                     doSave()
 
-                    undoStack.makeSureNextChangeMustSave()
 
                     MyLog.d(TAG, "#doSaveInCoroutine: file saved")
                 }else{
@@ -388,7 +387,6 @@ fun EditorInnerPage(
 
                 doSave()
 
-                undoStack.makeSureNextChangeMustSave()
 
                 MyLog.d(TAG, "#doSaveNoCoroutine: file saved")
             }else{
@@ -433,7 +431,6 @@ fun EditorInnerPage(
                             //更新用于判断是否重载的dto，不然每次修改内容再切到后台保存后再回来都会重载
                             editorPageShowingFileDto.value = FileSimpleDto.genByFile(editorPageShowingFilePath.value.toFuckSafFile(activityContext))
 
-                            undoStack.makeSureNextChangeMustSave()
 
                             MyLog.d(TAG, "#doSimpleSafeFastSaveInCoroutine: file saved")
                             if(requireShowMsgToUser){
@@ -2136,7 +2133,7 @@ private suspend fun doInit(
                     focusingLineIdx = null,
                     onChanged = getEditorStateOnChange(
                         editorPageTextEditorState = editorPageTextEditorState,
-//                        lastTextEditorState = lastTextEditorState,
+                        lastSavedFieldsId = lastSavedFieldsId,
                         undoStack = undoStack,
                         resetLastCursorAtColumn = resetLastCursorAtColumn,
                     ),
