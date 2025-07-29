@@ -15,10 +15,10 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
-import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.AnnotatedStringResult
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.StylesResult
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.StylesUpdateRequest
+import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.SyntaxHighlightResult
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.scopeInvalid
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.EditCache
@@ -2197,13 +2197,12 @@ class TextEditorState(
 
             // if has err, just return, then will not save the styles map, so UI will show a normal text without syntax highlighting
             // 如果出错，让它抛，不用存shMap，省内存，页面显示普通文本，没毛病
-            val shMap = mutableMapOf<String, AnnotatedStringResult>()
+            val syntaxHighlightStorage = mutableMapOf<String, AnnotatedString>()
             try {
                 val spansReader = styles.spans.read()
                 fields.forEachIndexedBetter { idx, value ->
                     val spans = spansReader.getSpansOnLine(idx)
-                    val annotatedString = generateAnnotatedStringForLine(value, spans)
-                    shMap.put(value.syntaxHighlightId, AnnotatedStringResult(inDarkTheme, annotatedString))
+                    syntaxHighlightStorage.put(value.syntaxHighlightId, generateAnnotatedStringForLine(value, spans))
                 }
             }catch (e: Exception) {
                 MyLog.e(TAG, "#$funName: apply styles err: fieldsId=$fieldsId, stylesResult=$stylesResult, err=${e.localizedMessage}")
@@ -2215,7 +2214,7 @@ class TextEditorState(
             // save or update styles for current's fieldsId,
             //    usually is save, but if do analyze for same
             //    fields more than once, then it becomes update
-            codeEditor?.putSyntaxHighlight(fieldsId, shMap)
+            codeEditor?.putSyntaxHighlight(fieldsId, SyntaxHighlightResult(inDarkTheme = inDarkTheme, storage = syntaxHighlightStorage))
 
 //                codeEditor?.stylesMap?.put(fieldsId, stylesResult)
 

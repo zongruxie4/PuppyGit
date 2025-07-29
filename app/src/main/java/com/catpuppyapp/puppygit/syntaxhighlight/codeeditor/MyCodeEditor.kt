@@ -84,7 +84,7 @@ class MyCodeEditor(
     //{fieldsId: syntaxHighlightId: AnnotatedString}
     // a fieldsId+syntaxHighlightId can located a AnnotatedString
     // 一个fieldsId+syntaxHighlightId定位一个AnnotatedString
-    val highlightMap: MutableMap<String, Map<String, AnnotatedStringResult>> = ConcurrentMap()
+    val highlightMap: MutableMap<String, SyntaxHighlightResult> = ConcurrentMap()
     //{fieldsId: StylesResult}
     val stylesMap: MutableMap<String, StylesResult> = ConcurrentMap()
 //    val editorStateMap: MutableMap<String, TextEditorState> = ConcurrentMap()
@@ -420,17 +420,18 @@ class MyCodeEditor(
 
 
     // map key String is field's `syntaxHighlightId`, 让highlights map在外部，方便切换语法高亮方案时清空
-    fun putSyntaxHighlight(fieldsId:String, highlights:Map<String, AnnotatedStringResult>) {
+    fun putSyntaxHighlight(fieldsId: String, highlights: SyntaxHighlightResult) {
         highlightMap.put(fieldsId, highlights)
     }
+
     // 这里不用 get 而是用 obtain，是为了避免和默认的getter 名冲突
-    fun obtainSyntaxHighlight(fieldsId:String, textFieldState: TextFieldState) : TextFieldState {
+    fun obtainSyntaxHighlight(fieldsId: String, textFieldState: TextFieldState) : TextFieldState {
         val fieldsStyles = highlightMap.get(fieldsId)
-        val annotatedStringResult = fieldsStyles?.get(textFieldState.syntaxHighlightId)
-        return if(annotatedStringResult == null || annotatedStringResult.inDarkTheme != Theme.inDarkTheme) {
+        val annotatedString = fieldsStyles?.obtainAnnotatedString(textFieldState.syntaxHighlightId)
+        return if(annotatedString == null) {
             textFieldState
         }else {
-            textFieldState.copy(value = textFieldState.value.copy(annotatedString = annotatedStringResult.annotatedString))
+            textFieldState.copy(value = textFieldState.value.copy(annotatedString = annotatedString))
         }
     }
 
@@ -518,10 +519,14 @@ enum class StylesResultFrom {
 }
 
 
-class AnnotatedStringResult(
+class SyntaxHighlightResult(
     val inDarkTheme: Boolean,
-    val annotatedString: AnnotatedString
-)
+    // key is `syntaxHighlightId` of `TextFieldState`
+    val storage: Map<String, AnnotatedString>
+) {
+    // if cached styles matched with app theme, return result; else return null
+    fun obtainAnnotatedString(syntaxHighlightId: String) = if(inDarkTheme == Theme.inDarkTheme) storage.get(syntaxHighlightId) else null;
+}
 
 class StylesUpdateRequest(
     // 很多时候需要对同一个state先执行删除，再执行新增，分别会调用两次增量更新，这时，忽略前面的操作，只响应最后一个
