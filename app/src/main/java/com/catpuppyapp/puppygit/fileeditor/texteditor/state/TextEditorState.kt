@@ -661,6 +661,7 @@ class TextEditorState(
 
     /**
      * append close pair if need
+     * NOTE: make sure call this only when field text changed, else will have unexpected chars inserted
      *
      * background: add this feature is not I want actually, but if user input an opened symbol(e.g. "),
      *     it will take big effect for syntax highlighting, maybe let it very slow,
@@ -670,12 +671,24 @@ class TextEditorState(
         oldField: TextFieldState,
         newField: TextFieldState,
     ) : TextFieldState {
-        val oldText = oldField.value.text
         val newText = newField.value.text
-        // make sure only add a symbol
-        if((newText.length - oldText.length) != 1) {
+        if(newText.isEmpty()) {
             return newField
         }
+
+        // if user deleting or paste text, don't add closed symbol
+        val oldText = oldField.value.text
+        // if length equals, maybe is select then paste, in that case, return
+        // if selection is not collapse, maybe select then type open pair,
+        //    e.g. select "abc", then input ", should not return if is that case
+        if(newText.length <= oldText.length && oldField.value.selection.collapsed) {
+            return newField
+        }
+
+        // make sure only add one symbol
+//        if((newText.length - oldText.length) != 1) {
+//            return newField
+//        }
 
         val newSelection = newField.value.selection
         val cursorAt = newSelection.start
@@ -696,16 +709,24 @@ class TextEditorState(
 //        }
 //        // END: make sure char before sign is space char
 
-        val openedCharOfPair = newText.get(cursorAt - 1)
-        val closedCharOfPair = resolveClosedOfPair(openedCharOfPair)
+        val leftTextOfCursor = newText.substring(0, newSelection.start)
+        // note: must match string first, then char, cause string may include char,
+        //     e.g. "</" included '<', and '<' is a opened char, if reverse order, will never match "</"
+        var closedCharOfPair = resolveClosedStringOfPair(leftTextOfCursor)
+
 
         if(closedCharOfPair == null) {
-            return newField
+            val openedCharOfPair = newText.get(cursorAt - 1)
+            closedCharOfPair = resolveClosedCharOfPair(openedCharOfPair)
+
+            if(closedCharOfPair == null) {
+                return newField
+            }
         }
 
         // insert close pair into current position
         val textAddedClosedPair = StringBuilder().let {
-            it.append(newText.substring(0, newSelection.start))
+            it.append(leftTextOfCursor)
             it.append(closedCharOfPair)
             // if start index is length of string, will not throw an exception, but returned empty string
             it.append(newText.substring(newSelection.start))
@@ -716,7 +737,27 @@ class TextEditorState(
 
     }
 
-    private fun resolveClosedOfPair(openedCharOfPair: Char) : String? {
+    private fun resolveClosedStringOfPair(text: String) : String? {
+        if(text.endsWith("</")) {
+            return ">"
+        }
+
+        if(text.endsWith("/*")) {
+            return "*/"
+        }
+
+        if(text.endsWith("<!--")) {
+            return "-->"
+        }
+
+        if(text.endsWith("<![CDATA[")) {
+            return "]]>"
+        }
+
+        return null
+    }
+
+    private fun resolveClosedCharOfPair(openedCharOfPair: Char) : String? {
         var closedPair = codeEditor?.myLang?.symbolPairs?.matchBestPairBySingleChar(openedCharOfPair)?.close
         if(closedPair == null) {
             closedPair = symbolPairsMap.get(openedCharOfPair.toString())
