@@ -9,6 +9,7 @@
 - fix sometimes ime state lost in editor
 - Editor: hide save button if current content already saved
 - Editor: fix undo stack push logic incorrect in some cases
+- Editor: support insert closed symbol pair after input opened
 - upgrade target sdk to latest android version
 
 
@@ -19,6 +20,7 @@
 - 修复输入法状态在编辑器有时会丢失的bug
 - 编辑器：若当前内容已保存，隐藏保存按钮
 - 编辑器：修复撤销栈在某些场景更新逻辑有误
+- 编辑器：支持插入开符号时，自动追加闭符号
 - 升级sdk为安卓最新版本
 
 
