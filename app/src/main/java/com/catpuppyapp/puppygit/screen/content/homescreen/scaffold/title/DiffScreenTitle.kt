@@ -27,7 +27,6 @@ import kotlinx.coroutines.CoroutineScope
 @Composable
 fun DiffScreenTitle(
     isMultiMode:Boolean,
-    scrollToCurrentItemHeader:(relativePath:String)->Unit,
     listState: LazyListState,
     scope: CoroutineScope,
     request:MutableState<String>,
@@ -41,34 +40,24 @@ fun DiffScreenTitle(
     val relativePath = curItem.relativePath
 
     if(relativePath.isNotEmpty()) {
-//        val haptic = LocalHapticFeedback.current
-        Column(modifier = Modifier.then(
-                //多选模式下点击标题栏返回当前条目顶部
-                if(isMultiMode) {
-                    Modifier.fillMaxWidth().clickable { scrollToCurrentItemHeader(relativePath) }
-                }else{
-                    Modifier
-                }
-            )
-        ) {
-            Column(
-                modifier = Modifier
-                    .combinedClickable(
-                        //double click go to top of list
-                        onDoubleClick = {
-                            defaultTitleDoubleClick(scope, listState, lastPosition)
-                        },
-                    ) {  //onClick
-                        //show details , include file name and path
-
-                        //对于多选模式来说，点击顶栏回到当前条目标题，比显示详情有用，至于显示详情，可通过点击当前条目的标题栏文件名启用
-                        request.value = if(isMultiMode) {
-                            PageRequest.goToCurItem
-                        }else {
-                            PageRequest.showDetails
+        Column(
+            modifier = Modifier.combinedClickable(
+                            //double click go to top of list
+                            onDoubleClick = {
+                                defaultTitleDoubleClick(scope, listState, lastPosition)
+                            },
+                        ) {
+                            // 多选模式下点击标题栏返回当前条目顶部
+                            //对于多选模式来说，点击顶栏回到当前条目标题，比显示详情有用，至于显示详情，可通过点击当前条目的标题栏文件名启用
+                            request.value = if(isMultiMode) {
+                                PageRequest.goToCurItem
+                            }else {
+                                //show details , include file name and path
+                                PageRequest.showDetails
+                            }
                         }
-                    }.widthIn(min=MyStyleKt.Title.clickableTitleMinWidth)
-            ) {
+                        .widthIn(min=MyStyleKt.Title.clickableTitleMinWidth)
+        ) {
 
                 val changeTypeColor = UIHelper.getChangeTypeColor(changeType)
 
@@ -96,7 +85,6 @@ fun DiffScreenTitle(
                     )
                 }
             }
-        }
 
     }else {
         Text(

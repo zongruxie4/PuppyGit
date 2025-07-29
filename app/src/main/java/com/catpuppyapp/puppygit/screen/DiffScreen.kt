@@ -1673,7 +1673,6 @@ fun DiffScreen(
 
                     DiffScreenTitle(
                         isMultiMode = isMultiMode,
-                        scrollToCurrentItemHeader = scrollToCurrentItemHeader,
                         listState = listState,
                         scope = scope,
                         request = pageRequest,
