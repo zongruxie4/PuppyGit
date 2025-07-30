@@ -428,7 +428,7 @@ class MyCodeEditor(
     fun obtainSyntaxHighlight(fieldsId: String, textFieldState: MyTextFieldState) : MyTextFieldState {
         val fieldsStyles = highlightMap.get(fieldsId)
         val annotatedString = fieldsStyles?.obtainAnnotatedString(textFieldState.syntaxHighlightId)
-        return if(annotatedString == null) {
+        return if(annotatedString == null || annotatedString == textFieldState.value.annotatedString) {
             textFieldState
         }else {
             textFieldState.copy(value = textFieldState.value.copy(annotatedString = annotatedString))
