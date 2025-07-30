@@ -570,7 +570,7 @@ class TextEditorState(
         textFieldValue: TextFieldValue,
         textChanged: Boolean? = null,
         requireLock: Boolean = true,
-        closePairIfNeed: Boolean = true,
+        closePairIfNeed: Boolean = SettingsUtil.isEditorAutoCloseSymbolPairEnabled(),
         updater: ((newLinesRange: IntRange, newFields: MutableList<TextFieldState>, newSelectedIndices: MutableList<Int>) -> Unit)? = null
     ) {
         val act = suspend p@{

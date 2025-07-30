@@ -53,6 +53,7 @@ internal fun MyTextField(
 
     val inDarkTheme = Theme.inDarkTheme
 
+    // if the `value` is not equals to `BasicTextField` held value, then the ime state will reset
     BasicTextField(
         value = currentTextField.value,
         readOnly = readOnly,
