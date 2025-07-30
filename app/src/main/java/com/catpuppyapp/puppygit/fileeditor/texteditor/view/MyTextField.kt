@@ -6,7 +6,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,7 +18,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.catpuppyapp.puppygit.dev.bug_Editor_WrongUpdateEditColumnIdx_Fixed
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -40,11 +38,8 @@ internal fun MyTextField(
     onFocus: () -> Unit,
     modifier: Modifier = Modifier,
     needShowCursorHandle:MutableState<Boolean>,
-    searchMode:Boolean,   //因为更新光标有bug，会在搜索时错误更新编辑列导致搜索卡在原地，所以才传这个参数，否则用不到
-    mergeMode:Boolean,
     fontSize:Int,
     fontColor:Color,
-//    bgColor:Color = Color.Unspecified,
 ) {
     val focusRequester = remember { FocusRequester() }
     val textStyle = LocalTextStyle.current
@@ -88,13 +83,15 @@ internal fun MyTextField(
                 //   if has line break, still update, will got unexpected line break,
                 //   for avoid it, just wait the text field list updated it, nothing need to do here
 
-                currentTextField.value = if(textChanged) {
+                val newState = if(textChanged) {
                     newState
                 } else {
                     // copy to avoid lost highlighting styles when text no changes,
                     // if styles still lost, try use `textFieldState.value` as `lastTextField`
                     lastTextField.copy(selection = newState.selection)
                 }
+
+                currentTextField.value = newState
 
                 onUpdateText(newState, textChanged)
             }

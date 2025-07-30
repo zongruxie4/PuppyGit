@@ -1126,8 +1126,6 @@ fun TextEditor(
                             //默认不自动聚焦任何行，不然一切换页面再回来弹出键盘，恶心
 //                                    focusThisLine = false,
 
-                            mergeMode=mergeMode,
-                            searchMode = searchMode.value,
                             needShowCursorHandle = needShowCursorHandle,
                             textFieldState = textEditorState.obtainHighlightedTextField(textFieldState),
                             enabled = !textEditorState.isMultipleSelectionMode,
