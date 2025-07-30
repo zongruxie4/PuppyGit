@@ -1286,7 +1286,7 @@
     <string name="use_system_fonts">Использовать системные шрифты</string>
     <string name="tab_size">Размер табуляции</string>
     <string name="set_tab_size_note"><![CDATA[<=0 использовать настоящий табулятор, иначе заменить табуляцию на пробелы]]></string>
-
+    <string name="symbol_pair">Symbol Pair</string>
 
 
 </resources>

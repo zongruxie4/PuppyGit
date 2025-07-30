@@ -448,11 +448,12 @@ fun EditorPageActions(
 //                    closeMenu()
 
                     //切换
-                    showLineNum.value = !showLineNum.value
+                    val newValue = !showLineNum.value
+                    showLineNum.value = newValue
 
                     //保存
                     SettingsUtil.update {
-                        it.editor.showLineNum = showLineNum.value
+                        it.editor.showLineNum = newValue
                     }
                 }
             )
@@ -487,6 +488,30 @@ fun EditorPageActions(
                     editorPageRequest.value = PageRequest.showSetTabSizeDialog
                 }
             )
+
+
+            val autoCloseSymbolPair = remember { mutableStateOf(SettingsUtil.isEditorAutoCloseSymbolPairEnabled()) }
+            DropdownMenuItem(
+                //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
+                enabled = enableMenuItem,
+                text = { Text(stringResource(R.string.symbol_pair)) },
+                trailingIcon = {
+                    SimpleCheckBox(autoCloseSymbolPair.value)
+                },
+                onClick = {
+//                    closeMenu()
+
+                    //切换
+                    val newValue = !autoCloseSymbolPair.value
+                    autoCloseSymbolPair.value = newValue
+
+                    //保存
+                    SettingsUtil.update {
+                        it.editor.autoCloseSymbolPair = newValue
+                    }
+                }
+            )
+
 
             if(proFeatureEnabled(editorEnableLineSelecteModeFromMenuTestPassed)) {
                 val selectModeOn = editorPageTextEditorState.value.isMultipleSelectionMode

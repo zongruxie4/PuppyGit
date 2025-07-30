@@ -1289,5 +1289,6 @@
     <string name="tab_size">Tab Size</string>
 <!--    if you are translating now, must keep the "CDATA" block, the result should like: <![CDATA[Your Translation at Here]]> -->
     <string name="set_tab_size_note"><![CDATA[<=0 to use real tab, else will replace tab to spaces]]></string>
+    <string name="symbol_pair">Symbol Pair</string>
 
 </resources>
