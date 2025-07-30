@@ -2202,7 +2202,14 @@ class TextEditorState(
                 val spansReader = styles.spans.read()
                 fields.forEachIndexedBetter { idx, value ->
                     val spans = spansReader.getSpansOnLine(idx)
-                    syntaxHighlightStorage.put(value.syntaxHighlightId, generateAnnotatedStringForLine(value, spans))
+                    val annotatedString = generateAnnotatedStringForLine(value, spans).let {
+                        codeEditor?.ifSameReturnCachedAnnotatedString(value.syntaxHighlightId, it) ?: it
+                    }
+
+                    syntaxHighlightStorage.put(
+                        value.syntaxHighlightId,
+                        annotatedString
+                    )
                 }
             }catch (e: Exception) {
                 MyLog.e(TAG, "#$funName: apply styles err: fieldsId=$fieldsId, stylesResult=$stylesResult, err=${e.localizedMessage}")

@@ -89,6 +89,11 @@ class MyCodeEditor(
     val stylesMap: MutableMap<String, StylesResult> = ConcurrentMap()
 //    val editorStateMap: MutableMap<String, TextEditorState> = ConcurrentMap()
 
+    // to avoid create same AnnotatedString for each `MyTextFieldState`,
+    //   so create a cache, if already exist an instance has same value with target field, reuse it
+    // key is `syntaxHighlightId` of `MyTextFieldState`
+    val annotatedStringCachedMap: MutableMap<String, AnnotatedString> = ConcurrentMap()
+
     private val stylesRequestLock = ReentrantLock(true)
     private val analyzeLock = ReentrantLock(true)
 //    val stylesApplyLock = ReentrantLock(true)
@@ -169,6 +174,7 @@ class MyCodeEditor(
         cleanOldLanguage()
         highlightMap.clear()
         stylesMap.clear()
+        annotatedStringCachedMap.clear()
     }
 
 
@@ -416,7 +422,19 @@ class MyCodeEditor(
 
 
 
-
+    fun ifSameReturnCachedAnnotatedString(syntaxHighlightId: String, annotatedStringToCheck: AnnotatedString) : AnnotatedString {
+        return annotatedStringCachedMap.get(syntaxHighlightId).let {
+            if(it == annotatedStringToCheck) {
+                // already cached the value, re-use it
+                it
+            }else {
+                // no cache, cache then return it
+                annotatedStringToCheck.apply {
+                    annotatedStringCachedMap.put(syntaxHighlightId, this)
+                }
+            }
+        }
+    }
 
 
     // map key String is field's `syntaxHighlightId`, 让highlights map在外部，方便切换语法高亮方案时清空
