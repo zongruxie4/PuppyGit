@@ -2808,8 +2808,11 @@ val symbolPairsMap = mapOf<String, String>(
     "(" to ")",
     "[" to "]",
     "\'" to "\'",
-    "`" to "`",
     "<" to ">",
+
+    // sometime expect ```, so disable it
+//    "`" to "`",
+
 
     // chinese
     "“" to "”",
@@ -2818,4 +2821,7 @@ val symbolPairsMap = mapOf<String, String>(
     "〈" to "〉",
     "‘" to "’",
     "【" to "】",
+    "『" to "』",
+    "「" to "」",
+    "［" to "］",
 )
