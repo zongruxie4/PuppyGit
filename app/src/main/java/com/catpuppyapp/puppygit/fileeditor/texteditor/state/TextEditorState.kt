@@ -62,7 +62,7 @@ class TextEditorState(
      the `fieldsId` only about fields, same fieldsId should has same fields
      */
     val fieldsId: String = newId(),
-    val fields: List<TextFieldState> = listOf(),
+    val fields: List<MyTextFieldState> = listOf(),
 
     val selectedIndices: List<Int> = listOf(),
     val isMultipleSelectionMode: Boolean = false,
@@ -91,7 +91,7 @@ class TextEditorState(
 
     fun copy(
         fieldsId: String = this.fieldsId,
-        fields: List<TextFieldState> = this.fields,
+        fields: List<MyTextFieldState> = this.fields,
         selectedIndices: List<Int> = this.selectedIndices,
         isMultipleSelectionMode: Boolean = this.isMultipleSelectionMode,
         focusingLineIdx: Int? = this.focusingLineIdx,
@@ -152,7 +152,7 @@ class TextEditorState(
     fun doSearch(keyword:String, toNext:Boolean, startPos: SearchPos): SearchPosResult {
         val funName="doSearch"
 
-        fun getCurTextOfIndex(idx:Int, list:List<TextFieldState>):String{
+        fun getCurTextOfIndex(idx:Int, list:List<MyTextFieldState>):String{
             return list[idx].value.text.lowercase()
         }
 
@@ -342,7 +342,7 @@ class TextEditorState(
         textFieldValue: TextFieldValue,
 
         // do some changes for new text field states, will call it after new fields added to newFields
-        updater:((newLinesRange: IntRange, newFields: MutableList<TextFieldState>, newSelectedIndices: MutableList<Int>) -> Unit)? = null
+        updater:((newLinesRange: IntRange, newFields: MutableList<MyTextFieldState>, newSelectedIndices: MutableList<Int>) -> Unit)? = null
     ) {
         lock.withLock {
             try {
@@ -388,7 +388,7 @@ class TextEditorState(
             //追加新行（注意：新行从第二行开始，并且，如果新行是从旧行的中间分割的，则新行的第一行可能有旧行的后半段内容）
             val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
             //把新内容转换成text field对象，其类型必然是NEW，因为是新增的
-            val newSplitFieldStates = newSplitFieldValues.map { TextFieldState(value = it, changeType = LineChangeType.NEW) }
+            val newSplitFieldStates = newSplitFieldValues.map { MyTextFieldState(value = it, changeType = LineChangeType.NEW) }
 
             //如果是从头部插入的新行，则需要检查最后一行的内容是否和旧行的内容相同，如果相同，其changeType应维持旧行，否则改成updated，但不管怎么，它都不应该是NEW，因为本质上它是原来的旧行修改而来的
             if(newLineAtOldLineHead) {
@@ -571,7 +571,7 @@ class TextEditorState(
         textChanged: Boolean? = null,
         requireLock: Boolean = true,
         closePairIfNeed: Boolean = SettingsUtil.isEditorAutoCloseSymbolPairEnabled(),
-        updater: ((newLinesRange: IntRange, newFields: MutableList<TextFieldState>, newSelectedIndices: MutableList<Int>) -> Unit)? = null
+        updater: ((newLinesRange: IntRange, newFields: MutableList<MyTextFieldState>, newSelectedIndices: MutableList<Int>) -> Unit)? = null
     ) {
         val act = suspend p@{
             try {
@@ -660,9 +660,9 @@ class TextEditorState(
     }
 
     fun appendClosePairIfNeed(
-        oldField: TextFieldState,
-        newField: TextFieldState,
-    ) : TextFieldState {
+        oldField: MyTextFieldState,
+        newField: MyTextFieldState,
+    ) : MyTextFieldState {
         return try {
             appendClosePairIfNeedNoCatch(oldField, newField)
         }catch (e: Exception) {
@@ -683,9 +683,9 @@ class TextEditorState(
      *     so I add this feature to let the pair closed if possible
      */
     fun appendClosePairIfNeedNoCatch(
-        oldField: TextFieldState,
-        newField: TextFieldState,
-    ) : TextFieldState {
+        oldField: MyTextFieldState,
+        newField: MyTextFieldState,
+    ) : MyTextFieldState {
         val newText = newField.value.text
         if(newText.isEmpty()) {
             return newField
@@ -805,7 +805,7 @@ class TextEditorState(
 
     fun updateStyles(
         nextState: TextEditorState,
-        act: (baseStyles: StylesResult, baseFields: MutableList<TextFieldState>) -> Unit
+        act: (baseStyles: StylesResult, baseFields: MutableList<MyTextFieldState>) -> Unit
     ) {
         if(codeEditor.scopeInvalid()) {
             return
@@ -843,7 +843,7 @@ class TextEditorState(
 
         // unselect all but new lines
         // 选中所有新行并取消选中所有非新行
-        val updater = { newLinesRange: IntRange, newFields: MutableList<TextFieldState>, newSelectedIndices: MutableList<Int> ->
+        val updater = { newLinesRange: IntRange, newFields: MutableList<MyTextFieldState>, newSelectedIndices: MutableList<Int> ->
             newSelectedIndices.clear()
 
             for(i in newFields.indices) {
@@ -1123,7 +1123,7 @@ class TextEditorState(
      * 区域选中有bug，高亮也有bug，就算选中或高亮，后面会自动触发TextField OnValueChange，然后就丢失选中或样式了，不过写代码的时候如果需要选中区域或高亮区域，正常传参就行，这样以后修复bug就不需要再改了
      */
     private fun selectFieldInternal(
-        init_fields:List<TextFieldState>,
+        init_fields:List<MyTextFieldState>,
         init_selectedIndices:List<Int>,
         isMutableFields:Boolean,
         isMutableSelectedIndices:Boolean,
@@ -1382,7 +1382,7 @@ class TextEditorState(
         indices:List<Int>,
 
         // null to use current fields
-        baseFields:List<TextFieldState>? = null,
+        baseFields:List<MyTextFieldState>? = null,
 
         // if deleteSelected, should be true, if is accept ours/theirs call this method, should be false,
         //   if not sure, use true is safe, will only deleted indices lines and clear selected indices;
@@ -1395,7 +1395,7 @@ class TextEditorState(
         }
 
         lock.withLock {
-            val newFields = mutableListOf<TextFieldState>();
+            val newFields = mutableListOf<MyTextFieldState>();
             (baseFields ?: fields).forEachIndexedBetter { index, field ->
                 if(!indices.contains(index)) {
                     // set rest fields `isSelected` to false to avoid show wrong selected state
@@ -1408,7 +1408,7 @@ class TextEditorState(
             // if was focusing a line, update focusing line index to ensure it still focusing a valid line
             var focusingLineIdx = focusingLineIdx
             if(newFields.isEmpty()) {
-                newFields.add(TextFieldState())
+                newFields.add(MyTextFieldState())
 
                 // if was null, no need update the focusing index
                 if(focusingLineIdx != null) {
@@ -1842,7 +1842,7 @@ class TextEditorState(
     }
 
     private fun internalCreate(
-        fields: List<TextFieldState>,
+        fields: List<MyTextFieldState>,
         fieldsId: String,
         selectedIndices: List<Int>,
         isMultipleSelectionMode: Boolean,
@@ -1899,9 +1899,9 @@ class TextEditorState(
     suspend fun setChangeTypeToFields(
         indices: List<Int>,
         changeType: LineChangeType,
-        baseFields:List<TextFieldState>?,
+        baseFields:List<MyTextFieldState>?,
         applyNewSate:Boolean,
-    ):List<TextFieldState>? {
+    ):List<MyTextFieldState>? {
         if(indices.isEmpty()) return null;
 
         lock.withLock {
@@ -1935,7 +1935,7 @@ class TextEditorState(
     /**
      * @return true means handled, false otherwise
      */
-    suspend fun handleTabIndent(idx:Int, f:TextFieldState, tabIndentSpacesCount:Int, trueTabFalseShiftTab:Boolean):Boolean {
+    suspend fun handleTabIndent(idx:Int, f:MyTextFieldState, tabIndentSpacesCount:Int, trueTabFalseShiftTab:Boolean):Boolean {
         return lock.withLock {
             val handled =  try {
                 val handleTabRet = if(trueTabFalseShiftTab) {
@@ -1972,7 +1972,7 @@ class TextEditorState(
         }
     }
 
-    private fun doTab(tabIndentSpacesCount: Int, f: TextFieldState): HandleTabRet {
+    private fun doTab(tabIndentSpacesCount: Int, f: MyTextFieldState): HandleTabRet {
         val fv = f.value
 //        val cursorAt = if (fv.selection.collapsed) fv.selection.start else fv.selection.min
         // if select anything, move the whole line
@@ -1994,7 +1994,7 @@ class TextEditorState(
      */
     private fun doShiftTab(
         tabIndentSpacesCount: Int,
-        f: TextFieldState
+        f: MyTextFieldState
     ): HandleTabRet {
         val fv = f.value
         // if empty or not starts with tab or space, return
@@ -2081,7 +2081,7 @@ class TextEditorState(
     ) {
         lock.withLock {
             val fields = fields
-            val newFields = mutableListOf<TextFieldState>()
+            val newFields = mutableListOf<MyTextFieldState>()
 //            val targetIndices = targetIndices.toMutableList()
             val targetIndices = targetIndices
 
@@ -2258,7 +2258,7 @@ class TextEditorState(
     }
 
 
-    private fun generateAnnotatedStringForLine(textFieldState: TextFieldState, spans:List<Span>): AnnotatedString {
+    private fun generateAnnotatedStringForLine(textFieldState: MyTextFieldState, spans:List<Span>): AnnotatedString {
         val rawText = textFieldState.value.text
 
         return buildAnnotatedString {
@@ -2306,7 +2306,7 @@ class TextEditorState(
 //        }
     }
 
-    fun obtainHighlightedTextField(raw: TextFieldState): TextFieldState {
+    fun obtainHighlightedTextField(raw: MyTextFieldState): MyTextFieldState {
         if(codeEditor.scopeInvalid()) {
             return raw
         }
@@ -2322,7 +2322,7 @@ class TextEditorState(
 
     // only remove line break
     private fun updateStylesAfterDeletedLineBreak(
-        baseFields: MutableList<TextFieldState>,
+        baseFields: MutableList<MyTextFieldState>,
         stylesResult: StylesResult,
         startLineIndex: Int,
         ignoreThis: Boolean,
@@ -2402,7 +2402,7 @@ class TextEditorState(
     //添加一行：和删除一样
     //index是包含\n的
     private fun updateStylesAfterDeleteLine(
-        baseFields: MutableList<TextFieldState>,
+        baseFields: MutableList<MyTextFieldState>,
         stylesResult: StylesResult,
         startLineIndex: Int,
         ignoreThis: Boolean,
@@ -2451,7 +2451,7 @@ class TextEditorState(
         // it just emulate real action
         // for later condition check
         val deletedContent = if(keepLine) {  // only clear field but keep the line
-            baseFields.set(startLineIndex, TextFieldState(TextFieldValue("")))
+            baseFields.set(startLineIndex, MyTextFieldState(TextFieldValue("")))
             ""
         } else {  // remove the line
             baseFields.removeAt(endLineIndex).value.text
@@ -2483,7 +2483,7 @@ class TextEditorState(
     }
 
     private fun updateStylesAfterInsertLine(
-        baseFields: MutableList<TextFieldState>,
+        baseFields: MutableList<MyTextFieldState>,
         stylesResult: StylesResult,
         startLineIndex: Int,
         ignoreThis: Boolean,
@@ -2517,9 +2517,9 @@ class TextEditorState(
         var insertIndex = startLineIndex
         insertedContent.lines().forEachIndexed { idx, it ->
             if(idx == 0) {
-                baseFields.set(startLineIndex, TextFieldState(value = TextFieldValue(it)))
+                baseFields.set(startLineIndex, MyTextFieldState(value = TextFieldValue(it)))
             }else {
-                baseFields.add(++insertIndex, TextFieldState(value = TextFieldValue(it)))
+                baseFields.add(++insertIndex, MyTextFieldState(value = TextFieldValue(it)))
             }
         }
 
@@ -2555,13 +2555,13 @@ class TextEditorState(
         }
     }
 
-    private fun reAnalyzeBetterThanIncremental(baseFields: List<TextFieldState>, ignoreThis: Boolean) : Boolean {
+    private fun reAnalyzeBetterThanIncremental(baseFields: List<MyTextFieldState>, ignoreThis: Boolean) : Boolean {
         return ignoreThis.not() && (baseFields.isEmpty() || (baseFields.size == 1 && baseFields[0].value.text.isBlank()))
     }
 
     // lineIdx is index(since 0), not line number(since 1)
     fun getIndexOfText(
-        baseFields: List<TextFieldState>,
+        baseFields: List<MyTextFieldState>,
         lineIdx: Int,
         trueStartFalseEnd: Boolean
     ):Int {
@@ -2592,7 +2592,7 @@ class TextEditorState(
 
     suspend fun moveCursor(
         trueToLeftFalseRight: Boolean,
-        textFieldState: TextFieldState,
+        textFieldState: MyTextFieldState,
         targetFieldIndex: Int,
         headOrTail: Boolean
     ) {
@@ -2673,7 +2673,7 @@ class TextEditorState(
      */
     suspend fun paste(
         text: String,
-        afterReplacedAllThenDoAct: ((newFields: List<TextFieldState>) -> Unit)? = null
+        afterReplacedAllThenDoAct: ((newFields: List<MyTextFieldState>) -> Unit)? = null
     ) {
         if(isSelectedAllFields()) {  // replace all
             lock.withLock {
@@ -2727,10 +2727,10 @@ class TextEditorState(
 
 
 private fun createInitTextFieldStates(list: List<String>) = if(list.isEmpty()) {
-    listOf(TextFieldState())
+    listOf(MyTextFieldState())
 }else {
     list.map { s ->
-        TextFieldState(
+        MyTextFieldState(
             value = TextFieldValue(s),
         )
     }
@@ -2782,7 +2782,7 @@ enum class FindDirection {
 
 // return type of `selectFieldInternal`
 private class SelectFieldInternalRet(
-    val fields: List<TextFieldState>,
+    val fields: List<MyTextFieldState>,
     val selectedIndices: List<Int>,
     val focusingLineIdx:Int?,
 )

@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.MyTextFieldState
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
 import com.catpuppyapp.puppygit.ui.theme.Theme
 
@@ -31,7 +31,7 @@ internal fun MyTextField(
     scrollIfInvisible:()->Unit,
     readOnly:Boolean,
     focusThisLine:Boolean,
-    textFieldState: TextFieldState,
+    textFieldState: MyTextFieldState,
     enabled: Boolean,
     onUpdateText: (TextFieldValue, textChanged: Boolean?) -> Unit,
     onContainNewLine: (TextFieldValue) -> Unit,

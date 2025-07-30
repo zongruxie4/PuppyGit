@@ -73,7 +73,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.FindDirection
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.LineChangeType
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.SelectionOption
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.MyTextFieldState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -149,7 +149,7 @@ typealias DecorationBoxComposable = @Composable (
     index: Int,
     size: Int,  // list.size
     isSelected: Boolean,
-    currentField: TextFieldState,
+    currentField: MyTextFieldState,
     focusingIdx:Int,
     isMultiSelectionMode: Boolean,
     innerTextField: @Composable (modifier: Modifier) -> Unit
@@ -882,7 +882,7 @@ fun TextEditor(
 
             doJobThenOffLoading {
                 try {
-                    var baseFields:List<TextFieldState>? = null
+                    var baseFields:List<MyTextFieldState>? = null
 
                     if(acceptOursState.value) {
                         baseFields = textEditorState.setChangeTypeToFields(

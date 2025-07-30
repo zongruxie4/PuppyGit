@@ -93,7 +93,7 @@ import com.catpuppyapp.puppygit.compose.SwipeIcon
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.MyTextFieldState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.lineNumOffsetForGoToEditor
@@ -1400,19 +1400,19 @@ private fun Modifier.changeTypeIndicator(
 
 // BEGIN: text field keyboard event handler
 
-private fun goHomePressed(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+private fun goHomePressed(event: KeyEvent, textFieldState: MyTextFieldState, invoke: () -> Unit): Boolean {
     return onPreviewHomeOrEndKeyEvent(event, textFieldState, trueHomeFalseEnd = true, invoke)
 }
 
-private fun goEndPressed(event: KeyEvent, textFieldState: TextFieldState, invoke: () -> Unit): Boolean {
+private fun goEndPressed(event: KeyEvent, textFieldState: MyTextFieldState, invoke: () -> Unit): Boolean {
     return onPreviewHomeOrEndKeyEvent(event, textFieldState, trueHomeFalseEnd = false, invoke)
 }
 
-private fun goLeftPressed(event: KeyEvent, textFieldState: TextFieldState, invoke: (lineSwitched: Boolean) -> Unit): Boolean {
+private fun goLeftPressed(event: KeyEvent, textFieldState: MyTextFieldState, invoke: (lineSwitched: Boolean) -> Unit): Boolean {
     return onPreviewLeftOrRightKeyEvent(event, textFieldState, trueLeftFalseRight = true, invoke)
 }
 
-private fun goRightPressed(event: KeyEvent, textFieldState: TextFieldState, invoke: (lineSwitched: Boolean) -> Unit): Boolean {
+private fun goRightPressed(event: KeyEvent, textFieldState: MyTextFieldState, invoke: (lineSwitched: Boolean) -> Unit): Boolean {
     return onPreviewLeftOrRightKeyEvent(event, textFieldState, trueLeftFalseRight = false, invoke)
 }
 
@@ -1479,7 +1479,7 @@ private fun onPreviewUpOrDownKeyEvent(
 
 private fun onPreviewLeftOrRightKeyEvent(
     event: KeyEvent,
-    field: TextFieldState,
+    field: MyTextFieldState,
     trueLeftFalseRight: Boolean,
     invoke: (lineSwitched: Boolean) -> Unit,
 ): Boolean {
@@ -1497,7 +1497,7 @@ private fun onPreviewLeftOrRightKeyEvent(
 
 private fun onPreviewHomeOrEndKeyEvent(
     event: KeyEvent,
-    field: TextFieldState,
+    field: MyTextFieldState,
     trueHomeFalseEnd: Boolean,
     invoke: () -> Unit,
 ): Boolean {

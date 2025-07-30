@@ -15,7 +15,7 @@ private val lineChangeType_UPDATED = Color(0xFF03A9F4)
 
 //这个stable注解，我看了下应该符合条件，若更新状态出问题，可取消注解试试
 @Stable
-class TextFieldState(
+class MyTextFieldState(
 
 
     val value: TextFieldValue = TextFieldValue(),
@@ -30,7 +30,7 @@ class TextFieldState(
         value: TextFieldValue = this.value,
         changeType: LineChangeType = this.changeType,
 
-    ) = TextFieldState(
+    ) = MyTextFieldState(
         value = value,
         changeType = changeType,
         syntaxHighlightId = if(value.text != this.value.text || this.syntaxHighlightId.isBlank()) getRandomUUID() else this.syntaxHighlightId,
@@ -48,7 +48,7 @@ class TextFieldState(
         // or `other !is TextFieldState`
         if (javaClass != other?.javaClass) return false
 
-        other as TextFieldState
+        other as MyTextFieldState
 
         if (syntaxHighlightId != other.syntaxHighlightId) return false
         if (changeType != other.changeType) return false
