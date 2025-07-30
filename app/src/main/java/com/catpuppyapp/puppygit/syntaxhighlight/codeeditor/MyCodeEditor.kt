@@ -429,8 +429,8 @@ class MyCodeEditor(
                 it
             }else {
                 // no cache, cache then return it
-                annotatedStringToCheck.apply {
-                    annotatedStringCachedMap.put(syntaxHighlightId, this)
+                annotatedStringToCheck.also {
+                    annotatedStringCachedMap.put(syntaxHighlightId, it)
                 }
             }
         }
