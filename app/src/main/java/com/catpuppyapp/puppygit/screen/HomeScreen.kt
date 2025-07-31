@@ -1277,15 +1277,7 @@ fun HomeScreen(
                         listLastPosition = editorPreviewLastScrollPosition,
                         showFab = editorPreviewPageScrolled
                     )
-                } else if(currentHomeScreen.intValue == Cons.selectedItem_Editor
-                    && (editorIsPreviewModeOn.value.not()
-                            && editorPageShowingFileIsReady.value
-                            && editorPageShowingFilePath.value.isNotBlank()
-                            && editorPageIsEdited.value
-                            && !editorPageIsSaving.value
-                            && !editorReadOnlyMode.value
-                            && lastSavedFieldsId.value != editorPageTextEditorState.value.fieldsId
-                    )) {
+                } else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && editorNeedSave()) {
                     SmallFab(modifier = MyStyleKt.Fab.getFabModifierForEditor(editorPageTextEditorState.value.isMultipleSelectionMode, UIHelper.isPortrait()),
                         icon = Icons.Filled.Save, iconDesc = stringResource(id = R.string.save)
                     ) {

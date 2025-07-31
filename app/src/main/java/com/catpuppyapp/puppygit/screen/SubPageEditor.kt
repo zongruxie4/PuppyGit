@@ -482,13 +482,7 @@ fun SubPageEditor(
                     listLastPosition = editorPreviewLastScrollPosition,
                     showFab = editorPreviewPageScrolled
                 )
-            }else if(editorPageShowingFileIsReady.value
-                && editorPageShowingFilePath.value.isNotBlank()
-                && editorPageIsEdited.value
-                && !editorPageIsSaving.value
-                && !editorReadOnlyMode.value
-                && lastSavedFieldsId.value != editorPageTextEditorState.value.fieldsId
-            ) {
+            }else if(editorNeedSave()) {
                 SmallFab(
                     modifier= MyStyleKt.Fab.getFabModifierForEditor(editorPageTextEditorState.value.isMultipleSelectionMode, UIHelper.isPortrait()),
                     icon = Icons.Filled.Save, iconDesc = stringResource(id = R.string.save)
