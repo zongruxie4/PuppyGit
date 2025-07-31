@@ -386,7 +386,7 @@ class TextEditorState(
             }
 
             //追加新行（注意：新行从第二行开始，并且，如果新行是从旧行的中间分割的，则新行的第一行可能有旧行的后半段内容）
-            val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
+            val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.size)
             //把新内容转换成text field对象，其类型必然是NEW，因为是新增的
             val newSplitFieldStates = newSplitFieldValues.map { MyTextFieldState(value = it, changeType = LineChangeType.NEW) }
 
@@ -407,7 +407,7 @@ class TextEditorState(
 
 
             //追加行后的目标索引，实际对应的是 newSplitFieldValues 最后一个元素在当前文件的所有行中的位置
-            val lastNewSplitFieldIndex = targetIndex + newSplitFieldValues.count()
+            val lastNewSplitFieldIndex = targetIndex + newSplitFieldValues.size
 
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
 //            val newSelectedIndices = selectedIndices.toMutableList()
@@ -891,7 +891,7 @@ class TextEditorState(
 
             val concatText = StringBuilder(toText.length + fromText.length).append(toText).append(fromText).toString()
 
-            val concatSelection = TextRange(toText.count())  // end of `toText`
+            val concatSelection = TextRange(toText.length)  // end of `toText`
             val concatTextFieldValue = TextFieldValue(text = concatText, selection = concatSelection)
             val toTextFieldState = newFields[targetIndex - 1].copy(value = concatTextFieldValue).apply {
                 val newChangeType = if(toText.isEmpty() && fromText.isNotEmpty()) {
