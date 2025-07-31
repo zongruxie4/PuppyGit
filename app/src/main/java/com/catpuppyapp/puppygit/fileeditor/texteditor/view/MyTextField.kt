@@ -86,9 +86,9 @@ internal fun MyTextField(
 
                 val newState = if(textChanged) {
 //                  // copy style for new text if possible,
-                    //   this will use more memory and cpu, but can be reduce syntax highlighting flicker
+                    //   this will use more memory and cpu, but can be reduce syntax highlighting flicker(only for current editing line)
                     //   usually the effect is acceptable, except when users try edit a huge file or huge line, or both
-                    // 为新文本拷贝旧文本的样式，这样可减缓甚至完全避免增量更新样式时闪烁，但是，会耗费更多内存和cpu，为了达到效果，
+                    // 为新文本拷贝旧文本的样式，这样可减缓甚至完全避免增量更新样式时闪烁（仅针对当前编辑行，其他行没辙，可能还是会闪），但是，会耗费更多内存和cpu，为了达到效果，
                     //   带来的后果一般可接受，除非用户编辑大文件或包含很多文本的行，我发现中文比英语更简洁，两行表达的内容超过了英语的3行，哈哈
                     val newTextLen = newState.text.length
                     // 这是 `TextRange`，不是`IntRange`，左闭右开，所以`end`是可以等于`text.length`的，`SpanStyle`是不可变的，所以不用深拷贝
