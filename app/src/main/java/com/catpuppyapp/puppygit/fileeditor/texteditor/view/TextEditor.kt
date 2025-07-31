@@ -652,10 +652,10 @@ fun TextEditor(
                             .onPreviewKeyEvent { event ->
                                 if (event.type != KeyEventType.KeyDown) {
                                     false
-                                } else if(event.key == Key.Enter) {
+                                } else if (event.key == Key.Enter) {
                                     onOK()
                                     true
-                                }else {
+                                } else {
                                     false
                                 }
                             }
@@ -1179,19 +1179,12 @@ fun TextEditor(
                                 }
 
                             },
-                            onFocus = { newTextFieldState: TextFieldValue ->
+                            onFocus = { newTextFieldValue: TextFieldValue ->
                                 doJobThenOffLoading {
                                     try {
-                                        val selection = textFieldState.value.selection
-
-                                        textEditorState.selectField(
+                                        textEditorState.selectFieldValue(
                                             targetIndex = index,
-                                            // if max as start, min as end, may cause
-                                            //    selection range invalid,
-                                            //    but I remember it was worked well?
-                                            columnStartIndexInclusive = selection.min,
-                                            columnEndIndexExclusive = selection.max,
-                                            option = SelectionOption.CUSTOM
+                                            textFieldValue = newTextFieldValue
                                         )
 
                                         //更新最后聚焦行(最后编辑行)

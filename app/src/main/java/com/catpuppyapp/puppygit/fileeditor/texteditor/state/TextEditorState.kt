@@ -957,6 +957,9 @@ class TextEditorState(
         requireSelectLine: Boolean=true, // if true, will add targetIndex into selected indices, set false if you don't want to select this line(e.g. when you just want go to line)
         requireLock: Boolean = true,
         forceAdd: Boolean = false,
+
+        // if provide, will select field and update value to it
+        provideTextFieldValue: TextFieldValue? = null,
     ) {
         val act = suspend {
 //            val newFields = fields.toMutableList()
@@ -975,6 +978,7 @@ class TextEditorState(
                 columnEndIndexExclusive=columnEndIndexExclusive,
                 requireSelectLine = requireSelectLine,
                 forceAdd = forceAdd,
+                provideTextFieldValue = provideTextFieldValue,
             )
 
             val newState = internalCreate(
@@ -1113,13 +1117,6 @@ class TextEditorState(
     }
 
 
-    private fun getCopyTargetValue(
-        targetValue: TextFieldValue,
-        selection:TextRange,
-    ):TextFieldValue {
-        return targetValue.copy(selection = selection)
-    }
-
     /**
      * 区域选中有bug，高亮也有bug，就算选中或高亮，后面会自动触发TextField OnValueChange，然后就丢失选中或样式了，不过写代码的时候如果需要选中区域或高亮区域，正常传参就行，这样以后修复bug就不需要再改了
      */
@@ -1136,6 +1133,7 @@ class TextEditorState(
         columnStartIndexInclusive:Int=0,
         columnEndIndexExclusive:Int=columnStartIndexInclusive,
         requireSelectLine:Boolean = true,
+        provideTextFieldValue: TextFieldValue? = null,
 
     ):SelectFieldInternalRet {
         try {
@@ -1159,19 +1157,23 @@ class TextEditorState(
 
 
 
-        val target = ret_fields[targetIndex]
-        val textLenOfTarget = target.value.text.length
-        val columnStartIndexInclusive = columnStartIndexInclusive.coerceAtMost(textLenOfTarget).coerceAtLeast(0)
-        val columnEndIndexExclusive = columnEndIndexExclusive.coerceAtMost(textLenOfTarget).coerceAtLeast(0)
+        val targetInFieldList = ret_fields[targetIndex]
 
-        val selection = when (option) {
-            SelectionOption.CUSTOM -> {
-                TextRange(columnStartIndexInclusive, columnEndIndexExclusive)
-            }
-            SelectionOption.NONE -> target.value.selection
-            SelectionOption.FIRST_POSITION -> TextRange.Zero
-            SelectionOption.LAST_POSITION -> {
-                TextRange(textLenOfTarget)
+
+        val selection = provideTextFieldValue?.selection ?: run {
+            val textLenOfTarget = targetInFieldList.value.text.length
+            val columnStartIndexInclusive = columnStartIndexInclusive.coerceAtMost(textLenOfTarget).coerceAtLeast(0)
+            val columnEndIndexExclusive = columnEndIndexExclusive.coerceAtMost(textLenOfTarget).coerceAtLeast(0)
+
+            when (option) {
+                SelectionOption.CUSTOM -> {
+                    TextRange(columnStartIndexInclusive, columnEndIndexExclusive)
+                }
+                SelectionOption.NONE -> targetInFieldList.value.selection
+                SelectionOption.FIRST_POSITION -> TextRange.Zero
+                SelectionOption.LAST_POSITION -> {
+                    TextRange(textLenOfTarget)
+                }
             }
         }
 
@@ -1222,20 +1224,24 @@ class TextEditorState(
 
         }else {  //非多选模式，定位光标到对应行，并选中行，或者定位到同一行但选中不同范围，原本是想用来高亮查找的关键字的，但有点毛病，目前实现成仅将光标定位到关键字前面，但无法选中范围，不过我忘了现在定位到关键字前面是不是依靠的这段代码了
             //更新行选中范围并focus行
-            val selectionRangeChanged = selection != target.value.selection
-            if(selectionRangeChanged) {
+
+            // use provided value
+            if(provideTextFieldValue != null) {
+                if(provideTextFieldValue != targetInFieldList.value) {
+                    ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
+                    ret_fields[targetIndex] = targetInFieldList.copy(
+                        value = provideTextFieldValue
+                    )
+                }
+            }else { // use value in list, but update the selection range if needs
                 ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
-
-                //这里不要判断 selection != target.value.selection ，因为即使选择范围没变，也有可能请求高亮关键字，还是需要更新targetIndex对应的值
-                ret_fields[targetIndex] = target.copy(
-                    value = getCopyTargetValue(
-                        targetValue = target.value,
-                        selection = selection,
-                ))
+                val selectionRangeChanged = selection != targetInFieldList.value.selection
+                if(selectionRangeChanged) {
+                    ret_fields[targetIndex] = targetInFieldList.copy(
+                        value = targetInFieldList.value.copy(selection = selection)
+                    )
+                }
             }
-
-            ret_focusingLineIdx = targetIndex
-
         }
 
 
@@ -2717,6 +2723,13 @@ class TextEditorState(
     fun isSelectedAllFields() = isMultipleSelectionMode && selectedIndices.size == fields.size
 
     fun isFieldSelected(idx: Int) = selectedIndices.contains(idx)
+
+    suspend fun selectFieldValue(
+        targetIndex: Int,
+        textFieldValue: TextFieldValue,
+    ) {
+        selectField(targetIndex, provideTextFieldValue = textFieldValue)
+    }
 
     companion object {
         fun linesToFields(lines: List<String>) = createInitTextFieldStates(lines)
