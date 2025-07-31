@@ -371,14 +371,14 @@ fun getEditorStateOnChange(
                     return@w
                 }
 
-                // first copy for refresh view
-                // even fieldsId are the same, other fields maybe are not same, so, we should copy latest state
-                // 第一个拷贝是为了避免fields以外的状态丢失，例如：正在分析语法高亮样式，开启选中模式，由于没修改文本，所以fieldsId没变，
-                //   样式分析完毕，执行到这里，如果应用调用onChanged那个实例传来的newState，选中模式等其他非fields字段就会变成调用者的而不是最新的状态的值
-                if(latestState.focusingLineIdx.let { it == null || it >= 0 }) latestState.copy() else newState.copy(focusingLineIdx = latestState.focusingLineIdx)
+                // just copy a new state to let view refresh, then we can see the syntax highlighting
+                latestState.copy()
             }else {
                 //如果新state的focusingLineIdx为负数，使用上个state的focusingLineIdx，这样是为了避免 updateField 更新索引，不然会和 selectField 更新索引冲突，有时会定位错
 
+                // 20250731: `onFocus` in `TextEditor` now disabled, and move focusingLineIdx to `TextEditorState.updateField()`,
+                //   so the else will never reach, but need more tests, so keep the code for now
+                // 20250731: `onFocus` in `TextEditor` 已禁用，并且将更新索引改到了`TextEditorState.updateField()`里，所以else语句永远不会被执行了，但需要更多测试，所以暂时保留代码
                 if(newState.focusingLineIdx.let { it == null || it >= 0 }) newState else newState.copy(focusingLineIdx = editorPageTextEditorState.value.focusingLineIdx)
 
             }
