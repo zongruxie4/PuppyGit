@@ -35,7 +35,7 @@ internal fun MyTextField(
     enabled: Boolean,
     onUpdateText: (TextFieldValue, textChanged: Boolean?) -> Unit,
     onContainNewLine: (TextFieldValue) -> Unit,
-    onFocus: () -> Unit,
+    onFocus: (TextFieldValue) -> Unit,
     modifier: Modifier = Modifier,
 //    needShowCursorHandle:MutableState<Boolean>,
     fontSize:Int,
@@ -143,7 +143,7 @@ internal fun MyTextField(
             .focusRequester(focusRequester)
             .onFocusChanged {
                 if (it.isFocused) {
-                    onFocus()
+                    onFocus(currentTextField.value)
                 }
             }
     )
