@@ -1919,7 +1919,7 @@ fun BranchListScreen(
 
             }else {
                 //根据关键字过滤条目
-                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val keyword = filterKeyword.value.text  //关键字
                 val enableFilter = filterModeActuallyEnabled(filterOn = filterModeOn.value, keyword = keyword)
 
                 val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -1936,20 +1936,20 @@ fun BranchListScreen(
                     list = list.value,
                     resetSearchVars = resetSearchVars,
                     match = { idx: Int, it: BranchNameAndTypeDto ->
-                        it.fullName.lowercase().contains(keyword)
-                                || it.oidStr.lowercase().contains(keyword)
-                                || it.symbolicTargetFullName.lowercase().contains(keyword)
-                                || it.getUpstreamShortName(activityContext).lowercase().contains(keyword)
+                        it.fullName.contains(keyword, ignoreCase = true)
+                                || it.oidStr.contains(keyword, ignoreCase = true)
+                                || it.symbolicTargetFullName.contains(keyword, ignoreCase = true)
+                                || it.getUpstreamShortName(activityContext).contains(keyword, ignoreCase = true)
 
                                 //如果加这个，一搜"remote"会把关联了远程分支的本地分支也显示出来，因为这些分支的上游完整名是 "refs/remotes/....."，其中包含了关键字"remote"
-                                // || it.getUpstreamFullName(activityContext).lowercase().contains(k)
+                                // || it.getUpstreamFullName(activityContext).contains(k, ignoreCase = true)
 
-                                || it.getOther(activityContext, false).lowercase().contains(keyword)
-                                || it.getOther(activityContext, true).lowercase().contains(keyword)
-                                || it.getTypeString(activityContext, false).lowercase().contains(keyword)
-                                || it.getTypeString(activityContext, true).lowercase().contains(keyword)
-                                || it.getAheadBehind(activityContext, false).lowercase().contains(keyword)
-                                || it.getAheadBehind(activityContext, true).lowercase().contains(keyword)
+                                || it.getOther(activityContext, false).contains(keyword, ignoreCase = true)
+                                || it.getOther(activityContext, true).contains(keyword, ignoreCase = true)
+                                || it.getTypeString(activityContext, false).contains(keyword, ignoreCase = true)
+                                || it.getTypeString(activityContext, true).contains(keyword, ignoreCase = true)
+                                || it.getAheadBehind(activityContext, false).contains(keyword, ignoreCase = true)
+                                || it.getAheadBehind(activityContext, true).contains(keyword, ignoreCase = true)
                     }
                 )
 

@@ -32,8 +32,9 @@ object MdUtil {
     }
 
     fun maybeIsMarkdownFile(name: String): Boolean {
-        val name = name.lowercase()
-        return RegexUtil.matchWildcard(name, "*.md") || RegexUtil.matchWildcard(name, "*.markdown")
+        return RegexUtil.matchWildcard(name, "*.md")
+                || RegexUtil.matchWildcard(name, "*.mdown")
+                || RegexUtil.matchWildcard(name, "*.markdown")
     }
 
 }

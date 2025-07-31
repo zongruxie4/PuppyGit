@@ -81,7 +81,7 @@ fun FileDetailList(
 
     //有仓库
     //根据关键字过滤条目
-    val keyword = filterKeyword.value.text.lowercase()  //关键字
+    val keyword = filterKeyword.value.text  //关键字
     val enableFilter = filterModeActuallyEnabled(filterOn.value, keyword)
 
     val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -98,11 +98,11 @@ fun FileDetailList(
         list = list,
         resetSearchVars = resetSearchVars,
         match = { idx:Int, it: FileDetail ->
-            it.file.name.lowercase().let {
-                it.contains(keyword) || RegexUtil.matchWildcard(it, keyword)
-            } || it.file.path.ioPath.lowercase().contains(keyword)
-                    || it.cachedAppRelatedPath().lowercase().contains(keyword)
-                    || it.shortContent.lowercase().contains(keyword)
+            it.file.name.let {
+                it.contains(keyword, ignoreCase = true) || RegexUtil.matchWildcard(it, keyword)
+            } || it.file.path.ioPath.contains(keyword, ignoreCase = true)
+                    || it.cachedAppRelatedPath().contains(keyword, ignoreCase = true)
+                    || it.shortContent.contains(keyword, ignoreCase = true)
         }
     )
 

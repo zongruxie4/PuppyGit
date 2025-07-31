@@ -30,7 +30,7 @@ object RegexUtil {
      *     }
      *
      */
-    fun matchWildcard(target: String, keyword: String): Boolean {
+    fun matchWildcard(target: String, keyword: String, ignoreCase: Boolean = true): Boolean {
         //若input为空，不管pattern是什么（即使也为空），都返回false
         if(target.isEmpty() || keyword.isEmpty()) {
             return false
@@ -59,14 +59,14 @@ object RegexUtil {
 
             validKeyword = true
 
-            if(k.length > extFlagLen && k.startsWith(extMatchFlag)) {  //有后缀名。（注意："*." 会被认为无后缀名，然后去匹配else的 keyword part部分）
+            if(k.length > extFlagLen && k.startsWith(extMatchFlag, ignoreCase = ignoreCase)) {  //有后缀名。（注意："*." 会被认为无后缀名，然后去匹配else的 keyword part部分）
                 needMatchExt = true
 
                 if(!extMatched) {  //若已匹配后缀成功则不需要再匹配
-                    extMatched = target.endsWith(k.substring(extFlagLenSubOne))  // `extFlagLen - 1` to keep '.', e.g. "*.txt" will got ".txt"
+                    extMatched = target.endsWith(k.substring(extFlagLenSubOne), ignoreCase = ignoreCase)  // `extFlagLen - 1` to keep '.', e.g. "*.txt" will got ".txt"
                 }
             }else {  // keyword part，部分关键字
-                if(target.contains(k).not()) {  //不包含某一非后缀名的关键词则直接返回假
+                if(target.contains(k, ignoreCase = ignoreCase).not()) {  //不包含某一非后缀名的关键词则直接返回假
                     return false
                 }
             }
@@ -162,24 +162,20 @@ object RegexUtil {
         }
     }
 
-    fun matchWildcardList(target: String, keywordList:List<String>, ignoreCase:Boolean):Boolean {
-        return matchByPredicate(target, keywordList, ignoreCase) { target, keyword ->  //这个lambda内的target是转换过大小写的
-            matchWildcard(target, keyword)
+    fun matchWildcardList(target: String, keywordList:List<String>, ignoreCase:Boolean = true):Boolean {
+        return matchByPredicate(target, keywordList) { target, keyword ->
+            matchWildcard(target, keyword, ignoreCase)
         }
     }
 
-    /**
-     * @param ignoreCase if false, will pass origin input and pattern to predicate , else pass lowercased input and pattern.
-     */
-    fun matchByPredicate(target: String, keywordList:List<String>, ignoreCase:Boolean, predicate:(target:String, keyword:String)->Boolean):Boolean {
+
+    fun matchByPredicate(target: String, keywordList:List<String>, predicate:(target:String, keyword:String)->Boolean):Boolean {
         if(target.isEmpty() || keywordList.isEmpty()) {
             return false
         }
 
-        val target = if(ignoreCase) target.lowercase() else target
-
         for (keyword in keywordList) {
-            if(predicate(target, keyword.let { if(ignoreCase) keyword.lowercase() else keyword })) {
+            if(predicate(target, keyword)) {
                 return true
             }
         }

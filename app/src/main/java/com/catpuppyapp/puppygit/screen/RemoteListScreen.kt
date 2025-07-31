@@ -847,7 +847,7 @@ fun RemoteListScreen(
                 }
             }else {
                 //根据关键字过滤条目
-                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val keyword = filterKeyword.value.text  //关键字
                 val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
 
                 val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -864,12 +864,12 @@ fun RemoteListScreen(
                     list = list.value,
                     resetSearchVars = resetSearchVars,
                     match = { idx:Int, it: RemoteDto ->
-                        it.remoteName.lowercase().contains(keyword)
-                                || it.remoteUrl.lowercase().contains(keyword)
-                                || it.pushUrl.lowercase().contains(keyword)
-                                || it.credentialName?.lowercase()?.contains(keyword) == true
-                                || it.pushCredentialName?.lowercase()?.contains(keyword) == true
-                                || it.branchListForFetch.toString().lowercase().contains(keyword)
+                        it.remoteName.contains(keyword, ignoreCase = true)
+                                || it.remoteUrl.contains(keyword, ignoreCase = true)
+                                || it.pushUrl.contains(keyword, ignoreCase = true)
+                                || it.credentialName?.contains(keyword, ignoreCase = true) == true
+                                || it.pushCredentialName?.contains(keyword, ignoreCase = true) == true
+                                || it.branchListForFetch.toString().contains(keyword, ignoreCase = true)
                     }
                 )
 

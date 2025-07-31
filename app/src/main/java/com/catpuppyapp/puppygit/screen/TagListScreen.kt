@@ -844,7 +844,7 @@ fun TagListScreen(
 
             }else {  //有条目
                 //根据关键字过滤条目
-                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val keyword = filterKeyword.value.text  //关键字
                 val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
 
                 val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -861,16 +861,19 @@ fun TagListScreen(
                     list = list.value,
                     resetSearchVars = resetSearchVars,
                     match = { idx:Int, it: TagDto ->
-                        it.shortName.lowercase().contains(keyword)
-                                || it.name.lowercase().contains(keyword)
-                                || it.msg.lowercase().contains(keyword)
-                                || it.targetFullOidStr.lowercase().contains(keyword)
-                                || it.taggerName.lowercase().contains(keyword)
-                                || it.taggerEmail.lowercase().contains(keyword)
-                                || it.fullOidStr.lowercase().contains(keyword)  // annotated tag对象的oid；非annotated tag此值和targetFullOidStr一样
-                                || it.getType(activityContext, false).lowercase().contains(keyword)
-                                || it.getType(activityContext, true).lowercase().contains(keyword)
-                                || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(keyword)
+                        it.shortName.contains(keyword, ignoreCase = true)
+                                || it.name.contains(keyword, ignoreCase = true)
+                                || it.msg.contains(keyword, ignoreCase = true)
+                                || it.targetFullOidStr.contains(keyword, ignoreCase = true)
+                                || it.taggerName.contains(keyword, ignoreCase = true)
+                                || it.taggerEmail.contains(keyword, ignoreCase = true)
+
+                                // annotated tag对象的oid；非annotated tag此值和targetFullOidStr一样
+                                || it.fullOidStr.contains(keyword, ignoreCase = true)
+
+                                || it.getType(activityContext, false).contains(keyword, ignoreCase = true)
+                                || it.getType(activityContext, true).contains(keyword, ignoreCase = true)
+                                || formatMinutesToUtc(it.originTimeOffsetInMinutes).contains(keyword, ignoreCase = true)
                     }
                 )
 

@@ -1159,7 +1159,7 @@ fun SubmoduleListScreen(
 
             }else {  //有条目
                 //根据关键字过滤条目
-                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val keyword = filterKeyword.value.text  //关键字
                 val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
 
                 val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -1176,13 +1176,13 @@ fun SubmoduleListScreen(
                     list = list.value,
                     resetSearchVars = resetSearchVars,
                     match = { idx:Int, it: SubmoduleDto ->
-                        it.name.lowercase().contains(keyword)
-                                || it.remoteUrl.lowercase().contains(keyword)
-                                || it.getStatus(activityContext).lowercase().contains(keyword)
-//                            || it.fullPath.lowercase().contains(keyword)  //完整路径肯定有相同前缀，仅相对路径（it.name）不同，所以仅过滤name即可，不需要过滤完整路径
-                                || it.targetHash.lowercase().contains(keyword)
-                                || it.location.toString().lowercase().contains(keyword)
-                                || it.getOther().lowercase().contains(keyword)
+                        it.name.contains(keyword, ignoreCase = true)
+                                || it.remoteUrl.contains(keyword, ignoreCase = true)
+                                || it.getStatus(activityContext).contains(keyword, ignoreCase = true)
+//                            || it.fullPath.contains(keyword, ignoreCase = true)  //完整路径肯定有相同前缀，仅相对路径（it.name）不同，所以仅过滤name即可，不需要过滤完整路径
+                                || it.targetHash.contains(keyword, ignoreCase = true)
+                                || it.location.toString().contains(keyword, ignoreCase = true)
+                                || it.getOther().contains(keyword, ignoreCase = true)
                     }
                 )
 

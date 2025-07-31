@@ -3073,7 +3073,7 @@ fun ChangeListInnerPage(
 
                 }else {  //列表不为空，显示条目
                     //根据关键字过滤条目
-                    val keyword = changeListPageFilterKeyWord.value.text.lowercase()  //关键字
+                    val keyword = changeListPageFilterKeyWord.value.text  //关键字
                     val enableFilter = filterModeActuallyEnabled(filterOn = changeListPageFilterModeOn.value, keyword = keyword)
 
                     val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -3091,11 +3091,11 @@ fun ChangeListInnerPage(
                         list = itemList.value,
                         resetSearchVars = resetSearchVars,
                         match = { idx:Int, it: StatusTypeEntrySaver ->
-                            it.fileName.lowercase().let { it.contains(keyword) || RegexUtil.matchWildcard(it, keyword) }
-                                    || it.relativePathUnderRepo.lowercase().contains(keyword)
-                                    || it.getSizeStr().lowercase().contains(keyword)
-                                    || it.getChangeTypeAndSuffix(isDiffToLocal).lowercase().contains(keyword)
-                                    || it.getItemTypeString().lowercase().contains(keyword)
+                            it.fileName.let { it.contains(keyword, ignoreCase = true) || RegexUtil.matchWildcard(it, keyword) }
+                                    || it.relativePathUnderRepo.contains(keyword, ignoreCase = true)
+                                    || it.getSizeStr().contains(keyword, ignoreCase = true)
+                                    || it.getChangeTypeAndSuffix(isDiffToLocal).contains(keyword, ignoreCase = true)
+                                    || it.getItemTypeString().contains(keyword, ignoreCase = true)
                         }
                     )
 

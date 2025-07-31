@@ -488,7 +488,7 @@ fun CredentialRemoteListScreen(
             }else {
 
                 //根据关键字过滤条目
-                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val keyword = filterKeyword.value.text  //关键字
                 val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
 
                 val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -505,12 +505,12 @@ fun CredentialRemoteListScreen(
                     list = list.value,
                     resetSearchVars = resetSearchVars,
                     match = { idx:Int, it: RemoteDtoForCredential ->
-                        it.repoName.lowercase().contains(keyword)
-                                || it.remoteName.lowercase().contains(keyword)
-                                || it.remoteFetchUrl.lowercase().contains(keyword)
-                                || it.remotePushUrl.lowercase().contains(keyword)
-                                || it.getCredentialNameOrNone().lowercase().contains(keyword)
-                                || it.getPushCredentialNameOrNone().lowercase().contains(keyword)
+                        it.repoName.contains(keyword, ignoreCase = true)
+                                || it.remoteName.contains(keyword, ignoreCase = true)
+                                || it.remoteFetchUrl.contains(keyword, ignoreCase = true)
+                                || it.remotePushUrl.contains(keyword, ignoreCase = true)
+                                || it.getCredentialNameOrNone().contains(keyword, ignoreCase = true)
+                                || it.getPushCredentialNameOrNone().contains(keyword, ignoreCase = true)
 
                     }
                 )

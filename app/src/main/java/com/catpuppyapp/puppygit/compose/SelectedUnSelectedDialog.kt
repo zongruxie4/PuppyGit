@@ -91,7 +91,7 @@ fun <T> SelectedUnSelectedList(
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
 
                     //根据关键字过滤条目
-                    val k = filterKeyWord.value.text.lowercase()  //关键字
+                    val k = filterKeyWord.value.text  //关键字
                     val enableFilter = maybeIsGoodKeyword(k)
                     val filteredSelectedList = if(enableFilter){
                         filterSelectedItemList(k)

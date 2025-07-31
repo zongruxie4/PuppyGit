@@ -1015,7 +1015,11 @@ object Libgit2Helper {
 
     fun getGitUrlType(gitUrl: String): Int {
         //这个条件一定要“只要不是http/https就是ssh”这种逻辑，因为http和https就两种，能穷举完，但ssh我不太了解，而且有的sshurl是用户名写最前面，匹配起来恶心得很！
-        return if(gitUrl.lowercase().let { it.startsWith(Cons.gitUrlHttpsStartStr) || it.startsWith(Cons.gitUrlHttpStartStr) }) {
+        return if(
+            gitUrl.let { it.startsWith(Cons.gitUrlHttpsStartStr, ignoreCase = true)
+                    || it.startsWith(Cons.gitUrlHttpStartStr, ignoreCase = true)
+            }
+        ) {
             Cons.gitUrlTypeHttp
         }else {
             Cons.gitUrlTypeSsh

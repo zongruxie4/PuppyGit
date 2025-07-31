@@ -666,7 +666,7 @@ fun StashListScreen(
                 }
             }else {
                 //根据关键字过滤条目
-                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val keyword = filterKeyword.value.text  //关键字
                 val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
 
                 val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -683,9 +683,9 @@ fun StashListScreen(
                     list = list.value,
                     resetSearchVars = resetSearchVars,
                     match = { idx:Int, it: StashDto ->
-                        it.index.toString().lowercase().contains(keyword)
-                                || it.stashId.toString().lowercase().contains(keyword)
-                                || it.msg.lowercase().contains(keyword)
+                        it.index.toString().contains(keyword, ignoreCase = true)
+                                || it.stashId.toString().contains(keyword, ignoreCase = true)
+                                || it.msg.contains(keyword, ignoreCase = true)
                     }
                 )
 

@@ -470,7 +470,7 @@ fun ReflogListScreen(
 
                 //有条目
                 //根据关键字过滤条目
-                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val keyword = filterKeyword.value.text  //关键字
                 val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
 
                 val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -487,13 +487,13 @@ fun ReflogListScreen(
                     list = list.value,
                     resetSearchVars = resetSearchVars,
                     match = { idx:Int, it: ReflogEntryDto ->
-                        it.username.lowercase().contains(keyword)
-                                || it.email.lowercase().contains(keyword)
-                                || it.date.lowercase().contains(keyword)
-                                || it.msg.lowercase().contains(keyword)
-                                || it.idNew.toString().lowercase().contains(keyword)
-                                || it.idOld.toString().lowercase().contains(keyword)
-                                || formatMinutesToUtc(it.originTimeZoneOffsetInMinutes).lowercase().contains(keyword)
+                        it.username.contains(keyword, ignoreCase = true)
+                                || it.email.contains(keyword, ignoreCase = true)
+                                || it.date.contains(keyword, ignoreCase = true)
+                                || it.msg.contains(keyword, ignoreCase = true)
+                                || it.idNew.toString().contains(keyword, ignoreCase = true)
+                                || it.idOld.toString().contains(keyword, ignoreCase = true)
+                                || formatMinutesToUtc(it.originTimeZoneOffsetInMinutes).contains(keyword, ignoreCase = true)
                     }
                 )
 

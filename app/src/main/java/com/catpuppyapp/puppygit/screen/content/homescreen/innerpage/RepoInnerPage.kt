@@ -2008,7 +2008,7 @@ fun RepoInnerPage(
 
         }else {  //有仓库
             //根据关键字过滤条目
-            val keyword = repoPageFilterKeyWord.value.text.lowercase()  //关键字
+            val keyword = repoPageFilterKeyWord.value.text  //关键字
             val enableFilter = filterModeActuallyEnabled(repoPageFilterModeOn.value, keyword)
 
             val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -2025,20 +2025,20 @@ fun RepoInnerPage(
                 list = repoList.value,
                 resetSearchVars = resetSearchVars,
                 match = { idx:Int, it: RepoEntity ->
-                    it.repoName.lowercase().contains(keyword)
-                            || it.branch.lowercase().contains(keyword)
-                            || it.lastCommitHash.lowercase().contains(keyword)
-                            || it.upstreamBranch.lowercase().contains(keyword)
-                            || it.parentRepoName.lowercase().contains(keyword)
-                            || it.fullSavePath.lowercase().contains(keyword)
-                            || it.cachedAppRelatedPath().lowercase().contains(keyword)
-                            || it.cachedLastUpdateTime().lowercase().contains(keyword)
-                            || it.latestUncheckedErrMsg.lowercase().contains(keyword)
-                            || it.tmpStatus.lowercase().contains(keyword)
-                            || it.getOrUpdateCachedOneLineLatestCommitMsg().lowercase().contains(keyword)
-                            || it.createErrMsgForView(activityContext).lowercase().contains(keyword)
-                            || it.getOther().lowercase().contains(keyword)
-                            || it.getRepoStateStr(activityContext).lowercase().contains(keyword)
+                    it.repoName.contains(keyword, ignoreCase = true)
+                            || it.branch.contains(keyword, ignoreCase = true)
+                            || it.lastCommitHash.contains(keyword, ignoreCase = true)
+                            || it.upstreamBranch.contains(keyword, ignoreCase = true)
+                            || it.parentRepoName.contains(keyword, ignoreCase = true)
+                            || it.fullSavePath.contains(keyword, ignoreCase = true)
+                            || it.cachedAppRelatedPath().contains(keyword, ignoreCase = true)
+                            || it.cachedLastUpdateTime().contains(keyword, ignoreCase = true)
+                            || it.latestUncheckedErrMsg.contains(keyword, ignoreCase = true)
+                            || it.tmpStatus.contains(keyword, ignoreCase = true)
+                            || it.getOrUpdateCachedOneLineLatestCommitMsg().contains(keyword, ignoreCase = true)
+                            || it.createErrMsgForView(activityContext).contains(keyword, ignoreCase = true)
+                            || it.getOther().contains(keyword, ignoreCase = true)
+                            || it.getRepoStateStr(activityContext).contains(keyword, ignoreCase = true)
                 }
             )
 

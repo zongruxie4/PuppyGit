@@ -311,11 +311,11 @@ fun AutomationInnerPage(
 
 
     val filterRepos = { keyword:String, list:List<RepoEntity> ->
-        list.filter { it.repoName.lowercase().contains(keyword) || it.id.lowercase().contains(keyword) }
+        list.filter { it.repoName.contains(keyword, ignoreCase = true) || it.id.contains(keyword, ignoreCase = true) }
     }
 
     val filterApps = { keyword:String, list:List<AppInfo> ->
-        list.filter { it.appName.lowercase().contains(keyword) || it.packageName.lowercase().contains(keyword) }
+        list.filter { it.appName.contains(keyword, ignoreCase = true) || it.packageName.contains(keyword, ignoreCase = true) }
     }
 
     if(showSelectReposDialog.value) {
@@ -762,7 +762,7 @@ fun AutomationInnerPage(
                 // 旧版compose有bug，用else有可能会忽略条件，如果这里有问题可直接改成if判断相反条件
 
                 //根据关键字过滤条目
-                val k = appsFilterKeyword.value.text.lowercase()  //关键字
+                val k = appsFilterKeyword.value.text  //关键字
                 val enableFilter = maybeIsGoodKeyword(k)
                 val filteredAddedAppList = if(enableFilter){
                     val tmpList = filterApps(k, addedAppList.value)

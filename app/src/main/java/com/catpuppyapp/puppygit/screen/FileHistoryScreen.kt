@@ -933,7 +933,7 @@ fun FileHistoryScreen(
                 }
 
                 //根据关键字过滤条目
-                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val keyword = filterKeyword.value.text  //关键字
                 val enableFilter = filterModeActuallyEnabled(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value, keyword)
 
                 val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -956,16 +956,16 @@ fun FileHistoryScreen(
                         val canceled = initSearch(keyword = keyword, lastKeyword = lastKeyword, token = token)
 
                         val match = { idx:Int, it: FileHistoryDto ->
-                            val found = it.treeEntryOidStr.lowercase().contains(keyword)
-                                    || it.commitOidStr.lowercase().contains(keyword)
+                            val found = it.treeEntryOidStr.contains(keyword, ignoreCase = true)
+                                    || it.commitOidStr.contains(keyword, ignoreCase = true)
                                     || (it.commitList.find { commitOidStr -> commitOidStr.contains(keyword, ignoreCase = true) } != null)
-                                    || it.authorEmail.lowercase().contains(keyword)
-                                    || it.authorUsername.lowercase().contains(keyword)
-                                    || it.committerEmail.lowercase().contains(keyword)
-                                    || it.committerUsername.lowercase().contains(keyword)
-                                    || it.dateTime.lowercase().contains(keyword)
-                                    || it.msg.lowercase().contains(keyword)
-                                    || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(keyword)
+                                    || it.authorEmail.contains(keyword, ignoreCase = true)
+                                    || it.authorUsername.contains(keyword, ignoreCase = true)
+                                    || it.committerEmail.contains(keyword, ignoreCase = true)
+                                    || it.committerUsername.contains(keyword, ignoreCase = true)
+                                    || it.dateTime.contains(keyword, ignoreCase = true)
+                                    || it.msg.contains(keyword, ignoreCase = true)
+                                    || formatMinutesToUtc(it.originTimeOffsetInMinutes).contains(keyword, ignoreCase = true)
 
 
                             found

@@ -380,7 +380,7 @@ fun ErrorListScreen(
         ) {
 
             //根据关键字过滤条目
-            val keyword = filterKeyword.value.text.lowercase()  //关键字
+            val keyword = filterKeyword.value.text  //关键字
             val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
 
             val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -397,7 +397,9 @@ fun ErrorListScreen(
                 list = list.value,
                 resetSearchVars = resetSearchVars,
                 match = { idx: Int, it: ErrorEntity ->
-                    it.msg.lowercase().contains(keyword) || it.date.lowercase().contains(keyword) || it.id.lowercase().contains(keyword)
+                    it.msg.contains(keyword, ignoreCase = true)
+                            || it.date.contains(keyword, ignoreCase = true)
+                            || it.id.contains(keyword, ignoreCase = true)
                 }
             )
 

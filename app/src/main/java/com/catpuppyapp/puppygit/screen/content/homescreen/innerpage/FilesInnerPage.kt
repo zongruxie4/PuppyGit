@@ -1659,7 +1659,7 @@ fun FilesInnerPage(
                         }
                     }
                 } else {
-                    val keyword = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
+                    val keyword = filesPageSimpleFilterKeyWord.value.text  //关键字
                     val enableFilter = filterModeActuallyEnabled(filterOn = filesPageSimpleFilterOn.value, keyword = keyword)
 
                     val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -1684,9 +1684,9 @@ fun FilesInnerPage(
                                 val canceled = initSearch(keyword = keyword, lastKeyword = filesPageLastKeyword, token = filesPageSearchToken)
 
                                 val match = { idx: Int, it: File ->
-                                    val nameLowerCase = it.name.lowercase();
                                     //匹配名称 或 "*.txt"之类的后缀
-                                    nameLowerCase.contains(keyword) || RegexUtil.matchWildcard(nameLowerCase, keyword)
+                                    it.name.contains(keyword, ignoreCase = true)
+                                            || RegexUtil.matchWildcard(it.name, keyword)
                                 }
 
                                 filterList.value.clear()
@@ -1778,7 +1778,7 @@ fun FilesInnerPage(
                                     //goto editor page with file path
 
                                     //若匹配内部Editor关联文件类型，则打开
-                                    if (RegexUtil.matchWildcardList(it.name, settingsSnapshot.value.editor.fileAssociationList, ignoreCase = true)) {
+                                    if (RegexUtil.matchWildcardList(it.name, settingsSnapshot.value.editor.fileAssociationList)) {
                                         //请求打开文件
                                         val expectReadOnly = false
                                         requireInnerEditorOpenFile(it.fullPath, expectReadOnly)

@@ -2221,7 +2221,7 @@ fun CommitListScreen(
                 }
 
                 //根据关键字过滤条目
-                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val keyword = filterKeyword.value.text  //关键字
                 val pathList = pathsListForFilter.value
                 val needFilterByPath = pathList.isNotEmpty()
                 val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && (maybeIsGoodKeyword(keyword) || needFilterByPath)
@@ -2284,20 +2284,20 @@ fun CommitListScreen(
                         val canceled = initSearch(keyword = keyword, lastKeyword = lastKeyword, token = token)
 
                         val match = { idx:Int, it: CommitDto ->
-                            var found = it.oidStr.lowercase().contains(keyword)
-                                    || it.email.lowercase().contains(keyword)
-                                    || it.author.lowercase().contains(keyword)
-                                    || it.committerEmail.lowercase().contains(keyword)
-                                    || it.committerUsername.lowercase().contains(keyword)
-                                    || it.dateTime.lowercase().contains(keyword)
-                                    || it.branchShortNameList.toString().lowercase().contains(keyword)
-                                    || it.tagShortNameList.toString().lowercase().contains(keyword)
-                                    || it.parentOidStrList.toString().lowercase().contains(keyword)
-                                    || it.treeOidStr.lowercase().contains(keyword)
-                                    || it.msg.lowercase().contains(keyword)
-                                    || it.getOther(activityContext, false).lowercase().contains(keyword)
-                                    || it.getOther(activityContext, true).lowercase().contains(keyword)
-                                    || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(keyword)
+                            var found = it.oidStr.contains(keyword, ignoreCase = true)
+                                    || it.email.contains(keyword, ignoreCase = true)
+                                    || it.author.contains(keyword, ignoreCase = true)
+                                    || it.committerEmail.contains(keyword, ignoreCase = true)
+                                    || it.committerUsername.contains(keyword, ignoreCase = true)
+                                    || it.dateTime.contains(keyword, ignoreCase = true)
+                                    || it.branchShortNameList.toString().contains(keyword, ignoreCase = true)
+                                    || it.tagShortNameList.toString().contains(keyword, ignoreCase = true)
+                                    || it.parentOidStrList.toString().contains(keyword, ignoreCase = true)
+                                    || it.treeOidStr.contains(keyword, ignoreCase = true)
+                                    || it.msg.contains(keyword, ignoreCase = true)
+                                    || it.getOther(activityContext, false).contains(keyword, ignoreCase = true)
+                                    || it.getOther(activityContext, true).contains(keyword, ignoreCase = true)
+                                    || formatMinutesToUtc(it.originTimeOffsetInMinutes).contains(keyword, ignoreCase = true)
 
                             if(found) {
                                 // filter by path

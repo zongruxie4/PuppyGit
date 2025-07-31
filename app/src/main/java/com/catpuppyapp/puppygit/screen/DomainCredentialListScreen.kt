@@ -538,7 +538,7 @@ fun DomainCredentialListScreen(
             }else {
 
                 //根据关键字过滤条目
-                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val keyword = filterKeyword.value.text  //关键字
                 val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
 
                 val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -555,7 +555,7 @@ fun DomainCredentialListScreen(
                     list = list.value,
                     resetSearchVars = resetSearchVars,
                     match = { idx:Int, it: DomainCredentialDto ->
-                        it.domain.lowercase().contains(keyword) || (it.credName?.lowercase()?.contains(keyword) == true)
+                        it.domain.contains(keyword, ignoreCase = true) || (it.credName?.contains(keyword, ignoreCase = true) == true)
                     }
                 )
 

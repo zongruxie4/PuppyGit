@@ -448,7 +448,7 @@ fun CredentialManagerScreen(
             }else {
 
                 //根据关键字过滤条目
-                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val keyword = filterKeyword.value.text  //关键字
                 val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
 
                 val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
@@ -466,7 +466,7 @@ fun CredentialManagerScreen(
                     list = list.value,
                     resetSearchVars = resetSearchVars,
                     match = { idx:Int, it: CredentialEntity ->
-                        it.name.lowercase().contains(keyword) || it.value.lowercase().contains(keyword)
+                        it.name.contains(keyword, ignoreCase = true) || it.value.contains(keyword, ignoreCase = true)
                     }
                 )
 
