@@ -49,7 +49,7 @@ internal fun MyTextField(
     val focusRequester = remember { FocusRequester() }
 
 
-    // if the `value` is not equals to `BasicTextField` held value, then the ime state will reset
+    // NOTE: if the `value` is not equals to `BasicTextField` held value, then the ime state will reset
     BasicTextField(
         value = currentTextField.value,
         readOnly = readOnly,
