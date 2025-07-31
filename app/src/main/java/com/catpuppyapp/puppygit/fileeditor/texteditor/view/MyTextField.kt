@@ -41,17 +41,13 @@ internal fun MyTextField(
     fontSize:Int,
     fontColor:Color,
 ) {
-    val focusRequester = remember { FocusRequester() }
+    val inDarkTheme = Theme.inDarkTheme
     val textStyle = LocalTextStyle.current
 
-    //写法1
-//    val currentTextField = remember { mutableStateOf(textFieldState) }  //重组不会重新执行
-//    currentTextField.value = textFieldState  //重组会重新执行，这样通过value就能获取到最新值了（当然，第一次执行这个也会执行，所以和上面的mutableState()加起来等于执行了两次赋值，但state值相同不会触发更新，所以重复执行无所谓
 
-    //写法2，这种写法等同于写法1，之所以使用currentTextFiled的地方能获取到重组后最新的值是因为本质上by是state.value的语法糖，所以使用by后的值等于 获取 state.value ，所以value一旦更新，调用state.value就能获取到最新值
     val currentTextField = textFieldState.value.let { remember(it) { mutableStateOf(it) } }
+    val focusRequester = remember { FocusRequester() }
 
-    val inDarkTheme = Theme.inDarkTheme
 
     // if the `value` is not equals to `BasicTextField` held value, then the ime state will reset
     BasicTextField(
