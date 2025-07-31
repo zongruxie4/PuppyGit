@@ -446,7 +446,9 @@ class MyCodeEditor(
     fun obtainSyntaxHighlight(fieldsId: String, textFieldState: MyTextFieldState) : MyTextFieldState {
         val fieldsStyles = highlightMap.get(fieldsId)
         val annotatedString = fieldsStyles?.obtainAnnotatedString(textFieldState.syntaxHighlightId)
-        return if(annotatedString == null || annotatedString == textFieldState.value.annotatedString) {
+        
+        // don't try `annotatedString == textFieldState.value.annotatedString`, even they maybe are the same, but the `selection` still maybe different, so still need a copy
+        return if(annotatedString == null) {
             textFieldState
         }else {
             textFieldState.copy(value = textFieldState.value.copy(annotatedString = annotatedString))
