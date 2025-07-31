@@ -54,15 +54,7 @@ internal fun MyTextField(
         readOnly = readOnly,
         enabled = enabled,
         onValueChange = ovc@{ newState ->
-            val lastTextField = currentTextField.value
-
-            //存在选中文本时，显示光标拖手和背景颜色（handle）
-//            needShowCursorHandle.value = newState.selection.start != newState.selection.end
-
-//            // no change, in my tests, never happened, so compare them doesn't make sense, and waste cpu
-//            if (lastTextField == newState) return@ovc
-//            // test
-//            if (lastTextField == newState) throw RuntimeException("no changed, still called onValueChange")
+            val lastTextField = textFieldState.value
 
             // used for some checks
             val textChanged = lastTextField.text.length != newState.text.length || lastTextField.text != newState.text
@@ -72,6 +64,7 @@ internal fun MyTextField(
             if(textChanged) {
                 scrollIfInvisible()
             }
+
 
             if (newState.text.contains('\n')) {
                 onContainNewLine(newState)
