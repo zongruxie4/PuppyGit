@@ -100,7 +100,7 @@ enum class PLScope(val scope: String) {
                 return YAML
             }
 
-            if(fileName.endsWith(".markdown") || fileName.endsWith(".md") || fileName.endsWith(".mdown")) {
+            if(fileName.endsWith(".md") || fileName.endsWith(".mdown") || fileName.endsWith(".markdown")) {
                 return MARKDOWN
             }
 
@@ -281,7 +281,9 @@ enum class PLScope(val scope: String) {
                 return XSL
             }
 
-            if(fileName.endsWith(".mdmath") || fileName.endsWith(".mdm") || fileName.endsWith(".mmd")) {
+            // .mmd extensions from?: https://github.com/Mathpix/mathpix-markdown-it
+            // 这.mmd不知道是不是出自：https://github.com/Mathpix/mathpix-markdown-it
+            if(fileName.endsWith(".mmd") || fileName.endsWith(".mdm") || fileName.endsWith(".mdmath")) {
                 return MARKDOWN_MATH
             }
 
