@@ -958,7 +958,7 @@ fun FileHistoryScreen(
                         val match = { idx:Int, it: FileHistoryDto ->
                             val found = it.treeEntryOidStr.lowercase().contains(keyword)
                                     || it.commitOidStr.lowercase().contains(keyword)
-                                    || (it.commitList.find { commitOidStr -> commitOidStr.equals(keyword, ignoreCase = true) } != null)
+                                    || (it.commitList.find { commitOidStr -> commitOidStr.contains(keyword, ignoreCase = true) } != null)
                                     || it.authorEmail.lowercase().contains(keyword)
                                     || it.authorUsername.lowercase().contains(keyword)
                                     || it.committerEmail.lowercase().contains(keyword)

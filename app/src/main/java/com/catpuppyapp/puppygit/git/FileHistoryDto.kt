@@ -6,9 +6,8 @@ import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.readTimeZoneOffsetInMinutesFromSettingsOrDefault
-import java.io.File
 
-class FileHistoryDto (
+class FileHistoryDto(
     var fileName:String="",
     var filePathUnderRepo:String="",
     var fileFullPath:String="",
