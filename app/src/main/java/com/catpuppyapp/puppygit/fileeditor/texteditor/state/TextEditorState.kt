@@ -1018,20 +1018,17 @@ class TextEditorState(
                     forceAdd = true
                 )
             }else {  //选中列表不为空，执行区域选择
-                val lastSelectedIndex = selectedIndices.last()
-                val startIndex = Math.min(targetIndex, lastSelectedIndex)
-                val endIndexExclusive = Math.max(targetIndex, lastSelectedIndex) + 1
-
-                if(startIndex >= endIndexExclusive
-                    || startIndex<0 || startIndex>fields.lastIndex  // lastIndex is list.size - 1
-                    || endIndexExclusive<0 || endIndexExclusive>fields.size
-                ) {
+                val lastSelectedIndex = focusingLineIdx ?: selectedIndices.last()
+                val startIndex = targetIndex.coerceAtMost(lastSelectedIndex)
+                val endIndexInclusive = targetIndex.coerceAtLeast(lastSelectedIndex)
+                val range = IntRange(startIndex, endIndexInclusive)
+                if(range.isEmpty()) {
                     return
                 }
 
 //                val newFields = fields.toMutableList()
                 val newSelectedIndices = selectedIndices.toMutableList()
-                for(i in startIndex..<endIndexExclusive) {
+                for(i in range) {
                     sfiRet = selectFieldInternal(
                         init_fields = fields,
                         init_selectedIndices = newSelectedIndices,
@@ -1051,7 +1048,12 @@ class TextEditorState(
                 selectedIndices = sfiRet?.selectedIndices ?: selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
-                focusingLineIdx = sfiRet?.focusingLineIdx ?: focusingLineIdx
+                // don't use the ret focusingLineIdx at here, if current clicked is a
+                //   small line number to former, then we will still focusing the greater index
+//                focusingLineIdx = sfiRet?.focusingLineIdx ?: focusingLineIdx
+
+                // make sure select last clicked line
+                focusingLineIdx = targetIndex
             )
 
             onChanged(newState, null, false, this, null)
