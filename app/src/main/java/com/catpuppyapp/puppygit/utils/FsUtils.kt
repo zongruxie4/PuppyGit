@@ -163,28 +163,6 @@ object FsUtils {
         )
     }
 
-    private fun getMimeType(url: String): String {
-        var type: String? = null
-        val extension = MimeTypeMap.getFileExtensionFromUrl(url.lowercase())
-        if (extension != null) {
-            val mime = MimeTypeMap.getSingleton()
-            type = mime.getMimeTypeFromExtension(extension)
-        }
-
-        //TODO 改成如果文件类型未知，返回null，然后列出几种类型，让用户选则以什么类型打开（文本、图像、视频，还有啥来着？找个文件管理器app的打开方式看下）
-        //如果文件类型未知，当作文本文件
-        if (type == null) {
-            type = textMIME
-        }
-        return type
-    }
-
-//    @Deprecated("instead by MimeType#guessXXX serials function")
-//    fun getMimeTypeForFilePath(context: Context, fullPathOfFile:String): String {
-//        val file = File(fullPathOfFile)
-//        return getMimeType(getUriForFile(context, file).toString())
-//    }
-
     /**
      * get authority for gen uri for file
      * note: the value must same as provider.android:authorities in AndroidManifest.xml
@@ -203,35 +181,6 @@ object FsUtils {
         MyLog.d(TAG, "#getUriForFile: uri='$uri'")
 
         return uri
-    }
-
-    /**
-     * This function origin version(by sheimi maybe) from: https://github.com/maks/MGit/blob/66ec88b8a9873ba3334d2b6b213801a9e8d9d3c7/app/src/main/java/me/sheimi/android/utils/FsUtils.java#L119C24-L119C32
-     */
-    @Deprecated("instead of by `FsUtils.opeFile()`")
-    fun openFileEditFirstIfFailedThenTryView(context: Context, file: File): Ret<String?> {
-        val uri = getUriForFile(context, file)
-        val mimeType = getMimeType(uri.toString())
-        val intent = Intent(Intent.ACTION_EDIT)  //先尝试用编辑模式打开
-        intent.setDataAndType(uri, mimeType)
-        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-        try {
-            context.startActivity(intent)
-            return Ret.createSuccess(null, "success open file with 'EDIT' mode", Ret.SuccessCode.openFileWithEditMode)
-        } catch (e: Exception) {
-            MyLog.e(TAG, "#openFileEditFirstIfFailedThenTryView(): try open file(path=${file.canonicalPath}) with 'EDIT' mode err, will try open with 'VIEW' mode.\n" + e.stackTraceToString())
-
-            //If no app can edit this file at least try to view it (PDFs, ...)
-            intent.setAction(Intent.ACTION_VIEW)  //如果编辑模式失败，尝试用预览方式打开
-            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-            try {
-                context.startActivity(intent)
-                return Ret.createSuccess(null, "success open file with 'VIEW' mode", Ret.SuccessCode.openFileWithViewMode)
-            } catch (e1: Exception) {
-                MyLog.e(TAG, "#openFileEditFirstIfFailedThenTryView(): open file(path=${file.canonicalPath}) with 'VIEW' mode err, give up.\n" + e1.stackTraceToString())
-                return Ret.createError(null, "open file failed", Ret.ErrCode.openFileFailed)
-            }
-        }
     }
 
     fun openFile(
@@ -275,40 +224,6 @@ object FsUtils {
             return true
         } catch (e: Exception) {
             MyLog.e(TAG, "#openFile(): try open file(path=${file.canonicalPath}) err! params is: mimeType=$mimeType, readOnly=$readOnly\n" + e.stackTraceToString())
-            return false
-        }
-    }
-
-    @Deprecated("instead by FsUtils#openFile")
-    fun openFileAsEditMode(context: Context, file: File):Boolean {
-        val uri = getUriForFile(context, file)
-
-        val mimeType = getMimeType(uri.toString())
-        val intent = Intent(Intent.ACTION_EDIT)  //用编辑模式打开
-        intent.setDataAndType(uri, mimeType)
-        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-        try {
-            context.startActivity(intent)
-            return true
-        } catch (e: Exception) {
-            MyLog.e(TAG, "#openFileAsEditMode(): try open file(path=${file.canonicalPath}) with 'EDIT' mode err!\n" + e.stackTraceToString())
-            return false
-        }
-    }
-
-    @Deprecated("instead by FsUtils#openFile")
-    fun openFileAsViewMode(context: Context, file: File):Boolean {
-        val uri = getUriForFile(context, file)
-
-        val mimeType = getMimeType(uri.toString())
-        val intent = Intent(Intent.ACTION_VIEW)  //预览模式(只读)
-        intent.setDataAndType(uri, mimeType)
-        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-        try {
-            context.startActivity(intent)
-            return true
-        } catch (e: Exception) {
-            MyLog.e(TAG, "#openFileAsViewMode(): try open file(path=${file.canonicalPath}) with 'VIEW' mode err!\n" + e.stackTraceToString())
             return false
         }
     }
