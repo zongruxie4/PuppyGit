@@ -2540,7 +2540,7 @@ class TextEditorState(
         }
 
         val start = CharPosition(startLineIndex, 0, startIdxOfText)
-        val end = CharPosition(insertIndex, 0, startIdxOfText + insertedContent.length)
+        val end = CharPosition(insertIndex, baseFields.get(insertIndex).value.text.length, startIdxOfText + insertedContent.length)
 
 
 
