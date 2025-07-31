@@ -7,9 +7,8 @@ data class LineNumParseResult(
     val isRelative: Boolean = false,
 ) {
     fun lineNumToIndex(curLineIndex:Int, maxLineIndex:Int):Int {
-        return lineNum.let {
-            (if(isRelative) curLineIndex + it  else (it - 1)).coerceAtMost(maxLineIndex).coerceAtLeast(0)
-        }
+        val lineNum = if(isRelative) curLineIndex + lineNum else lineNum.dec()
+        return lineNum.coerceAtMost(maxLineIndex).coerceAtLeast(0)
     }
 
     fun columnNumToIndex(): Int {

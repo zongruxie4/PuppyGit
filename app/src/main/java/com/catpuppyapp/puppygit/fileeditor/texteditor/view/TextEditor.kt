@@ -1202,7 +1202,7 @@ fun TextEditor(
 
                             },
 
-                            )
+                        )
                     }
                 }
 
@@ -1218,9 +1218,14 @@ fun TextEditor(
                     )
                 }
 
+            }
 
-                // show virtual space
-                if(index == lastIndexOfFields) {
+
+
+
+            // show virtual space at the end of file
+            if(index == lastIndexOfFields) {
+                item {
                     Spacer(modifier = Modifier
                         .width(virtualWidth)
                         //设高度为屏幕高度-50dp，基本上能滚动到顶部，但会留出最后一行多一些的空间
@@ -1258,9 +1263,6 @@ fun TextEditor(
                     )
                 }
             }
-
-
-
         }
 
         DisableSoftKeyboard(disableSoftKb.value) {
