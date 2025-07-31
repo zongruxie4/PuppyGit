@@ -37,13 +37,12 @@ internal fun MyTextField(
     onContainNewLine: (TextFieldValue) -> Unit,
     onFocus: () -> Unit,
     modifier: Modifier = Modifier,
-    needShowCursorHandle:MutableState<Boolean>,
+//    needShowCursorHandle:MutableState<Boolean>,
     fontSize:Int,
     fontColor:Color,
 ) {
     val inDarkTheme = Theme.inDarkTheme
     val textStyle = LocalTextStyle.current
-
 
     val currentTextField = textFieldState.value.let { remember(it) { mutableStateOf(it) } }
     val focusRequester = remember { FocusRequester() }
@@ -54,15 +53,16 @@ internal fun MyTextField(
         value = currentTextField.value,
         readOnly = readOnly,
         enabled = enabled,
-        onValueChange = { newState ->
+        onValueChange = ovc@{ newState ->
             val lastTextField = currentTextField.value
 
-
             //存在选中文本时，显示光标拖手和背景颜色（handle）
-            needShowCursorHandle.value = newState.selection.start != newState.selection.end
+//            needShowCursorHandle.value = newState.selection.start != newState.selection.end
 
-            // no change
-            if (lastTextField == newState) return@BasicTextField
+//            // no change, in my tests, never happened, so compare them doesn't make sense, and waste cpu
+//            if (lastTextField == newState) return@ovc
+//            // test
+//            if (lastTextField == newState) throw RuntimeException("no changed, still called onValueChange")
 
             // used for some checks
             val textChanged = lastTextField.text.length != newState.text.length || lastTextField.text != newState.text
@@ -80,13 +80,22 @@ internal fun MyTextField(
                 //   if has line break, still update, will got unexpected line break,
                 //   for avoid it, just wait the text field list updated it, nothing need to do here
 
+
+//                println("text: ${newState.text}")
+//                println("newState.annotatedString == lastTextField.annotatedString: ${newState.annotatedString == lastTextField.annotatedString}")
+
                 val newState = if(textChanged) {
+//                    copy style for left texts
+//                    lastTextField.annotatedString.spanStyles.forEach {
+//
+//                    }
                     newState
                 } else {
                     // copy to avoid lost highlighting styles when text no changes,
-                    // if styles still lost, try use `textFieldState.value` as `lastTextField`
-                    lastTextField.copy(selection = newState.selection)
+                    //   if styles still lost, try use `textFieldState.value` as `lastTextField`
+                    newState.copy(annotatedString = lastTextField.annotatedString)
                 }
+
 
                 currentTextField.value = newState
 

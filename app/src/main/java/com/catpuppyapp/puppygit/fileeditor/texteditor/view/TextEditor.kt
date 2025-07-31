@@ -243,7 +243,7 @@ fun TextEditor(
     val lastVisibleLineState  = rememberSaveable { mutableStateOf(0) }
 
     //是否显示光标拖手(cursor handle
-    val needShowCursorHandle = rememberSaveable { mutableStateOf(false) }
+//    val needShowCursorHandle = rememberSaveable { mutableStateOf(false) }
 
     //这俩值会在组件销毁时写入配置文件以记录滚动位置(当前画面第一个可见行)和最后编辑位置
 //    val lastEditedLineIndexState  = rememberSaveable { mutableIntStateOf(lastEditedPos.lineIndex) }
@@ -345,7 +345,7 @@ fun TextEditor(
 //            println("found:$foundPos")//test1791022120240812
 
             //显示选中文本背景颜色
-            needShowCursorHandle.value = true
+//            needShowCursorHandle.value = true
 
             val keywordStartAtLine = foundPos.columnIndex
             val keywordEndExclusiveAtLine = foundPos.columnIndex + keyWordLen
@@ -1126,7 +1126,7 @@ fun TextEditor(
                             //默认不自动聚焦任何行，不然一切换页面再回来弹出键盘，恶心
 //                                    focusThisLine = false,
 
-                            needShowCursorHandle = needShowCursorHandle,
+//                            needShowCursorHandle = needShowCursorHandle,
                             textFieldState = textEditorState.obtainHighlightedTextField(textFieldState),
                             enabled = !textEditorState.isMultipleSelectionMode,
                             fontSize = fontSize.intValue,

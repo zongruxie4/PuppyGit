@@ -581,8 +581,9 @@ class TextEditorState(
                 return@p
             }
 
+            // contains new line should call `splitNewLine`, reached here means has bug
             if (textFieldValue.text.contains('\n')) {
-//                throw InvalidParameterException("textFieldValue contains newline")  // contains new line应调用splitNewLine
+//                throw InvalidParameterException("textFieldValue contains newline")
                 return@p
             }
 
@@ -601,7 +602,7 @@ class TextEditorState(
 
             val newFields = fields.toMutableList()
 
-            val updatedField = newFields[targetIndex].copy(value = textFieldValue);
+            val updatedField = newFields[targetIndex].copy(value = textFieldValue)
 
             //判断文本是否相等，注意：就算文本不相等也不能在这返回，不然页面显示有问题，比如光标位置会无法更新
             newFields[targetIndex] = if(textChanged) {
