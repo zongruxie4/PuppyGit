@@ -448,14 +448,18 @@ fun TextEditor(
     if(requestFromParent.value==PageRequest.requestUndo) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
-                textEditorState.undo(undoStack = undoStack)
+                textEditorState.codeEditor?.doActWithLatestEditorState("#undo") { textEditorState ->
+                    textEditorState.undo(undoStack = undoStack)
+                }
             }
         }
     }
     if(requestFromParent.value==PageRequest.requestRedo) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
-                textEditorState.redo(undoStack=undoStack)
+                textEditorState.codeEditor?.doActWithLatestEditorState("#redo") { textEditorState ->
+                    textEditorState.redo(undoStack=undoStack)
+                }
             }
         }
     }
@@ -1107,9 +1111,8 @@ fun TextEditor(
                             ) clickable@{
                                 if (!textEditorState.isMultipleSelectionMode) return@clickable
 
-                                doJobThenOffLoading {
+                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
                                     textEditorState.selectField(targetIndex = index)
-
                                 }
                             }
 
@@ -1156,8 +1159,8 @@ fun TextEditor(
                                 }
 
                                 doJobThenOffLoading {
-                                    textEditorState.codeEditor?.doActWithLatestEditorState("#onUpdateText") {
-                                        act(it)
+                                    textEditorState.codeEditor?.doActWithLatestEditorState("#onUpdateText") { textEditorState ->
+                                        act(textEditorState)
                                     }
                                 }
                             },
@@ -1181,8 +1184,8 @@ fun TextEditor(
                                 }
 
                                 doJobThenOffLoading {
-                                    textEditorState.codeEditor?.doActWithLatestEditorState("#onContainNewLine") {
-                                        act(it)
+                                    textEditorState.codeEditor?.doActWithLatestEditorState("#onContainNewLine") { textEditorState ->
+                                        act(textEditorState)
                                     }
                                 }
 
@@ -1240,7 +1243,7 @@ fun TextEditor(
                         ) {
                             //非选择模式，点空白区域，聚焦最后一行
                             if (textEditorState.isMultipleSelectionMode.not()) {
-                                doJobThenOffLoading {
+                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
                                     //点击空白区域定位到最后一行最后一个字符后面
                                     //第1个参数是行索引；第2个参数是当前行的哪个位置
                                     textEditorState.selectField(
@@ -1322,10 +1325,12 @@ fun TextEditor(
                                 // scroll
                                 UIHelper.scrollToItem(scope, listState, idx + lineNumOffsetForGoToEditor)
                                 // focus line
-                                textEditorState.selectField(
-                                    idx,
-                                    option = SelectionOption.FIRST_POSITION,
-                                )
+                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
+                                    textEditorState.selectField(
+                                        idx,
+                                        option = SelectionOption.FIRST_POSITION,
+                                    )
+                                }
 
                                 // finished
                                 return@TextEditorLaunchedEffect
@@ -1366,7 +1371,7 @@ fun TextEditor(
                     //如果是readOnly模式，就没必要定位到对应列了，就算定位了也无效，多此一举
                     if(bug_Editor_GoToColumnCantHideKeyboard_Fixed && useLastEditPos && settings.editor.restoreLastEditColumn && !readOnlyMode) {
                         // delay一下，等滚动到上次可见行，然后检查最后编辑行是否可见，若不可见，滚动到最后编辑行
-                        doJobThenOffLoading {
+                        textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
                             delay(300)
 
                             val lastEditedLineIdx = lastEditedPos.lineIndex
@@ -1388,10 +1393,12 @@ fun TextEditor(
 
                         }
                     }else {  // when go to line valid, focus target line
-                        textEditorState.selectField(
-                            targetFocusLineIndexWhenGoToLine,
-                            option = SelectionOption.FIRST_POSITION,
-                        )
+                        textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
+                            textEditorState.selectField(
+                                targetFocusLineIndexWhenGoToLine,
+                                option = SelectionOption.FIRST_POSITION,
+                            )
+                        }
                     }
 
                     return@TextEditorLaunchedEffect
@@ -1423,17 +1430,19 @@ fun TextEditor(
 //                        println("lastScrollEvent!!.columnStartIndexInclusive:${lastScrollEvent!!.columnStartIndexInclusive}")  //test1791022120240812
                             //定位列，如果请求定位列的话
                             if(lastScrollEvent?.goColumn==true) {
-                                //选中关键字
-                                textEditorState.selectField(
-                                    targetIndex = index,
-                                    option = SelectionOption.CUSTOM,
-                                    columnStartIndexInclusive = lastScrollEvent!!.columnStartIndexInclusive,
-                                    //如果选中某行子字符串的功能修复了，就使用正常的endIndex；否则使用startIndex，定位光标到关键字出现的位置但不选中关键字
-                                    columnEndIndexExclusive = if(bug_Editor_SelectColumnRangeOfLine_Fixed) lastScrollEvent!!.columnEndIndexExclusive else lastScrollEvent!!.columnStartIndexInclusive,
-                                    requireSelectLine = false,
+                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
+                                    //选中关键字
+                                    textEditorState.selectField(
+                                        targetIndex = index,
+                                        option = SelectionOption.CUSTOM,
+                                        columnStartIndexInclusive = lastScrollEvent!!.columnStartIndexInclusive,
+                                        //如果选中某行子字符串的功能修复了，就使用正常的endIndex；否则使用startIndex，定位光标到关键字出现的位置但不选中关键字
+                                        columnEndIndexExclusive = if (bug_Editor_SelectColumnRangeOfLine_Fixed) lastScrollEvent!!.columnEndIndexExclusive else lastScrollEvent!!.columnStartIndexInclusive,
+                                        requireSelectLine = false,
 //                                    highlightingStartIndex = lastScrollEvent.highlightingStartIndex,
 //                                    highlightingEndExclusiveIndex = lastScrollEvent.highlightingEndExclusiveIndex,
-                                )
+                                    )
+                                }
 
                                 //请求失焦则关闭键盘
                                 if(lastScrollEvent.requireHideKeyboard) {

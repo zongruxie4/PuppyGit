@@ -660,7 +660,7 @@ class TextEditorState(
         }
     }
 
-    fun appendClosePairIfNeed(
+    private fun appendClosePairIfNeed(
         oldField: MyTextFieldState,
         newField: MyTextFieldState,
     ) : MyTextFieldState {
@@ -683,7 +683,7 @@ class TextEditorState(
      *     it will take big effect for syntax highlighting, maybe let it very slow,
      *     so I add this feature to let the pair closed if possible
      */
-    fun appendClosePairIfNeedNoCatch(
+    private fun appendClosePairIfNeedNoCatch(
         oldField: MyTextFieldState,
         newField: MyTextFieldState,
     ) : MyTextFieldState {
@@ -804,7 +804,7 @@ class TextEditorState(
         return closedPair
     }
 
-    fun updateStyles(
+    private fun updateStyles(
         nextState: TextEditorState,
         act: (baseStyles: StylesResult, baseFields: MutableList<MyTextFieldState>) -> Unit
     ) {
@@ -836,7 +836,7 @@ class TextEditorState(
     }
 
 
-    suspend fun appendOrReplaceFields(targetIndex: Int, text: String, trueAppendFalseReplace:Boolean) {
+    private suspend fun appendOrReplaceFields(targetIndex: Int, text: String, trueAppendFalseReplace:Boolean) {
         if(!isGoodIndexForList(targetIndex, fields)) {
             MyLog.d(TAG, "#appendOrReplaceFields(): invalid index: $targetIndex, list.size=${fields.size}")
             return

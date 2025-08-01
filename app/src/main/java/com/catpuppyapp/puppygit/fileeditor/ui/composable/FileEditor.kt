@@ -420,7 +420,7 @@ fun FileEditor(
                                         if (forwardDeletePressed(event, selection, textFieldValue) {
                                                 // delete current line's end equals to delete next line's start, so plus 1
                                                 val index = index + 1
-                                                doJobThenOffLoading {
+                                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#onForwardDeletePressed") { textEditorState ->
                                                     try {
                                                         textEditorState.deleteNewLine(targetIndex = index)
                                                         scrollIfIndexInvisible(index - 1)
@@ -967,8 +967,8 @@ fun FileEditor(
                                         if (textEditorState.value.isMultipleSelectionMode) {
 //                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                                            doJobThenOffLoading {
-                                                textEditorState.value.selectFieldSpan(targetIndex = index)
+                                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
+                                                textEditorState.selectFieldSpan(targetIndex = index)
                                             }
                                         }
                                     }
@@ -976,8 +976,8 @@ fun FileEditor(
                                     //如果是行选择模式，选中当前点击的行如果不是行选择模式；进入行选择模式
                                     if (textEditorState.value.isMultipleSelectionMode) {
                                         //选中/取消选中 当前点击的行
-                                        doJobThenOffLoading {
-                                            textEditorState.value.selectField(targetIndex = index)
+                                        textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
+                                            textEditorState.selectField(targetIndex = index)
                                         }
 
                                     } else { // 非行选择模式，启动行选择模式 (multiple selection mode on)
@@ -1262,10 +1262,10 @@ fun FileEditor(
                                     // go to line
                                     IconButton(
                                         onClick = {
-                                            doJobThenOffLoading {
+                                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
                                                 // update focusing line index index
                                                 // `forceAdd` to avoid lost selected status after go to line
-                                                textEditorState.value.selectField(targetIndex = it, forceAdd = true)
+                                                textEditorState.selectField(targetIndex = it, forceAdd = true)
 
                                                 // scroll if need
                                                 scrollIfIndexInvisible(it)
@@ -1285,8 +1285,8 @@ fun FileEditor(
                                     // unselect
                                     IconButton(
                                         onClick = {
-                                            doJobThenOffLoading {
-                                                textEditorState.value.selectField(targetIndex = it)
+                                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
+                                                textEditorState.selectField(targetIndex = it)
                                             }
                                         }
                                     ) {
