@@ -1175,7 +1175,7 @@ class TextEditorState(
         //后面会根据需要决定是否创建拷贝
         var ret_fields = init_fields
         var ret_selectedIndices = init_selectedIndices
-        var ret_focusingLineIdx = targetIndex
+        val ret_focusingLineIdx = targetIndex
 
         // avoid mistake using
         val out_fileds = Unit
