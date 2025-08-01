@@ -440,7 +440,8 @@ fun TextEditor(
 
     if(requestFromParent.value==PageRequest.editorQuitSelectionMode) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            doJobThenOffLoading {
+            textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#quitSelectionMode") { textEditorState ->
+
                 textEditorState.quitSelectionMode()
             }
         }

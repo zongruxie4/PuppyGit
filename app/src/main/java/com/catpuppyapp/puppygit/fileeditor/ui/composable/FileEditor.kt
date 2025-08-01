@@ -224,8 +224,8 @@ fun FileEditor(
 
         // 非行选择模式，启动行选择模式 (multiple selection mode on)
         //注：索引传-1或其他无效索引即可在不选中任何行的情况下启动选择模式，从顶栏菜单开启选择模式默认不选中任何行，所以这里传-1
-        doJobThenOffLoading {
-            textEditorState.value.createMultipleSelectionModeState(index)
+        textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#createMultipleSelectionModeState") { textEditorState ->
+            textEditorState.createMultipleSelectionModeState(index)
         }
     }
 
@@ -234,8 +234,9 @@ fun FileEditor(
         PageRequest.clearStateThenDoAct(requestFromParent) {
             //如果已经是选择模式，退出；否则开启选择模式
             if(textEditorState.value.isMultipleSelectionMode) {  //退出选择模式
-                doJobThenOffLoading {
-                    textEditorState.value.quitSelectionMode()
+                textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#quitSelectionMode") { textEditorState ->
+
+                    textEditorState.quitSelectionMode()
                 }
             }else {  //开启选择模式
                 enableSelectMode(-1)
@@ -602,7 +603,7 @@ fun FileEditor(
                                 if (keyEvent.isCtrlPressed && keyEvent.key == Key.MoveHome) { // go to top of file
                                     lastScrollEvent.value = ScrollEvent(0)
 
-                                    doJobThenOffLoading {
+                                    textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#goToEndOrTopOfFile") { textEditorState ->
                                         textEditorState.goToEndOrTopOfFile(goToTop = true)
                                     }
                                     return@opke true
@@ -611,7 +612,8 @@ fun FileEditor(
                                 if (keyEvent.isCtrlPressed && keyEvent.key == Key.MoveEnd) { // go to end of file
                                     lastScrollEvent.value = ScrollEvent(textEditorState.fields.lastIndex.coerceAtLeast(0))
 
-                                    doJobThenOffLoading {
+                                    textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#goToEndOrTopOfFile") { textEditorState ->
+
                                         textEditorState.goToEndOrTopOfFile(goToTop = false)
                                     }
                                     return@opke true
@@ -674,7 +676,8 @@ fun FileEditor(
                                 }
 
                                 if(textEditorState.isMultipleSelectionMode && keyEvent.isCtrlPressed && keyEvent.key == Key.A) {
-                                    doJobThenOffLoading {
+                                    textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#createSelectAllState") { textEditorState ->
+
                                         textEditorState.createSelectAllState()
                                     }
 
@@ -688,7 +691,7 @@ fun FileEditor(
                                     if(clipboardText == null) {
                                         Msg.requireShowLongDuration(activityContext.getString(R.string.clipboard_is_empty))
                                     }else {
-                                        doJobThenOffLoading {
+                                        textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#appendTextToLastSelectedLine") { textEditorState ->
                                             textEditorState.appendTextToLastSelectedLine(clipboardText)
                                         }
                                     }
@@ -707,7 +710,8 @@ fun FileEditor(
                                     }else {
                                         val (idx, f) = textEditorState.getCurrentField()
                                         if(idx != null && f != null) {
-                                            doJobThenOffLoading {
+                                            textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#handleTabIndent") { textEditorState ->
+
                                                 textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount.value, trueTabFalseShiftTab = false)
                                             }
 
@@ -729,7 +733,8 @@ fun FileEditor(
                                     }else {
                                         val (idx, f) = textEditorState.getCurrentField()
                                         if(idx != null && f != null) {
-                                            doJobThenOffLoading {
+                                            textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#handleTabIndent") { textEditorState ->
+
                                                 textEditorState.handleTabIndent(idx, f, tabIndentSpacesCount.value, trueTabFalseShiftTab = true)
                                             }
 
@@ -1063,8 +1068,9 @@ fun FileEditor(
 
                     // BottomBar params block start
                     val quitSelectionMode = {
-                        doJobThenOffLoading {
-                            textEditorState.value.quitSelectionMode()
+                        textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#quitSelectionMode") { textEditorState ->
+
+                            textEditorState.quitSelectionMode()
                         }
 
                         Unit
@@ -1181,8 +1187,8 @@ fun FileEditor(
                             }
 
                             //不用确认，直接清空，若后悔可用undo撤销
-                            doJobThenOffLoading {
-                                textEditorState.value.clearSelectedFields()
+                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#clearSelectedFields") { textEditorState ->
+                                textEditorState.clearSelectedFields()
                             }
 
                             Unit
@@ -1193,8 +1199,9 @@ fun FileEditor(
                                 return@onAppendALine
                             }
 
-                            doJobThenOffLoading {
-                                textEditorState.value.appendTextToLastSelectedLine(
+                        textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#appendTextToLastSelectedLine") { textEditorState ->
+
+                            textEditorState.appendTextToLastSelectedLine(
                                     text = "",
                                     afterAppendThenDoAct = { targetIndex ->
                                         doJobThenOffLoading {
@@ -1208,8 +1215,9 @@ fun FileEditor(
                             Unit
                         },
                         onSelectAll@{
-                            doJobThenOffLoading {
-                                textEditorState.value.createSelectAllState()
+                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#createSelectAllState") { textEditorState ->
+
+                                textEditorState.createSelectAllState()
                             }
 
                             Unit
@@ -1250,7 +1258,12 @@ fun FileEditor(
                             },
                             textFormatterForCopy = { textEditorState.value.getContentOfLineIndex(it) },
 
-                            clearAll = { textEditorState.value.clearSelectedItemList() },
+                            clearAll = {
+                                textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#clearSelectedItemList") { textEditorState ->
+
+                                    textEditorState.clearSelectedItemList()
+                                }
+                            },
                             closeDialog = closeDialog,
 
                             customTrailIcon = {
