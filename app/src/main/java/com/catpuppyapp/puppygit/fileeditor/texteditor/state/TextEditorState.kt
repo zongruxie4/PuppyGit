@@ -2713,12 +2713,12 @@ class TextEditorState(
 
     fun isFieldSelected(idx: Int) = selectedIndices.contains(idx)
 
-//    suspend fun selectFieldValue(
-//        targetIndex: Int,
-//        textFieldValue: TextFieldValue,
-//    ) {
-//        selectField(targetIndex, provideTextFieldValue = textFieldValue)
-//    }
+    suspend fun selectFieldValue(
+        targetIndex: Int,
+        textFieldValue: TextFieldValue,
+    ) {
+        selectField(targetIndex, provideTextFieldValue = textFieldValue)
+    }
 
     companion object {
         fun linesToFields(lines: List<String>) = createInitTextFieldStates(lines)

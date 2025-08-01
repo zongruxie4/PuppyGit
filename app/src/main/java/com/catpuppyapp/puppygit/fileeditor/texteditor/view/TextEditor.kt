@@ -1209,23 +1209,28 @@ fun TextEditor(
                                 }
 
                             },
-//                            onFocus = { newTextFieldValue: TextFieldValue ->
-//                                doJobThenOffLoading {
-//                                    try {
-//                                        textEditorState.selectFieldValue(
-//                                            targetIndex = index,
-//                                            textFieldValue = newTextFieldValue
-//                                        )
-//
-//                                        //更新最后聚焦行(最后编辑行)
-//                                        lastScrollEvent.value = ScrollEvent(index)
-//                                    }catch (e:Exception) {
-//                                        Msg.requireShowLongDuration("#onFocus err: "+e.localizedMessage)
-//                                        MyLog.e(TAG, "#onFocus err: "+e.stackTraceToString())
-//                                    }
-//                                }
-//
-//                            },
+                            onFocus = { newTextFieldValue: TextFieldValue ->
+                                val act: suspend (TextEditorState) -> Unit = { textEditorState ->
+                                    try {
+                                        textEditorState.selectFieldValue(
+                                            targetIndex = index,
+                                            textFieldValue = newTextFieldValue
+                                        )
+
+                                        //更新最后聚焦行(最后编辑行)
+                                        lastScrollEvent.value = ScrollEvent(index)
+                                    }catch (e:Exception) {
+                                        Msg.requireShowLongDuration("#onFocus err: "+e.localizedMessage)
+                                        MyLog.e(TAG, "#onFocus err: "+e.stackTraceToString())
+                                    }
+                                }
+
+                                doJobThenOffLoading {
+                                    textEditorState.codeEditor?.doActWithLatestEditorState("#onFocus") { textEditorState ->
+                                        act(textEditorState)
+                                    }
+                                }
+                            },
 
                         )
                     }
