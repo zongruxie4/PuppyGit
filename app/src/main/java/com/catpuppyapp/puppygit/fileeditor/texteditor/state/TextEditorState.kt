@@ -448,7 +448,9 @@ class TextEditorState(
                 },
             )
 
-            updater?.invoke(IntRange(targetIndex, targetIndex + newSplitFieldStates.size), newFields, newSelectedIndices)
+            val newContentRangeInNewFields = IntRange(targetIndex, targetIndex + newSplitFieldStates.size)
+
+            updater?.invoke(newContentRangeInNewFields, newFields, newSelectedIndices)
 
 
 
@@ -466,12 +468,25 @@ class TextEditorState(
                 focusingLineIdx = sfiRet.focusingLineIdx
             )
 
-            updateStyles(newState) { baseStyles, baseFields ->
+            updateStyles(newState) { baseStyles ->
                 // delete current line
-                updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
+                updateStylesAfterDeleteLine(
+                    baseFields = fields,
+                    stylesResult = baseStyles,
+                    startLineIndex = targetIndex,
+                    ignoreThis = true,
+                    newTextEditorState = newState
+                )
 
                 // add new content to current line
-                updateStylesAfterInsertLine(baseFields, baseStyles, targetIndex, ignoreThis = false, splitFieldValues.joinToString("\n") { it.text }, newState)
+                updateStylesAfterInsertLine(
+                    baseFields = fields,
+                    stylesResult = baseStyles,
+                    ignoreThis = false,
+                    insertedContent = splitFieldValues.joinToString("\n") { it.text },
+                    insertedContentRangeInNewFields = newContentRangeInNewFields,
+                    newTextEditorState = newState
+                )
             }
 
             onChanged(newState, true, true, this, null)
@@ -636,15 +651,30 @@ class TextEditorState(
                 focusingLineIdx = targetIndex,
             )
 
-            updater?.invoke(IntRange(targetIndex, targetIndex), newFields, newSelectedIndices)
+            val newContentRangeInNewFields = IntRange(targetIndex, targetIndex)
+
+            updater?.invoke(newContentRangeInNewFields, newFields, newSelectedIndices)
 
             if(textChanged) {
-                updateStyles(newState) { baseStyles, baseFields ->
+                updateStyles(newState) { baseStyles->
                     // delete current line
-                    updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
+                    updateStylesAfterDeleteLine(
+                        baseFields = fields,
+                        stylesResult = baseStyles,
+                        startLineIndex = targetIndex,
+                        ignoreThis = true,
+                        newTextEditorState = newState
+                    )
 
                     // add new content to current line
-                    updateStylesAfterInsertLine(baseFields, baseStyles, targetIndex, ignoreThis = false, newFields[targetIndex].value.text, newState)
+                    updateStylesAfterInsertLine(
+                        baseFields = fields,
+                        stylesResult = baseStyles,
+                        ignoreThis = false,
+                        insertedContent = newFields[targetIndex].value.text,
+                        insertedContentRangeInNewFields = newContentRangeInNewFields,
+                        newTextEditorState = newState
+                    )
                 }
             }
 
@@ -806,7 +836,7 @@ class TextEditorState(
 
     private fun updateStyles(
         nextState: TextEditorState,
-        act: (baseStyles: StylesResult, baseFields: MutableList<MyTextFieldState>) -> Unit
+        act: (baseStyles: StylesResult) -> Unit
     ) {
         if(codeEditor.scopeInvalid()) {
             return
@@ -824,7 +854,7 @@ class TextEditorState(
             // for line number indicator color, the text value doesn't changed,
             // and due to the baseStyles is based fields, so, if we use another
             // fields which not matched with baseStyles, will cause an error
-            act(baseStyles, fields.toMutableList())
+            act(baseStyles)
 //            nextState.temporaryStyles = baseStyles
 
             // apply styles for next state
@@ -936,9 +966,9 @@ class TextEditorState(
 
 
 
-            updateStyles(newState) { baseStyles, baseFields ->
+            updateStyles(newState) { baseStyles ->
                 // delete current and previous lines
-                updateStylesAfterDeletedLineBreak(baseFields, baseStyles, toLineIdx, ignoreThis = false, newState)
+                updateStylesAfterDeletedLineBreak(fields, baseStyles, toLineIdx, ignoreThis = false, newState)
             }
 
 
@@ -1458,18 +1488,18 @@ class TextEditorState(
                 focusingLineIdx = focusingLineIdx
             )
 
-            // if deleted lines count more than left lines, then  re-analyze syntax highlight
+            // if deleted lines count more than rest of lines, then re-analyze syntax highlight may better than incremental update,
             // else deleted lines
             if(newFields.size <= indices.size) {
                 codeEditor?.analyze(newState)
             }else {
-                updateStyles(newState) { baseStyles, baseFields ->
+                updateStyles(newState) { baseStyles ->
                     // 降序删除不用算索引偏移
                     // delete current line
                     val lastIdx = indices.size - 1
                     indices.sortedDescending().forEachIndexed { idx, lineIdxWillDel ->
                         // 仅当删除最后一个条目时更新一次样式
-                        updateStylesAfterDeleteLine(baseFields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState, keepLine = false)
+                        updateStylesAfterDeleteLine(fields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState, keepLine = false)
                     }
 
                 }
@@ -1587,13 +1617,13 @@ class TextEditorState(
             isContentEdited?.value = true
             editorPageIsContentSnapshoted?.value = false
 
-            updateStyles(newState) { baseStyles, baseFields ->
-                // 这个是clear行内容，但保留空行，所以不需要处理索引（降序或正序递减1）
+            updateStyles(newState) { baseStyles  ->
                 // delete current line
                 val lastIdx = selectedIndices.size - 1
-                selectedIndices.forEachIndexed { idx, lineIdxWillDel ->
+                //必须倒序，不然文本在全文中的索引会计算错误，除非真模拟删数据，但那样还得拷贝fields，浪费内存
+                selectedIndices.sortedDescending().forEachIndexed { idx, lineIdxWillDel ->
                     // 仅当删除最后一个条目时更新一次样式
-                    updateStylesAfterDeleteLine(baseFields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState)
+                    updateStylesAfterDeleteLine(fields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState)
                 }
 
             }
@@ -2127,16 +2157,22 @@ class TextEditorState(
             isContentEdited?.value = true
             editorPageIsContentSnapshoted?.value = false
 
-            updateStyles(newState) { baseStyles, baseFields ->
+            updateStyles(newState) { baseStyles ->
                 val lastIdx = targetIndices.lastIndex
                 targetIndices.sortedDescending().forEachIndexed { idx, targetIndex ->
                     // delete current line
-                    updateStylesAfterDeleteLine(baseFields, baseStyles, targetIndex, ignoreThis = true, newState)
+                    updateStylesAfterDeleteLine(fields, baseStyles, targetIndex, ignoreThis = true, newState)
 
                     // add new content to current line
-                    updateStylesAfterInsertLine(baseFields, baseStyles, targetIndex, ignoreThis = idx != lastIdx, newState.fields.get(targetIndex).value.text, newState)
+                    updateStylesAfterInsertLine(
+                        baseFields = fields,
+                        stylesResult = baseStyles,
+                        ignoreThis = idx != lastIdx,
+                        insertedContent = newState.fields.get(targetIndex).value.text,
+                        insertedContentRangeInNewFields = IntRange(targetIndex, targetIndex),
+                        newTextEditorState = newState
+                    )
                 }
-
             }
 
             onChanged(newState, true, true, this, null)
