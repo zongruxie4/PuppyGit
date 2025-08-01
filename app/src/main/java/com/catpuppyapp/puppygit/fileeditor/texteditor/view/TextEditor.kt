@@ -1104,7 +1104,7 @@ fun TextEditor(
 //                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                                     //执行区域选择
-                                    doJobThenOffLoading {
+                                    textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectFieldSpan") { textEditorState ->
                                         textEditorState.selectFieldSpan(index)
                                     }
                                 }

@@ -434,7 +434,7 @@ fun FileEditor(
                                         }
 
                                         if (goUpKeyPressed(event) {
-                                                doJobThenOffLoading {
+                                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectPrevOrNextField") { textEditorState ->
                                                     try {
                                                         textEditorState.selectPrevOrNextField(
                                                             isNext = false,
@@ -455,8 +455,8 @@ fun FileEditor(
 
 
                                         if (goDownKeyPressed(event) {
-                                                doJobThenOffLoading {
-                                                    try {
+                                            textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectPrevOrNextField") { textEditorState ->
+                                                try {
                                                         textEditorState.selectPrevOrNextField(
                                                             isNext = true,
                                                             updateLastCursorAtColumn,
@@ -967,7 +967,7 @@ fun FileEditor(
                                         if (textEditorState.value.isMultipleSelectionMode) {
 //                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
+                                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectFieldSpan") { textEditorState ->
                                                 textEditorState.selectFieldSpan(targetIndex = index)
                                             }
                                         }
