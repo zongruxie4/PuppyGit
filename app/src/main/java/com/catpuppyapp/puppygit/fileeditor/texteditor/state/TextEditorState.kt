@@ -4,9 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.withStyle
 import com.catpuppyapp.puppygit.constants.IndentChar
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.Ret
@@ -14,7 +12,6 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.StylesResult
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.StylesUpdateRequest
@@ -35,7 +32,6 @@ import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import com.catpuppyapp.puppygit.utils.parseLongOrDefault
 import com.catpuppyapp.puppygit.utils.tabToSpaces
-import io.github.rosemoe.sora.lang.styling.Span
 import io.github.rosemoe.sora.text.CharPosition
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -2186,11 +2182,11 @@ class TextEditorState(
         MyLog.d(TAG, "#$funName: StylesResult may will be apply: $stylesResult, spans.LineCount=$spansLineCount, fields.size=${fields.size}")
 
         // will not be null
-//        if(codeEditor == null) {
-//            MyLog.w(TAG, "#$funName: codeEditor is null, will not apply styles")
-//
-//            return
-//        }
+        if(codeEditor == null) {
+            MyLog.w(TAG, "#$funName: codeEditor is null, will not apply styles")
+
+            return
+        }
 
 
         // already checked before apply, no more check needed at here
@@ -2247,8 +2243,8 @@ class TextEditorState(
                 val spansReader = styles.spans.read()
                 fields.forEachIndexedBetter { idx, value ->
                     val spans = spansReader.getSpansOnLine(idx)
-                    val annotatedString = generateAnnotatedStringForLine(value, spans).let {
-                        codeEditor?.ifSameReturnCachedAnnotatedString(value.syntaxHighlightId, it) ?: it
+                    val annotatedString = codeEditor.generateAnnotatedStringForLine(value, spans).let {
+                        codeEditor.ifSameReturnCachedAnnotatedString(value.syntaxHighlightId, it)
                     }
 
                     syntaxHighlightStorage.put(
@@ -2281,19 +2277,6 @@ class TextEditorState(
                     onChanged(latestState.copy(), null, false, this, EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING)
                 }else {
                     MyLog.d(TAG, "editor state already changed, ignore style update request by previous style's apply syntax highlighting method, newStateFieldsId=${latestState.fieldsId}, currentAppliedFieldsId=${fieldsId}")
-                }
-            }
-        }
-    }
-
-
-    private fun generateAnnotatedStringForLine(textFieldState: MyTextFieldState, spans:List<Span>): AnnotatedString {
-        val rawText = textFieldState.value.text
-
-        return buildAnnotatedString {
-            TextMateUtil.forEachSpanResult(rawText, spans) { range, style ->
-                withStyle(style) {
-                    append(rawText.substring(range))
                 }
             }
         }

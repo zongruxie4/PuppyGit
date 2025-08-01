@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.lang.analysis.StyleReceiver
@@ -135,11 +136,18 @@ object TextMateUtil {
             val curSpan = spans.get(spanIdx - 1)
             val nextSpan = spans.getOrNull(spanIdx++)
             val endExclusive = nextSpan?.column ?: rawText.length
-            val textRange = IntRange(start, endExclusive - 1)
-            // don't check, let'em throw if have any err
-//                if(textRange.start < 0 || textRange.endInclusive >= rawText.length) {
-//                    continue
-//                }
+
+            if(AppModel.devModeOn) {
+                if(start < 0 || endExclusive > rawText.length) {
+                    MyLog.d(TAG, "invalid range when apply syntax highlight styles: start=$start, endExclusive=$endExclusive, rawText.length=${rawText.length}")
+                }
+            }
+
+            val textRange = IntRange(start.coerceAtLeast(0), endExclusive.coerceAtMost(rawText.length) - 1)
+            if(textRange.isEmpty()) {
+                continue
+            }
+
             start = endExclusive
             val style = curSpan.style
             val foregroundColor = Color(RendererUtils.getForegroundColor(curSpan, colorScheme))

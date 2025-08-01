@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.MyTextFieldState
@@ -27,6 +29,7 @@ import com.catpuppyapp.puppygit.utils.noMoreHeapMemThenDoAct
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.lang.analysis.StyleReceiver
+import io.github.rosemoe.sora.lang.styling.Span
 import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
 import io.github.rosemoe.sora.text.Content
@@ -223,6 +226,10 @@ class MyCodeEditor(
                 }
 
                 val targetEditorState = if(stylesUpdateRequest.ignoreThis) {
+                    if(AppModel.devModeOn) {
+                        //忽略这次的样式，可能是阶段性修改，比如删除很多行，刚删除了一部分，删到最后一个条目时才会应用一次样式
+                        MyLog.i(TAG, "ignore styles for fieldsId: ${stylesUpdateRequest.targetEditorState.fieldsId}, the styles maybe update by later calls")
+                    }
                     null
                 }else {
                     stylesUpdateRequest.targetEditorState
@@ -535,6 +542,17 @@ class MyCodeEditor(
         }
     }
 
+    fun generateAnnotatedStringForLine(textFieldState: MyTextFieldState, spans:List<Span>): AnnotatedString {
+        val rawText = textFieldState.value.text
+
+        return buildAnnotatedString {
+            TextMateUtil.forEachSpanResult(rawText, spans) { range, style ->
+                withStyle(style) {
+                    append(rawText.substring(range))
+                }
+            }
+        }
+    }
 
 }
 
