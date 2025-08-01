@@ -64,7 +64,9 @@ import com.catpuppyapp.puppygit.compose.AcceptButtons
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.DisableSoftKeyboard
+import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.bug_Editor_GoToColumnCantHideKeyboard_Fixed
@@ -243,6 +245,7 @@ fun TextEditor(
 
     val showGoToLineDialog  = rememberSaveable { mutableStateOf(false) }
     val goToLineValue  = mutableCustomStateOf(stateKeyTag, "goToLineValue") { TextFieldValue("") }
+    val focusWhenGoToLine = rememberSaveable { mutableStateOf(false) }
     val lastVisibleLineState  = rememberSaveable { mutableStateOf(0) }
 
     //是否显示光标拖手(cursor handle
@@ -474,8 +477,9 @@ fun TextEditor(
     }
     if(requestFromParent.value==PageRequest.goToLine) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
+            focusWhenGoToLine.value = true
             goToLineValue.value = goToLineValue.value.let { it.copy(selection = TextRange(0, it.text.length)) }
-            showGoToLineDialog.value=true
+            showGoToLineDialog.value = true
         }
     }
     if(requestFromParent.value==PageRequest.requireSearch) {
@@ -615,26 +619,32 @@ fun TextEditor(
      * 入参是行号，不是索引，最小是1
      * param is line number, not index, min is 1
      */
-    val doGoToLine = { line:String ->
+    fun doGoToLine(line:String, focus:Boolean = true) {
         //x 会报错，提示index必须为非负数) 测试下如果是-1会怎样？是否会报错？
 //        val lineIntVal = -1
         val linNumParseResult = parseLineAndColumn(line)
-        //行号减1即要定位行的索引
-        lastScrollEvent.value = ScrollEvent(
-            index = linNumParseResult.lineNumToIndex(
-                curLineIndex = focusingLineIdx.value ?: listState.firstVisibleItemIndex,
-                maxLineIndex = textEditorState.fields.size
-            ),
-            forceGo = true,
-            goColumn = true,
-            columnStartIndexInclusive = linNumParseResult.columnNumToIndex(),
+        val targetLineIdx = linNumParseResult.lineNumToIndex(
+            curLineIndex = focusingLineIdx.value ?: listState.firstVisibleItemIndex,
+            maxLineIndex = textEditorState.fields.size
         )
+
+        if(focus) {
+            //行号减1即要定位行的索引
+            lastScrollEvent.value = ScrollEvent(
+                index = targetLineIdx,
+                forceGo = true,
+                goColumn = true,
+                columnStartIndexInclusive = linNumParseResult.columnNumToIndex(),
+            )
+        }else {  // only scroll, don't focus target line
+            UIHelper.scrollToItem(scope, listState, targetLineIdx + lineNumOffsetForGoToEditor)
+        }
     }
 
     if(showGoToLineDialog.value) {
         val onOK = {
             showGoToLineDialog.value = false
-            doGoToLine(goToLineValue.value.text)
+            doGoToLine(goToLineValue.value.text, focusWhenGoToLine.value)
         }
 
         val focusRequester = remember { FocusRequester() }
@@ -642,7 +652,8 @@ fun TextEditor(
         val firstLine = "1"
         val lastLine = ""+textEditorState.fields.size
         val lineNumRange = "$firstLine-$lastLine"
-        ConfirmDialog(title = stringResource(R.string.go_to_line),
+        ConfirmDialog(
+            title = stringResource(R.string.go_to_line),
             requireShowTextCompose = true,
             textCompose = {
                 Column(
@@ -687,10 +698,14 @@ fun TextEditor(
                         }
                     )
 
+                    DefaultPaddingRow {
+                        MyCheckBox(stringResource(R.string.focus_line), focusWhenGoToLine)
+                    }
+
                     Column(
                         modifier= Modifier
                             .fillMaxWidth()
-                            .padding(end = 10.dp)
+                            .padding(top = 10.dp, end = 10.dp)
                         ,
                         horizontalAlignment = Alignment.End
                     ) {
@@ -755,7 +770,7 @@ fun TextEditor(
     val showAcceptConfirmDialog = rememberSaveable { mutableStateOf(false) }
 
     /**
-     * find accept block indecies,
+     * find accept block indices,
      * find direction:
      * if curLineText starts with conflict start str: conflict start -> split -> end (all go down)
      * if starts with split str: split -> start -> end (go down, then go up)
