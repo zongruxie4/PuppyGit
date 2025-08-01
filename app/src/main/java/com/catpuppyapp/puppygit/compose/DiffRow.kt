@@ -437,9 +437,7 @@ fun DiffRow(
                         e.printStackTrace()
 
                         buildAnnotatedString {
-                            withStyle(bgColorSpanStyle) {
-                                append(content)
-                            }
+                            append(content)
                         }
                     },
                     fontFamily = PLFont.diffCodeFont(),
