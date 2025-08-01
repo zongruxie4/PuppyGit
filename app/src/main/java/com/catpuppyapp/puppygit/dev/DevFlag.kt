@@ -41,6 +41,11 @@ fun featureEnabled(featureFlag: Boolean):Boolean {
     return dev_EnableUnTestedFeature || featureFlag
 }
 
+// for debug, don't enable when release, else, app running very slow and will got huge log, maybe
+fun printIncrementalSyntaxHighlightText():Boolean {
+    return false
+}
+
 /**
  * untested features or tested but not enough tested
  */

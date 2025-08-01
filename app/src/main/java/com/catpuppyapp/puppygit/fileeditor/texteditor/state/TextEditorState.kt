@@ -2232,45 +2232,22 @@ class TextEditorState(
             //    fields more than once, then it becomes update
             codeEditor?.putSyntaxHighlight(fieldsId, SyntaxHighlightResult(inDarkTheme = inDarkTheme, storage = syntaxHighlightStorage))
 
-//                codeEditor?.stylesMap?.put(fieldsId, stylesResult)
-
-            // may cause user input loss, and even don't call on change at here,
-            //   still will refresh view when user touch screen or input some chars
-            // 或许会导致用户输入丢失，例如用户输入了abc，然后这里调用，
-            //   结果状态可能变会ab，用户会看到abc的c出现又消失，
-            //   如果想解决，可给每个editor state加时间戳，但太麻烦，
-            //   不如直接禁用在这里调on change，反正用户点屏幕或滚动或输入后，就会触发页面刷新
-            if(requireCallOnChange) {
-                // in this case, first param `nextState` even is  `this`, but it will not be applied, will use copied latest state as new state
-                onChanged(this, null, false, this, EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING)
-            }
-
-            // if no check, editor content will incorrect
-            // 如果不检查fieldsId，editor内容会出错，例如你输入了123，然后应用了上个状态，导致内容变成没有123时的状态，这种错误是不可接受的
-//                onChanged(copy(temporaryStyles = stylesResult), null, false)
         }
 
-        // 加锁，处理styles，按行分割（检查一下：最后分割出的行数应和fields size一样）
-        // 创建新 state，调用onChange （测试：如果不创建state也可触发页面刷新，则无需创建新state）
-//        codeEditor.stylesApplyLock.withLock sl@{
-            // only check for editor request, so that callback can override TextEditorState bundled styles(usually temporary)
-//            if(stylesResult.from == StylesResultFrom.TEXT_STATE) {
-//                val filedForCheckApplied = fields.getOrNull(0) ?: return@sl
-//
-//                val sh = codeEditor?.obtainSyntaxHighlight(fieldsId)
-//                // maybe already applied spans, but can't promise the view will refresh, so may need call onChange
-//                if(sh?.get(filedForCheckApplied.syntaxHighlightId) != null) {
-//                    // due to checked unique id at before, so will not re-apply same style
-//                    codeEditor?.editorState?.value?.let {
-//                        if(it.fieldsId == stylesResult.fieldsId) {
-//                            onChanged(it.copy(temporaryStyles = stylesResult), null, false)
-//                        }
-//                    }
-//
-//                    return@sl
-//                }
-//            }
-//        }
+        // must free this instance's lock before try apply style, else will dead lock
+        if(requireCallOnChange) {
+            // in this case, first param `nextState` even is  `this`, but it will not be applied, will use copied latest state as new state
+            codeEditor?.doActWithLatestEditorState("#applySyntaxHighlighting") { latestState ->
+                if(latestState.fieldsId == fieldsId) {
+                    MyLog.d(TAG, "will call `onChanged()` for fieldsId: $fieldsId")
+
+                    // copy for refresh view
+                    onChanged(latestState.copy(), null, false, this, EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING)
+                }else {
+                    MyLog.d(TAG, "editor state already changed, ignore style update request by previous style's apply syntax highlighting method, newStateFieldsId=${latestState.fieldsId}, currentAppliedFieldsId=${fieldsId}")
+                }
+            }
+        }
     }
 
 

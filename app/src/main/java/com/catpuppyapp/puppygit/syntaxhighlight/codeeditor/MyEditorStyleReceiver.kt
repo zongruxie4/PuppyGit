@@ -69,6 +69,11 @@ class MyEditorStyleReceiver(
         codeEditor.latestStyles = stylesResult
         val copiedStyles = stylesResult.copyWithDeepCopyStyles()
         stylesMap.put(editorState.fieldsId, copiedStyles)
+
+        if(AppModel.devModeOn) {
+            MyLog.i(TAG, "will apply styles for fieldsId: ${editorState.fieldsId}")
+        }
+
         doJobThenOffLoading {
             // apply copied for editor state to avoid styles changed when applying
             editorState.applySyntaxHighlighting(copiedStyles)

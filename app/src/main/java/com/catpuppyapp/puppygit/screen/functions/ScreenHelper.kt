@@ -356,23 +356,10 @@ fun getEditorStateOnChange(
     resetLastCursorAtColumn: () -> Unit,
 ): suspend (newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean, caller: TextEditorState, from: EditorStateOnChangeCallerFrom?) -> Unit {
     return { newState, trueSaveToUndoFalseRedoNullNoSave, clearRedoStack, caller, from ->
-        caller.codeEditor?.textEditorStateOnChangeLock?.withLock w@{
+//        caller.codeEditor?.textEditorStateOnChangeLock?.withLock w@{
+        run w@{
             val newState = if(from == EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING) {
-                val latestState = editorPageTextEditorState.value
-                if(
-                    caller.fieldsId != latestState.fieldsId
-
-                        // 这里不应该比较时间戳，只要不是当前状态，就不应该应用styles
-                        // here shouldn't compare timestamp
-//                            && FieldsId.parse(latestState.fieldsId).timestamp > FieldsId.parse(caller.fieldsId).timestamp
-                ) {
-                    //这个操作是editor state的apply syntax highlighting的方法调用的，但如今状态已经变化，这个状态并不是给最新的editor state准备的，所以取消应用，直接返回即可
-                    MyLog.d(TAG, "editor state already changed, ignore style update request by previous style's apply syntax highlighting method")
-                    return@w
-                }
-
-                // just copy a new state to let view refresh, then we can see the syntax highlighting
-                latestState.copy()
+                newState
             }else {
                 //如果新state的focusingLineIdx为负数，使用上个state的focusingLineIdx，这样是为了避免 updateField 更新索引，不然会和 selectField 更新索引冲突，有时会定位错
 

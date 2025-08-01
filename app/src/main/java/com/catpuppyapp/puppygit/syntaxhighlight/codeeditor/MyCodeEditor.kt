@@ -244,6 +244,10 @@ class MyCodeEditor(
             val receiver = genNewStyleDelegate(targetEditorState)
             try {
                 TextMateUtil.setReceiverThenDoAct(language, receiver, stylesUpdateRequest.act)
+
+                if(AppModel.devModeOn) {
+                    MyLog.i(TAG, "send syntax highlight analyze request for fieldsId: ${targetEditorState?.fieldsId}")
+                }
             }catch (e: Exception) {
                 // maybe will got NPE, if language changed to null by a new analyze
                 MyLog.e(TAG, "#sendUpdateStylesRequest() err: call `TextMateUtil.setReceiverThenDoAct()` err: targetFieldsId=${receiver.editorState?.fieldsId}, err=${e.stackTraceToString()}")
@@ -507,6 +511,26 @@ class MyCodeEditor(
         release()
         // already released, so no need clean unused styles anymore
         undoStack.value.reset("", force = true, cleanUnusedStyles = false)
+    }
+
+    suspend fun doActWithLatestEditorState(owner: String, act: suspend (TextEditorState) -> Unit) {
+        if(AppModel.devModeOn) {
+            MyLog.i(TAG, "owner locked: $owner")
+        }
+
+        textEditorStateOnChangeLock.withLock {
+            act(editorState.value)
+        }
+
+        if(AppModel.devModeOn) {
+            MyLog.i(TAG, "owner freed: $owner")
+        }
+    }
+
+    fun doActWithLatestEditorStateInCoroutine(owner: String, act: suspend (TextEditorState) -> Unit) {
+        doJobThenOffLoading {
+            doActWithLatestEditorState(owner, act)
+        }
     }
 
 

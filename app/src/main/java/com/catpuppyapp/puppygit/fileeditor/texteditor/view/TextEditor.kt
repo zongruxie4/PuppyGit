@@ -71,9 +71,9 @@ import com.catpuppyapp.puppygit.dev.bug_Editor_SelectColumnRangeOfLine_Fixed
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.FindDirection
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.LineChangeType
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.MyTextFieldState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.SelectionOption
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.MyTextFieldState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -1082,7 +1082,7 @@ fun TextEditor(
 
                 ) { modifier ->
 
-                    val textFieldState = textEditorState.obtainHighlightedTextField(textFieldState)
+                    val textFieldState = textEditorState.obtainHighlightedTextField(textFieldState).let { remember(it) { it } }
 
                     // FileEditor里的innerTextFiled()会执行这的代码
                     Box(
@@ -1133,15 +1133,14 @@ fun TextEditor(
                             enabled = !textEditorState.isMultipleSelectionMode,
                             fontSize = fontSize.intValue,
                             fontColor = fontColor,
-                            onUpdateText = { newTextFieldValue, textChanged ->
+                            onUpdateText = { newTextFieldValue ->
 
-                                doJobThenOffLoading {
+                                val act: suspend (TextEditorState) -> Unit = { textEditorState ->
                                     try{
 
                                         textEditorState.updateField(
                                             targetIndex = index,
                                             textFieldValue = newTextFieldValue,
-                                            textChanged = textChanged
                                         )
 
                                     }catch (e:IndexOutOfBoundsException) {
@@ -1156,14 +1155,17 @@ fun TextEditor(
                                     }
                                 }
 
-                                //改用onFocus定位最后编辑行了，这里不需要了，实际上现在的最后编辑行就是光标最后所在行
-//                                            lastScrollEvent = ScrollEvent(index)
+                                doJobThenOffLoading {
+                                    textEditorState.codeEditor?.doActWithLatestEditorState("#onUpdateText") {
+                                        act(it)
+                                    }
+                                }
                             },
                             onContainNewLine = cb@{ newTextFieldValue ->
                                 //这里为什么要判断这个东西？无所谓，反正没毛病，不用改
                                 if (lastScrollEvent.value?.isConsumed == false) return@cb
 
-                                doJobThenOffLoading {
+                                val act: suspend (TextEditorState) -> Unit = { textEditorState ->
                                     try {
                                         textEditorState.splitNewLine(
                                             targetIndex = index,
@@ -1175,6 +1177,12 @@ fun TextEditor(
                                         Msg.requireShowLongDuration("#onContainNewLine err: "+e.localizedMessage)
 
                                         MyLog.e(TAG, "#onContainNewLine err: "+e.stackTraceToString())
+                                    }
+                                }
+
+                                doJobThenOffLoading {
+                                    textEditorState.codeEditor?.doActWithLatestEditorState("#onContainNewLine") {
+                                        act(it)
                                     }
                                 }
 

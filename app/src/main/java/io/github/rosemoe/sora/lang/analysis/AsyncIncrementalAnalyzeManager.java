@@ -29,6 +29,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.catpuppyapp.puppygit.dev.DevFlagKt;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -604,8 +606,15 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
                         }
                         break;
                 }
+                if(DevFlagKt.printIncrementalSyntaxHighlightText()) {
+                    Log.i("AsyncAnalysis", "length: "+shadowed.length()+", content: " +shadowed);
+                }
                 return true;
             } catch (Exception e) {
+                if(DevFlagKt.printIncrementalSyntaxHighlightText()) {
+                    Log.i("AsyncAnalysis", "err: length: "+shadowed.length()+", content: " +shadowed);
+                }
+
                 Log.w("AsyncAnalysis", "Thread " + Thread.currentThread().getName() + " failed", e);
             }
             return false;

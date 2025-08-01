@@ -403,7 +403,7 @@ fun FileEditor(
 
                                         // backspace
                                         if (backspacePressed(event, selection) {
-                                                doJobThenOffLoading {
+                                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#onBackspacePressed") { textEditorState ->
                                                     try {
                                                         textEditorState.deleteNewLine(targetIndex = index)
                                                         scrollIfIndexInvisible(index - 1)
