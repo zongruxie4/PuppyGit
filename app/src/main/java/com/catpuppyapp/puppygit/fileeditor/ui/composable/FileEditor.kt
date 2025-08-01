@@ -477,7 +477,8 @@ fun FileEditor(
 
 
                                         if (goLeftPressed(event, textFieldState) { lineSwitched ->
-                                                doJobThenOffLoading {
+                                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#moveCursor") { textEditorState ->
+
                                                     try {
                                                         textEditorState.moveCursor(
                                                             trueToLeftFalseRight = true,
@@ -499,7 +500,8 @@ fun FileEditor(
                                         }
 
                                         if (goRightPressed(event, textFieldState) { lineSwitched ->
-                                                doJobThenOffLoading {
+                                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#moveCursor") { textEditorState ->
+
                                                     try {
                                                         textEditorState.moveCursor(
                                                             trueToLeftFalseRight = false,
@@ -521,7 +523,8 @@ fun FileEditor(
                                         }
 
                                         if (goHomePressed(event, textFieldState) {
-                                                doJobThenOffLoading {
+                                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#moveCursor") { textEditorState ->
+
                                                     try {
                                                         textEditorState.moveCursor(
                                                             trueToLeftFalseRight = true,
@@ -542,7 +545,8 @@ fun FileEditor(
                                         }
 
                                         if (goEndPressed(event, textFieldState) {
-                                                doJobThenOffLoading {
+                                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#moveCursor") { textEditorState ->
+
                                                     try {
                                                         textEditorState.moveCursor(
                                                             trueToLeftFalseRight = false,
@@ -702,7 +706,8 @@ fun FileEditor(
                                 // shift + tab
                                 if(keyEvent.key == Key.Tab && keyEvent.isShiftPressed) {
                                     if(textEditorState.isMultipleSelectionMode) {
-                                        doJobThenOffLoading {
+                                        textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#indentLines") { textEditorState ->
+
                                             textEditorState.let { it.indentLines(tabIndentSpacesCount.value, it.selectedIndices, trueTabFalseShiftTab = false) }
                                         }
 
@@ -725,7 +730,8 @@ fun FileEditor(
                                 // tab
                                 if(keyEvent.key == Key.Tab && !keyEvent.isShiftPressed) {
                                     if(textEditorState.isMultipleSelectionMode) {
-                                        doJobThenOffLoading {
+                                        textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#indentLines") { textEditorState ->
+
                                             textEditorState.let { it.indentLines(tabIndentSpacesCount.value, it.selectedIndices, trueTabFalseShiftTab = true) }
                                         }
 
@@ -1099,15 +1105,17 @@ fun FileEditor(
                     )
                     val iconOnClickList = listOf(
                         onShiftTab@{
-                            doJobThenOffLoading {
-                                textEditorState.value.let { it.indentLines(tabIndentSpacesCount.value, it.selectedIndices, trueTabFalseShiftTab = false) }
+                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#indentLines") { textEditorState ->
+
+                                textEditorState.let { it.indentLines(tabIndentSpacesCount.value, it.selectedIndices, trueTabFalseShiftTab = false) }
                             }
 
                             Unit
                         },
                         onTab@{
-                            doJobThenOffLoading {
-                                textEditorState.value.let { it.indentLines(tabIndentSpacesCount.value, it.selectedIndices, trueTabFalseShiftTab = true) }
+                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#indentLines") { textEditorState ->
+
+                                textEditorState.let { it.indentLines(tabIndentSpacesCount.value, it.selectedIndices, trueTabFalseShiftTab = true) }
                             }
 
                             Unit
