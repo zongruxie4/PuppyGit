@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
@@ -87,17 +88,19 @@ private fun <T> SelectedItemDialog2(
 //            text = selectedItemsShortDetailsStr.value,
         requireShowTextCompose = true,
         textCompose = {
-            ScrollableColumn {
+            LazyColumn {
                 selectedItems.forEachBetter {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        text(it)
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            text(it)
 
-                        trailIcon(it)
+                            trailIcon(it)
+                        }
+
+                        MyHorizontalDivider()
                     }
-
-                    MyHorizontalDivider()
                 }
 
             }
