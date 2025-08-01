@@ -2315,7 +2315,7 @@ class TextEditorState(
 
     // only remove line break
     private fun updateStylesAfterDeletedLineBreak(
-        baseFields: MutableList<MyTextFieldState>,
+        baseFields: List<MyTextFieldState>,
         stylesResult: StylesResult,
         startLineIndex: Int,
         ignoreThis: Boolean,
@@ -2357,11 +2357,6 @@ class TextEditorState(
 //
 //        val isDelLastLine = endLineIndexInclusive == baseFields.lastIndex
 
-        // end line idx greater than start line index, so remove first then set is ok
-        val removedLineContent = baseFields.removeAt(endLineIndexInclusive)
-        val lastLineContent = baseFields.get(startLineIndex)
-        baseFields.set(startLineIndex, lastLineContent.copy(value = lastLineContent.value.copy(lastLineContent.value.text + removedLineContent.value.text)))
-
 
         MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fields.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
 
@@ -2394,8 +2389,10 @@ class TextEditorState(
     //删除一行：上行length到这行length，不考虑 \n
     //添加一行：和删除一样
     //index是包含\n的
+    // if delete lines, use descend order to avoid calculate index wrong,
+    //   explain: delete index 8 will not affect index before 8, so need descend, else the delete logic must change
     private fun updateStylesAfterDeleteLine(
-        baseFields: MutableList<MyTextFieldState>,
+        baseFields: List<MyTextFieldState>,
         stylesResult: StylesResult,
         startLineIndex: Int,
         ignoreThis: Boolean,
@@ -2444,12 +2441,13 @@ class TextEditorState(
         // it just emulate real action
         // for later condition check
         val deletedContent = if(keepLine) {  // only clear field but keep the line
-            baseFields.set(startLineIndex, MyTextFieldState(TextFieldValue(""))).value.text
+            baseFields.get(startLineIndex).value.text
         } else {  // remove the line
-            baseFields.removeAt(endLineIndex).value.text
+            baseFields.get(endLineIndex).value.text + "\n"
         }
 
-        MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size}, newState.fields.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
+        // baseFields size should - 1 after deleted
+        MyLog.d(TAG, "#$funName: start=$start, end=$end, baseFields.size=${baseFields.size - 1}, newState.fields.size=${newTextEditorState.fields.size}, spansCount=${stylesResult.styles.spans.lineCount}")
 
 
 //        println("baseFields[insertIndex].value.text: ${baseFields.getOrNull(end.line)?.value?.text}")
@@ -2457,17 +2455,16 @@ class TextEditorState(
 
         // style will update spans
         stylesResult.styles.adjustOnDelete(start, end)
-        MyLog.d(TAG, "#$funName: adjusted on delete, spans.lineCount = ${stylesResult.styles.spans.lineCount}, baseFields.size = ${baseFields.size}")
+        MyLog.d(TAG, "#$funName: adjusted on delete, spans.lineCount = ${stylesResult.styles.spans.lineCount}, baseFields.size = ${baseFields.size - 1}")
 
 
-        val deletedText = deletedContent + (if(keepLine) "" else "\n")
         val lang = codeEditor?.myLang
         if(lang != null) {
             codeEditor.sendUpdateStylesRequest(
                 StylesUpdateRequest(
                     ignoreThis = ignoreThis,
                     targetEditorState = newTextEditorState,
-                    act = { lang.analyzeManager.delete(start, end, deletedText, it) }
+                    act = { lang.analyzeManager.delete(start, end, deletedContent, it) }
                 )
             )
         }
@@ -2475,14 +2472,15 @@ class TextEditorState(
     }
 
     private fun updateStylesAfterInsertLine(
-        baseFields: MutableList<MyTextFieldState>,
+        baseFields: List<MyTextFieldState>,
         stylesResult: StylesResult,
-        startLineIndex: Int,
         ignoreThis: Boolean,
         insertedContent: String,
+        insertedContentRangeInNewFields: IntRange,
         newTextEditorState: TextEditorState,
     ) {
         val funName = "updateStylesAfterInsertLine"
+        val startLineIndex = insertedContentRangeInNewFields.start
         MyLog.d(TAG, "$funName: startLineIndex=$startLineIndex, baseFields.size=${baseFields.size}, $stylesResult")
 
         if(reAnalyzeBetterThanIncremental(newTextEditorState.fields, ignoreThis)) {
@@ -2497,7 +2495,9 @@ class TextEditorState(
         }
 
 
-        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, false)
+        // I forgot why the offset 1, just make sure same behavior with old code
+        // 忘了为什么偏移1，只是为了匹配之前定位到end的代码，但后来改了代码，不再用baseFields模拟修改，所以不能再定位到end了，不然会多出对应行的文本长度，但直接减长度也不合适，因为有特殊情况，比如列表为空或者定位到最后一行的末尾，等。
+        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = true, offsetInNormalCase = 1)
         if(startIdxOfText < 0) {
             MyLog.w(TAG, "`startIndexOfText` invalid: $startIdxOfText")
             return
@@ -2505,18 +2505,10 @@ class TextEditorState(
 
 
 
-        // 这个LineChangeType.NEW可有可无，因为这个baseFields实际不是textstate应用的state
-        var insertIndex = startLineIndex
-        insertedContent.lines().forEachIndexed { idx, it ->
-            if(idx == 0) {
-                baseFields.set(startLineIndex, MyTextFieldState(value = TextFieldValue(it)))
-            }else {
-                baseFields.add(++insertIndex, MyTextFieldState(value = TextFieldValue(it)))
-            }
-        }
-
         val start = CharPosition(startLineIndex, 0, startIdxOfText)
-        val end = CharPosition(insertIndex, baseFields.get(insertIndex).value.text.length, startIdxOfText + insertedContent.length)
+
+        val insertIndex = insertedContentRangeInNewFields.endInclusive
+        val end = CharPosition(insertIndex, newTextEditorState.fields.get(insertIndex).value.text.length, startIdxOfText + insertedContent.length)
 
 
 
@@ -2555,7 +2547,11 @@ class TextEditorState(
     fun getIndexOfText(
         baseFields: List<MyTextFieldState>,
         lineIdx: Int,
-        trueStartFalseEnd: Boolean
+        trueStartFalseEnd: Boolean,
+
+        // can be negative, if needs
+        // only add offset in normal cases, empty or length of full fields will not add the offset
+        offsetInNormalCase: Int = 0,
     ):Int {
         if(baseFields.isEmpty()) {
             return 0
@@ -2568,18 +2564,14 @@ class TextEditorState(
         val lineIdx = if(trueStartFalseEnd) lineIdx - 1 else lineIdx
         var li = -1
         var charIndex = 0
-//        var lastLine = ""
+
         while (++li <= lineIdx) {
             val f = baseFields.getOrNull(li) ?: return -1
             // +1 for '\n'
             charIndex += (f.value.text.length + 1)
-//            lastLine = f.value.text
         }
 
-        // +1 for '\n'
-//        val offset = if(!trueStartFalseEnd && lineIdx == baseFields.lastIndex) 0 else 1
-//        return charIndex + offset
-        return charIndex + (if(lineIdx == baseFields.lastIndex) -1 else 0)
+        return charIndex + (if(lineIdx == baseFields.lastIndex) -1 else 0) + offsetInNormalCase
     }
 
     suspend fun moveCursor(
