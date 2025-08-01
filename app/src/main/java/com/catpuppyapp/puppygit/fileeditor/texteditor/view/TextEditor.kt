@@ -36,6 +36,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -234,6 +235,8 @@ fun TextEditor(
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
     val conflictKeyword = remember(settings.editor.conflictStartStr) { mutableStateOf(settings.editor.conflictStartStr) }
 
+    val focusingLineIdx = rememberUpdatedState(textEditorState.focusingLineIdx)
+
 
     //最后显示屏幕范围的第一行的索引
 //    var lastFirstVisibleLineIndexState  by remember { mutableIntStateOf(lastEditedPos.firstVisibleLineIndex) }
@@ -261,7 +264,7 @@ fun TextEditor(
     }
 
 
-    fun getFocusedLineIdxOrFirstVisibleLine() = textEditorState.focusingLineIdx ?: listState.firstVisibleItemIndex;
+    fun getFocusedLineIdxOrFirstVisibleLine() = focusingLineIdx.value ?: listState.firstVisibleItemIndex;
 
     // search states
     // must call `initSearchPos()` before use this value to do search
@@ -619,7 +622,7 @@ fun TextEditor(
         //行号减1即要定位行的索引
         lastScrollEvent.value = ScrollEvent(
             index = linNumParseResult.lineNumToIndex(
-                curLineIndex = textEditorState.focusingLineIdx ?: listState.firstVisibleItemIndex,
+                curLineIndex = focusingLineIdx.value ?: listState.firstVisibleItemIndex,
                 maxLineIndex = textEditorState.fields.size
             ),
             forceGo = true,
@@ -962,7 +965,7 @@ fun TextEditor(
 
     val lastValidFocusingLineIdx = rememberSaveable { mutableIntStateOf(0) }
     val lastValidEditedColumnLineIndex = rememberSaveable { mutableIntStateOf(0) }
-    LaunchedEffect(textEditorState.focusingLineIdx) {
+    LaunchedEffect(focusingLineIdx.value) {
         val (lineIdx, field) = textEditorState.getCurrentField()
 
         if(lineIdx != null && field != null) {
@@ -1082,7 +1085,7 @@ fun TextEditor(
                     textFieldState,
 
                     //用来判断是否选中当前行，若选中则加背景颜色，如果为null就当作-1，-1为无效索引，这样就不会选中任何行
-                    textEditorState.focusingLineIdx ?: -1,
+                    focusingLineIdx.value ?: -1,
                     textEditorState.isMultipleSelectionMode,
 
                 ) { modifier ->
@@ -1128,7 +1131,7 @@ fun TextEditor(
 //                                    focusThisLine = if(textEditorState.isContentEdited.value) index == textEditorState.focusingLineIdx else false,
                             //仅当搜索模式，或者内容发生变化（比如换行）时光标才会自动聚焦，否则不聚焦，这样是为了避免切换页面再回来自动弹出键盘
 //                                    focusThisLine = if(searchMode.value || textEditorState.isContentEdited.value) index == textEditorState.focusingLineIdx else false,
-                            focusThisLine = index == textEditorState.focusingLineIdx,
+                            focusThisLine = index == focusingLineIdx.value,
                             //默认不自动聚焦任何行，不然一切换页面再回来弹出键盘，恶心
 //                                    focusThisLine = false,
 
