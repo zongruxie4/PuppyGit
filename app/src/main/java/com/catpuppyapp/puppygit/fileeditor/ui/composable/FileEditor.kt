@@ -245,8 +245,8 @@ fun FileEditor(
     }
 
     val deleteSelectedLines = {
-        doJobThenOffLoading {
-            textEditorState.value.deleteSelectedLines()
+        textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#deleteSelectedLines") { textEditorState ->
+            textEditorState.deleteSelectedLines()
         }
     }
 
@@ -630,7 +630,7 @@ fun FileEditor(
                                         )
 
                                         if(isCtrlAndX) {
-                                            doJobThenOffLoading {
+                                            textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#deleteSelectedLines") { textEditorState ->
                                                 textEditorState.deleteSelectedLines()
                                             }
                                         }
@@ -663,7 +663,7 @@ fun FileEditor(
 
                                             if(isCtrlAndX) {
                                                 // delete the line
-                                                doJobThenOffLoading {
+                                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#deleteLineByIndices") { textEditorState ->
                                                     textEditorState.deleteLineByIndices(listOf(currentIndex))
                                                 }
                                             }

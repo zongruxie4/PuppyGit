@@ -884,7 +884,7 @@ fun TextEditor(
         ) {
             showAcceptConfirmDialog.value=false
 
-            doJobThenOffLoading {
+            textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#deleteLineByIndices") { textEditorState ->
                 try {
                     var baseFields:List<MyTextFieldState>? = null
 
