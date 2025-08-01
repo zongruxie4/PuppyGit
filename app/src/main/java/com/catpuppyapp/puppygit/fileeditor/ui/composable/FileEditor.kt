@@ -1169,8 +1169,9 @@ fun FileEditor(
                                 return@onPaste
                             }
 
-                            doJobThenOffLoading {
-                                textEditorState.value.paste(
+                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#paste") { textEditorState ->
+
+                                textEditorState.paste(
                                     text = clipboardText,
 
                                     // after pasted, scroll to the last line
