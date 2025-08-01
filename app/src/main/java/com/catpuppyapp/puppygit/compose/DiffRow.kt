@@ -66,7 +66,7 @@ private const val TAG = "DiffRow"
  * @param stringPartList 如果用不到，可传null或使用默认值（null）
  */
 @Composable
-fun DiffRow (
+fun DiffRow(
     stateKeyTag:String,
     index:Int,
     line:PuppyLine,
@@ -356,7 +356,7 @@ fun DiffRow (
             )
         }
 
-        val obtainStylePartList = { diffItemSaver.obtainStylePartListOrNullIfBusy(line.key) }
+        val obtainStylePartList = { diffItemSaver.operateStylesMapWithReadLock { it.get(line.key) } }
 
         val contentModifier = Modifier
             // if fill max width, will not be able to saw the spaces at the end, because the background will fill the whole line;

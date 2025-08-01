@@ -16,18 +16,16 @@ import com.catpuppyapp.puppygit.utils.compare.CmpUtil
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
-import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getShortUUID
-import com.catpuppyapp.puppygit.utils.isLocked
 import com.catpuppyapp.puppygit.utils.noMoreHeapMemThenDoAct
 import com.github.git24j.core.Diff
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import java.util.EnumSet
 import java.util.TreeMap
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 
 
 // used to decide which addition line compare to which deletion line in the hunk.
@@ -99,7 +97,7 @@ data class DiffItemSaver (
     var changeType:String = Cons.gitStatusUnmodified,
 
     // styles
-    private val stylesMapLock: Mutex = Mutex(),
+    private val stylesMapLock: ReentrantReadWriteLock = ReentrantReadWriteLock(),
     // {PuppyLine.key: StylesResult}
     private val stylesMap: SnapshotStateMap<String, List<LineStylePart>> = mutableStateMapOf(),
 
@@ -197,20 +195,12 @@ data class DiffItemSaver (
         return false
     }
 
-    fun operateStylesMapWithWriteLock(act: (MutableMap<String, List<LineStylePart>>) -> Unit) {
-        doJobThenOffLoading {
-            stylesMapLock.withLock { act(stylesMap) }
-        }
+    fun <T> operateStylesMapWithWriteLock(act: (MutableMap<String, List<LineStylePart>>) -> T):T {
+        return stylesMapLock.write { act(stylesMap) }
     }
 
-    fun obtainStylePartListOrNullIfBusy(lineKey: String):List<LineStylePart>? {
-        return runBlocking {
-            if(isLocked(stylesMapLock)) {
-                null
-            }else {
-                stylesMapLock.withLock { stylesMap.get(lineKey) }
-            }
-        }
+    fun <T> operateStylesMapWithReadLock(act: (MutableMap<String, List<LineStylePart>>) -> T):T {
+        return stylesMapLock.read { act(stylesMap) }
     }
 
 
