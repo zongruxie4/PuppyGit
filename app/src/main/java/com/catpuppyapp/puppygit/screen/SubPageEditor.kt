@@ -21,8 +21,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
-import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.SmallFab
@@ -42,6 +40,8 @@ import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
@@ -387,22 +387,26 @@ fun SubPageEditor(
                             }
                         }
                     }else {
+                        val (tooltipText, icon, iconContentDesc) = if(editorNeedSave()) {
+                            Triple(stringResource(R.string.save), Icons.Filled.Save, stringResource(R.string.save))
+                        }else {
+                            Triple(stringResource(R.string.back), Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        }
+
                         LongPressAbleIconBtn(
-                            tooltipText = stringResource(R.string.back),
-                            icon = if(editorNeedSave()) Icons.Filled.Save else Icons.AutoMirrored.Filled.ArrowBack,
-                            iconContentDesc = stringResource(R.string.back),
+                            tooltipText = tooltipText,
+                            icon = icon,
+                            iconContentDesc = iconContentDesc,
                         ) {
                             doJobThenOffLoading {
-//                            isTimeNaviUp.value=false
                                 //未保存，先保存，再点击，再返回
+                                // save first, then press again to navi back
                                 if(editorNeedSave()) {
-//                                doSave()这个得改一下，不要在外部保存
                                     editorPageRequestFromParent.value = PageRequest.requireSave
                                     return@doJobThenOffLoading
                                 }
 
-                                //返回
-//                            isTimeNaviUp.value=true
+                                //navi back
                                 withContext(Dispatchers.Main) {
                                     naviUp()
                                 }
