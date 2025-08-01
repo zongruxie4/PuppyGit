@@ -10,13 +10,14 @@ import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
 import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.ContentReference
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 
 private const val TAG = "HunkSyntaxHighlighter"
@@ -25,7 +26,7 @@ class HunkSyntaxHighlighter(
     val hunk: PuppyHunkAndLines,
 ) {
     val appContext: Context = AppModel.realAppContext
-    val analyzeLock = ReentrantLock()
+    val analyzeLock = Mutex()
     var myLang: TextMateLanguage? = null
 
 
@@ -42,12 +43,14 @@ class HunkSyntaxHighlighter(
         }
 
 
-        analyzeLock.withLock {
-            if(noMoreMemory(noMoreMemToaster)) {
-                return
-            }
+        doJobThenOffLoading job@{
+            analyzeLock.withLock {
+                if(noMoreMemory(noMoreMemToaster)) {
+                    return@job
+                }
 
-            doAnalyzeNoLock(scope)
+                doAnalyzeNoLock(scope)
+            }
         }
     }
 

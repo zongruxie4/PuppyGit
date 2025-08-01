@@ -491,7 +491,9 @@ fun EditorInnerPage(
         // start: reset syntax highlighting related vars
         codeEditor.value.reset(FuckSafFile(AppModel.realAppContext, emptyPath), force = true)
         // end: reset syntax highlighting related vars
-        undoStack.reset("", force = true)
+        doJobThenOffLoading {
+            undoStack.reset("", force = true)
+        }
 //        changeStateTriggerRefreshPage(needRefreshEditorPage)
     }
 
@@ -1785,7 +1787,9 @@ fun EditorInnerPage(
 
                     // text editor state changed, so we should clear redo stack
                     // and push currently text editor state into undo stack
-                    undoStack.clearRedoStackThenPushToUndoStack(editorPageTextEditorState.value, force = true)
+                    doJobThenOffLoading {
+                        undoStack.clearRedoStackThenPushToUndoStack(editorPageTextEditorState.value, force = true)
+                    }
 
                     // set force to false to check last saved file info to avoid nonsense reload,
                     //   but most time the file need a force reload when reached here, because we already detected changes,

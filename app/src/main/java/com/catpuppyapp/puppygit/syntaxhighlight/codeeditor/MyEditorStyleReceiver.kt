@@ -8,6 +8,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import io.github.rosemoe.sora.lang.styling.Styles
+import kotlinx.coroutines.runBlocking
 
 private const val TAG = "MyEditorStyleReceiver"
 
@@ -43,7 +44,8 @@ class MyEditorStyleReceiver(
                 //   执行到这里，发现其时间戳大于状态1的，这时这个判断就会失效
                 // this check may invalid after undo did, but not big problem, just will save few invalid styles
                 && FieldsId.parse(latestFieldsId).timestamp > FieldsId.parse(carriedFieldsId).timestamp
-                && codeEditor.undoStack.value.contains(carriedFieldsId).not())
+                && runBlocking { codeEditor.undoStack.value.contains(carriedFieldsId).not()}
+        )
 
         if(isUnusedFieldsId) {
             if(AppModel.devModeOn) {

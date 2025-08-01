@@ -15,8 +15,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
-import com.catpuppyapp.puppygit.constants.IndentChar
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.IndentChar
 import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.AppInfo
@@ -48,7 +48,6 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.locks.ReentrantLock
 import kotlin.io.path.exists
 import kotlin.math.absoluteValue
 
@@ -1190,13 +1189,6 @@ suspend fun isLocked(mutex: Mutex):Boolean {
     //先延迟一毫秒再检查，不然短时间内检查isLocked可能有误
     delay(1)
     return mutex.isLocked
-}
-
-suspend fun isLocked(lock: ReentrantLock):Boolean {
-    // delay 1 to make locked check more correct
-    //先延迟一毫秒再检查，不然短时间内检查isLocked可能有误
-    delay(1)
-    return lock.isLocked
 }
 
 suspend fun doActWithLockIfFree(mutex: Mutex, whoCalled:String, act: suspend ()->Unit) {

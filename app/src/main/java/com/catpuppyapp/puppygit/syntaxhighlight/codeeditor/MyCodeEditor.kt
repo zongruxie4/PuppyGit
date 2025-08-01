@@ -7,14 +7,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dto.UndoStack
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.MyTextFieldState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
-import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope.AUTO
-import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope.NONE
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLTheme
 import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -39,8 +37,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 import kotlin.math.absoluteValue
 
 
@@ -94,9 +90,8 @@ class MyCodeEditor(
     // key is `syntaxHighlightId` of `MyTextFieldState`
     val annotatedStringCachedMap: MutableMap<String, AnnotatedString> = ConcurrentMap()
 
-    private val stylesRequestLock = ReentrantLock(true)
-    private val analyzeLock = ReentrantLock(true)
-//    val stylesApplyLock = ReentrantLock(true)
+    private val stylesRequestLock = Mutex()
+    private val analyzeLock = Mutex()
 
     private val delayAnalyzingTaskLock = Mutex()
 
@@ -143,17 +138,17 @@ class MyCodeEditor(
     // reset plScope state
     // 重置 plScope state，影响编辑器语法高亮弹窗选中的语言
     fun resetPlScope() {
-        plScope.value = AUTO
+        plScope.value = PLScope.AUTO
     }
 
 
     private fun updatePlScopeIfNeeded(plScope: MutableState<PLScope>, fileName: String) {
         // if was detected language or selected by user, then will not update program language scope again
-        if(plScope.value == AUTO) {
+        if(plScope.value == PLScope.AUTO) {
             plScope.value = if(SettingsUtil.isEditorSyntaxHighlightEnabled()) {
                 PLScope.guessScopeType(fileName)
             }else {
-                NONE
+                PLScope.NONE
             }
         }
     }
@@ -217,41 +212,43 @@ class MyCodeEditor(
             return
         }
 
-        stylesRequestLock.withLock {
-            if(plScopeStateInvalid()) {
-                return
-            }
-
-            if(noMoreMemory()) {
-                return
-            }
-
-            val targetEditorState = if(stylesUpdateRequest.ignoreThis) {
-                null
-            }else {
-                stylesUpdateRequest.targetEditorState
-            }
-
-
-            // updated: 修改了 sora editor相关代码，现在在执行操作前先设置styles receiver就可确保大概率收到新样式的是当前操作执行前设置的receiver
-            // x 这个可能导致问题，想象一下：为textEditorState实例1设置了receiver，然后执行分析，
-            //   收到结果前，又为textEditorState实例2设置了receiver，
-            //   这时，textEditorState实例2就可能会收到1的分析结果，这个分析结果就会错误绑定到实例2，实例1就没样式了
-            //   但是，及时如此，也比用channel靠谱。
-            //   最好的解决方案：应该让receiver把执行分析时关联的text editor state实例绑定上，或者，只创建一个editor state实例，
-            //   后者可以实现，但需要修改撤销机制，因为目前的撤销机制是直接存储整个editor实例，如果改成只存fields，就行了，
-            //   不对，好像还是无法解决哪个styles的结果和哪个editor state实例关联的问题。。。。。。。
-            val receiver = genNewStyleDelegate(targetEditorState)
-            try {
-                TextMateUtil.setReceiverThenDoAct(language, receiver, stylesUpdateRequest.act)
-
-                if(AppModel.devModeOn) {
-                    MyLog.i(TAG, "send syntax highlight analyze request for fieldsId: ${targetEditorState?.fieldsId}")
+        doJobThenOffLoading job@{
+            stylesRequestLock.withLock {
+                if(plScopeStateInvalid()) {
+                    return@job
                 }
-            }catch (e: Exception) {
-                // maybe will got NPE, if language changed to null by a new analyze
-                MyLog.e(TAG, "#sendUpdateStylesRequest() err: call `TextMateUtil.setReceiverThenDoAct()` err: targetFieldsId=${receiver.editorState?.fieldsId}, err=${e.stackTraceToString()}")
 
+                if(noMoreMemory()) {
+                    return@job
+                }
+
+                val targetEditorState = if(stylesUpdateRequest.ignoreThis) {
+                    null
+                }else {
+                    stylesUpdateRequest.targetEditorState
+                }
+
+
+                // updated: 修改了 sora editor相关代码，现在在执行操作前先设置styles receiver就可确保大概率收到新样式的是当前操作执行前设置的receiver
+                // x 这个可能导致问题，想象一下：为textEditorState实例1设置了receiver，然后执行分析，
+                //   收到结果前，又为textEditorState实例2设置了receiver，
+                //   这时，textEditorState实例2就可能会收到1的分析结果，这个分析结果就会错误绑定到实例2，实例1就没样式了
+                //   但是，及时如此，也比用channel靠谱。
+                //   最好的解决方案：应该让receiver把执行分析时关联的text editor state实例绑定上，或者，只创建一个editor state实例，
+                //   后者可以实现，但需要修改撤销机制，因为目前的撤销机制是直接存储整个editor实例，如果改成只存fields，就行了，
+                //   不对，好像还是无法解决哪个styles的结果和哪个editor state实例关联的问题。。。。。。。
+                val receiver = genNewStyleDelegate(targetEditorState)
+                try {
+                    TextMateUtil.setReceiverThenDoAct(language, receiver, stylesUpdateRequest.act)
+
+                    if(AppModel.devModeOn) {
+                        MyLog.i(TAG, "send syntax highlight analyze request for fieldsId: ${targetEditorState?.fieldsId}")
+                    }
+                }catch (e: Exception) {
+                    // maybe will got NPE, if language changed to null by a new analyze
+                    MyLog.e(TAG, "#sendUpdateStylesRequest() err: call `TextMateUtil.setReceiverThenDoAct()` err: targetFieldsId=${receiver.editorState?.fieldsId}, err=${e.stackTraceToString()}")
+
+                }
             }
         }
     }
@@ -280,8 +277,10 @@ class MyCodeEditor(
         }
 
 
-        analyzeLock.withLock {
-            doAnalyzeNoLock(editorState, plScope)
+        doJobThenOffLoading {
+            analyzeLock.withLock {
+                doAnalyzeNoLock(editorState, plScope)
+            }
         }
     }
 
@@ -509,8 +508,11 @@ class MyCodeEditor(
     fun releaseAndClearUndoStack() {
         // clean all syntax highlight styles
         release()
+
         // already released, so no need clean unused styles anymore
-        undoStack.value.reset("", force = true, cleanUnusedStyles = false)
+        doJobThenOffLoading {
+            undoStack.value.reset("", force = true, cleanUnusedStyles = false)
+        }
     }
 
     suspend fun doActWithLatestEditorState(owner: String, act: suspend (TextEditorState) -> Unit) {

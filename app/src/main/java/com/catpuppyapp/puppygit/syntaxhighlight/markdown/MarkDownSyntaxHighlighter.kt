@@ -8,11 +8,12 @@ import com.catpuppyapp.puppygit.syntaxhighlight.base.PLTheme
 import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
 import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.ContentReference
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 
 private const val TAG = "MarkDownSyntaxHighlighter"
@@ -22,7 +23,7 @@ class MarkDownSyntaxHighlighter(
     val onReceive: (AnnotatedString) -> Unit,
 ) {
     val appContext: Context = AppModel.realAppContext
-    val analyzeLock = ReentrantLock()
+    val analyzeLock = Mutex()
     var myLang: TextMateLanguage? = null
     val scope = PLScope.MARKDOWN
 
@@ -34,8 +35,10 @@ class MarkDownSyntaxHighlighter(
     fun getTextLines() = text.lines()
 
     fun analyze() {
-        analyzeLock.withLock {
-            doAnalyzeNoLock()
+        doJobThenOffLoading {
+            analyzeLock.withLock {
+                doAnalyzeNoLock()
+            }
         }
     }
 

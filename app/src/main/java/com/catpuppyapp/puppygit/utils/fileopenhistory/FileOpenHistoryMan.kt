@@ -26,10 +26,7 @@ object FileOpenHistoryMan {
     private lateinit var _file: File
     private lateinit var _saveDir: File
 
-//    private val curHistoryRwLock: ReadWriteLock = ReentrantReadWriteLock()
     private var curHistory: FileOpenHistory = FileOpenHistory()
-//        get() = curHistoryRwLock.readLock().withLock { field }
-//        set(value) = curHistoryRwLock.writeLock().withLock { field = value }
 
 
     private val lock = Mutex()

@@ -1,12 +1,12 @@
 package com.catpuppyapp.puppygit.dto
 
-import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.getSecFromTime
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.LinkedList
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
 private const val TAG = "UndoStack"
 
@@ -40,12 +40,12 @@ class UndoStack(
 
     private var undoStack:LinkedList<TextEditorState> = LinkedList(),
     private var redoStack:LinkedList<TextEditorState> = LinkedList(),
-    private var undoLock: ReentrantLock = ReentrantLock(true),
-    private var redoLock: ReentrantLock = ReentrantLock(true),
+    private var undoLock: Mutex = Mutex(),
+    private var redoLock: Mutex = Mutex(),
     var codeEditor: MyCodeEditor? = null,
 ) {
 
-    fun reset(filePath:String, force:Boolean, cleanUnusedStyles: Boolean = true) {
+    suspend fun reset(filePath:String, force:Boolean, cleanUnusedStyles: Boolean = true) {
         if(cleanUnusedStyles) {
             this.cleanUnusedStyles()
         }
@@ -60,11 +60,11 @@ class UndoStack(
         undoLastSaveAt = 0L
         undoStack = LinkedList()
         redoStack = LinkedList()
-        undoLock = ReentrantLock(true)
-        redoLock = ReentrantLock(true)
+        undoLock = Mutex()
+        redoLock = Mutex()
     }
 
-    private fun cleanUnusedStyles() {
+    private suspend fun cleanUnusedStyles() {
         codeEditor?.let { codeEditor ->
             if(codeEditor.stylesMap.isNotEmpty()) {
                 undoLock.withLock {
@@ -115,8 +115,8 @@ class UndoStack(
     /**
      * @return true saved, false not saved
      */
-    fun undoStackPush(state: TextEditorState, force: Boolean = false):Boolean {
-        return undoLock.withLock {
+    suspend fun undoStackPush(state: TextEditorState, force: Boolean = false) {
+        undoLock.withLock {
             redoLock.withLock {
                 undoStackPushNoLock(state, force)
             }
@@ -162,7 +162,7 @@ class UndoStack(
         return false
     }
 
-    fun undoStackPop(): TextEditorState? {
+    suspend fun undoStackPop(): TextEditorState? {
         return undoLock.withLock {
             undoStackPopNoLock()
         }
@@ -175,14 +175,14 @@ class UndoStack(
     /**
      * @return true saved, false not saved
      */
-    fun redoStackPush(state: TextEditorState):Boolean {
+    suspend fun redoStackPush(state: TextEditorState):Boolean {
         redoLock.withLock {
             push(redoStack, state)
             return true
         }
     }
 
-    fun redoStackPop(): TextEditorState? {
+    suspend fun redoStackPop(): TextEditorState? {
         redoLock.withLock {
             undoLock.withLock {
                 //为使弹出的状态可立刻被undo stack存上，所以将上次存储时间清0
@@ -202,7 +202,7 @@ class UndoStack(
         }
     }
 
-    fun redoStackClear() {
+    suspend fun redoStackClear() {
         redoLock.withLock {
             codeEditor?.let { codeEditor ->
                 undoLock.withLock {
@@ -261,7 +261,7 @@ class UndoStack(
         }
     }
 
-    fun updateUndoHeadIfNeed(latestState: TextEditorState) {
+    suspend fun updateUndoHeadIfNeed(latestState: TextEditorState) {
         if(undoStack.isEmpty()) {
             return
         }
@@ -269,14 +269,14 @@ class UndoStack(
         undoStackPopThenPush(latestState)
     }
 
-    private fun undoStackPopThenPush(state: TextEditorState) {
+    private suspend fun undoStackPopThenPush(state: TextEditorState) {
         undoLock.withLock {
             undoStackPopNoLock()
             undoStackPushNoLock(state)
         }
     }
 
-    fun contains(fieldsId: String):Boolean {
+    suspend fun contains(fieldsId: String):Boolean {
         return undoLock.withLock {
             redoLock.withLock {
                 containsNoLock(fieldsId)
@@ -296,7 +296,7 @@ class UndoStack(
         return redoStack.find { it.fieldsId == fieldsId } != null
     }
 
-    fun clear() {
+    suspend fun clear() {
         undoLock.withLock {
             undoStack.clear()
         }
@@ -305,7 +305,7 @@ class UndoStack(
         }
     }
 
-    fun clearRedoStackThenPushToUndoStack(state: TextEditorState, force: Boolean) {
+    suspend fun clearRedoStackThenPushToUndoStack(state: TextEditorState, force: Boolean) {
         // order is important, clear stack first can have better performance,
         //   because it will reduce contains check spent time when push
         // 顺序很重要，先清stack再push可有更好的性能，因为在push时会进行contains检测来决定是否清除state关联的styles

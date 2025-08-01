@@ -27,11 +27,7 @@ object SettingsUtil {
     private val saveChannel = Channel<AppSettings>(capacity = channelBufferSize, onBufferOverflow = BufferOverflow.SUSPEND)
     private val saveJobStarted = AtomicBoolean(false)
 
-//    private val appSettingsRwLock: ReadWriteLock = ReentrantReadWriteLock()
-    // have an user said he was got appSettings NPE err, I am not sure, maybe is concurrency problem, so I add a RW lock for appSettings.
     private var appSettings:AppSettings = AppSettings()
-//        get() = appSettingsRwLock.readLock().withLock { field }
-//        set(value) = appSettingsRwLock.writeLock().withLock { field = value }
 
     // if only need read some fields, better use this no-lock instance
 //    private var appSettingsReadOnly: AppSettings = AppSettings()
