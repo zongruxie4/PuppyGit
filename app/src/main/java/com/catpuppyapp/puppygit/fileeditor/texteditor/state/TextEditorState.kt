@@ -2467,8 +2467,7 @@ class TextEditorState(
         // it just emulate real action
         // for later condition check
         val deletedContent = if(keepLine) {  // only clear field but keep the line
-            baseFields.set(startLineIndex, MyTextFieldState(TextFieldValue("")))
-            ""
+            baseFields.set(startLineIndex, MyTextFieldState(TextFieldValue(""))).value.text
         } else {  // remove the line
             baseFields.removeAt(endLineIndex).value.text
         }
