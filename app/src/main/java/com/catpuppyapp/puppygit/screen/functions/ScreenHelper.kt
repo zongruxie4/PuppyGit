@@ -356,50 +356,35 @@ fun getEditorStateOnChange(
     resetLastCursorAtColumn: () -> Unit,
 ): suspend (newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean, caller: TextEditorState, from: EditorStateOnChangeCallerFrom?) -> Unit {
     return { newState, trueSaveToUndoFalseRedoNullNoSave, clearRedoStack, caller, from ->
-//        caller.codeEditor?.textEditorStateOnChangeLock?.withLock w@{
-        run w@{
-            val newState = if(from == EditorStateOnChangeCallerFrom.APPLY_SYNTAX_HIGHLIGHTING) {
-                newState
-            }else {
-                //如果新state的focusingLineIdx为负数，使用上个state的focusingLineIdx，这样是为了避免 updateField 更新索引，不然会和 selectField 更新索引冲突，有时会定位错
-
-                // 20250731: `onFocus` in `TextEditor` now disabled, and move focusingLineIdx to `TextEditorState.updateField()`,
-                //   so the else will never reach, but need more tests, so keep the code for now
-                // 20250731: `onFocus` in `TextEditor` 已禁用，并且将更新索引改到了`TextEditorState.updateField()`里，所以else语句永远不会被执行了，但需要更多测试，所以暂时保留代码
-                if(newState.focusingLineIdx.let { it == null || it >= 0 }) newState else newState.copy(focusingLineIdx = editorPageTextEditorState.value.focusingLineIdx)
-
-            }
+        val lastState = editorPageTextEditorState.value
+        editorPageTextEditorState.value = newState
 
 
-            val lastState = editorPageTextEditorState.value
-            editorPageTextEditorState.value = newState
+        // last state == null || 不等于新state的filesId，则入栈
+        //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
+        if(lastState.maybeNotEquals(newState)) {
+            // if content changed, reset remembered last cursor at column，then next time navigate line by Down/Up key will update the column to the expect value
+            // 如果内容改变，重置记录的光标所在列，这样下次按键盘上下键导航的位置就会重新更新为期望的值
+            resetLastCursorAtColumn()
 
-
-            // last state == null || 不等于新state的filesId，则入栈
-            //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
-            if(lastState.maybeNotEquals(newState)) {
-                // if content changed, reset remembered last cursor at column，then next time navigate line by Down/Up key will update the column to the expect value
-                // 如果内容改变，重置记录的光标所在列，这样下次按键盘上下键导航的位置就会重新更新为期望的值
-                resetLastCursorAtColumn()
-                if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
-                    // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
-                    // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
+            if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
+                // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
+                // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
 //                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
-                    //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
-                    if(clearRedoStack && !undoStack.redoStackIsEmpty()) {
-                        undoStack.clearRedoStackThenPushToUndoStack(lastState, force = true)
-                    }else {
-                        // if it is saved fields state, force push into stack
-                        undoStack.undoStackPush(lastState, force = lastState.fieldsId == lastSavedFieldsId.value)
-                    }
-
-                }else {  // false
-                    undoStack.redoStackPush(lastState)
+                //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
+                if(clearRedoStack && !undoStack.redoStackIsEmpty()) {
+                    undoStack.clearRedoStackThenPushToUndoStack(lastState, force = true)
+                }else {
+                    // if it is saved fields state, force push into stack
+                    undoStack.undoStackPush(lastState, force = lastState.fieldsId == lastSavedFieldsId.value)
                 }
 
+            }else {  // false
+                undoStack.redoStackPush(lastState)
             }
 
         }
+
     }
 }
 
