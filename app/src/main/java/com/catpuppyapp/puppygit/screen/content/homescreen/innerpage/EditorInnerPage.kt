@@ -159,7 +159,7 @@ fun EditorInnerPage(
 
     loadLock:Mutex,  // 避免重复加载的锁
     ignoreFocusOnce: MutableState<Boolean>,
-    softKbVisibleWhenLeavingEditor: MutableState<Boolean>,
+//    softKbVisibleWhenLeavingEditor: MutableState<Boolean>,
     previewLoading:MutableState<Boolean>,
     editorPreviewFileDto: CustomStateSaveable<FileSimpleDto>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
@@ -1719,7 +1719,7 @@ fun EditorInnerPage(
                 getLastCursorAtColumnValue = getLastCursorAtColumnValue,
 
                 ignoreFocusOnce = ignoreFocusOnce,
-                softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
+//                softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
                 requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
                 requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
                 isSubPageMode = isSubPageMode,

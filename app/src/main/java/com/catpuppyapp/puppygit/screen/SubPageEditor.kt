@@ -218,7 +218,7 @@ fun SubPageEditor(
     //初始值不用忽略，因为打开文件后默认focusing line idx为null，所以这个值是否忽略并没意义
     //这个值不能用state，不然修改state后会重组，然后又触发聚焦，就没意义了
     val ignoreFocusOnce = rememberSaveable { mutableStateOf(false) }
-    val softKbVisibleWhenLeavingEditor = rememberSaveable { mutableStateOf(false) }
+//    val softKbVisibleWhenLeavingEditor = rememberSaveable { mutableStateOf(false) }
 
 
     val settingsTmp = settings  //之前在这重新获取了一个，后来发现没必要，为避免改变量名，这直接赋值算了
@@ -546,7 +546,7 @@ fun SubPageEditor(
             editorRecentFilesQuitFilterMode = editorRecentFilesQuitFilterMode,
 
             ignoreFocusOnce = ignoreFocusOnce,
-            softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
+//            softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
 
             previewLoading = editorPagePreviewLoading,
             editorPreviewFileDto = editorPreviewFileDto,

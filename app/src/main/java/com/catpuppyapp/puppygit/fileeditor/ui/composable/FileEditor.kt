@@ -53,6 +53,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,8 +83,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.MarkDownContainer
@@ -92,8 +91,8 @@ import com.catpuppyapp.puppygit.compose.SelectedItemDialog3
 import com.catpuppyapp.puppygit.compose.SwipeIcon
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.MyTextFieldState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.lineNumOffsetForGoToEditor
@@ -101,7 +100,6 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.getClipboardText
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
-import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -141,7 +139,7 @@ fun FileEditor(
     getLastCursorAtColumnValue:()->Int,
 
     ignoreFocusOnce: MutableState<Boolean>,
-    softKbVisibleWhenLeavingEditor: MutableState<Boolean>,
+//    softKbVisibleWhenLeavingEditor: MutableState<Boolean>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     isSubPageMode:Boolean,
@@ -832,35 +830,27 @@ fun FileEditor(
 
                 // shit code start
                 //update soft keyboard visible state
-                SharedState.editor_softKeyboardIsVisible.value = UIHelper.isSoftkeyboardVisible()
-                val isOnPause = remember { mutableStateOf(false) }
-
-                // for hide the software keyboard
-                val createIgnoreFocusTextEditorStateIfNeed = label@{
-                    // this will not work for ON_PAUSE, even set focus index to null, will still restore software keyboard,
-                    //   so, just return at here
-                    if(isOnPause.value) {
-                        return@label
-                    }
-
-                    // if software keyboard disabled, no need lose focus, else try lose focus for avoid unexpected software keyboard popup
-                    if(ignoreFocusOnce.value && disableSoftKb.value.not()) {
-                        textEditorState.value = textEditorState.value.copy(focusingLineIdx = null)
-                    }
-                }
+                val kbVisible = rememberUpdatedState(UIHelper.isSoftkeyboardVisible())
 
                 // old version compose will call disposable effect and ON_PAUSE lifecycle together, but now changed behavior?
                 DisposableEffect(Unit) {
                     onDispose {
-                        isOnPause.value = false
-                        MyLog.d(TAG, "FileEditor#DisposableEffect#onDispose: called, imeVisible=${SharedState.editor_softKeyboardIsVisible.value}")
-                        ignoreFocusOnce.value = softKbVisibleWhenLeavingEditor.value.not() && SharedState.editor_softKeyboardIsVisible.value.not();
-                        softKbVisibleWhenLeavingEditor.value = false
+                        if(AppModel.devModeOn) {
+                            MyLog.d(TAG, "FileEditor#DisposableEffect#onDispose: called, imeVisible=${kbVisible.value}")
+                        }
 
-                        createIgnoreFocusTextEditorStateIfNeed()
+                        val kbHidden = !kbVisible.value
+                        ignoreFocusOnce.value = kbHidden
 
-                        MyLog.d(TAG, "FileEditor#DisposableEffect#onDispose: called, ignoreFocusOnce=${ignoreFocusOnce.value}")
+                        // if software keyboard disabled, no need lose focus,
+                        //   else will try lose focus for avoid unexpected software keyboard popup
+                        if(kbHidden && !disableSoftKb.value) {
+                            textEditorState.value = textEditorState.value.copy(focusingLineIdx = null)
+                        }
 
+                        if(AppModel.devModeOn) {
+                            MyLog.d(TAG, "FileEditor#DisposableEffect#onDispose: called, ignoreFocusOnce=${ignoreFocusOnce.value}")
+                        }
                     }
                 }
 
@@ -873,20 +863,21 @@ fun FileEditor(
 //                    }
 //                }
 
-                LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
-                    isOnPause.value = true
-                    MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_PAUSE: called, imeVisible=${SharedState.editor_softKeyboardIsVisible.value}")
-                    // 如果离开页面时，软键盘状态是隐藏，则切换回来后不弹出键盘
-                    SharedState.editor_softKeyboardIsVisible.value.let {
-                        softKbVisibleWhenLeavingEditor.value = it
-                        ignoreFocusOnce.value = it.not()  // if invisible, then ignore once popup soft keyboard
-                    }
-
-                    createIgnoreFocusTextEditorStateIfNeed()
-
-                    MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_PAUSE: called, ignoreFocusOnce=${ignoreFocusOnce.value}")
-
-                }
+                // 20250802 disabled: not work after compose libs upgraded
+//                LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+//                    isOnPause.value = true
+//                    MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_PAUSE: called, imeVisible=${SharedState.editor_softKeyboardIsVisible.value}")
+//                    // 如果离开页面时，软键盘状态是隐藏，则切换回来后不弹出键盘
+//                    SharedState.editor_softKeyboardIsVisible.value.let {
+//                        softKbVisibleWhenLeavingEditor.value = it
+//                        ignoreFocusOnce.value = it.not()  // if invisible, then ignore once popup soft keyboard
+//                    }
+//
+//                    createIgnoreFocusTextEditorStateIfNeed()
+//
+//                    MyLog.d(TAG, "FileEditor#LifecycleEventEffect#ON_PAUSE: called, ignoreFocusOnce=${ignoreFocusOnce.value}")
+//
+//                }
 
 //                LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
 //                    if(isOnPause.value) {

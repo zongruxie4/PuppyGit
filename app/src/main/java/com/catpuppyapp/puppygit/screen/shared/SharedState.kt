@@ -37,7 +37,7 @@ object SharedState {
     val fileChooser_FilePath = mutableStateOf("")  //如果用app内置 File Picker 选文件，用这个做state
 
 
-    val editor_softKeyboardIsVisible = Box(false)
+//    val editor_softKeyboardIsVisible = Box(false)
 
     // save home code editor for release when activity destroyer
     // sub page's code editor release when navi up, so don't need store them,

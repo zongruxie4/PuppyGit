@@ -590,7 +590,7 @@ fun HomeScreen(
     //初始值不用忽略，因为打开文件后默认focusing line idx为null，所以这个值是否忽略并没意义
     //这个值不能用state，不然修改state后会重组，然后又触发聚焦，就没意义了
     val ignoreFocusOnce = rememberSaveable { mutableStateOf(false) }
-    val softKbVisibleWhenLeavingEditor = rememberSaveable { mutableStateOf(false) }
+//    val softKbVisibleWhenLeavingEditor = rememberSaveable { mutableStateOf(false) }
 
     val editorPageLoadingOn = {msg:String ->
         loadingText.value = msg
@@ -1503,7 +1503,7 @@ fun HomeScreen(
                     editorRecentFilesQuitFilterMode = editorRecentFilesQuitFilterMode,
 
                     ignoreFocusOnce = ignoreFocusOnce,
-                    softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
+//                    softKbVisibleWhenLeavingEditor = softKbVisibleWhenLeavingEditor,
                     previewLoading = editorPagePreviewLoading,
                     editorPreviewFileDto = editorPreviewFileDto,
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
