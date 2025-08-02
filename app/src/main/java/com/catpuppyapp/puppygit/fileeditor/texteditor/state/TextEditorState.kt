@@ -2519,9 +2519,9 @@ class TextEditorState(
         }
 
 
-        // I forgot why the offset 1, just make sure same behavior with old code
-        // 忘了为什么偏移1，只是为了匹配之前定位到end的代码，但后来改了代码，不再用baseFields模拟修改，所以不能再定位到end了，不然会多出对应行的文本长度，但直接减长度也不合适，因为有特殊情况，比如列表为空或者定位到最后一行的末尾，等。
-        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = true, offsetInNormalCase = 1)
+        // the insert position is start of the line, and the line should clear by `afterDelete` before insert,
+        //   else the content for analyze will not match with the real content
+        val startIdxOfText = getIndexOfText(baseFields, startLineIndex, trueStartFalseEnd = true)
         if(startIdxOfText < 0) {
             MyLog.w(TAG, "`startIndexOfText` invalid: $startIdxOfText")
             return
@@ -2531,6 +2531,8 @@ class TextEditorState(
 
         val start = CharPosition(startLineIndex, 0, startIdxOfText)
 
+        // end index in the new fields
+        // 插入内容的最后一行在新fields中的索引
         val insertIndex = insertedContentRangeInNewFields.endInclusive
         val end = CharPosition(insertIndex, newTextEditorState.fields.get(insertIndex).value.text.length, startIdxOfText + insertedContent.length)
 
@@ -2572,19 +2574,17 @@ class TextEditorState(
         baseFields: List<MyTextFieldState>,
         lineIdx: Int,
         trueStartFalseEnd: Boolean,
-
-        // can be negative, if needs
-        // only add offset in normal cases, empty or length of full fields will not add the offset
-        offsetInNormalCase: Int = 0,
     ):Int {
-        if(baseFields.isEmpty()) {
+        if(lineIdx < 0 || baseFields.isEmpty()) {
             return 0
         }
 
         if(lineIdx >= baseFields.size) {
-            return baseFields.sumOf { it.value.text.length }
+            // + 1 for line break, - 1 for remove line break for last line
+            return baseFields.sumOf { it.value.text.length + 1 } - 1
         }
 
+        // a line's start is previous line's end, so - 1 if find start index of line
         val lineIdx = if(trueStartFalseEnd) lineIdx - 1 else lineIdx
         var li = -1
         var charIndex = 0
@@ -2595,7 +2595,9 @@ class TextEditorState(
             charIndex += (f.value.text.length + 1)
         }
 
-        return charIndex + (if(lineIdx == baseFields.lastIndex) -1 else 0) + offsetInNormalCase
+        // due to find to line's start will - 1, so if find index of start, the lineIdx range is [0, lastIndexOfFields - 1],
+        //  so, if the lineIdx == lastIndexOfFields is true, it must find end of the line, hence, should - 1 for remove last line break count for the last line
+        return charIndex + (if(lineIdx == baseFields.lastIndex) -1 else 0)
     }
 
     suspend fun moveCursor(
