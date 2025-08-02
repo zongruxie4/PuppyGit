@@ -21,9 +21,10 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.MyTextFieldState
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.MyLog
 
 
-//private const val TAG = "MyTextField"
+private const val TAG = "MyTextField"
 
 
 @Composable
@@ -45,6 +46,7 @@ internal fun MyTextField(
     val textStyle = LocalTextStyle.current
 
     val currentTextField = textFieldState.value.let { remember(it) { mutableStateOf(it) } }
+    val lastTextField = textFieldState.value.let { remember(it) { mutableStateOf(it) } }
     val focusRequester = remember { FocusRequester() }
 
 
@@ -54,18 +56,9 @@ internal fun MyTextField(
         readOnly = readOnly,
         enabled = enabled,
         onValueChange = ovc@{ newState ->
-            val lastState = currentTextField.value
+            val lastState = lastTextField.value
 
-            // used for some checks
-            val textChanged = lastState.text.length != newState.text.length || lastState.text != newState.text
-
-            // scroll if invisible
-            // when input some chars but target line invisible, will scroll to that line
-            if(textChanged) {
-                scrollIfInvisible()
-            }
-
-            val newState = keepStylesIfPossible(newState, lastState, textChanged)
+            val newState = keepStylesIfPossible(newState, lastState, textChangedCallback = scrollIfInvisible)
 
 
             if (newState.text.contains('\n')) {
@@ -73,6 +66,7 @@ internal fun MyTextField(
                 onContainNewLine(newState)
             } else {
                 currentTextField.value = newState
+                lastTextField.value = newState
 
                 onUpdateText(newState)
             }
@@ -95,7 +89,13 @@ internal fun MyTextField(
             .focusRequester(focusRequester)
             .onFocusChanged {
                 if (it.isFocused) {
-                    onFocus(currentTextField.value)
+                    onFocus(
+                        keepStylesIfPossible(
+                            newState = currentTextField.value,
+                            lastState = lastTextField.value,
+                            textChangedCallback = scrollIfInvisible
+                        )
+                    )
                 }
             }
     )
@@ -115,8 +115,33 @@ internal fun MyTextField(
 private fun keepStylesIfPossible(
     newState: TextFieldValue,
     lastState: TextFieldValue,
-    textChanged: Boolean,
+    textChangedCallback: () -> Unit,
 ) : TextFieldValue {
+    return try {
+        keepStylesIfPossibleNoCatch(newState, lastState, textChangedCallback)
+    }catch (e: Exception) {
+        MyLog.e(TAG, "#keepStylesIfPossible err: ${e.localizedMessage}")
+        e.printStackTrace()
+
+        newState
+    }
+}
+
+private fun keepStylesIfPossibleNoCatch(
+    newState: TextFieldValue,
+    lastState: TextFieldValue,
+    textChangedCallback: () -> Unit,
+) : TextFieldValue {
+
+    // used for some checks
+    val textChanged = lastState.text.length != newState.text.length || lastState.text != newState.text
+
+    // scroll if invisible
+    // when input some chars but target line invisible, will scroll to that line
+    if(textChanged) {
+        textChangedCallback()
+    }
+
     return if(textChanged) {
         // copy style for new text if possible,
         //   this will use more memory and cpu, but can be reduce syntax highlighting flicker(only for current editing line)
