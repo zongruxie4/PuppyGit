@@ -1156,78 +1156,62 @@ fun TextEditor(
                             fontSize = fontSize.intValue,
                             fontColor = fontColor,
                             onUpdateText = { newTextFieldValue ->
-
-                                val act: suspend (TextEditorState) -> Unit = { textEditorState ->
-                                    try{
-
-                                        textEditorState.updateField(
-                                            targetIndex = index,
-                                            textFieldValue = newTextFieldValue,
-                                        )
-
-                                    }catch (e:IndexOutOfBoundsException) {
-                                        // Undo/Redo后可能 出现 索引错误，没必要显示给用户，只记下日志就行
-                                        MyLog.e(TAG, "#onUpdateText err: "+e.localizedMessage)
-                                    }catch (e:Exception) {
-                                        // 其他错误，显示给用户
-                                        Msg.requireShowLongDuration("#onUpdateText err: "+e.localizedMessage)
-
-                                        //log
-                                        MyLog.e(TAG, "#onUpdateText err: "+e.stackTraceToString())
-                                    }
-                                }
-
                                 doJobThenOffLoading {
                                     textEditorState.codeEditor?.doActWithLatestEditorState("#onUpdateText") { textEditorState ->
-                                        act(textEditorState)
+                                        try{
+
+                                            textEditorState.updateField(
+                                                targetIndex = index,
+                                                textFieldValue = newTextFieldValue,
+                                            )
+
+                                        }catch (e:IndexOutOfBoundsException) {
+                                            // Undo/Redo后可能 出现 索引错误，没必要显示给用户，只记下日志就行
+                                            MyLog.w(TAG, "#onUpdateText index out of bounds err, usually is ok, maybe the file changed after last save, so the line and column not match: "+e.localizedMessage)
+                                        }catch (e:Exception) {
+                                            // 其他错误，显示给用户
+                                            Msg.requireShowLongDuration("#onUpdateText err: "+e.localizedMessage)
+
+                                            //log
+                                            MyLog.e(TAG, "#onUpdateText err: "+e.stackTraceToString())
+                                        }
+
                                     }
                                 }
                             },
                             onContainNewLine = cb@{ newTextFieldValue ->
-                                //这里为什么要判断这个东西？无所谓，反正没毛病，不用改
-                                if (lastScrollEvent.value?.isConsumed == false) return@cb
-
-                                val act: suspend (TextEditorState) -> Unit = { textEditorState ->
-                                    try {
-                                        textEditorState.splitNewLine(
-                                            targetIndex = index,
-                                            textFieldValue = newTextFieldValue,
-                                        )
-
-                                        lastScrollEvent.value = ScrollEvent(index + 1)
-                                    }catch (e:Exception) {
-                                        Msg.requireShowLongDuration("#onContainNewLine err: "+e.localizedMessage)
-
-                                        MyLog.e(TAG, "#onContainNewLine err: "+e.stackTraceToString())
-                                    }
-                                }
-
                                 doJobThenOffLoading {
                                     textEditorState.codeEditor?.doActWithLatestEditorState("#onContainNewLine") { textEditorState ->
-                                        act(textEditorState)
+                                        try {
+                                            textEditorState.splitNewLine(
+                                                targetIndex = index,
+                                                textFieldValue = newTextFieldValue,
+                                            )
+
+                                        }catch (e:Exception) {
+                                            Msg.requireShowLongDuration("#onContainNewLine err: "+e.localizedMessage)
+
+                                            MyLog.e(TAG, "#onContainNewLine err: "+e.stackTraceToString())
+                                        }
+
                                     }
                                 }
 
                             },
                             onFocus = { newTextFieldValue: TextFieldValue ->
-                                val act: suspend (TextEditorState) -> Unit = { textEditorState ->
-                                    try {
-                                        textEditorState.selectFieldValue(
-                                            targetIndex = index,
-                                            textFieldValue = newTextFieldValue
-                                        )
-
-                                        //更新最后聚焦行(最后编辑行)
-                                        lastScrollEvent.value = ScrollEvent(index)
-                                    }catch (e:Exception) {
-                                        Msg.requireShowLongDuration("#onFocus err: "+e.localizedMessage)
-                                        MyLog.e(TAG, "#onFocus err: "+e.stackTraceToString())
-                                    }
-                                }
-
                                 doJobThenOffLoading {
                                     textEditorState.codeEditor?.doActWithLatestEditorState("#onFocus") { textEditorState ->
-                                        act(textEditorState)
+                                        try {
+                                            textEditorState.selectFieldValue(
+                                                targetIndex = index,
+                                                textFieldValue = newTextFieldValue
+                                            )
+
+                                        }catch (e:Exception) {
+                                            Msg.requireShowLongDuration("#onFocus err: "+e.localizedMessage)
+                                            MyLog.e(TAG, "#onFocus err: "+e.stackTraceToString())
+                                        }
+
                                     }
                                 }
                             },
@@ -1266,8 +1250,8 @@ fun TextEditor(
                             indication = null
                         ) {
                             //非选择模式，点空白区域，聚焦最后一行
-                            if (textEditorState.isMultipleSelectionMode.not()) {
-                                textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
+                            textEditorState.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
+                                if (textEditorState.isMultipleSelectionMode.not()) {
                                     //点击空白区域定位到最后一行最后一个字符后面
                                     //第1个参数是行索引；第2个参数是当前行的哪个位置
                                     textEditorState.selectField(
