@@ -607,12 +607,12 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
                         break;
                 }
                 if(DevFlagKt.printIncrementalSyntaxHighlightText()) {
-                    Log.i("AsyncAnalysis", "length: "+shadowed.length()+", content: " +shadowed);
+                    Log.i("AsyncAnalysis", "length: "+shadowed.length()+", content:\n" +shadowed);
                 }
                 return true;
             } catch (Exception e) {
                 if(DevFlagKt.printIncrementalSyntaxHighlightText()) {
-                    Log.i("AsyncAnalysis", "err: length: "+shadowed.length()+", content: " +shadowed);
+                    Log.i("AsyncAnalysis", "err: length: "+shadowed.length()+", content:\n" +shadowed);
                 }
 
                 Log.w("AsyncAnalysis", "Thread " + Thread.currentThread().getName() + " failed", e);
