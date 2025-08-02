@@ -129,40 +129,54 @@ object TextMateUtil {
     }
 
 
-    fun forEachSpanResult(rawText: String, spans:List<Span>, foreach:(range: IntRange, spanStyle: SpanStyle) -> Unit) {
+    fun forEachSpanResult(rawText: String, spans:List<Span>, foreach:(start: Int, end: Int, spanStyle: SpanStyle) -> Unit) {
         var start = 0
         var spanIdx = 1
+
         while (spanIdx <= spans.size) {
             val curSpan = spans.get(spanIdx - 1)
             val nextSpan = spans.getOrNull(spanIdx++)
             val endExclusive = nextSpan?.column ?: rawText.length
 
-            if(AppModel.devModeOn) {
-                if(start < 0 || endExclusive > rawText.length) {
+            val isRangeInvalid = start < 0 || endExclusive > rawText.length
+
+            if(isRangeInvalid) {
+                if(AppModel.devModeOn) {
                     MyLog.d(TAG, "invalid range when apply syntax highlight styles: start=$start, endExclusive=$endExclusive, rawText.length=${rawText.length}")
                 }
+
+                // due to the range is ordered,
+                //   so if have invalid range,
+                //   consequence must invalid as well,
+                //   so we can break now
+                break
             }
 
-            val textRange = IntRange(start.coerceAtLeast(0), endExclusive.coerceAtMost(rawText.length) - 1)
-            if(textRange.isEmpty()) {
+            // must is valid substring range when reached here
+
+            // empty range, should never happen
+            if(start >= endExclusive) {
+                start = endExclusive
                 continue
             }
 
-            start = endExclusive
             val style = curSpan.style
             val foregroundColor = Color(RendererUtils.getForegroundColor(curSpan, colorScheme))
-//                println("forecolor = ${RendererUtils.getForegroundColor(curSpan, colorScheme)}")
 
-            // disable for avoid bg color conflicts when editor's merge mode on
+            // disable bg color for avoid conflicts with editor's merge mode bg color,
             //   (but, actually, I never have seen this bg colors, maybe most time is transparency)
 //                val backgroundColor = Color(RendererUtils.getBackgroundColor(curSpan, colorScheme))
+
             val fontWeight = if(TextStyle.isBold(style)) FontWeight.Bold else null
             val fontStyle = if(TextStyle.isItalics(style)) FontStyle.Italic else null
 
             foreach(
-                textRange,
+                start,
+                endExclusive,
                 SpanStyle(color = foregroundColor, fontStyle = fontStyle, fontWeight = fontWeight)
             )
+
+            start = endExclusive
         }
     }
 }

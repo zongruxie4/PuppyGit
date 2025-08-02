@@ -384,7 +384,7 @@ fun DiffRow(
                             obtainStylePartList()?.let { stylePartList ->
                                 PuppyLine.mergeStringAndStylePartList(stringPartList, stylePartList, bgColorSpanStyle).forEachBetter {
                                     withStyle(it.style) {
-                                        append(content.substring(it.range))
+                                        append(content.substring(it.start, it.end))
                                     }
                                 }
                             } ?: stringPartList.forEachIndexedBetter { idx, it ->
@@ -427,7 +427,7 @@ fun DiffRow(
                         buildAnnotatedString {
                             obtainStylePartList()?.forEachBetter {
                                 withStyle(it.style) {
-                                    append(content.substring(it.range))
+                                    append(content.substring(it.start, it.end))
                                 }
 
                             } ?: append(content)

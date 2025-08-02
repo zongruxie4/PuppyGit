@@ -585,20 +585,21 @@ data class PuppyLine(
             val retStylePartList = mutableListOf<LineStylePart>()
             val stringPartMutableList = stringPartList.toMutableList()
             stylePartList.forEachBetter { stylePart ->
-                var start = stylePart.range.start
+                var start = stylePart.start
                 val iterator = stringPartMutableList.iterator()
                 while (iterator.hasNext()) {
                     val stringPart = iterator.next()
-                    val reachedEnd = stringPart.end > stylePart.range.endInclusive
-                    val end = if(reachedEnd) stylePart.range.endInclusive else (stringPart.end - 1)
+                    val reachedEnd = stringPart.end >= stylePart.end
+                    val end = if(reachedEnd) stylePart.end else stringPart.end
                     retStylePartList.add(
                         LineStylePart(
-                            range = IntRange(start, end),
+                            start = start,
+                            end = end,
                             style = if(stringPart.modified) stylePart.style.merge(modifiedBgColorSpanStyle) else stylePart.style
                         )
                     )
 
-                    start = end + 1
+                    start = end
                     iterator.remove()
 
                     if(reachedEnd) {

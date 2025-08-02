@@ -25,9 +25,9 @@ class MarkDownStyleReceiver(
         val result = buildAnnotatedString {
             lines.forEachIndexedBetter { idx, line ->
                 val spans = spansReader.getSpansOnLine(idx)
-                TextMateUtil.forEachSpanResult(line, spans) { range, style ->
+                TextMateUtil.forEachSpanResult(line, spans) { start, end, style ->
                     withStyle(style) {
-                        append(line.substring(range))
+                        append(line.substring(start, end))
                     }
                 }
 

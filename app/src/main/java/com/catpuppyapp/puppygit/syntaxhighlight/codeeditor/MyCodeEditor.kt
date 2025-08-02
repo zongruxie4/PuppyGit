@@ -550,9 +550,9 @@ class MyCodeEditor(
         val rawText = textFieldState.value.text
 
         return buildAnnotatedString {
-            TextMateUtil.forEachSpanResult(rawText, spans) { range, style ->
+            TextMateUtil.forEachSpanResult(rawText, spans) { start, end, style ->
                 withStyle(style) {
-                    append(rawText.substring(range))
+                    append(rawText.substring(start, end))
                 }
             }
         }
