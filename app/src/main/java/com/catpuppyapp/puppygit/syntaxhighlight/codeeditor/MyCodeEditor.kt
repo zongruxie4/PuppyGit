@@ -484,8 +484,12 @@ class MyCodeEditor(
             delayAnalyzingTaskLock.withLock {
                 var initState = initState
                 var count = 0
+
+                val delayInMillSec = delayInSec * 1000L
+
                 while (count++ < checkTimes) {
-                    delay(delayInSec * 1000L)
+                    delay(delayInMillSec)
+
                     if(plScopeStateInvalid()) {
                         break
                     }
