@@ -137,48 +137,34 @@ private fun keepStylesIfPossibleNoCatch(
     lastState: TextFieldValue,
     textChangedCallback: () -> Unit,
 ) : TextFieldValue {
-
-    // used for some checks
     val textChanged = lastState.text.length != newState.text.length || lastState.text != newState.text
 
     // scroll if invisible
     // when input some chars but target line invisible, will scroll to that line
     if(textChanged) {
         textChangedCallback()
+    }else {
+        return newState.copy(annotatedString = lastState.annotatedString)
     }
 
-    return if(textChanged) {
-        // copy style for new text if possible,
-        //   this will use more memory and cpu, but can be reduce syntax highlighting flicker(only for current editing line)
-        //   usually the effect is acceptable, except when users try edit a huge file or huge line, or both
-        // 为新文本拷贝旧文本的样式，这样可减缓甚至完全避免增量更新样式时闪烁（仅针对当前编辑行，其他行没辙，可能还是会闪），但是，会耗费更多内存和cpu，为了达到效果，
-        //   带来的后果一般可接受，除非用户编辑大文件或包含很多文本的行，我发现中文比英语更简洁，两行表达的内容超过了英语的3行，哈哈
-        val newTextLen = newState.text.length
-        // 这是 `TextRange`，不是`IntRange`，左闭右开，所以`end`是可以等于`text.length`的，`SpanStyle`是不可变的，所以不用深拷贝
-        // this is `TextRange`, not `IntRange`, so the `end` can be equals to `text.length`
-        // `SpanStyle` is immutable, so no need to do deep copy.
-        val validSpans = lastState.annotatedString.spanStyles.filter { it.start >= 0 && it.end <= newTextLen }
 
-        if(validSpans.isEmpty()) {
-            newState
-        }else {
-            newState.annotatedString.let {
-                newState.copy(
-                    annotatedString = AnnotatedString(
-                        text = it.text,
-                        spanStyles = validSpans,
-                        paragraphStyles = it.paragraphStyles
-                    )
-                )
-            }
-        }
-    } else {
-        // copy to avoid lost highlighting styles when text no changes,
-        //   if styles still lost, try use `textFieldState.value` as `lastTextField`
-        // must copy all fields of newState except its `annotatedString`,
-        //   else maybe lost styles or ime will have weird behavior(due to
-        //   ime may use `composition` field to draw underline for text,
-        //   if not update that field, will cause bug for ime)
-        newState.copy(annotatedString = lastState.annotatedString)
+    // text must changed when reached here
+
+    // try keep styles if possible, will use more cpu and memory, but can reduce text flashing
+    val newTextLen = newState.text.length
+    // the `it.end` is exclusive, so can be equals to length
+    val validSpans = lastState.annotatedString.spanStyles.filter { it.start >= 0 && it.end <= newTextLen }
+
+    if(validSpans.isEmpty()) {
+        return newState
     }
+
+    val newAnnotatedString = newState.annotatedString
+    return newState.copy(
+        annotatedString = AnnotatedString(
+            text = newAnnotatedString.text,
+            spanStyles = validSpans,
+            paragraphStyles = newAnnotatedString.paragraphStyles
+        )
+    )
 }
