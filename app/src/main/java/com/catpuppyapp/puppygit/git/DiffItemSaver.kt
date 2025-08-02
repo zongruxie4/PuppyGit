@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.git
 
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.text.SpanStyle
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StrCons
@@ -99,7 +98,7 @@ data class DiffItemSaver (
     // styles
     private val stylesMapLock: ReentrantReadWriteLock = ReentrantReadWriteLock(),
     // {PuppyLine.key: StylesResult}
-    private val stylesMap: SnapshotStateMap<String, List<LineStylePart>> = mutableStateMapOf(),
+    private val stylesMap: MutableMap<String, List<LineStylePart>> = mutableStateMapOf(),
 
     internal val languageScope:Box<PLScope> = if(SettingsUtil.isDiffSyntaxHighlightEnabled()) Box(PLScope.AUTO) else Box(PLScope.NONE)
 

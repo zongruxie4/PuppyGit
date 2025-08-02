@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.git
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -60,7 +59,7 @@ data class DiffableItem(
     val loadChannel:Channel<Int> = Channel(),
     //严格来说是diff result才对，但当时命名的时候没想到，现在已经很多地方用这名字，积重难返了
     val diffItemSaver: DiffItemSaver = DiffItemSaver(),
-    val stringPairMap: SnapshotStateMap<String, CompareLinePairResult> = mutableStateMapOf(),
+    val stringPairMap: MutableMap<String, CompareLinePairResult> = mutableStateMapOf(),
     val compareLinePair:CompareLinePair = CompareLinePair(),
     val submoduleIsDirty:Boolean = false,
     val errMsg: String = "",

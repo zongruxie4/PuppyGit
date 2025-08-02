@@ -144,7 +144,7 @@ fun MarkDownDialog(
 
     LaunchedEffect(previewModeOn.value) {
         if(!previewModeOn.value && highlightedMarkdownText.value == null) {
-            // will do a one time analyze, then deliver styles and release highlighter
+            // will do an one time analyze, then deliver styles and release highlighter
             MarkDownSyntaxHighlighter(text) {
                 highlightedMarkdownText.value = it
             }.analyze()
