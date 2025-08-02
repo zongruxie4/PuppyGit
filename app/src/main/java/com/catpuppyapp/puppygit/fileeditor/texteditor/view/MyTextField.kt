@@ -46,7 +46,6 @@ internal fun MyTextField(
     val textStyle = LocalTextStyle.current
 
     val currentTextField = textFieldState.value.let { remember(it) { mutableStateOf(it) } }
-    val lastTextField = textFieldState.value.let { remember(it) { mutableStateOf(it) } }
     val focusRequester = remember { FocusRequester() }
 
 
@@ -56,7 +55,7 @@ internal fun MyTextField(
         readOnly = readOnly,
         enabled = enabled,
         onValueChange = ovc@{ newState ->
-            val lastState = lastTextField.value
+            val lastState = currentTextField.value
 
             val newState = keepStylesIfPossible(newState, lastState, textChangedCallback = scrollIfInvisible)
 
@@ -66,7 +65,6 @@ internal fun MyTextField(
                 onContainNewLine(newState)
             } else {
                 currentTextField.value = newState
-                lastTextField.value = newState
 
                 onUpdateText(newState)
             }
@@ -92,8 +90,15 @@ internal fun MyTextField(
                     onFocus(
                         keepStylesIfPossible(
                             newState = currentTextField.value,
-                            lastState = lastTextField.value,
-                            textChangedCallback = scrollIfInvisible
+                            lastState = textFieldState.value,
+                            // here shouldn't call `scrollIfInvisible`,
+                            // because here only focus,
+                            // doesn't change text, image,
+                            // you focused line 100, scroll to check line 1,
+                            // then you input "a" or pressed arrow left,
+                            // in that case, the text changed, should scroll if target possible,
+                            // but at here, nothing changed, so should not call `scrollIfInvisible
+                            textChangedCallback = {}
                         )
                     )
                 }
