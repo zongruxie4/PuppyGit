@@ -838,26 +838,31 @@ class TextEditorState(
             return
         }
 
-        val baseStyles = tryGetStylesResult()
-        if(baseStyles == null) {
-            MyLog.d(TAG, "#updateStyles: Styles of current field '$fieldsId' not found, maybe not exists or theme/languageScop are not matched, will re-run analyze after user stop input for a while")
-            codeEditor?.startAnalyzeWhenUserStopInputForAWhile(nextState)
-        }else {
-            // even accept ours/theirs,
-            // fields still is what we want,
-            // because accept ours/theirs only
-            // changed baseFields LineChangeType
-            // for line number indicator color, the text value doesn't changed,
-            // and due to the baseStyles is based fields, so, if we use another
-            // fields which not matched with baseStyles, will cause an error
-            act(baseStyles)
+        try {
+            val baseStyles = tryGetStylesResult()
+            if(baseStyles == null) {
+                MyLog.d(TAG, "#updateStyles: Styles of current field '$fieldsId' not found, maybe not exists or theme/languageScop are not matched, will re-run analyze after user stop input for a while")
+                codeEditor?.startAnalyzeWhenUserStopInputForAWhile(nextState)
+            }else {
+                // even accept ours/theirs,
+                // fields still is what we want,
+                // because accept ours/theirs only
+                // changed baseFields LineChangeType
+                // for line number indicator color, the text value doesn't changed,
+                // and due to the baseStyles is based fields, so, if we use another
+                // fields which not matched with baseStyles, will cause an error
+                act(baseStyles)
 //            nextState.temporaryStyles = baseStyles
 
-            // apply styles for next state
+                // apply styles for next state
 //            doJobThenOffLoading {
 //                // onChange will call after updateStyles() finished, so here no need call it again
 //                nextState.applySyntaxHighlighting(baseStyles, requireCallOnChange = false)
 //            }
+            }
+
+        }catch (e: Exception) {
+            MyLog.e(TAG, "#updateStyles err: ${e.stackTraceToString()}")
         }
     }
 
