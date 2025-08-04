@@ -85,6 +85,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MarkDownContainer
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog3
@@ -1273,7 +1274,10 @@ fun FileEditor(
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     // go to line
-                                    IconButton(
+                                    LongPressAbleIconBtn(
+                                        tooltipText = "",
+                                        icon = Icons.Filled.PanToolAlt,
+                                        iconContentDesc = "go to line button: click to go to line, long click to select span",
                                         onClick = {
                                             textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectField") { textEditorState ->
                                                 // update focusing line index index
@@ -1286,13 +1290,19 @@ fun FileEditor(
                                                 // close dialog
                                                 closeDialog()
                                             }
+                                        },
+                                        onLongClick = {
+                                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#selectFieldSpan") { textEditorState ->
+                                                textEditorState.selectFieldSpan(targetIndex = it)
+
+                                                // scroll if need
+                                                scrollIfIndexInvisible(it)
+
+                                                // close dialog
+                                                closeDialog()
+                                            }
                                         }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.PanToolAlt,
-                                            contentDescription = "go to line button"
-                                        )
-                                    }
+                                    )
 
 
                                     // unselect
