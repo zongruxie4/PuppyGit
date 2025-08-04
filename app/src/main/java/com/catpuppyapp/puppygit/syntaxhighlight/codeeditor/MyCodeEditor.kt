@@ -471,7 +471,7 @@ class MyCodeEditor(
 
     // user stop input after `delayInSec`, will start a syntax highlighting analyze
     // set checkTimes to control check how many times, that should not too large, else may have many tasks, that's bad
-    fun startAnalyzeWhenUserStopInputForAWhile(initState: TextEditorState, delayInSec: Int = 2, checkTimes: Int = 5) {
+    fun startAnalyzeWhenUserStopInputForAWhile(initState: TextEditorState, delayInSec: Int = 1, checkTimes: Int = 5) {
         if(plScopeStateInvalid()) {
             return
         }
