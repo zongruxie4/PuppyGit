@@ -528,7 +528,7 @@ class MyCodeEditor(
 
     suspend fun doActWithLatestEditorState(owner: String, act: suspend (TextEditorState) -> Unit) {
         if(AppModel.devModeOn) {
-            MyLog.i(TAG, "owner locked: $owner")
+            MyLog.v(TAG, "owner locked: $owner")
         }
 
         textEditorStateOnChangeLock.withLock {
@@ -536,7 +536,7 @@ class MyCodeEditor(
         }
 
         if(AppModel.devModeOn) {
-            MyLog.i(TAG, "owner freed: $owner")
+            MyLog.v(TAG, "owner freed: $owner")
         }
     }
 
