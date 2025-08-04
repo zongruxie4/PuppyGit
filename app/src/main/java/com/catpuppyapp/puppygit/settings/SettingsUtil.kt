@@ -312,5 +312,6 @@ object SettingsUtil {
     fun isCommitMsgUseSystemFonts() = appSettings.commitMsgUseSystemFonts
     fun isEnabledDetailsCompareForDiff() = appSettings.diff.enableDetailsCompare
     fun isEditorAutoCloseSymbolPairEnabled() = appSettings.editor.autoCloseSymbolPair
+    fun editorThresholdLinesCountOfIncrementAnalyze() = appSettings.editor.thresholdLinesCountOfIncrementAnalyze
 
 }

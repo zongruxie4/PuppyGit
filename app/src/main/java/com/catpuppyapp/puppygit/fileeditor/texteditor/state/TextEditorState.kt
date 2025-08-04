@@ -464,7 +464,7 @@ class TextEditorState(
                 focusingLineIdx = sfiRet.focusingLineIdx
             )
 
-            updateStyles(newState) { baseStyles ->
+            updateStyles(splitFieldValues.size, newState) { baseStyles ->
                 // delete current line
                 updateStylesAfterDeleteLine(
                     baseFields = fields,
@@ -654,7 +654,7 @@ class TextEditorState(
             updater?.invoke(newContentRangeInNewFields, newFields, newSelectedIndices)
 
             if(textChanged) {
-                updateStyles(newState) { baseStyles->
+                updateStyles(1, newState) { baseStyles->
                     // delete current line
                     updateStylesAfterDeleteLine(
                         baseFields = fields,
@@ -833,6 +833,7 @@ class TextEditorState(
     }
 
     private fun updateStyles(
+        howManyLinesNeedUpdate: Int,
         nextState: TextEditorState,
         act: (baseStyles: StylesResult) -> Unit
     ) {
@@ -841,6 +842,18 @@ class TextEditorState(
         }
 
         try {
+            // if run a fully analyze is a better choice than incremental analyze, then run fully
+            val halfLines = (fields.size / 2).coerceAtLeast(1)
+            if(howManyLinesNeedUpdate >= halfLines
+                || howManyLinesNeedUpdate > SettingsUtil.editorThresholdLinesCountOfIncrementAnalyze()
+            ) {
+                codeEditor?.analyze(nextState)
+                return
+            }
+
+
+            // do incremental analyze
+
             val baseStyles = tryGetStylesResult()
             if(baseStyles == null) {
                 MyLog.d(TAG, "#updateStyles: Styles of current field '$fieldsId' not found, maybe not exists or theme/languageScop are not matched, will re-run analyze after user stop input for a while")
@@ -969,7 +982,7 @@ class TextEditorState(
 
 
 
-            updateStyles(newState) { baseStyles ->
+            updateStyles(2, newState) { baseStyles ->
                 // delete current and previous lines
                 updateStylesAfterDeletedLineBreak(fields, baseStyles, toLineIdx, ignoreThis = false, newState)
             }
@@ -1496,7 +1509,7 @@ class TextEditorState(
             if(newFields.size <= indices.size) {
                 codeEditor?.analyze(newState)
             }else {
-                updateStyles(newState) { baseStyles ->
+                updateStyles(indices.size, newState) { baseStyles ->
                     // 降序删除不用算索引偏移
                     // delete current line
                     val lastIdx = indices.size - 1
@@ -1620,7 +1633,7 @@ class TextEditorState(
             isContentEdited?.value = true
             editorPageIsContentSnapshoted?.value = false
 
-            updateStyles(newState) { baseStyles  ->
+            updateStyles(selectedIndices.size, newState) { baseStyles  ->
                 // delete current line
                 val lastIdx = selectedIndices.size - 1
                 //必须倒序，不然文本在全文中的索引会计算错误，除非真模拟删数据，但那样还得拷贝fields，浪费内存
@@ -2160,7 +2173,7 @@ class TextEditorState(
             isContentEdited?.value = true
             editorPageIsContentSnapshoted?.value = false
 
-            updateStyles(newState) { baseStyles ->
+            updateStyles(targetIndices.size, newState) { baseStyles ->
                 val lastIdx = targetIndices.lastIndex
                 targetIndices.sortedDescending().forEachIndexed { idx, targetIndex ->
                     // delete current line

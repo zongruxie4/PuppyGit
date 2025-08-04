@@ -85,4 +85,11 @@ data class Editor (
      *   will output '"abc"', (doesn't include single quote sign)
      */
     var autoCloseSymbolPair: Boolean = true,
+
+    /**
+     * in selection mode, batch operate lines, if over this count,
+     *   will use full analyze instead of incremental analyze
+     */
+    var thresholdLinesCountOfIncrementAnalyze: Int = 260,
+
 )
