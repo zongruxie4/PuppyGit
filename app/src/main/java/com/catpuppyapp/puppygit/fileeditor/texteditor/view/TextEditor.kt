@@ -978,14 +978,16 @@ fun TextEditor(
         }
     }
 
-    val lastValidFocusingLineIdx = rememberSaveable { mutableIntStateOf(0) }
-    val lastValidEditedColumnLineIndex = rememberSaveable { mutableIntStateOf(0) }
+    val lastValidFocusingLineIdx = rememberSaveable { mutableIntStateOf(lastEditedPos.lineIndex) }
+    val lastValidEditedColumnLineIndex = rememberSaveable { mutableIntStateOf(lastEditedPos.columnIndex) }
     LaunchedEffect(focusingLineIdx.value) {
         val (lineIdx, field) = textEditorState.getCurrentField()
 
         if(lineIdx != null && field != null) {
             lastValidFocusingLineIdx.intValue = lineIdx
-            lastValidEditedColumnLineIndex.intValue = field.value.selection.end
+            if(textEditorState.isMultipleSelectionMode) {
+                lastValidEditedColumnLineIndex.intValue = field.value.selection.end
+            }
         }
     }
 
@@ -1159,6 +1161,7 @@ fun TextEditor(
                                 doJobThenOffLoading {
                                     textEditorState.codeEditor?.doActWithLatestEditorState("#onUpdateText") { textEditorState ->
                                         try{
+                                            lastValidEditedColumnLineIndex.intValue = newTextFieldValue.selection.end
 
                                             textEditorState.updateField(
                                                 targetIndex = index,
@@ -1182,6 +1185,10 @@ fun TextEditor(
                             onContainNewLine = cb@{ newTextFieldValue ->
                                 doJobThenOffLoading {
                                     textEditorState.codeEditor?.doActWithLatestEditorState("#onContainNewLine") { textEditorState ->
+                                        // This method no need to remember last edited column, cause the lines will split,
+                                        //   then the `onUpdateText` and `onFocus` will update the last edited column
+
+
                                         try {
                                             textEditorState.splitNewLine(
                                                 targetIndex = index,
@@ -1201,6 +1208,9 @@ fun TextEditor(
                             onFocus = { newTextFieldValue: TextFieldValue ->
                                 doJobThenOffLoading {
                                     textEditorState.codeEditor?.doActWithLatestEditorState("#onFocus") { textEditorState ->
+                                        lastValidEditedColumnLineIndex.intValue = newTextFieldValue.selection.end
+
+
                                         try {
                                             textEditorState.selectFieldValue(
                                                 targetIndex = index,
@@ -1389,7 +1399,8 @@ fun TextEditor(
                             scrollIfIndexInvisible(lastEditedLineIdx)
 
 
-                            //定位到指定列。注意：会弹出键盘！没找到好的不弹键盘的方案，所以我把定位列功能默认禁用了
+                            // 定位到指定列。注意：会弹出键盘！没找到好的不弹键盘的方案，所以我曾经把定位列功能默认禁用了
+                            // position to column of line, will popup soft keyboard, can't find properly way to hidden soft kb
                             textEditorState.selectField(
                                 lastEditedLineIdx,
                                 option = SelectionOption.CUSTOM,
