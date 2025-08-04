@@ -335,7 +335,7 @@ fun EditorInnerPage(
     }
 
     val appPaused = rememberSaveable { mutableStateOf(false) }
-    val fileChangeListenerState = rememberFileChangeListenerState()
+    val fileChangeListenerState = rememberFileChangeListenerState(editorPageShowingFilePath.value.ioPath)
 
 
     editorOpenFileErr.value = remember {

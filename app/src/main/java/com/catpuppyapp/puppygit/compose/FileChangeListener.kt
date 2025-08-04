@@ -45,7 +45,7 @@ data class FileChangeListenerState(
 }
 
 @Composable
-fun rememberFileChangeListenerState() = rememberSaveable { mutableStateOf(FileChangeListenerState()) }
+fun rememberFileChangeListenerState(path: String) = rememberSaveable(path) { mutableStateOf(FileChangeListenerState()) }
 
 
 /**
