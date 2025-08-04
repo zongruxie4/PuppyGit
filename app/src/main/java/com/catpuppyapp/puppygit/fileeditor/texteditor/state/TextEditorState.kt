@@ -1512,8 +1512,9 @@ class TextEditorState(
                 updateStyles(indices.size, newState) { baseStyles ->
                     // 降序删除不用算索引偏移
                     // delete current line
+                    val indices = indices.sortedDescending()
                     val lastIdx = indices.size - 1
-                    indices.sortedDescending().forEachIndexed { idx, lineIdxWillDel ->
+                    indices.forEachIndexed { idx, lineIdxWillDel ->
                         // 仅当删除最后一个条目时更新一次样式
                         updateStylesAfterDeleteLine(fields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState, keepLine = false)
                     }
@@ -1634,10 +1635,11 @@ class TextEditorState(
             editorPageIsContentSnapshoted?.value = false
 
             updateStyles(selectedIndices.size, newState) { baseStyles  ->
+                val selectedIndices = selectedIndices.sortedDescending()
                 // delete current line
                 val lastIdx = selectedIndices.size - 1
                 //必须倒序，不然文本在全文中的索引会计算错误，除非真模拟删数据，但那样还得拷贝fields，浪费内存
-                selectedIndices.sortedDescending().forEachIndexed { idx, lineIdxWillDel ->
+                selectedIndices.forEachIndexed { idx, lineIdxWillDel ->
                     // 仅当删除最后一个条目时更新一次样式
                     updateStylesAfterDeleteLine(fields, baseStyles, lineIdxWillDel, ignoreThis = idx != lastIdx, newState)
                 }
@@ -2174,8 +2176,9 @@ class TextEditorState(
             editorPageIsContentSnapshoted?.value = false
 
             updateStyles(targetIndices.size, newState) { baseStyles ->
-                val lastIdx = targetIndices.lastIndex
-                targetIndices.sortedDescending().forEachIndexed { idx, targetIndex ->
+                val targetIndices = targetIndices.sortedDescending()
+                val lastIdx = targetIndices.size - 1
+                targetIndices.forEachIndexed { idx, targetIndex ->
                     // delete current line
                     updateStylesAfterDeleteLine(fields, baseStyles, targetIndex, ignoreThis = true, newState)
 
