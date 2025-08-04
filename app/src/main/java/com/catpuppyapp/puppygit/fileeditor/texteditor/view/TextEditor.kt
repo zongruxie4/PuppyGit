@@ -1161,7 +1161,9 @@ fun TextEditor(
                                 doJobThenOffLoading {
                                     textEditorState.codeEditor?.doActWithLatestEditorState("#onUpdateText") { textEditorState ->
                                         try{
-                                            lastValidEditedColumnLineIndex.intValue = newTextFieldValue.selection.end
+                                            if(!textEditorState.isMultipleSelectionMode) {
+                                                lastValidEditedColumnLineIndex.intValue = newTextFieldValue.selection.end
+                                            }
 
                                             textEditorState.updateField(
                                                 targetIndex = index,
@@ -1208,7 +1210,9 @@ fun TextEditor(
                             onFocus = { newTextFieldValue: TextFieldValue ->
                                 doJobThenOffLoading {
                                     textEditorState.codeEditor?.doActWithLatestEditorState("#onFocus") { textEditorState ->
-                                        lastValidEditedColumnLineIndex.intValue = newTextFieldValue.selection.end
+                                        if(!textEditorState.isMultipleSelectionMode) {
+                                            lastValidEditedColumnLineIndex.intValue = newTextFieldValue.selection.end
+                                        }
 
 
                                         try {

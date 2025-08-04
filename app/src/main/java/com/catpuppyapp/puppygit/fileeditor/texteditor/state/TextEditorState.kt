@@ -644,7 +644,9 @@ class TextEditorState(
                 fieldsId = maybeNewId,
                 selectedIndices = newSelectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-                focusingLineIdx = targetIndex,
+
+                // when selection mode on, the `focusingLineIdx` will update by `selectField`
+                focusingLineIdx = if(isMultipleSelectionMode) focusingLineIdx else targetIndex,
             )
 
             val newContentRangeInNewFields = IntRange(targetIndex, targetIndex)
