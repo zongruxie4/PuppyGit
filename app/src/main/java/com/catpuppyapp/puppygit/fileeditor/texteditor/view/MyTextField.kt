@@ -47,8 +47,8 @@ internal fun MyTextField(
     val textStyle = LocalTextStyle.current
 
     val currentTextField = textFieldState.value.let { remember(it) { mutableStateOf(it) } }
-    val focusRequester = remember { FocusRequester() }
-    val alreadyCalledContainsNewLine = remember { AtomicBoolean(false) }
+    val focusRequester = remember(focusThisLine) { if(focusThisLine) FocusRequester() else null }
+    val alreadyCalledContainsNewLine = remember(focusThisLine) { AtomicBoolean(false) }
 
 
     // NOTE: if the `value` is not equals to `BasicTextField` held value, then the ime state will reset
@@ -95,7 +95,13 @@ internal fun MyTextField(
 //            .wrapContentHeight()
             .padding(start = 2.dp)
 //            .focusTarget()  //如果加这个，按一次返回会先解除focus，然后才会退出，操作有些繁琐，我感觉不加比较好
-            .focusRequester(focusRequester)
+            .then(
+                if(focusRequester != null) {
+                    Modifier.focusRequester(focusRequester)
+                }else {
+                    Modifier
+                }
+            )
             .onFocusChanged {
                 if (it.isFocused) {
                     onFocus(
@@ -121,7 +127,7 @@ internal fun MyTextField(
     if(focusThisLine) {
         LaunchedEffect(Unit) {
             runCatching {
-                focusRequester.requestFocus()
+                focusRequester?.requestFocus()
             }
         }
     }
