@@ -3556,12 +3556,12 @@ private suspend fun doInit(
         }
 
         //if equals and is not sort by name, try sort by name
-        if(compareResult == 0) {
-            compareResult = if(sortMethod != SortMethod.NAME.code) {
-                sortByName()
-            }else {
-                sortByType()
-            }
+        if(compareResult == 0 && sortMethod != SortMethod.NAME.code) {
+            compareResult = sortByName()
+        }
+
+        if(compareResult == 0 && sortMethod != SortMethod.TYPE.code) {
+            compareResult = sortByType()
         }
 
         if(compareResult > 0){
