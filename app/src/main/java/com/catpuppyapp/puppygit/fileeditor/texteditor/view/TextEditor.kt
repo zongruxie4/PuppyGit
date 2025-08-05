@@ -1195,6 +1195,12 @@ fun TextEditor(
                                             textEditorState.splitNewLine(
                                                 targetIndex = index,
                                                 textFieldValue = newTextFieldValue,
+                                                updater = { newLinesRange, newFields, newSelectedIndices ->
+                                                    doJobThenOffLoading {
+                                                        delay(200)
+                                                        scrollIfIndexInvisible(newLinesRange.endInclusive)
+                                                    }
+                                                }
                                             )
 
                                         }catch (e:Exception) {

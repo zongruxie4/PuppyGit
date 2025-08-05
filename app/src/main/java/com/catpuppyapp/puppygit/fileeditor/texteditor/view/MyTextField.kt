@@ -55,15 +55,22 @@ internal fun MyTextField(
         readOnly = readOnly,
         enabled = enabled,
         onValueChange = ovc@{ newState ->
-            val lastState = currentTextField.value
+            val indexOfLineBreak = newState.text.indexOf('\n')
+            if (indexOfLineBreak != -1) {
+                // if doesn't copy, when paste content, maybe will paste twice
+                // if the composition doesn't set to null, maybe paste twice too
+                currentTextField.value = newState.copy(text = newState.text.substring(0, indexOfLineBreak), composition = null)
 
-            val newState = keepStylesIfPossible(newState, lastState, textChangedCallback = scrollIfInvisible)
-
-
-            if (newState.text.contains('\n')) {
-                // if contains new line, wait new list update the state
-                onContainNewLine(newState)
+                onContainNewLine(newState.copy(composition = null))
             } else {
+                val lastState = currentTextField.value
+
+                val newState = keepStylesIfPossible(
+                    newState,
+                    lastState,
+                    textChangedCallback = scrollIfInvisible
+                )
+
                 currentTextField.value = newState
 
                 onUpdateText(newState)
@@ -122,49 +129,41 @@ private fun keepStylesIfPossible(
     lastState: TextFieldValue,
     textChangedCallback: () -> Unit,
 ) : TextFieldValue {
-    return try {
-        keepStylesIfPossibleNoCatch(newState, lastState, textChangedCallback)
+    try {
+        val textChanged = lastState.text.length != newState.text.length || lastState.text != newState.text
+
+        // scroll if invisible
+        // when input some chars but target line invisible, will scroll to that line
+        if(textChanged) {
+            textChangedCallback()
+        }else {
+            return newState.copy(annotatedString = lastState.annotatedString)
+        }
+
+
+        // text must changed when reached here
+
+        // try keep styles if possible, will use more cpu and memory, but can reduce text flashing
+        val newTextLen = newState.text.length
+        // the `it.end` is exclusive, so can be equals to length
+        val validSpans = lastState.annotatedString.spanStyles.filter { it.start >= 0 && it.end <= newTextLen }
+
+        if(validSpans.isEmpty()) {
+            return newState
+        }
+
+        val newAnnotatedString = newState.annotatedString
+        return newState.copy(
+            annotatedString = AnnotatedString(
+                text = newAnnotatedString.text,
+                spanStyles = validSpans,
+                paragraphStyles = newAnnotatedString.paragraphStyles
+            )
+        )
     }catch (e: Exception) {
         MyLog.e(TAG, "#keepStylesIfPossible err: ${e.localizedMessage}")
         e.printStackTrace()
 
-        newState
-    }
-}
-
-private fun keepStylesIfPossibleNoCatch(
-    newState: TextFieldValue,
-    lastState: TextFieldValue,
-    textChangedCallback: () -> Unit,
-) : TextFieldValue {
-    val textChanged = lastState.text.length != newState.text.length || lastState.text != newState.text
-
-    // scroll if invisible
-    // when input some chars but target line invisible, will scroll to that line
-    if(textChanged) {
-        textChangedCallback()
-    }else {
-        return newState.copy(annotatedString = lastState.annotatedString)
-    }
-
-
-    // text must changed when reached here
-
-    // try keep styles if possible, will use more cpu and memory, but can reduce text flashing
-    val newTextLen = newState.text.length
-    // the `it.end` is exclusive, so can be equals to length
-    val validSpans = lastState.annotatedString.spanStyles.filter { it.start >= 0 && it.end <= newTextLen }
-
-    if(validSpans.isEmpty()) {
         return newState
     }
-
-    val newAnnotatedString = newState.annotatedString
-    return newState.copy(
-        annotatedString = AnnotatedString(
-            text = newAnnotatedString.text,
-            spanStyles = validSpans,
-            paragraphStyles = newAnnotatedString.paragraphStyles
-        )
-    )
 }
