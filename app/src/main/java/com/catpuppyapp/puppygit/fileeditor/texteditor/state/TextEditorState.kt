@@ -18,6 +18,7 @@ import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.StylesUpdateRequest
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.SyntaxHighlightResult
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.scopeInvalid
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.EditCache
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
@@ -353,10 +354,19 @@ class TextEditorState(
                 return
             }
 
+            val oldLine = fields[targetIndex]
+
             val newText = textFieldValue.text
 
-            //分割当前行
-            val splitFieldValues = splitTextsByNL(newText)
+            //get old line text
+            val (oldTextLeft, oldTextRight) = oldLine.value.let {
+                it.text.let { text ->
+                    Pair(text.substring(0, it.selection.min), text.substring(it.selection.max))
+                }
+            }
+            val oldText = oldTextLeft + oldTextRight
+
+            val splitFieldValues = splitTextsByNL(newText, oldText)
 
             //创建新字段集合
             val newFields = fields.toMutableList()
@@ -365,7 +375,6 @@ class TextEditorState(
             val splitFirstLine = splitFieldValues.first()
             // 如果第一行为空，则说明在旧行的开头插入了换行符，可能是粘贴了多行，也可能是输入或粘贴了单行，这两种情况有个共同点，
             // 就是新内容的最后一行就是旧内容本身，而且这一行的changeType状态应该保持不变
-            val oldLine = newFields[targetIndex]
             //这里加oldLine text 非空判断是为了使旧行为空时按回车让旧行changeType保持不变，追加的行为新增
             val newLineAtOldLineHead = oldLine.value.text.isNotEmpty() && splitFirstLine.text.isEmpty()
             newFields[targetIndex] = oldLine.copy(value = splitFirstLine).apply {
@@ -422,26 +431,9 @@ class TextEditorState(
                 isMutableSelectedIndices = true,
                 targetIndex = lastNewSplitFieldIndex,
 
-                // 如果自定义位置有bug，就禁用下面的改用这个，注释option和columnStartIndexInclusive
-//                option = SelectionOption.FIRST_POSITION,
-
+                // cursor position
                 option = SelectionOption.CUSTOM,
-                columnStartIndexInclusive = if (oldTargetText == newTargetFirstText) {  //新旧第一行相等，定位到新内容最后一行末尾
-                    newTargetLastText.length
-                } else { //新旧内容不相等，从新内容最后一行和旧内容的末尾开始匹配，定位到从尾到头第一个不匹配的字符后面
-                    var nl = newTargetLastText.length
-                    var ol = oldTargetText.length
-                    var bothLen = Math.min(ol, nl)
-                    while (bothLen-- > 0) {
-                        if(newTargetLastText[--nl] != oldTargetText[--ol]) {
-                            nl++
-                            break
-                        }
-                    }
-
-                    //要定位到倒数第一个不匹配的字符后面，所以需要加1
-                    nl
-                },
+                columnStartIndexInclusive = newTargetLastText.length - oldTextRight.length,
             )
 
             val newContentRangeInNewFields = IntRange(targetIndex, targetIndex + newSplitFieldStates.size)
@@ -1304,10 +1296,24 @@ class TextEditorState(
         )
     }
 
-    private fun splitTextsByNL(text: String): List<TextFieldValue> {
+    private fun splitTextsByNL(
+        text: String,
+        oldText: String,
+    ): List<TextFieldValue> {
         val lines = text.lines()
         // if pressed enter, most have 2 lines, else, maybe is pasted content
-        val maybeIsPaste = lines.size > 2
+        val maybeIsPaste = lines.size > 2 || (
+            lines.get(0).let { first ->
+                lines.get(1).let { second ->
+                    first.length + second.length != oldText.length || first + second != oldText
+                }
+            }
+        )
+
+        if(AppModel.devModeOn) {
+            MyLog.d(TAG, "maybeIsPaste=$maybeIsPaste")
+        }
+
         val ret = mutableListOf<TextFieldValue>()
         val tabIndentSpaceCount = SettingsUtil.editorTabIndentCount()
         var autoIndentSpacesCount = ""
