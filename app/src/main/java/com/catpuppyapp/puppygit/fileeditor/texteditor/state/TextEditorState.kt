@@ -383,7 +383,15 @@ class TextEditorState(
                     updateLineChangeType(LineChangeType.NEW)
 
                     //这里用oldLine或this的changeType都行，因为 this是oldLine的copy，而且没有拷贝changeType，所以他们两个的changeType应该相同，但从逻辑上来说，应该用oldLine的
-                }else if(oldLine.changeType == LineChangeType.NONE && this.value.text != oldLine.value.text) {  //为真则是在旧行中间添加的换行符，否则是在旧行末尾（无需处理，维持旧行changeType即可）
+                    //为真则是在旧行中间添加的换行符，否则是在旧行末尾（无需处理，维持旧行changeType即可）
+                }else if(oldLine.changeType == LineChangeType.NONE && this.value.text.let { t ->
+                        oldLine.value.text.let { oldT ->
+                            // the String.equals() should compare length first, if didn't match,
+                            //   then compare the string? if it is, the length check at here can be remove
+                            t.length != oldT.length || t != oldT
+                        }
+                    }
+                ) {
                     // this是拷贝了新内容的新字段，如果新字段的文本和旧字段的文本不同，说明内容改变了，更新changeType，否则不用更新
                     updateLineChangeType(LineChangeType.UPDATED)
                 } // else 在旧行末尾添加了换行符，无需处理
