@@ -142,6 +142,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.ThumbCache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile
+import com.catpuppyapp.puppygit.utils.compareStringAsNumIfPossible
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJob
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -150,6 +151,7 @@ import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.getFileExtOrEmpty
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
+import com.catpuppyapp.puppygit.utils.getFileNameOrEmpty
 import com.catpuppyapp.puppygit.utils.getFilePathUnderParent
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getRangeForRenameFile
@@ -3536,10 +3538,14 @@ private suspend fun doInit(
     //排序
     //注意：文件夹大小不是0，可能是4096字节，所以按大小排序会在某些大小非0的文件上面！
     val comparator = { o1:FileItemDto, o2:FileItemDto ->  //不能让比较器返回0，不然就等于“去重”了，就会少文件
-        var compareResult = if(sortMethod == SortMethod.NAME.code){
-            o1.name.compareTo(o2.name, ignoreCase = true)
-        }else if(sortMethod == SortMethod.TYPE.code){
-            getFileExtOrEmpty(o1.name).compareTo(getFileExtOrEmpty(o2.name), ignoreCase = true)
+        val sortByName = {
+            compareStringAsNumIfPossible(getFileNameOrEmpty(o1.name), getFileNameOrEmpty(o2.name))
+        }
+
+        var compareResult = if(sortMethod == SortMethod.NAME.code) {
+            sortByName()
+        }else if(sortMethod == SortMethod.TYPE.code) {
+            compareStringAsNumIfPossible(getFileExtOrEmpty(o1.name), getFileExtOrEmpty(o2.name))
         } else if(sortMethod == SortMethod.SIZE.code) {
             o1.sizeInBytes.compareTo(o2.sizeInBytes)
         } else { //sortMethod == SortMethod.LAST_MODIFIED
@@ -3547,8 +3553,8 @@ private suspend fun doInit(
         }
 
         //if equals and is not sort by name, try sort by name
-        if(compareResult==0 && sortMethod!=SortMethod.NAME.code) {
-            compareResult = o1.name.compareTo(o2.name, ignoreCase = true)
+        if(compareResult == 0 && sortMethod != SortMethod.NAME.code) {
+            compareResult = sortByName()
         }
 
         if(compareResult > 0){

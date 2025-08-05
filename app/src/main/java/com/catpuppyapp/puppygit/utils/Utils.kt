@@ -1006,20 +1006,33 @@ fun getFileExtOrEmpty_treatStartWithDotAsNoExt(filename:String):String {
     }
 }
 
+
 /**
- * 注意：如果是 ".git" 会返回后缀类型为 "git"
- *
- * @return input "abc.txt", return ".txt"; input ".git", return ".git"; input "abc.", return ""
+ * @return Pair(name, ext), doesn't contains '.',
+ *   e.g. input "abc.txt", return Pair("abc,", "txt");
+ *   input ".git", return Pair("", "git");
+ *   input "abc.", return Pair(abc, "")
  */
-fun getFileExtOrEmpty(filename:String):String {
+fun splitFileNameAndExt(filename:String) : Pair<String, String> {
     val extIndex = filename.lastIndexOf('.')
 
-    return if(extIndex < 0 || extIndex == filename.lastIndex) {
-        ""
-    }else {
-        filename.substring(extIndex)
+    return if(extIndex < 0) {
+        Pair(filename, "")
+    }else if(extIndex == 0) {
+        // will not out of bounds,
+        //   even filename.length is 1,
+        //   the substring(length) will return an empty string ""
+        Pair("", filename.substring(1))
+    }else {  // extIndex > 0
+        Pair(filename.substring(0, extIndex), filename.substring(extIndex + 1))
     }
 }
+
+
+fun getFileNameOrEmpty(filename:String) = splitFileNameAndExt(filename).first
+
+fun getFileExtOrEmpty(filename:String) = splitFileNameAndExt(filename).second
+
 
 
 fun readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings: AppSettings, defaultTimeOffsetInMinutes:Int):Int {
@@ -1129,6 +1142,26 @@ fun parseLongOrDefault(str:String, default:Long?):Long? {
     }catch (_:Exception){
         default
     }
+}
+
+fun parseDoubleOrDefault(str:String, default:Double?):Double? {
+    return try {
+        str.trim().toDouble()
+    }catch (_:Exception){
+        default
+    }
+}
+
+fun compareStringAsNumIfPossible(str1: String, str2: String, ignoreCase: Boolean = true):Int {
+    val str1Num = parseDoubleOrDefault(str1, null)
+    if(str1Num != null) {
+        val str2Num = parseDoubleOrDefault(str2, null)
+        if(str2Num != null) {
+            return str1Num.compareTo(str2Num)
+        }
+    }
+
+    return str1.compareTo(str2, ignoreCase = ignoreCase)
 }
 
 //从v2rayNG 拷的
