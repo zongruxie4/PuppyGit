@@ -22,6 +22,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.MyTextFieldState
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.MyLog
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 private const val TAG = "MyTextField"
@@ -47,6 +48,7 @@ internal fun MyTextField(
 
     val currentTextField = textFieldState.value.let { remember(it) { mutableStateOf(it) } }
     val focusRequester = remember { FocusRequester() }
+    val alreadyCalledContainsNewLine = remember { AtomicBoolean(false) }
 
 
     // NOTE: if the `value` is not equals to `BasicTextField` held value, then the ime state will reset
@@ -57,12 +59,14 @@ internal fun MyTextField(
         onValueChange = ovc@{ newState ->
             val indexOfLineBreak = newState.text.indexOf('\n')
             if (indexOfLineBreak != -1) {
-                // if doesn't copy, when paste content, maybe will paste twice
-                // if the composition doesn't set to null, maybe paste twice too
-                currentTextField.value = newState.copy(text = newState.text.substring(0, indexOfLineBreak), composition = null)
+                // make sure only call contains new line once, else maybe cause paste content twice in sometimes
+                if(alreadyCalledContainsNewLine.compareAndSet(false, true)) {
+                    onContainNewLine(newState)
+                }
 
-                onContainNewLine(newState.copy(composition = null))
             } else {
+                alreadyCalledContainsNewLine.set(false)
+
                 val lastState = currentTextField.value
 
                 val newState = keepStylesIfPossible(
