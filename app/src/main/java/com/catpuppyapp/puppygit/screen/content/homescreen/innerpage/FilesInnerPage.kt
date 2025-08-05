@@ -1780,7 +1780,7 @@ fun FilesInnerPage(
                                     //goto editor page with file path
 
                                     //若匹配内部Editor关联文件类型，则打开
-                                    if (RegexUtil.matchWildcardList(it.name, settingsSnapshot.value.editor.fileAssociationList)) {
+                                    if (RegexUtil.equalsOrEndsWithExt(it.name, SettingsUtil.obtainEditorFileAssociationList())) {
                                         //请求打开文件
                                         val expectReadOnly = false
                                         requireInnerEditorOpenFile(it.fullPath, expectReadOnly)

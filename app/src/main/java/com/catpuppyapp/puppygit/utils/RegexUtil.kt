@@ -104,5 +104,24 @@ object RegexUtil {
 
         return false
     }
+
+    fun equalsOrEndsWithExt(target: String, keywordList: List<String>, ignoreCase: Boolean = true): Boolean {
+        for(k in keywordList) {
+            if(k.equals(target, ignoreCase = ignoreCase)) {
+                return true
+            }
+
+            // *.ext
+            if(k.startsWith(extMatchFlag)) {
+                // suffix is extension starts with '.', e.g. ".ext"
+                val suffix = k.substring(extMatchFlag.length - 1)
+                if(target.endsWith(suffix, ignoreCase = ignoreCase)) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
 }
 

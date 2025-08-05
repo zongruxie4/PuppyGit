@@ -313,5 +313,6 @@ object SettingsUtil {
     fun isEnabledDetailsCompareForDiff() = appSettings.diff.enableDetailsCompare
     fun isEditorAutoCloseSymbolPairEnabled() = appSettings.editor.autoCloseSymbolPair
     fun editorThresholdLinesCountOfIncrementAnalyze() = appSettings.editor.thresholdLinesCountOfIncrementAnalyze
+    fun obtainEditorFileAssociationList() = appSettings.editor.fileAssociationList
 
 }
