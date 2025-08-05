@@ -3541,11 +3541,14 @@ private suspend fun doInit(
         val sortByName = {
             compareStringAsNumIfPossible(getFileNameOrEmpty(o1.name), getFileNameOrEmpty(o2.name))
         }
+        val sortByType = {
+            compareStringAsNumIfPossible(getFileExtOrEmpty(o1.name), getFileExtOrEmpty(o2.name))
+        }
 
         var compareResult = if(sortMethod == SortMethod.NAME.code) {
             sortByName()
         }else if(sortMethod == SortMethod.TYPE.code) {
-            compareStringAsNumIfPossible(getFileExtOrEmpty(o1.name), getFileExtOrEmpty(o2.name))
+            sortByType()
         } else if(sortMethod == SortMethod.SIZE.code) {
             o1.sizeInBytes.compareTo(o2.sizeInBytes)
         } else { //sortMethod == SortMethod.LAST_MODIFIED
@@ -3553,8 +3556,12 @@ private suspend fun doInit(
         }
 
         //if equals and is not sort by name, try sort by name
-        if(compareResult == 0 && sortMethod != SortMethod.NAME.code) {
-            compareResult = sortByName()
+        if(compareResult == 0) {
+            compareResult = if(sortMethod != SortMethod.NAME.code) {
+                sortByName()
+            }else {
+                sortByType()
+            }
         }
 
         if(compareResult > 0){
