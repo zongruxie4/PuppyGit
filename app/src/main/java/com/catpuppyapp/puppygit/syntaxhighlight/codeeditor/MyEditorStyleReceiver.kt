@@ -34,8 +34,8 @@ class MyEditorStyleReceiver(
         val carriedFieldsId = editorState.fieldsId
 
         if(AppModel.devModeOn) {
-            MyLog.w(TAG, "latestFieldsId: $latestFieldsId")
-            MyLog.w(TAG, "carriedFieldsId: $carriedFieldsId")
+            MyLog.i(TAG, "latestFieldsId: $latestFieldsId")
+            MyLog.i(TAG, "carriedFieldsId: $carriedFieldsId")
         }
 
         val isUnusedFieldsId = (latestFieldsId != carriedFieldsId
@@ -49,7 +49,7 @@ class MyEditorStyleReceiver(
 
         if(isUnusedFieldsId) {
             if(AppModel.devModeOn) {
-                MyLog.w(TAG, "will drop unused styles for fieldsId: $carriedFieldsId")
+                MyLog.i(TAG, "will drop unused styles for fieldsId: $carriedFieldsId")
             }
 
             return
@@ -64,7 +64,7 @@ class MyEditorStyleReceiver(
         // cache只有一个实例，需要并发安全，key为fieldsId，全局唯一
         val stylesResult = StylesResult(inDarkTheme, styles, StylesResultFrom.CODE_EDITOR, fieldsId = editorState.fieldsId, languageScope = languageScope)
         if(codeEditor.isGoodStyles(stylesResult, editorState).not()) {
-            MyLog.w(TAG, "stylesResult doesn't match with editor state: stylesResult=$stylesResult, styles.spans.lineCount=${styles.spans.lineCount}, editorState.fields.size=${editorState.fields.size}")
+            MyLog.i(TAG, "`stylesResult` doesn't match with editor state: stylesResult=$stylesResult, styles.spans.lineCount=${styles.spans.lineCount}, editorState.fields.size=${editorState.fields.size}")
             return
         }
 

@@ -1374,7 +1374,7 @@ fun appAvailHeapSizeInMb():Long {
     val availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB
 
     if(AppModel.devModeOn) {
-        MyLog.w(TAG, "#$funName: ${availHeapSizeInMB}MB")
+        MyLog.i(TAG, "#$funName: ${availHeapSizeInMB}MB")
     }
 
     return availHeapSizeInMB
