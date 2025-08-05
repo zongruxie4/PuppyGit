@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.style
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -29,6 +30,7 @@ object MyStyleKt {
     val emptySpanStyle = SpanStyle()
 
     val defaultItemPadding = 10.dp
+    val defaultItemPaddingValues = PaddingValues(defaultItemPadding)
     val defaultHorizontalPadding = defaultItemPadding
 
     val defaultIconSize = 40.dp
