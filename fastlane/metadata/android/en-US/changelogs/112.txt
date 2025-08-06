@@ -5,4 +5,5 @@
 - Editor: hide save button if current content already saved
 - Editor: fix undo stack push logic incorrect in some cases
 - Editor: support insert closed symbol pair after input opened
+- fix many bugs of Editor
 - upgrade target sdk to latest android version

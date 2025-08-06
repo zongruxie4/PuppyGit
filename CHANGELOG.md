@@ -10,6 +10,7 @@
 - Editor: hide save button if current content already saved
 - Editor: fix undo stack push logic incorrect in some cases
 - Editor: support insert closed symbol pair after input opened
+- fix many bugs of Editor
 - upgrade target sdk to latest android version
 
 
@@ -21,6 +22,7 @@
 - 编辑器：若当前内容已保存，隐藏保存按钮
 - 编辑器：修复撤销栈在某些场景更新逻辑有误
 - 编辑器：支持插入开符号时，自动追加闭符号
+- 修复文本编辑器的大量bug
 - 升级sdk为安卓最新版本
 
 
