@@ -56,7 +56,6 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -202,7 +201,7 @@ fun DiffScreen(
     val navController = AppModel.navController
 
     val clipboardManager = LocalClipboardManager.current
-    val softKbController = LocalSoftwareKeyboardController.current
+
 
 
 
@@ -1466,13 +1465,9 @@ fun DiffScreen(
             },
             okBtnText = stringResource(R.string.save),
             cancelTextColor = MyStyleKt.TextColor.danger(),
-            onCancel = {
-                showEditLineDialog.value = false
-                softKbController?.hide()
-            }
+            onCancel = {showEditLineDialog.value = false}
         ) {
             showEditLineDialog.value = false
-            softKbController?.hide()
 
             val fileFullPath = filePathOfEditLineDialog.value
 
@@ -1621,13 +1616,9 @@ fun DiffScreen(
             okBtnText = if(trueRestoreFalseReplace.value) stringResource(R.string.restore) else stringResource(R.string.replace),
             cancelTextColor = MyStyleKt.TextColor.danger(),
 
-            onCancel = {
-                showRestoreLineDialog.value = false
-                softKbController?.hide()
-            }
+            onCancel = {showRestoreLineDialog.value = false}
         ) {
             showRestoreLineDialog.value = false
-            softKbController?.hide()
 
             val fileFullPath = filePathOfEditLineDialog.value
 
