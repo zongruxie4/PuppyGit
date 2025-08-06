@@ -1328,7 +1328,7 @@ class TextEditorState(
 
         for((index, text) in lines.withIndex()) {
             ret.add(
-                if(maybeIsPaste) {
+                if(maybeIsPaste) {  // if it is pasted content, doesn't add intent to avoid unexpected intents
                     TextFieldValue(text, TextRange(text.length))
                 } else if (index == 0) {  //第一行，光标在换行的位置
                     autoIndentSpacesCount = getNextIndentByCurrentStr(text, tabIndentSpaceCount)
