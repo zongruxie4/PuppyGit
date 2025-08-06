@@ -1467,12 +1467,12 @@ fun DiffScreen(
             okBtnText = stringResource(R.string.save),
             cancelTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {
-                softKbController?.hide()
                 showEditLineDialog.value = false
+                softKbController?.hide()
             }
         ) {
-            softKbController?.hide()
             showEditLineDialog.value = false
+            softKbController?.hide()
 
             val fileFullPath = filePathOfEditLineDialog.value
 
@@ -1622,12 +1622,12 @@ fun DiffScreen(
             cancelTextColor = MyStyleKt.TextColor.danger(),
 
             onCancel = {
-                softKbController?.hide()
                 showRestoreLineDialog.value = false
+                softKbController?.hide()
             }
         ) {
-            softKbController?.hide()
             showRestoreLineDialog.value = false
+            softKbController?.hide()
 
             val fileFullPath = filePathOfEditLineDialog.value
 
