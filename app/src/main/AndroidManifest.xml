@@ -37,7 +37,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PuppyGitAndroid"
-        tools:targetApi="31"
+        tools:targetApi="26"
         android:requestLegacyExternalStorage="true"
         >
         <service
