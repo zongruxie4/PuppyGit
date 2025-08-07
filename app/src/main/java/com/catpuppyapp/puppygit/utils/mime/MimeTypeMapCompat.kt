@@ -271,7 +271,11 @@ private val extensionToMimeTypeMap = mapOf(
     "go" to "application/x-go",
     "jsx" to "application/x-jsx",
     "tsx" to "application/x-tsx",
+
+    // override exists "bat" mime type
     "bat" to "application/x-batchfile",
+    "cmd" to "application/x-batchfile",
+
     "ps1" to "application/x-powershell",
 
     "less" to "application/x-less",

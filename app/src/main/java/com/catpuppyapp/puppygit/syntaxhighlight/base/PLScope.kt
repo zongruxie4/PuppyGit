@@ -170,7 +170,7 @@ enum class PLScope(val scope: String) {
             }
 
 
-            if(fileName.endsWith(".bat")) {
+            if(fileName.endsWith(".bat") || fileName.endsWith(".cmd")) {
                 return BAT
             }
 
