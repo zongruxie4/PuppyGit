@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.play.pro
+package com.catpuppyapp.puppygit.activity
 
 import android.app.Activity
 import android.content.Context
@@ -32,7 +32,8 @@ import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.SshUnknownHostDialog
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
-import com.catpuppyapp.puppygit.play.pro.base.BaseComposeActivity
+import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.base.BaseComposeActivity
 import com.catpuppyapp.puppygit.screen.AppScreenNavigator
 import com.catpuppyapp.puppygit.screen.RequireMasterPasswordScreen
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan

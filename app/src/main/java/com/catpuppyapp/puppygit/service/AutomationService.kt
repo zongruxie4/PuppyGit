@@ -10,7 +10,7 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.notification.AutomationNotify
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
-import com.catpuppyapp.puppygit.play.pro.base.BaseAccessibilityService
+import com.catpuppyapp.puppygit.base.BaseAccessibilityService
 import com.catpuppyapp.puppygit.receiver.ScreenOnOffReceiver
 import com.catpuppyapp.puppygit.server.bean.NotificationSender
 import com.catpuppyapp.puppygit.settings.AppSettings

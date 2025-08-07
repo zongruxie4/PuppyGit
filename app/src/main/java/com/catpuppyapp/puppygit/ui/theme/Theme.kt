@@ -20,7 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.play.pro.findActivity
+import com.catpuppyapp.puppygit.activity.findActivity
 import com.catpuppyapp.puppygit.syntaxhighlight.base.TextMateUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.pref.PrefMan

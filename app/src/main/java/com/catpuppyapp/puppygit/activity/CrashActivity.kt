@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.play.pro
+package com.catpuppyapp.puppygit.activity
 
 import android.app.Activity
 import android.content.Context
@@ -31,7 +31,8 @@ import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.SingleLineCardButton
 import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.constants.IntentCons
-import com.catpuppyapp.puppygit.play.pro.base.BaseComposeActivity
+import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.base.BaseComposeActivity
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.reportBugsLink
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.InitContent

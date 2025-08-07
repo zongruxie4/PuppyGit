@@ -9,7 +9,7 @@ import android.os.Build
 import android.service.quicksettings.Tile
 import androidx.core.content.ContextCompat
 import com.catpuppyapp.puppygit.constants.IntentCons
-import com.catpuppyapp.puppygit.play.pro.base.BaseTileService
+import com.catpuppyapp.puppygit.base.BaseTileService
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.receiverFlags
 

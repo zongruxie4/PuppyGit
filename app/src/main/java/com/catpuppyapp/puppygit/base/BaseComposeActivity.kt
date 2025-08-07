@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.play.pro.base
+package com.catpuppyapp.puppygit.base
 
 import android.content.Context
 import android.content.res.Configuration
@@ -8,7 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.platform.compositionContext
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import androidx.core.view.WindowCompat
-import com.catpuppyapp.puppygit.play.pro.CrashActivity
+import com.catpuppyapp.puppygit.activity.CrashActivity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ContextUtil

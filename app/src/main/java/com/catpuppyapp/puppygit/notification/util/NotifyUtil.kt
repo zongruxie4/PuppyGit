@@ -9,7 +9,7 @@ import com.catpuppyapp.puppygit.notification.HttpServiceExecuteNotify
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
 import com.catpuppyapp.puppygit.notification.NormalNotify
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
-import com.catpuppyapp.puppygit.play.pro.MainActivity
+import com.catpuppyapp.puppygit.activity.MainActivity
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import kotlin.random.Random

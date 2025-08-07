@@ -6,7 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.play.pro.findActivity
+import com.catpuppyapp.puppygit.activity.findActivity
 
 private const val TAG = "ActivityUtil"
 

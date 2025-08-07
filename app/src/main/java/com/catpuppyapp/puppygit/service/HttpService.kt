@@ -9,7 +9,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
-import com.catpuppyapp.puppygit.play.pro.base.BaseService
+import com.catpuppyapp.puppygit.base.BaseService
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.server.HttpServer
 import com.catpuppyapp.puppygit.settings.AppSettings
