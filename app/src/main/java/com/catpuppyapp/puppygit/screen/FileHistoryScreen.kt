@@ -631,8 +631,8 @@ fun FileHistoryScreen(
             dialogVisibleState = showItemMsgDialog,
             text = textOfItemMsgDialog.value,
             previewModeOn = previewModeOnOfItemMsgDialog,
-            useSystemFonts = useSystemFontsForItemMsgDialog
-
+            useSystemFonts = useSystemFontsForItemMsgDialog,
+            basePathNoEndSlash = curRepo.value.fullSavePath,
         )
     }
 

@@ -30,6 +30,7 @@ fun MarkDownDialog(
     text: String,
     previewModeOn: MutableState<Boolean>,
     useSystemFonts: MutableState<Boolean>,
+    basePathNoEndSlash:String,
     close: () -> Unit,
     copy: () -> Unit,
 ) {
@@ -81,7 +82,7 @@ fun MarkDownDialog(
                         MarkDownContainer(
                             content = text,
                             style = LocalTextStyle.current.copy(fontFamily = font),
-
+                            basePathNoEndSlash = basePathNoEndSlash,
                             // return false to let default link handler take it
                             onLinkClicked = { false },
                         )

@@ -1890,10 +1890,12 @@ fun RepoInnerPage(
 
     val showItemMsgDialog = rememberSaveable { mutableStateOf(false) }
     val textOfItemMsgDialog = rememberSaveable { mutableStateOf("") }
+    val basePathNoEndSlashOfItemMsgDialog = rememberSaveable { mutableStateOf("") }
     val previewModeOnOfItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgPreviewModeOn) }
     val useSystemFontsForItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgUseSystemFonts) }
     val showItemMsg = { repoDto: RepoEntity ->
         textOfItemMsgDialog.value = repoDto.latestCommitMsg
+        basePathNoEndSlashOfItemMsgDialog.value = repoDto.fullSavePath
         showItemMsgDialog.value = true
     }
 
@@ -1903,7 +1905,7 @@ fun RepoInnerPage(
             text = textOfItemMsgDialog.value,
             previewModeOn = previewModeOnOfItemMsgDialog,
             useSystemFonts = useSystemFontsForItemMsgDialog,
-
+            basePathNoEndSlash = basePathNoEndSlashOfItemMsgDialog.value
         )
     }
 

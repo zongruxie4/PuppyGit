@@ -1334,7 +1334,7 @@ fun CommitListScreen(
             text = textOfItemMsgDialog.value,
             previewModeOn = previewModeOnOfItemMsgDialog,
             useSystemFonts = useSystemFontsForItemMsgDialog,
-
+            basePathNoEndSlash = curRepo.value.fullSavePath,
         )
     }
 

@@ -15,6 +15,7 @@ fun CommitMsgMarkDownDialog(
     text: String,
     previewModeOn: MutableState<Boolean>,
     useSystemFonts: MutableState<Boolean>,
+    basePathNoEndSlash: String,
 ) {
     val activityContext = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -23,6 +24,7 @@ fun CommitMsgMarkDownDialog(
         text = text,
         previewModeOn = previewModeOn,
         useSystemFonts = useSystemFonts,
+        basePathNoEndSlash = basePathNoEndSlash,
         close = {
             dialogVisibleState.value = false
 
