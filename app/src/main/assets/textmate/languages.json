@@ -71,6 +71,13 @@
     },
 
     {
+      "grammar": "textmate/fsharp/syntaxes/fsharp.tmLanguage.json",
+      "name": "fsharp",
+      "scopeName": "source.fsharp",
+      "languageConfiguration": "textmate/fsharp/language-configuration.json"
+    },
+
+    {
       "grammar": "textmate/go/syntaxes/go.tmLanguage.json",
       "name": "go",
       "scopeName": "source.go",
@@ -148,11 +155,25 @@
     },
 
     {
+      "grammar": "textmate/julia/syntaxes/julia.tmLanguage.json",
+      "name": "julia",
+      "scopeName": "source.julia",
+      "languageConfiguration": "textmate/julia/language-configuration.json"
+    },
+
+    {
       "grammar": "textmate/kotlin/syntaxes/Kotlin.tmLanguage",
       "name": "kotlin",
       "scopeName": "source.kotlin",
       "languageConfiguration": "textmate/kotlin/language-configuration.json"
     },
+    {
+      "grammar": "textmate/latex/syntaxes/latex.tmLanguage.json",
+      "name": "latex",
+      "scopeName": "text.tex.latex",
+      "languageConfiguration": "textmate/latex/language-configuration.json"
+    },
+
     {
       "grammar": "textmate/less/syntaxes/less.tmLanguage.json",
       "name": "less",

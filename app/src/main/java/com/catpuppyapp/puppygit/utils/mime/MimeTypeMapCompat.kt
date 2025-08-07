@@ -308,12 +308,23 @@ private val extensionToMimeTypeMap = mapOf(
     "r8" to "application/x-proguard",
     "vue" to "application/x-vue",
 
+    "fs" to "application/x-fsharp",
+    "fsi" to "application/x-fsharp",
+    "fsx" to "application/x-fsharp",
+    "fsscript" to "application/x-fsharp",
+    "fsharp" to "application/x-fsharp",
+
+    "jl" to "application/x-julia",
+    "julia" to "application/x-julia",
+
+    "latex" to "text/x-tex",
+
+
 
     // END: I added
 
     "kwd" to "application/x-kword",
     "kwt" to "application/x-kword",
-    "latex" to "application/x-latex",
     "lha" to "application/x-lha",
     "lhs" to "text/x-literate-haskell",
     "lin" to "application/bbolin",

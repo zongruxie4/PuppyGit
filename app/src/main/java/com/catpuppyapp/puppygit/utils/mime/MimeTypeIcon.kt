@@ -73,6 +73,8 @@ private val mimeTypeToIconMap = mapOf(
     "application/x-groovy" to MimeTypeIcon.CODE,
     "application/x-batchfile" to MimeTypeIcon.CODE,
     "application/x-powershell" to MimeTypeIcon.CODE,
+    "application/x-fsharp" to MimeTypeIcon.CODE,
+    "application/x-julia" to MimeTypeIcon.CODE,
 
     "application/x-less" to MimeTypeIcon.CODE,
     "application/x-scss" to MimeTypeIcon.CODE,

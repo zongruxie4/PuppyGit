@@ -23,6 +23,7 @@ enum class PLScope(val scope: String) {
     DART("source.dart"),
     DIFF("source.diff"),
     DOCKER_FILE("source.dockerfile"),
+    FSHARP("source.fsharp"),
     GO("source.go"),
     GROOVY("source.groovy"),
     GIT_IGNORE("source.ignore"),
@@ -33,7 +34,9 @@ enum class PLScope(val scope: String) {
     JAVASCRIPT("source.js"),
     JSX("source.js.jsx"),
     JSON("source.json"),
+    JULIA("source.julia"),
     KOTLIN("source.kotlin"),
+    LATEX("text.tex.latex"),
     LESS("source.css.less"),
     LUA("source.lua"),
     MAKE_FILE("source.makefile"),
@@ -279,6 +282,21 @@ enum class PLScope(val scope: String) {
 
             if(fileName.endsWith(".xsl")) {
                 return XSL
+            }
+
+            if(fileName.endsWith(".tex") || fileName.endsWith(".ltx") || fileName.endsWith(".latex")) {
+                return LATEX
+            }
+
+            if(fileName.endsWith(".jl") || fileName.endsWith(".julia")) {
+                return JULIA
+            }
+
+            if(fileName.endsWith(".fs") || fileName.endsWith(".fsi")
+                || fileName.endsWith(".fsx") || fileName.endsWith(".fsscript")
+                || fileName.endsWith(".fsharp")
+            ) {
+                return FSHARP
             }
 
             // .mmd extensions from?: https://github.com/Mathpix/mathpix-markdown-it
