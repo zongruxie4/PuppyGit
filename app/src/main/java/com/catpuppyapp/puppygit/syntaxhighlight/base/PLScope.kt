@@ -247,12 +247,17 @@ enum class PLScope(val scope: String) {
             }
 
 
-            if(fileName.endsWith(".pl") || fileName.endsWith(".perl")) {
+            if(fileName.endsWith(".pl") || fileName.endsWith(".perl")
+                || fileName.endsWith(".pm")|| fileName.endsWith(".psgi")
+            ) {
                 return PERL
             }
 
 
-            if(fileName.endsWith(".pl6") || fileName.endsWith(".raku") || fileName.endsWith(".rakudoc") || fileName.endsWith(".rakumod")) {
+            if(fileName.endsWith(".pl6") || fileName.endsWith(".p6")
+                || fileName.endsWith(".perl6") || fileName.endsWith(".pm6") || fileName.endsWith(".nqp")
+                || fileName.endsWith(".raku") || fileName.endsWith(".rakudoc") || fileName.endsWith(".rakumod")
+            ) {
                 return RAKU
             }
 
