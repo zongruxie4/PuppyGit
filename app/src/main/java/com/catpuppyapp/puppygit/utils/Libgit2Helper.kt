@@ -6573,7 +6573,20 @@ object Libgit2Helper {
         }
     }
 
-    suspend fun updateSubmodule(parentRepo:Repository, specifiedCredential: CredentialEntity?, submoduleNameList: List<String>, recursive: Boolean, credentialDb: CredentialRepository) {
+    // the param `superParentRepo` is the very top level repo for this submodule can be reached, it will used
+    //   to read some config value like 'http.sslVerify' or others
+    // the param `superParentRepo` 是当前子模块能抵达的最顶级的仓库，用来读取一些设置，例如 'http.sslVerify' 的值，
+    //   为了处理简单，所以这里不会分别读取每个子模块的配置项，而是使用最顶级仓库的配置项。
+    //   但如果导入子模块到仓库列表，这时就会使用子模块自身的配置文件了。
+    //   另外如果当前仓库本身就是子模块，则这时它能获取到的最顶级仓库其实并不是真的最顶级的。
+    suspend fun updateSubmodule(
+        parentRepo:Repository,
+        specifiedCredential: CredentialEntity?,
+        submoduleNameList: List<String>,
+        recursive: Boolean,
+        credentialDb: CredentialRepository,
+        superParentRepo: Repository
+    ) {
         val repoFullPathNoSlashSuffix = getRepoWorkdirNoEndsWithSlash(parentRepo)
 
         submoduleNameList.forEachBetter { submoduleName ->
@@ -6610,7 +6623,7 @@ object Libgit2Helper {
                     MyLog.e(TAG, "#updateSubmodule: set credential for submodule '$submoduleName' err: ${e.localizedMessage}")
                 }
 
-                setCertCheckCallback(smUrl, callbacks, parentRepo)
+                setCertCheckCallback(smUrl, callbacks, superParentRepo)
 
 
                 MyLog.d(TAG,"#updateSubmodule: will update submodule '$submoduleName'")
@@ -6629,7 +6642,7 @@ object Libgit2Helper {
                 if(recursive) {
                     val smFullPath = File(repoFullPathNoSlashSuffix, submodulePath).canonicalPath
                     Repository.open(smFullPath).use { smRepo->
-                        updateSubmodule(smRepo, specifiedCredential, getSubmoduleNameList(smRepo), recursive, credentialDb)
+                        updateSubmodule(smRepo, specifiedCredential, getSubmoduleNameList(smRepo), recursive, credentialDb, superParentRepo)
                     }
                 }
 

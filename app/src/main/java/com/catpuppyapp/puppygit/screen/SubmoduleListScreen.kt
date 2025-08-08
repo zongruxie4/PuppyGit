@@ -904,7 +904,7 @@ fun SubmoduleListScreen(
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         selectedItemList.value.toList().forEachBetter {
                             try {
-                                Libgit2Helper.updateSubmodule(repo, credential, listOf(it.name), recursiveUpdate.value, credentialDb)
+                                Libgit2Helper.updateSubmodule(repo, credential, listOf(it.name), recursiveUpdate.value, credentialDb, superParentRepo = repo)
 
                             }catch (e:Exception) {
                                 val errPrefix = "update submodule '${it.name}' err: "
