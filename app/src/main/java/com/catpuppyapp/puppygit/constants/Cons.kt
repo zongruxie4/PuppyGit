@@ -330,6 +330,7 @@ object Cons {
 
     val gitConfigKeyUserName = "user.name"
     val gitConfigKeyUserEmail = "user.email"
+    val gitConfigKeyHttpSslVerify = "http.sslVerify"
 
     val isReadyDoSyncCheckResult_NotReadyNeedSetUpstream = 1  //配置文件里没上游(upstream)需要设置一下
     val isReadyDoSyncCheckResult_ReadyDoSync = 2  //上游分支已经存在于本地

@@ -3081,14 +3081,18 @@ object Libgit2Helper {
     }
 
     fun isHttpSslVerifyEnabled(repo: Repository?): Boolean {
+        val globalSettings = SettingsUtil.httpSslVerify()
+
+        // maybe the repo aren't cloned yet
         if(repo == null) {
-            return SettingsUtil.httpSslVerify()
+            return globalSettings
         }
 
-        val globalSettings = SettingsUtil.httpSslVerify()
+        // if repo available, try use it's config value,
+        //   if got any err or null, then use global settings
         return try {
             getRepoConfigForRead(repo)
-                .getBool("http.sslVerify")
+                .getBool(Cons.gitConfigKeyHttpSslVerify)
                 .orElse(globalSettings)
         }catch (_: Exception) {
             globalSettings
@@ -7200,6 +7204,7 @@ object Libgit2Helper {
                     //  https no need set this, if want to allow unknown host for https(e.g. user used a self-signed cert),
                     //  can copy the cert into the user-cert folder, then can connect self-signed cert with https
 
+                    // repo aren't cloned yet, so is null
                     Libgit2Helper.setCertCheckCallback(cloneUrl, callbacks, repo = null)
 
 
