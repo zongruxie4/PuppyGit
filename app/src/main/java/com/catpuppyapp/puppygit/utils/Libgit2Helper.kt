@@ -3007,17 +3007,17 @@ object Libgit2Helper {
     }
 
     fun setCertCheckCallback(
-        url:String,
-        callbacks:Remote.Callbacks,
-        settings: AppSettings=SettingsUtil.getSettingsSnapshot(),
+        url: String,
+        callbacks: Remote.Callbacks,
+        repo: Repository?,
 //            allowCallback:()->Unit,
 //            rejectCallback:()->Unit
-    ){
+    ) {
         // only set callback for ssh, tls force reject unknown hosts,
         // but the app already bundle a well-known hosts cert, and users can add self-signed certs
         // to 'PuppyGitData/cert-user' dir to allow trusted hosts, so, no reason to set a custom cert check callback for tls(https)
         if(isSshUrl(url)) {
-            if(settings.sshSetting.allowUnknownHosts) {  // allow unknown host, no check, just passed
+            if(SettingsUtil.sshAllowUnknownHosts()) {  // allow unknown host, no check, just passed
                 setAllowUnknownHostsForCertificatesCheck(callbacks)
             }else { // check cert
                 // 1 let libgit2 decide, 0 allow, -1 reject
@@ -3073,6 +3073,25 @@ object Libgit2Helper {
                     return@cb -1
                 }
             }
+        }else {  // http url
+            if(!isHttpSslVerifyEnabled(repo)) {
+                setAllowUnknownHostsForCertificatesCheck(callbacks)
+            }
+        }
+    }
+
+    fun isHttpSslVerifyEnabled(repo: Repository?): Boolean {
+        if(repo == null) {
+            return SettingsUtil.httpSslVerify()
+        }
+
+        val globalSettings = SettingsUtil.httpSslVerify()
+        return try {
+            getRepoConfigForRead(repo)
+                .getBool("http.sslVerify")
+                .orElse(globalSettings)
+        }catch (_: Exception) {
+            globalSettings
         }
     }
 
@@ -7181,7 +7200,7 @@ object Libgit2Helper {
                     //  https no need set this, if want to allow unknown host for https(e.g. user used a self-signed cert),
                     //  can copy the cert into the user-cert folder, then can connect self-signed cert with https
 
-                    Libgit2Helper.setCertCheckCallback(cloneUrl, callbacks, settings)
+                    Libgit2Helper.setCertCheckCallback(cloneUrl, callbacks)
 
 
                     //开始克隆

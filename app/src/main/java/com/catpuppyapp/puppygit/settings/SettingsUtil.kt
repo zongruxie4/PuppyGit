@@ -314,5 +314,7 @@ object SettingsUtil {
     fun isEditorAutoCloseSymbolPairEnabled() = appSettings.editor.autoCloseSymbolPair
     fun editorThresholdLinesCountOfIncrementAnalyze() = appSettings.editor.thresholdLinesCountOfIncrementAnalyze
     fun obtainEditorFileAssociationList() = appSettings.editor.fileAssociationList
+    fun sshAllowUnknownHosts() = appSettings.sshSetting.allowUnknownHosts
+    fun httpSslVerify() = appSettings.httpSetting.sslVerify
 
 }
