@@ -260,6 +260,7 @@ fun SettingsInnerPage(
     val cleanFileOpenHistory = rememberSaveable { mutableStateOf(false) }
 
     val allowUnknownHosts = rememberSaveable { mutableStateOf(settingsState.value.sshSetting.allowUnknownHosts) }
+    val httpSslVerify = rememberSaveable { mutableStateOf(settingsState.value.httpSetting.sslVerify) }
 
     //这几个本身就是state，不需要remember
 //    val dev_singleDiffOn = rememberSaveable { DevFeature.singleDiff.state }
@@ -1273,7 +1274,7 @@ fun SettingsInnerPage(
                 }
             }
         )
-//
+
 //        SettingsContent(onClick = {
 //            openFileWithInnerSubPageEditor(
 //                filePath = Lg2Utils.getKnownHostsFile(appContext).canonicalPath,
@@ -1299,6 +1300,30 @@ fun SettingsInnerPage(
                 Text(stringResource(R.string.forget_hostkeys), fontSize = itemFontSize)
             }
         }
+
+
+        SettingsTitle(stringResource(R.string.http_https))
+
+        SettingsContentSwitcher(
+            left = {
+                Text(stringResource(R.string.ssl_verify), fontSize = itemFontSize)
+            },
+            right = {
+                Switch(
+                    checked = httpSslVerify.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                val newValue = !httpSslVerify.value
+                httpSslVerify.value = newValue
+                SettingsUtil.update {
+                    it.httpSetting.sslVerify = newValue
+                }
+            }
+        )
+
+
 
         SettingsTitle(stringResource(R.string.master_password))
 

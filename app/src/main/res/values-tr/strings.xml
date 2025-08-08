@@ -1195,5 +1195,6 @@
     <string name="set_tab_size_note"><![CDATA[<=0 gerçek sekme kullan, aksi halde sekmeleri boşluklarla değiştir]]></string>
     <string name="symbol_pair">Symbol Pair</string>
     <string name="focus_line">Odak Satırı</string>
+    <string name="ssl_verify">Ssl Verify</string>
 
 </resources>

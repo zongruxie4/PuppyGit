@@ -1267,6 +1267,7 @@
     <string name="set_tab_size_note"><![CDATA[<=0 使用真实的制表符，否则将制表符替换为空格]]></string>
     <string name="symbol_pair">成对符号</string>
     <string name="focus_line">聚焦行</string>
+    <string name="ssl_verify">Ssl 验证</string>
 
 
 </resources>

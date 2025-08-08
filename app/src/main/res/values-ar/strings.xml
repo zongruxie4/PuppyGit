@@ -1185,5 +1185,6 @@
     <string name="set_tab_size_note"><![CDATA[<=0 لاستخدام الجدولة الحقيقية، وإلا سيتم استبدال الجدولة بمسافات]]></string>
     <string name="symbol_pair">Symbol Pair</string>
     <string name="focus_line">سطر التركيز</string>
+    <string name="ssl_verify">Ssl Verify</string>
 
 </resources>
