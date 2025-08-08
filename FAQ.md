@@ -82,7 +82,9 @@
 ---
 ## Question 11674829:
 #### Q: How I use self-signed cert for https?
-#### A: put your cert into `PuppyGit-Data/cert-user` and restart app(kill the process by slip it out from the task manager or 'force stop' app in the app information screen)
+#### A: Method 1: Put your cert into `AppData://cert-user` and restart app(kill the process by slip it out from the task manager or 'force stop' app in the app information screen)
+#### note: You can copy and paste the path `AppData://cert-user` to "Go To" dialog of PuppyGit's Files view to direct jump to the folder.
+#### A: Method 2: You can disable the ssl verify in settings page, but I don't recommend this method, due to it's unsafe, but if you are sure you want to disable it, check this issue: https://github.com/catpuppyapp/PuppyGit/issues/85#issuecomment-3166758525 
 ---
 ## Question 10997123:
 #### Q: What the `master password` used for?
