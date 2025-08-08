@@ -74,6 +74,7 @@ import com.catpuppyapp.puppygit.screen.content.listitem.SubmoduleItem
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -95,6 +96,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.github.git24j.core.Repository
+import java.io.File
 
 private const val TAG = "SubmoduleListScreen"
 
@@ -1283,6 +1285,7 @@ fun SubmoduleListScreen(
                         {selectedItemList.value.isNotEmpty()},  // sync config （同步.gitmodules 里的内容到父仓库或子仓库的配置文件）
                         {selectedItemList.value.isNotEmpty()},  // init repo
                         {selectedItemList.value.isNotEmpty()},  // restore .git file
+                        {selectedItemList.value.size == 1},  // edit config
                         {selectedItemList.value.isNotEmpty()},  // details
                     ))
 
@@ -1295,6 +1298,7 @@ fun SubmoduleListScreen(
                         stringResource(R.string.sync_configs),
                         stringResource(R.string.init_repo),
                         stringResource(R.string.restore_dot_git_file),
+                        stringResource(R.string.edit_config),
                         stringResource(R.string.details),  //可针对单个或多个条目查看details，多个时，用分割线分割多个条目的信息
                     ))
 
@@ -1327,10 +1331,10 @@ fun SubmoduleListScreen(
                                     nameForSetUrlDialog.value = curItem.name
                                     showSetUrlDialog.value = true
                                 }else {
-                                    Msg.requireShow(activityContext.getString(R.string.no_item_selected))
+                                    Msg.requireShowLongDuration(activityContext.getString(R.string.no_item_selected))
                                 }
                             }catch (e:Exception){
-                                Msg.requireShow(e.localizedMessage ?: "err")
+                                Msg.requireShowLongDuration("err: "+e.localizedMessage)
                             }
                         },
                         reload@{
@@ -1348,6 +1352,36 @@ fun SubmoduleListScreen(
                         },
                         restoreDotGitFile@{ // most time will auto backup and restore when need
                             showRestoreDotGitFileDialog.value = true
+                        },
+
+                        editConfig@{
+                            val item = selectedItemList.value.firstOrNull()
+                            if(item == null) {
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.no_item_selected))
+                                return@editConfig
+                            }
+
+                            try {
+                                Repository.open(item.fullPath).use { subRepo ->
+                                    val configPath = Libgit2Helper.getRepoConfigFilePath(subRepo)
+                                    if(File(configPath).exists().not()) {
+                                        Msg.requireShowLongDuration(activityContext.getString(R.string.file_doesnt_exist))
+                                        return@editConfig
+                                    }
+
+                                    openFileWithInnerSubPageEditor(
+                                        context = activityContext,
+                                        filePath = configPath,
+                                        mergeMode = false,
+                                        readOnly = false,
+                                    )
+                                }
+                            }catch (e: Exception) {
+                                MyLog.e(TAG, "editConfig for Submodule err: ${e.localizedMessage}")
+                                e.printStackTrace()
+                                Msg.requireShowLongDuration("err: "+e.localizedMessage)
+                            }
+
                         },
 
                         details@{
