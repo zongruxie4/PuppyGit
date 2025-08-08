@@ -2975,7 +2975,7 @@ object Libgit2Helper {
                     setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(remoteFetchUrl), credential)
                 }
 
-                setCertCheckCallback(remoteFetchUrl, callbacks)
+                setCertCheckCallback(remoteFetchUrl, callbacks, repo)
 
 
                 remote.fetch(refspecs, fetchOpts, "fetch: $remoteName")
@@ -3731,7 +3731,7 @@ object Libgit2Helper {
             setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(pushUrl), credential)
         }
 
-        setCertCheckCallback(pushUrl, callbacks)
+        setCertCheckCallback(pushUrl, callbacks, repo)
 
 
         //要push的refspec (要push哪些分支)
@@ -6469,7 +6469,7 @@ object Libgit2Helper {
                 MyLog.e(TAG, "#cloneSubmodules: set credential for submodule '$name' err: ${e.localizedMessage}")
             }
 
-            setCertCheckCallback(smUrl, callbacks)
+            setCertCheckCallback(smUrl, callbacks, repo)
 
 
 
@@ -6606,7 +6606,7 @@ object Libgit2Helper {
                     MyLog.e(TAG, "#updateSubmodule: set credential for submodule '$submoduleName' err: ${e.localizedMessage}")
                 }
 
-                setCertCheckCallback(smUrl, callbacks)
+                setCertCheckCallback(smUrl, callbacks, parentRepo)
 
 
                 MyLog.d(TAG,"#updateSubmodule: will update submodule '$submoduleName'")
@@ -7200,7 +7200,7 @@ object Libgit2Helper {
                     //  https no need set this, if want to allow unknown host for https(e.g. user used a self-signed cert),
                     //  can copy the cert into the user-cert folder, then can connect self-signed cert with https
 
-                    Libgit2Helper.setCertCheckCallback(cloneUrl, callbacks)
+                    Libgit2Helper.setCertCheckCallback(cloneUrl, callbacks, repo = null)
 
 
                     //开始克隆
