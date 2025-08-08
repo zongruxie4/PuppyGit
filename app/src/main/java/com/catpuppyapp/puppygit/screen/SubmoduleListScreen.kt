@@ -1313,8 +1313,9 @@ fun SubmoduleListScreen(
                                     Msg.requireShowLongDuration(activityContext.getString(R.string.no_item_selected))
                                 }
                             }catch (e:Exception){
+                                MyLog.e(TAG, "#copyFullPath for Submodule err: ${e.localizedMessage}")
+                                e.printStackTrace()
                                 Msg.requireShowLongDuration("err: " + e.localizedMessage)
-                                MyLog.e(TAG, "#copyFullPath err: ${e.stackTraceToString()}")
                             }
                         },
                         importToRepos@{
@@ -1334,6 +1335,8 @@ fun SubmoduleListScreen(
                                     Msg.requireShowLongDuration(activityContext.getString(R.string.no_item_selected))
                                 }
                             }catch (e:Exception){
+                                MyLog.e(TAG, "#setUrl for Submodule err: ${e.localizedMessage}")
+                                e.printStackTrace()
                                 Msg.requireShowLongDuration("err: "+e.localizedMessage)
                             }
                         },
@@ -1377,7 +1380,7 @@ fun SubmoduleListScreen(
                                     )
                                 }
                             }catch (e: Exception) {
-                                MyLog.e(TAG, "editConfig for Submodule err: ${e.localizedMessage}")
+                                MyLog.e(TAG, "#editConfig for Submodule err: ${e.localizedMessage}")
                                 e.printStackTrace()
                                 Msg.requireShowLongDuration("err: "+e.localizedMessage)
                             }
