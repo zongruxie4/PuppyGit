@@ -138,10 +138,8 @@ data class AppSettings(
      */
     var commitMsgUseSystemFonts: Boolean = false,
 
-    /**
-     * note: Repository's config 'http.sslVerify' can override this settings
-     */
-    var httpSslVerify: Boolean = true,
+    val httpSetting: HttpSettings = HttpSettings(),
+
 ) {
 
     override fun equals(other: Any?): Boolean {
