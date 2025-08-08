@@ -183,7 +183,7 @@ object AppModel {
     //    lateinit var internalStorageDirsParentDir:File  //20240527：禁用，sd相关
 
     //对用户可见的app工作目录，存储在allRepos目录下
-    private lateinit var appDataUnderAllReposDir: File
+    lateinit var appDataUnderAllReposDir: File
     private lateinit var fileSnapshotDir: File  //改用：AppModel.getFileSnapshotDir()
     private lateinit var editCacheDir: File
     private lateinit var patchDir: File

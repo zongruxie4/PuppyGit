@@ -54,6 +54,13 @@ data class NameAndPath(
                     )
                 )
 
+                newList.add(
+                    NameAndPath(
+                        "App Data",
+                        FsUtils.getAppDataRootPathNoEndsWithSeparator()
+                    )
+                )
+
                 if(AppModel.devModeOn) {
                     newList.add(
                         NameAndPath(
