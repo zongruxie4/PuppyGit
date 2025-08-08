@@ -137,6 +137,11 @@ data class AppSettings(
      * if true, will use system fonts when rendering commit msg dialog
      */
     var commitMsgUseSystemFonts: Boolean = false,
+
+    /**
+     * note: Repository's config 'http.sslVerify' can override this settings
+     */
+    var httpSslVerify: Boolean = true,
 ) {
 
     override fun equals(other: Any?): Boolean {
