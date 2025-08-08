@@ -1260,7 +1260,7 @@
     <string name="set_tab_size_note"><![CDATA[<=0 আসল ট্যাব ব্যবহার করুন, অন্যথায় ট্যাব স্পেস দ্বারা প্রতিস্থাপিত হবে]]></string>
     <string name="symbol_pair">Symbol Pair</string>
     <string name="focus_line">ফোকাস লাইন</string>
-    <string name="ssl_verify">Ssl Verify</string>
+    <string name="ssl_verify">SSL যাচাইকরণ</string>
 
 
 </resources>
