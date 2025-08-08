@@ -892,25 +892,27 @@ fun SubmoduleListScreen(
             onCancel = { showUpdateDialog.value = false }
 
         ) {
-            showUpdateDialog.value=false
+            showUpdateDialog.value = false
+
+            val curRepo = curRepo.value
+            val recursiveUpdate = recursiveUpdate.value
 
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.updating)) {
+                val selectedItemList = selectedItemList.value.toList()
+
                 try {
                     val selectedCredential = credentialList.value[selectedCredentialIdx.intValue]
 
                     val credentialDb = AppModel.dbContainer.credentialRepository
                     val credential = if(SpecialCredential.MatchByDomain.credentialId == selectedCredential.id) selectedCredential.copy() else credentialDb.getByIdWithDecrypt(selectedCredential.id)
 
-                    Repository.open(curRepo.value.fullSavePath).use { repo->
-                        selectedItemList.value.toList().forEachBetter {
+                    Repository.open(curRepo.fullSavePath).use { repo ->
+                        selectedItemList.forEachBetter {
                             try {
-                                Libgit2Helper.updateSubmodule(repo, credential, listOf(it.name), recursiveUpdate.value, credentialDb, superParentRepo = repo)
-
+                                Libgit2Helper.updateSubmodule(repo, credential, listOf(it.name), recursiveUpdate, credentialDb, superParentRepo = repo)
                             }catch (e:Exception) {
-                                val errPrefix = "update submodule '${it.name}' err: "
-                                val errMsg = e.localizedMessage ?: "update submodule err"
-                                Msg.requireShow(errMsg)
-                                createAndInsertError(curRepo.value.id, errPrefix+errMsg)
+                                createAndInsertError(curRepo.id, "update submodule '${it.name}' err: ${e.localizedMessage}")
+                                Msg.requireShowLongDuration("err: ${e.localizedMessage}")
                             }
                         }
                     }
