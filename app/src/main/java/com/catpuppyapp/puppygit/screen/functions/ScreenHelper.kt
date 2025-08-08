@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.ClipboardManager
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.EditorStateOnChangeCallerFrom
@@ -38,7 +39,6 @@ import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.sync.withLock
 
 private const val TAG = "ScreenHelper"
 
@@ -336,7 +336,9 @@ fun getFilesScreenTitle(currentPath:String, activityContext: Context):String {
 
     val trimedSlashCurPath = currentPath.trimEnd(Cons.slashChar)
 
-    return if(trimedSlashCurPath == FsUtils.getInternalStorageRootPathNoEndsWithSeparator()) {
+    return if(trimedSlashCurPath == FsUtils.getAppDataRootPathNoEndsWithSeparator()) {
+        StrCons.appData
+    }else if(trimedSlashCurPath == FsUtils.getInternalStorageRootPathNoEndsWithSeparator()) {
         activityContext.getString(R.string.internal_storage)
     }else if(trimedSlashCurPath == FsUtils.getExternalStorageRootPathNoEndsWithSeparator()) {
         activityContext.getString(R.string.external_storage)

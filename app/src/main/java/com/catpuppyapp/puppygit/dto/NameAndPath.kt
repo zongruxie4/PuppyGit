@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.dto
 import android.content.Context
 import android.os.Parcelable
 import androidx.compose.runtime.mutableStateListOf
+import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -56,7 +57,7 @@ data class NameAndPath(
 
                 newList.add(
                     NameAndPath(
-                        "App Data",
+                        StrCons.appData,
                         FsUtils.getAppDataRootPathNoEndsWithSeparator()
                     )
                 )

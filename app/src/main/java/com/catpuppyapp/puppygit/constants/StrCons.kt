@@ -19,4 +19,12 @@ object StrCons {
     const val refspec = "Refspec"
 
     const val syntaxHightDisabledDueToNoMoreMem = "Syntax highlighting disabled: No more memory!"
+
+    // app data path name
+    // why don't translate this: because if translate,
+    //   then when I want to tell users about
+    //   some files under the "App Data",
+    //   they maybe confused which folder I talking about,
+    //   if use same name, then will no this problem.
+    const val appData = "App Data"
 }
