@@ -1268,6 +1268,9 @@
     <string name="symbol_pair">成对符号</string>
     <string name="focus_line">聚焦行</string>
     <string name="ssl_verify">SSL 验证</string>
+    <string name="import_ssl_certs">Import SSL Certs</string>
+    <string name="manage_ssl_certs">Manage SSL Certs</string>
+    <string name="import_ssl_certs_intro_text">Just copy and paste your certs to \'AppData://cert-user\', then restart app.</string>
 
 
 </resources>

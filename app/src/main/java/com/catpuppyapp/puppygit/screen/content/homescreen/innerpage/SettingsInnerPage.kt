@@ -15,6 +15,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -295,6 +297,45 @@ fun SettingsInnerPage(
             }
         }
     }
+
+
+    val showImportSslCertsDialog = rememberSaveable { mutableStateOf(false) }
+    if(showImportSslCertsDialog.value) {
+        ConfirmDialog3(
+            requireShowTitleCompose = true,
+            titleCompose = {},
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    MySelectionContainer {
+                        Text(
+                            text = stringResource(R.string.import_ssl_certs_intro_text),
+                            fontSize = MyStyleKt.TextSize.medium
+                        )
+                    }
+                }
+            },
+            onDismiss = {
+                showImportSslCertsDialog.value = false
+            },
+            customCancel = {
+                IconButton(
+                    onClick = {
+                        goToFilesPage(AppModel.certUserDir.canonicalPath)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Folder,
+                        contentDescription = "a folder icon for go to user's cert folder"
+                    )
+                }
+            }
+        ) {
+            showImportSslCertsDialog.value = false
+        }
+    }
+
+
 
 //    val updateMasterPassFailedList = mutableCustomStateOf(stateKeyTag, "updateMasterPassFailedList", listOf<String>())
     val updateMasterPassFailedListStr = rememberSaveable { mutableStateOf("") }
@@ -1294,7 +1335,7 @@ fun SettingsInnerPage(
 //            }
 //        }
         SettingsContent(onClick = {
-            showForgetHostKeysDialog.value =true
+            showForgetHostKeysDialog.value = true
         }) {
             Column {
                 Text(stringResource(R.string.forget_hostkeys), fontSize = itemFontSize)
@@ -1322,6 +1363,22 @@ fun SettingsInnerPage(
                 }
             }
         )
+
+        SettingsContent(onClick = {
+            showImportSslCertsDialog.value = true
+        }) {
+            Column {
+                Text(stringResource(R.string.import_ssl_certs), fontSize = itemFontSize)
+            }
+        }
+
+        SettingsContent(onClick = {
+            goToFilesPage(AppModel.certUserDir.canonicalPath)
+        }) {
+            Column {
+                Text(stringResource(R.string.manage_ssl_certs), fontSize = itemFontSize)
+            }
+        }
 
 
 

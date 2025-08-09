@@ -202,6 +202,8 @@ object MyStyleKt {
     object TextSize {
         val default = 16.sp
         val lineNumSize = 10.sp
+
+        val medium = 18.sp
     }
 
     object Editor {

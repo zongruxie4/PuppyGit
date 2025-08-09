@@ -1474,7 +1474,7 @@ fun EditorInnerPage(
                     textCompose = {
                         ScrollableColumn {
                             SelectionRow {
-                                Text(stringResource(R.string.will_delete_selected_items_are_u_sure), fontSize = 18.sp)
+                                Text(stringResource(R.string.will_delete_selected_items_are_u_sure), fontSize = MyStyleKt.TextSize.medium)
                             }
 
                             Spacer(Modifier.height(20.dp))
