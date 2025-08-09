@@ -146,7 +146,7 @@ object CertMan {
                 return
             }
 
-            val userCerts = certUserDir.listFiles{it:File -> it.isFile}?.map { CertSaver(file = it.canonicalPath) }?: listOf()
+            val userCerts = obtainUserCerts(certUserDir)
 
             //加载用户证书
             loadCerts(userCerts)
@@ -155,6 +155,22 @@ object CertMan {
             MyLog.e(TAG, "#$funName err: ${e.stackTraceToString()}")
         }
 
+    }
+
+    private fun obtainUserCerts(certUserDir: File): List<CertSaver> {
+        val certs = mutableListOf<CertSaver>()
+        certUserDir.listFiles { it:File ->
+            if(it.isFile) {
+                certs.add(CertSaver(file = it.canonicalPath))
+            }
+
+            // actually this lambda is a filter,
+            //   return false to avoid create
+            //   nonsense temp filtered list
+            false
+        }
+
+        return certs
     }
 
 }
