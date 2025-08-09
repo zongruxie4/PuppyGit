@@ -2,13 +2,14 @@ package com.catpuppyapp.puppygit.git
 
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.ItemKey
+import com.catpuppyapp.puppygit.dto.MyFileItem
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
 import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import java.io.File
 
-class StatusTypeEntrySaver(): ItemKey {
+class StatusTypeEntrySaver(): ItemKey, MyFileItem {
     var repoIdFromDb:String="";
     var fileName:String="";
     var relativePathUnderRepo:String="";  //仓库下的相对路径，包含文件名
@@ -158,6 +159,12 @@ class StatusTypeEntrySaver(): ItemKey {
     fun maybeIsDirAndExist():Boolean {
         return itemType == Cons.gitItemTypeDir || itemType == Cons.gitItemTypeSubmodule || itemType != Cons.gitItemTypeFile
     }
+
+    override fun itemName() = fileName
+
+    override fun itemPath() = relativePathUnderRepo
+
+    override fun itemIsDir() = maybeIsDirAndExist()
 
     companion object {
 

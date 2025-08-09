@@ -79,7 +79,6 @@ import com.catpuppyapp.puppygit.compose.PaddingText
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RequireCommitMsgDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
-import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
 import com.catpuppyapp.puppygit.compose.SingleSelection
 import com.catpuppyapp.puppygit.constants.Cons
@@ -103,6 +102,7 @@ import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.listitem.ChangeListItem
+import com.catpuppyapp.puppygit.screen.content.listitem.SelectedFileItemsDialog
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
@@ -2514,14 +2514,14 @@ fun ChangeListInnerPage(
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
 //    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
-        SelectedItemDialog(
-//            detailStr = selectedItemsShortDetailsStr.value,
-            selectedItems = selectedItemList.value,
-            // formatter = {"${it.fileName}, ${it.relativePathUnderRepo.removeSuffix(it.fileName)}"},
-            formatter = {it.fileName},
-            switchItemSelected = switchItemSelected,
-            clearAll = {selectedItemList.value.clear()},
-            closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
+        SelectedFileItemsDialog(
+            list = selectedItemList.value,
+            removeItem = { switchItemSelected(it as StatusTypeEntrySaver) },
+            clearAll = { selectedItemList.value.clear() },
+            goToParentAndScrollToItem = {
+
+            },
+            closeDialog = { showSelectedItemsShortDetailsDialog.value = false }
         )
     }
 
