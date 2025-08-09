@@ -123,7 +123,8 @@ object CertMan {
             try {
                 Libgit2.optsGitOptSetSslCertLocations(certSaver.file, certSaver.path)
             } catch (e: Exception) {
-                MyLog.e(TAG, "#loadCerts err: cert=$certSaver, err=${e.stackTraceToString()}")
+                MyLog.e(TAG, "#loadCerts err: cert=$certSaver, err=${e.localizedMessage}")
+                e.printStackTrace()
             }
         }
     }
