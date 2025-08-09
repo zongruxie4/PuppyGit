@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.SelectAll
@@ -96,9 +97,11 @@ import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
-import com.catpuppyapp.puppygit.compose.SelectedItemDialog
+import com.catpuppyapp.puppygit.compose.SelectedItemDialog3
 import com.catpuppyapp.puppygit.compose.SingleLineCardButton
 import com.catpuppyapp.puppygit.compose.SingleSelection
+import com.catpuppyapp.puppygit.compose.SizeIcon
+import com.catpuppyapp.puppygit.compose.TwoLineTextsAndIcons
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -2535,19 +2538,58 @@ fun FilesInnerPage(
     }
 
     if (showSelectedItemsShortDetailsDialogForImportMode.value) {
-        SelectedItemDialog(
+        val getItemName = { uri: Uri ->
+            FsUtils.getFileRealNameFromUri(activityContext, uri) ?: uri.toString()
+        }
+
+        val getItemPath = { uri: Uri ->
+            uri.toString()
+        }
+
+        val removeItem = { uri: Uri ->
+            requireImportUriList.value.remove(uri)
+            Unit
+        }
+
+        SelectedItemDialog3(
             title = stringResource(R.string.import_str),
             selectedItems = requireImportUriList.value,
-            formatter = {
-                if (AppModel.devModeOn) {
-                    it.toString()
-                } else {
-                    FsUtils.getFileRealNameFromUri(activityContext, it) ?: it.toString()
-                }
+            text = {},
+            customText = {
+                val trailIconSize = MyStyleKt.trailIconSize
+
+                val itemName = getItemName(it)
+                val itemPath = getItemPath(it)
+
+                TwoLineTextsAndIcons(
+                    text1 = itemName,
+                    text2 = itemPath,
+                    trailIconWidth = trailIconSize,
+                    trailIcons = { containerModifier ->
+                        Row(
+                            modifier = containerModifier
+                                .fillMaxWidth()
+                            ,
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            SizeIcon(
+                                size = trailIconSize,
+                                modifier = Modifier.clickable {
+                                    removeItem(it)
+                                },
+                                imageVector = Icons.Filled.DeleteOutline,
+                                contentDescription = stringResource(R.string.delete)
+                            )
+                        }
+                    }
+                )
             },
+            customTrailIcon = {},
+            textFormatterForCopy = { getItemName(it) + "\n" + getItemPath(it) + "\n\n" },
+            switchItemSelected = removeItem,
             clearAll = { requireImportUriList.value.clear() },
-            switchItemSelected = { requireImportUriList.value.remove(it) },
-            closeDialog = { showSelectedItemsShortDetailsDialogForImportMode.value = false }
+            closeDialog = { showSelectedItemsShortDetailsDialogForImportMode.value = false },
         )
     }
 
