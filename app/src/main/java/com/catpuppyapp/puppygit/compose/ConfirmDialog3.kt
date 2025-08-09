@@ -34,7 +34,12 @@ fun ConfirmDialog3(
     customOk:(@Composable ()->Unit)? = null,
     customCancel:(@Composable ()->Unit)? = null,
     onCancel: () -> Unit = {},
-    onDismiss: ()->Unit = onCancel,  //点击非弹窗区域时执行的操作，若不指定则和onCancel行为一致
+
+    //点击非弹窗区域时执行的操作，若不指定则和onCancel行为一致，除非和onCancel行为不一样，
+    //   否则即使使用 `customCancel`，也推荐设置onCancel而不是设置onDismiss
+    //click outside of dialog will call this function, recommend use `onCancel` instead passing this param,
+    //  if it has same behavior with `onCancel`, even use `customCancel`.
+    onDismiss: ()->Unit = onCancel,
     onOk: () -> Unit = {},
 ) {
     AlertDialog(

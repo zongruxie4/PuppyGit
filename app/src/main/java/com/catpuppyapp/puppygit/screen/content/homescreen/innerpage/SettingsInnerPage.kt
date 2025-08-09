@@ -315,7 +315,7 @@ fun SettingsInnerPage(
                     }
                 }
             },
-            onDismiss = {
+            onCancel = {
                 showImportSslCertsDialog.value = false
             },
             customCancel = {

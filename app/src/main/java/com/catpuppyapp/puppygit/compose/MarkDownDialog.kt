@@ -140,7 +140,7 @@ fun MarkDownDialog(
                 )
             }
         },
-        onDismiss = close,
+        onCancel = close,
     )
 
     LaunchedEffect(previewModeOn.value) {
