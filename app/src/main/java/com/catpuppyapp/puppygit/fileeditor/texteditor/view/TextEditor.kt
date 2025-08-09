@@ -67,6 +67,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.DisableSoftKeyboard
 import com.catpuppyapp.puppygit.compose.MyCheckBox
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.bug_Editor_GoToColumnCantHideKeyboard_Fixed
@@ -106,7 +107,7 @@ private const val TAG = "TextEditor"
 // if line at the top of screen, looks terrible
 //跳转到editor时的行偏移量，尽量让目标行在不要太顶端的位置，不然看着不舒服，如果可以的话，
 // 在editor显示时的位置最好尽量和用户点行号的位置匹配，不过我没想到怎么实现，可能得记录点击位置，算偏移量，有点麻烦
-internal const val lineNumOffsetForGoToEditor = -2
+internal const val lineNumOffsetForGoToEditor = Cons.scrollToItemOffset
 
 
 @Parcelize

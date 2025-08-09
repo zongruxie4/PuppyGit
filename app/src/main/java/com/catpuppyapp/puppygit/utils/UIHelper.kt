@@ -237,7 +237,7 @@ object UIHelper {
     /**
      * @param offset 是用来做偏移的，目的是让要显示的条目不在顶端，尽量靠近视觉中心(一般是屏幕中间)
      */
-    fun <T> scrollByPredicate(scope:CoroutineScope, list: List<T>, listState:LazyListState, offset:Int = -2, predicate:(idx:Int, item:T)->Boolean) {
+    fun <T> scrollByPredicate(scope:CoroutineScope, list: List<T>, listState:LazyListState, offset:Int = Cons.scrollToItemOffset, predicate:(idx:Int, item:T)->Boolean) {
         for((idx, item) in list.withIndex()) {
             if(predicate(idx, item)) {
                 //滚动到当前条目前两个条目不然当前条目在顶端看着不太舒服

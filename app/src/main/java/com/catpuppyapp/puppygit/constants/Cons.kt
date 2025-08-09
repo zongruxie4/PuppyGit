@@ -6,6 +6,9 @@ import java.time.format.DateTimeFormatter
 
 object Cons {
 
+    // for avoid the target item at the very top of screen when scroll to it
+    const val scrollToItemOffset = -2
+
     const val pushDelayCheckFrquencyInMillSec = 2000L
 
     const val repoBusyStr = "Repo busy now, plz try again later." ;
