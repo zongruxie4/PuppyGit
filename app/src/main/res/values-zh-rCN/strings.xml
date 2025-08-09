@@ -1270,7 +1270,7 @@
     <string name="ssl_verify">SSL 验证</string>
     <string name="import_ssl_certs">导入 SSL 证书</string>
     <string name="manage_ssl_certs">管理 SSL 证书</string>
-    <string name="import_ssl_certs_intro_text">Just copy and paste your certs to \'AppData://cert-user\', then restart app.</string>
+    <string name="import_ssl_certs_intro_text">只需将您的证书复制粘贴到 \'AppData://cert-user\'，然后重启应用程序即可。</string>
 
 
 </resources>

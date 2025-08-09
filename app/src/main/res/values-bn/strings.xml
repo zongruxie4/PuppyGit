@@ -1263,7 +1263,7 @@
     <string name="ssl_verify">SSL যাচাইকরণ</string>
     <string name="import_ssl_certs">SSL সার্টিফিকেট আমদানি করুন</string>
     <string name="manage_ssl_certs">SSL সার্টিফিকেট পরিচালনা করুন</string>
-    <string name="import_ssl_certs_intro_text">Just copy and paste your certs to \'AppData://cert-user\', then restart app.</string>
+    <string name="import_ssl_certs_intro_text">আপনার সার্টিফিকেটগুলো শুধু \'AppData://cert-user\' এ কপি-পেস্ট করুন, তারপর অ্যাপটি পুনরায় চালু করুন।</string>
 
 
 </resources>

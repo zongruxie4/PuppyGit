@@ -1188,6 +1188,6 @@
     <string name="ssl_verify">التحقق من SSL</string>
     <string name="import_ssl_certs">استيراد شهادات SSL</string>
     <string name="manage_ssl_certs">إدارة شهادات SSL</string>
-    <string name="import_ssl_certs_intro_text">Just copy and paste your certs to \'AppData://cert-user\', then restart app.</string>
+    <string name="import_ssl_certs_intro_text">فقط انسخ والصق شهاداتك في \'AppData://cert-user\'، ثم أعد تشغيل التطبيق.</string>
 
 </resources>

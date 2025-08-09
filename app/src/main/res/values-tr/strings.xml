@@ -1198,6 +1198,6 @@
     <string name="ssl_verify">SSL Doğrulama</string>
     <string name="import_ssl_certs">SSL Sertifikalarını İçe Aktar</string>
     <string name="manage_ssl_certs">SSL Sertifikalarını Yönet</string>
-    <string name="import_ssl_certs_intro_text">Just copy and paste your certs to \'AppData://cert-user\', then restart app.</string>
+    <string name="import_ssl_certs_intro_text">Sertifikalarınızı \'AppData://cert-user\' konumuna kopyalayıp yapıştırın, ardından uygulamayı yeniden başlatın.</string>
 
 </resources>
