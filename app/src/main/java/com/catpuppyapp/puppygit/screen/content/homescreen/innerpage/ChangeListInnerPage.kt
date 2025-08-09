@@ -1199,6 +1199,15 @@ fun ChangeListInnerPage(
         if(enableFilterState.value) filterList.value else itemList.value
     }
 
+    val getActuallyListState = {
+        if(enableFilterState.value) filterListState else itemListState
+    }
+
+    val quitFilterMode = {
+        changeListPageFilterModeOn.value = false
+        resetSearchVars()
+    }
+
     if(showRebaseSkipDialog.value) {
         val closeDialog = {
             showRebaseSkipDialog.value = false
@@ -2499,7 +2508,7 @@ fun ChangeListInnerPage(
         fromTo = fromTo,
         naviUp = naviUp,
         changeListPageFilterModeOn = changeListPageFilterModeOn,
-        resetSearchVars = resetSearchVars,
+        quitFilterMode = quitFilterMode,
         openDrawer = openDrawer
 
     )
@@ -2514,14 +2523,43 @@ fun ChangeListInnerPage(
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
 //    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
+        val closeDialog = { showSelectedItemsShortDetailsDialog.value = false }
+
         SelectedFileItemsDialog(
             list = selectedItemList.value,
             removeItem = { switchItemSelected(it as StatusTypeEntrySaver) },
             clearAll = { selectedItemList.value.clear() },
             goToParentAndScrollToItem = {
+                // find from filter or normal list
+                var found = Box(false)
+                UIHelper.scrollByPredicate(scope, getActuallyList(), getActuallyListState()) { idx, item ->
+                    if(item.relativePathUnderRepo == it.itemPath()) {
+                        found.value = true
+                        true
+                    }else {
+                        false
+                    }
+                }
 
+                // if not found, quit filter mode, then find in origin list
+                if(!found.value && enableFilterState.value) {
+                    val index = itemList.value.indexOfFirst { item ->
+                        item.relativePathUnderRepo == it.itemPath()
+                    }
+
+                    if(index >= 0) {
+                        found.value = true
+
+                        quitFilterMode()
+                        UIHelper.scrollToItem(scope, itemListState, index + Cons.scrollToItemOffset)
+                    }
+                }
+
+                if(found.value) {
+                    closeDialog()
+                }
             },
-            closeDialog = { showSelectedItemsShortDetailsDialog.value = false }
+            closeDialog = closeDialog
         )
     }
 
@@ -4201,7 +4239,7 @@ private fun getBackHandler(
     fromTo: String,
     naviUp:()->Unit,
     changeListPageFilterModeOn:MutableState<Boolean>,
-    resetSearchVars: () -> Unit,
+    quitFilterMode: () -> Unit,
     openDrawer:()->Unit
 
 ): () -> Unit {
@@ -4217,8 +4255,7 @@ private fun getBackHandler(
         if(isFileSelectionMode.value) {
             quitSelectionMode()
         }else if(changeListPageFilterModeOn.value){
-            changeListPageFilterModeOn.value = false
-            resetSearchVars()
+            quitFilterMode()
         } else {
             if(fromTo != Cons.gitDiffFromIndexToWorktree) { // TreeToTree or Index，非WorkTree页面，非顶级页面，点击返回上级页面
                 doJobWithMainContext{
