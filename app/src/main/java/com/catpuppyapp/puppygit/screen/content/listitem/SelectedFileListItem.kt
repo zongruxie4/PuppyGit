@@ -30,7 +30,7 @@ fun SelectedFileListItem(
     goToParentAndScrollToItem: (MyFileItem)->Unit,
     clearAll:()->Unit,
     closeDialog:()->Unit,
-    textFormatterForCopy:(MyFileItem)->String,
+    textFormatterForCopy:(MyFileItem)->String = { it.itemName() + "\n" + it.itemPath() + "\n\n" },
 ) {
 
     SelectedItemDialog3(

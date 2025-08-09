@@ -2527,10 +2527,9 @@ fun FilesInnerPage(
     if (showSelectedItemsShortDetailsDialog.value) {
         SelectedFileListItem(
             list = selectedItems.value,
-            textFormatterForCopy = { it.name + "\n" + it.fullPath + "\n\n" },
-            removeItem = switchItemSelected,
+            removeItem = { switchItemSelected(it as FileItemDto) },
             clearAll = { selectedItems.value.clear() },
-            goToParentAndScrollToItem = goToParentAndScrollToItem,
+            goToParentAndScrollToItem = { goToParentAndScrollToItem(it as FileItemDto) },
             closeDialog = { showSelectedItemsShortDetailsDialog.value = false }
         )
     }
