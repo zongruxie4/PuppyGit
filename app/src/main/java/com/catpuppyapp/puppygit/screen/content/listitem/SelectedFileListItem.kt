@@ -17,7 +17,7 @@ import androidx.compose.ui.res.stringResource
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog3
 import com.catpuppyapp.puppygit.compose.SizeIcon
 import com.catpuppyapp.puppygit.compose.TwoLineTextsAndIcons
-import com.catpuppyapp.puppygit.dto.FileItemDto
+import com.catpuppyapp.puppygit.dto.MyFileItem
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
@@ -25,12 +25,12 @@ private val trailIconSize = MyStyleKt.trailIconSize
 
 @Composable
 fun SelectedFileListItem(
-    list: List<FileItemDto>,
-    removeItem: (FileItemDto)->Unit,
-    goToParentAndScrollToItem: (FileItemDto)->Unit,
+    list: List<MyFileItem>,
+    removeItem: (MyFileItem)->Unit,
+    goToParentAndScrollToItem: (MyFileItem)->Unit,
     clearAll:()->Unit,
     closeDialog:()->Unit,
-    textFormatterForCopy:(FileItemDto)->String,
+    textFormatterForCopy:(MyFileItem)->String,
 ) {
 
     SelectedItemDialog3(
@@ -40,8 +40,8 @@ fun SelectedFileListItem(
             val splitSpacerWidth = MyStyleKt.trailIconSplitSpacerWidth
 
             TwoLineTextsAndIcons(
-                text1 = it.name,
-                text2 = it.fullPath,
+                text1 = it.itemName(),
+                text2 = it.itemPath(),
                 trailIconWidth = trailIconSize * 2 + splitSpacerWidth,
                 trailIcons = { containerModifier ->
                     Row(
@@ -57,8 +57,8 @@ fun SelectedFileListItem(
                             modifier = Modifier.clickable {
                                 goToParentAndScrollToItem(it)
                             },
-                            imageVector = if(it.isDir) Icons.Outlined.Folder else Icons.AutoMirrored.Outlined.InsertDriveFile,
-                            contentDescription = if(it.isDir) stringResource(R.string.folder) else stringResource(R.string.file)
+                            imageVector = if(it.itemIsDir()) Icons.Outlined.Folder else Icons.AutoMirrored.Outlined.InsertDriveFile,
+                            contentDescription = if(it.itemIsDir()) stringResource(R.string.folder) else stringResource(R.string.file)
                         )
 
                         Spacer(modifier = Modifier.width(splitSpacerWidth))
