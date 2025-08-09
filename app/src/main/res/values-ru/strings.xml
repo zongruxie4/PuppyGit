@@ -1289,8 +1289,8 @@
     <string name="symbol_pair">Symbol Pair</string>
     <string name="focus_line">Строка фокуса</string>
     <string name="ssl_verify">Проверка SSL</string>
-    <string name="import_ssl_certs">Import SSL Certs</string>
-    <string name="manage_ssl_certs">Manage SSL Certs</string>
+    <string name="import_ssl_certs">Импортировать SSL-сертификаты</string>
+    <string name="manage_ssl_certs">Управление SSL-сертификатами</string>
     <string name="import_ssl_certs_intro_text">Just copy and paste your certs to \'AppData://cert-user\', then restart app.</string>
 
 

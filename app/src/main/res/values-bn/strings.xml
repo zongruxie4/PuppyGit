@@ -1261,8 +1261,8 @@
     <string name="symbol_pair">Symbol Pair</string>
     <string name="focus_line">ফোকাস লাইন</string>
     <string name="ssl_verify">SSL যাচাইকরণ</string>
-    <string name="import_ssl_certs">Import SSL Certs</string>
-    <string name="manage_ssl_certs">Manage SSL Certs</string>
+    <string name="import_ssl_certs">SSL সার্টিফিকেট আমদানি করুন</string>
+    <string name="manage_ssl_certs">SSL সার্টিফিকেট পরিচালনা করুন</string>
     <string name="import_ssl_certs_intro_text">Just copy and paste your certs to \'AppData://cert-user\', then restart app.</string>
 
 
