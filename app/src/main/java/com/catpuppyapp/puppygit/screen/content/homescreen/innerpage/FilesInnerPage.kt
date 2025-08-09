@@ -113,7 +113,7 @@ import com.catpuppyapp.puppygit.git.IgnoreItem
 import com.catpuppyapp.puppygit.git.ImportRepoResult
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.listitem.FileListItem
-import com.catpuppyapp.puppygit.screen.content.listitem.SelectedFileListItem
+import com.catpuppyapp.puppygit.screen.content.listitem.SelectedFileItemsDialog
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
@@ -2525,7 +2525,7 @@ fun FilesInnerPage(
     val showSelectedItemsShortDetailsDialogForImportMode = rememberSaveable { mutableStateOf(false) }
 //    val selectedItemsShortDetailsStrForImportMode = rememberSaveable { mutableStateOf("")}
     if (showSelectedItemsShortDetailsDialog.value) {
-        SelectedFileListItem(
+        SelectedFileItemsDialog(
             list = selectedItems.value,
             removeItem = { switchItemSelected(it as FileItemDto) },
             clearAll = { selectedItems.value.clear() },

@@ -24,7 +24,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 private val trailIconSize = MyStyleKt.trailIconSize
 
 @Composable
-fun SelectedFileListItem(
+fun SelectedFileItemsDialog(
     list: List<MyFileItem>,
     removeItem: (MyFileItem)->Unit,
     goToParentAndScrollToItem: (MyFileItem)->Unit,
