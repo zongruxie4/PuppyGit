@@ -3,11 +3,13 @@ package com.catpuppyapp.puppygit.screen
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -31,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -843,7 +846,26 @@ fun RemoteListScreen(
 
             if(isLoading.value || list.value.isEmpty()) {
                 FullScreenScrollableColumn(contentPadding) {
-                    Text(if(isLoading.value) loadingText.value else stringResource(R.string.item_list_is_empty))
+                    if(isLoading.value) {
+                        Text(text = loadingText.value)
+                    }else {
+                        Row {
+                            Text(text = stringResource(R.string.item_list_is_empty))
+                        }
+
+                        Row(
+                            modifier = Modifier.padding(top = 10.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            LongPressAbleIconBtn(
+                                icon = Icons.Filled.Add,
+                                tooltipText =  stringResource(R.string.create),
+                            ) {
+                                showCreateRemoteDialog.value = true
+                            }
+                        }
+                    }
                 }
             }else {
                 //根据关键字过滤条目
