@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
+import com.catpuppyapp.puppygit.compose.CenterPaddingRow
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
@@ -1896,10 +1897,7 @@ fun BranchListScreen(
                             Text(text = stringResource(R.string.item_list_is_empty))
                         }
 
-                        Row(modifier = Modifier.padding(top = 10.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        CenterPaddingRow {
                             LongPressAbleIconBtn(
                                 icon = Icons.Filled.Downloading,
                                 tooltipText = stringResource(R.string.fetch),

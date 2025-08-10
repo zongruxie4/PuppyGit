@@ -3,10 +3,8 @@ package com.catpuppyapp.puppygit.screen
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -30,7 +28,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -41,9 +38,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomBar
+import com.catpuppyapp.puppygit.compose.CenterPaddingRow
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
 import com.catpuppyapp.puppygit.compose.CommitMsgMarkDownDialog
@@ -820,10 +817,7 @@ fun TagListScreen(
                             Text(text = stringResource(R.string.no_tags_found))
                         }
 
-                        Row(modifier = Modifier.padding(top = 10.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        CenterPaddingRow {
                             LongPressAbleIconBtn(
                                 icon = Icons.Filled.Downloading,
                                 tooltipText = stringResource(R.string.fetch),
@@ -833,7 +827,7 @@ fun TagListScreen(
 
                             LongPressAbleIconBtn(
                                 icon = Icons.Filled.Add,
-                                tooltipText =  stringResource(R.string.create),
+                                tooltipText = stringResource(R.string.create),
                             ) {
                                 val hash = ""
                                 initNewTagDialog(hash)

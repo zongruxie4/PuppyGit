@@ -44,6 +44,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BottomBar
+import com.catpuppyapp.puppygit.compose.CenterPaddingRow
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
@@ -1152,11 +1153,13 @@ fun SubmoduleListScreen(
                             Text(text = stringResource(R.string.no_submodules_found))
                         }
 
-                        LongPressAbleIconBtn(
-                            icon = Icons.Filled.Add,
-                            tooltipText = stringResource(R.string.create),
-                        ) {
-                            initCreateDialog()
+                        CenterPaddingRow {
+                            LongPressAbleIconBtn(
+                                icon = Icons.Filled.Add,
+                                tooltipText = stringResource(R.string.create),
+                            ) {
+                                initCreateDialog()
+                            }
                         }
                     }
                 }
