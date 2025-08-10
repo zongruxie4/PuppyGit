@@ -2531,8 +2531,8 @@ fun ChangeListInnerPage(
             itemIsDir = { it.maybeIsDirAndExist() },
             removeItem = { switchItemSelected(it) },
             clearAll = { selectedItemList.value.clear() },
-            showFolderIcon = true,
-            folderIconOnClick = {
+            showFileIcon = true,
+            fileIconOnClick = {
                 val predicate = { item: StatusTypeEntrySaver ->
                     item.relativePathUnderRepo == it.relativePathUnderRepo
                 }

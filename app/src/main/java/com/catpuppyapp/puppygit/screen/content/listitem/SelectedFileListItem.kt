@@ -27,9 +27,9 @@ fun <T> SelectedFileItemsDialog(
     itemName: (T) -> String,
     itemPath: (T) -> String,
     itemIsDir: (T) -> Boolean,
+    showFileIcon: Boolean,
+    fileIconOnClick: (T) -> Unit,
     removeItem: (T) -> Unit,
-    showFolderIcon: Boolean,
-    folderIconOnClick: (T) -> Unit,
     clearAll:() -> Unit,
     closeDialog:() -> Unit,
     title: String = stringResource(R.string.selected_str),
@@ -46,7 +46,7 @@ fun <T> SelectedFileItemsDialog(
             TwoLineTextsAndIcons(
                 text1 = itemName(it),
                 text2 = itemPath(it),
-                trailIconWidth = if(showFolderIcon) trailIconSize * 2 + splitSpacerWidth else trailIconSize,
+                trailIconWidth = if(showFileIcon) trailIconSize * 2 + splitSpacerWidth else trailIconSize,
                 trailIcons = { containerModifier ->
                     Row(
                         modifier = containerModifier
@@ -55,11 +55,11 @@ fun <T> SelectedFileItemsDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End
                     ) {
-                        if(showFolderIcon) {
+                        if(showFileIcon) {
                             SizeIcon(
                                 size = trailIconSize,
                                 modifier = Modifier.clickable {
-                                    folderIconOnClick(it)
+                                    fileIconOnClick(it)
                                 },
                                 imageVector = if(itemIsDir(it)) Icons.Outlined.Folder else Icons.AutoMirrored.Outlined.InsertDriveFile,
                                 contentDescription = if(itemIsDir(it)) stringResource(R.string.folder) else stringResource(R.string.file)

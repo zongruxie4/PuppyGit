@@ -2529,8 +2529,8 @@ fun FilesInnerPage(
             itemIsDir = { it.isDir },
             removeItem = { switchItemSelected(it) },
             clearAll = { selectedItems.value.clear() },
-            showFolderIcon = true,
-            folderIconOnClick = { goToParentAndScrollToItem(it) },
+            showFileIcon = true,
+            fileIconOnClick = { goToParentAndScrollToItem(it) },
             closeDialog = { showSelectedItemsShortDetailsDialog.value = false }
         )
     }
@@ -2546,8 +2546,8 @@ fun FilesInnerPage(
             // because usually only can share files, even can try import folder, but will got an err at the end,
             //  and no action need to do when clicked the icon, so just hidden it
             itemIsDir = { false },
-            showFolderIcon = false,
-            folderIconOnClick = {},
+            showFileIcon = false,
+            fileIconOnClick = {},
             // END: no need show folder icon for uri
 
             removeItem = { requireImportUriList.value.remove(it) },
