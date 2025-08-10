@@ -11,38 +11,40 @@ import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog3
 import com.catpuppyapp.puppygit.compose.SizeIcon
 import com.catpuppyapp.puppygit.compose.TwoLineTextsAndIcons
-import com.catpuppyapp.puppygit.dto.MyFileItem
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
-private val trailIconSize = MyStyleKt.trailIconSize
-
 @Composable
-fun SelectedFileItemsDialog(
-    list: List<MyFileItem>,
-    removeItem: (MyFileItem)->Unit,
-    goToParentAndScrollToItem: (MyFileItem)->Unit,
+fun <T> SelectedFileItemsDialog(
+    list: List<T>,
+    itemName: (T) -> String,
+    itemPath: (T) -> String,
+    itemIsDir: (T) -> Boolean,
+    removeItem: (T)->Unit,
+    showFolderIcon: Boolean,
+    folderIconOnClick: (T)->Unit,
     clearAll:()->Unit,
     closeDialog:()->Unit,
-    textFormatterForCopy:(MyFileItem)->String = { it.itemName() + "\n" + it.itemPath() + "\n\n" },
+    textFormatterForCopy:(T)->String = { itemName(it) + "\n" + itemPath(it) + "\n\n" },
 ) {
+    val trailIconSize = remember { MyStyleKt.trailIconSize }
+    val splitSpacerWidth = remember { MyStyleKt.trailIconSplitSpacerWidth }
 
     SelectedItemDialog3(
         selectedItems = list,
         text = {},
         customText = {
-            val splitSpacerWidth = MyStyleKt.trailIconSplitSpacerWidth
-
             TwoLineTextsAndIcons(
-                text1 = it.itemName(),
-                text2 = it.itemPath(),
-                trailIconWidth = trailIconSize * 2 + splitSpacerWidth,
+                text1 = itemName(it),
+                text2 = itemPath(it),
+                trailIconWidth = if(showFolderIcon) trailIconSize * 2 + splitSpacerWidth else trailIconSize,
                 trailIcons = { containerModifier ->
                     Row(
                         modifier = containerModifier
@@ -51,17 +53,18 @@ fun SelectedFileItemsDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End
                     ) {
+                        if(showFolderIcon) {
+                            SizeIcon(
+                                size = trailIconSize,
+                                modifier = Modifier.clickable {
+                                    folderIconOnClick(it)
+                                },
+                                imageVector = if(itemIsDir(it)) Icons.Outlined.Folder else Icons.AutoMirrored.Outlined.InsertDriveFile,
+                                contentDescription = if(itemIsDir(it)) stringResource(R.string.folder) else stringResource(R.string.file)
+                            )
 
-                        SizeIcon(
-                            size = trailIconSize,
-                            modifier = Modifier.clickable {
-                                goToParentAndScrollToItem(it)
-                            },
-                            imageVector = if(it.itemIsDir()) Icons.Outlined.Folder else Icons.AutoMirrored.Outlined.InsertDriveFile,
-                            contentDescription = if(it.itemIsDir()) stringResource(R.string.folder) else stringResource(R.string.file)
-                        )
-
-                        Spacer(modifier = Modifier.width(splitSpacerWidth))
+                            Spacer(modifier = Modifier.width(splitSpacerWidth))
+                        }
 
                         SizeIcon(
                             size = trailIconSize,
