@@ -30,7 +30,7 @@ data class FileItemDto (
     var isHidden:Boolean = false,
     var folderCount:Int=0,
     var fileCount:Int=0
-):MyFileItem {
+) {
 
     var cachedShortLastModifiedTime:String? = null
         private set
@@ -98,9 +98,6 @@ data class FileItemDto (
         return "FileItemDto(name='$name', createTime='$createTime', createTimeInSec=$createTimeInSec, lastModifiedTime='$lastModifiedTime', lastModifiedTimeInSec=$lastModifiedTimeInSec, sizeInBytes=$sizeInBytes, sizeInHumanReadable='$sizeInHumanReadable', isFile=$isFile, isDir=$isDir, fullPath='$fullPath', mime=$mime, isHidden=$isHidden)"
     }
 
-    override fun itemName() = name
-    override fun itemPath() = fullPath
-    override fun itemIsDir() = isDir
 
     companion object {
         fun getRootDto():FileItemDto {

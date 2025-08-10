@@ -27,17 +27,19 @@ fun <T> SelectedFileItemsDialog(
     itemName: (T) -> String,
     itemPath: (T) -> String,
     itemIsDir: (T) -> Boolean,
-    removeItem: (T)->Unit,
+    removeItem: (T) -> Unit,
     showFolderIcon: Boolean,
-    folderIconOnClick: (T)->Unit,
-    clearAll:()->Unit,
-    closeDialog:()->Unit,
-    textFormatterForCopy:(T)->String = { itemName(it) + "\n" + itemPath(it) + "\n\n" },
+    folderIconOnClick: (T) -> Unit,
+    clearAll:() -> Unit,
+    closeDialog:() -> Unit,
+    title: String = stringResource(R.string.selected_str),
+    textFormatterForCopy:(T) -> String = { itemName(it) + "\n" + itemPath(it) + "\n\n" },
 ) {
     val trailIconSize = remember { MyStyleKt.trailIconSize }
     val splitSpacerWidth = remember { MyStyleKt.trailIconSplitSpacerWidth }
 
     SelectedItemDialog3(
+        title = title,
         selectedItems = list,
         text = {},
         customText = {

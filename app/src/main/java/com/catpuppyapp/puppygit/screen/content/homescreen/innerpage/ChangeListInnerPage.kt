@@ -2521,19 +2521,26 @@ fun ChangeListInnerPage(
 
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
-//    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
         val closeDialog = { showSelectedItemsShortDetailsDialog.value = false }
 
         SelectedFileItemsDialog(
             list = selectedItemList.value,
-            removeItem = { switchItemSelected(it as StatusTypeEntrySaver) },
+            itemName = { it.fileName },
+            itemPath = { it.relativePathUnderRepo },
+            itemIsDir = { it.maybeIsDirAndExist() },
+            removeItem = { switchItemSelected(it) },
             clearAll = { selectedItemList.value.clear() },
-            goToParentAndScrollToItem = {
+            showFolderIcon = true,
+            folderIconOnClick = {
+                val predicate = { item: StatusTypeEntrySaver ->
+                    item.relativePathUnderRepo == it.relativePathUnderRepo
+                }
+
                 // find from filter or normal list
                 var found = Box(false)
                 UIHelper.scrollByPredicate(scope, getActuallyList(), getActuallyListState()) { idx, item ->
-                    if(item.relativePathUnderRepo == it.itemPath()) {
+                    if(predicate(item)) {
                         found.value = true
                         true
                     }else {
@@ -2544,7 +2551,7 @@ fun ChangeListInnerPage(
                 // if not found, quit filter mode, then find in origin list
                 if(!found.value && enableFilterState.value) {
                     val index = itemList.value.indexOfFirst { item ->
-                        item.relativePathUnderRepo == it.itemPath()
+                        predicate(item)
                     }
 
                     if(index >= 0) {

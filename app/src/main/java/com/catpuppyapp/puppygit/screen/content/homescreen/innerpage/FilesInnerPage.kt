@@ -33,7 +33,6 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.SelectAll
@@ -97,11 +96,8 @@ import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
-import com.catpuppyapp.puppygit.compose.SelectedItemDialog3
 import com.catpuppyapp.puppygit.compose.SingleLineCardButton
 import com.catpuppyapp.puppygit.compose.SingleSelection
-import com.catpuppyapp.puppygit.compose.SizeIcon
-import com.catpuppyapp.puppygit.compose.TwoLineTextsAndIcons
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -2524,70 +2520,37 @@ fun FilesInnerPage(
         changeStateTriggerRefreshPage(needRefreshFilesPage, StateRequestType.goToParentAndScrollToItem, item.fullPath)
     }
 
-//    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     val showSelectedItemsShortDetailsDialogForImportMode = rememberSaveable { mutableStateOf(false) }
-//    val selectedItemsShortDetailsStrForImportMode = rememberSaveable { mutableStateOf("")}
     if (showSelectedItemsShortDetailsDialog.value) {
         SelectedFileItemsDialog(
             list = selectedItems.value,
-            removeItem = { switchItemSelected(it as FileItemDto) },
+            itemName = { it.name },
+            itemPath = { it.fullPath },
+            itemIsDir = { it.isDir },
+            removeItem = { switchItemSelected(it) },
             clearAll = { selectedItems.value.clear() },
-            goToParentAndScrollToItem = { goToParentAndScrollToItem(it as FileItemDto) },
+            showFolderIcon = true,
+            folderIconOnClick = { goToParentAndScrollToItem(it) },
             closeDialog = { showSelectedItemsShortDetailsDialog.value = false }
         )
     }
 
     if (showSelectedItemsShortDetailsDialogForImportMode.value) {
-        val getItemName = { uri: Uri ->
-            FsUtils.getFileRealNameFromUri(activityContext, uri) ?: uri.toString()
-        }
-
-        val getItemPath = { uri: Uri ->
-            uri.toString()
-        }
-
-        val removeItem = { uri: Uri ->
-            requireImportUriList.value.remove(uri)
-            Unit
-        }
-
-        SelectedItemDialog3(
+        SelectedFileItemsDialog(
             title = stringResource(R.string.import_str),
-            selectedItems = requireImportUriList.value,
-            text = {},
-            customText = {
-                val trailIconSize = MyStyleKt.trailIconSize
+            list = requireImportUriList.value,
+            itemName = { FsUtils.getFileRealNameFromUri(activityContext, it) ?: it.toString() },
+            itemPath = { it.toString() },
 
-                val itemName = getItemName(it)
-                val itemPath = getItemPath(it)
+            // BEGIN: no need show folder icon for uri
+            // because usually only can share files, even can try import folder, but will got an err at the end,
+            //  and no action need to do when clicked the icon, so just hidden it
+            itemIsDir = { false },
+            showFolderIcon = false,
+            folderIconOnClick = {},
+            // END: no need show folder icon for uri
 
-                TwoLineTextsAndIcons(
-                    text1 = itemName,
-                    text2 = itemPath,
-                    trailIconWidth = trailIconSize,
-                    trailIcons = { containerModifier ->
-                        Row(
-                            modifier = containerModifier
-                                .fillMaxWidth()
-                            ,
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            SizeIcon(
-                                size = trailIconSize,
-                                modifier = Modifier.clickable {
-                                    removeItem(it)
-                                },
-                                imageVector = Icons.Filled.DeleteOutline,
-                                contentDescription = stringResource(R.string.delete)
-                            )
-                        }
-                    }
-                )
-            },
-            customTrailIcon = {},
-            textFormatterForCopy = { getItemName(it) + "\n" + getItemPath(it) + "\n\n" },
-            switchItemSelected = removeItem,
+            removeItem = { requireImportUriList.value.remove(it) },
             clearAll = { requireImportUriList.value.clear() },
             closeDialog = { showSelectedItemsShortDetailsDialogForImportMode.value = false },
         )
