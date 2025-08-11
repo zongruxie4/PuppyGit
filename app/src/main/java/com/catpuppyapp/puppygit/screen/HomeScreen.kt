@@ -641,7 +641,7 @@ fun HomeScreen(
             plScope = editorPlScope
         )
     }.apply {
-        // for release when activity destroy
+        // save it for release when activity destroy
         SharedState.updateHomeCodeEditor(this.value)
     }
 
