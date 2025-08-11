@@ -1720,8 +1720,7 @@ fun FilesInnerPage(
                         FileListItem(
                             fullPathOfTopNoEndSlash = if (enableFilter) currentPath() else "",
                             item = it,
-                            lastPathByPressBack = lastPathByPressBack.value,
-                            isPasteMode = isPasteMode,
+                            lastPathByPressBack = lastPathByPressBack,
                             menuKeyTextList = if (it.isFile) fileMenuKeyTextList else dirMenuKeyTextList,
                             menuKeyActList = if (it.isFile) fileMenuKeyActList else dirMenuKeyActList,
                             iconOnClick = {  //点击文件或文件夹图标时的回调函数
@@ -1729,7 +1728,6 @@ fun FilesInnerPage(
                                     switchItemSelected(it)
                                 }
                             },
-                            switchItemSelected = switchItemSelected,
                             isItemInSelected = isItemInSelected,
                             itemOnLongClick = {
                                 if (isFileChooser.not()) {

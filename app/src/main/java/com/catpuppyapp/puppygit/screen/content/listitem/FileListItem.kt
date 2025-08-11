@@ -49,11 +49,9 @@ fun FileListItem(
     fullPathOfTopNoEndSlash:String,
 
     item: FileItemDto,
-    lastPathByPressBack:String,
-    isPasteMode: MutableState<Boolean>,
+    lastPathByPressBack:MutableState<String>,
     menuKeyTextList: List<String>,
     menuKeyActList: List<(FileItemDto)->Unit>,
-    switchItemSelected:(FileItemDto)->Unit,
     iconOnClick:()->Unit,
     isItemInSelected:(FileItemDto)->Boolean,
     itemOnLongClick:(FileItemDto)->Unit,
@@ -72,11 +70,14 @@ fun FileListItem(
             .fillMaxWidth()
             .combinedClickable(
                 onClick = {
+                    lastPathByPressBack.value = item.fullPath
+
                     itemOnClick(item)
                 },
                 onLongClick = {
-                    itemOnLongClick(item)
+                    lastPathByPressBack.value = item.fullPath
 
+                    itemOnLongClick(item)
                 }
             )
             .then(
@@ -84,7 +85,7 @@ fun FileListItem(
                     Modifier.background(
                         MaterialTheme.colorScheme.primaryContainer
                     )
-                }else if(lastPathByPressBack == item.fullPath){  // show light background for last clicked path
+                }else if(lastPathByPressBack.value == item.fullPath){  // show light background for last clicked path
                     Modifier.background(
                         UIHelper.getLastClickedColor()
                     )
@@ -109,6 +110,8 @@ fun FileListItem(
 //                enabled = fromTo!=Cons.gitDiffFromTreeToTree,  //diff提交时，禁用点击图标启动长按模式，按钮会变灰色，太难看了，弃用
                 checked = isItemInSelected(item),
                 onCheckedChange = {
+                    lastPathByPressBack.value = item.fullPath
+
                     iconOnClick()
                 },
             ) {
@@ -155,7 +158,11 @@ fun FileListItem(
         val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
 
         ListItemTrailingIconRow{
-            IconButton(onClick = { dropDownMenuExpandState.value = true }) {
+            IconButton(onClick = {
+                lastPathByPressBack.value = item.fullPath
+
+                dropDownMenuExpandState.value = true
+            }) {
                 Icon(
                     imageVector = Icons.Filled.MoreVert,
                     contentDescription = stringResource(R.string.file_or_folder_menu)
