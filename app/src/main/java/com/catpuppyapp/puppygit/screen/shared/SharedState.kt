@@ -48,13 +48,9 @@ object SharedState {
 
     fun updateHomeCodeEditor(newCodeEditor: MyCodeEditor) {
         homeCodeEditor?.let {
-            // this if should never be true, else,
-            // means home screen create more than 1 instance, may have memory leak,
-            // if have memory leak, also need handle sub page editor's code editor, must release when new instance created,
-            // but it shouldn't happened, unless the rememberSaveable have bugs
-            // 如果有内存泄漏的话，子页面的code editor state也得处理，有点麻烦，不过应该不会泄漏，除非rememberSaveable不好使
+            // the if should be true after Activity destroyed then re-create app,
+            //   if is be true but the app never re-create, is bug maybe
             if(it.uid != newCodeEditor.uid) {
-                MyLog.w(TAG, "#updateHomeCodeEditor: WARNING! detected difference code editor instance, maybe have memory leak: homeCodeEditor.uid=${homeCodeEditor?.uid}, newCodeEditor=${newCodeEditor.uid}")
                 it.release()
             }
         }
