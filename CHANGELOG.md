@@ -2,6 +2,14 @@
 
 
 ---
+1.1.3.7v113 - 20250811:
+- minor bug fixed
+
+
+
+- 修复小bug
+
+---
 1.1.3.6v112 - 20250726:
 - support filter repos and recent files by app related path
 - show latest commit msg in repo card
