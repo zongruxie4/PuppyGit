@@ -87,6 +87,7 @@ object StoragePathsMan {
 
             }catch (e:Exception) {
                 MyLog.e(TAG, "#save: save storage paths err: ${e.localizedMessage}")
+                e.printStackTrace()
             }
         }
     }

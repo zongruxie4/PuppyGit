@@ -174,6 +174,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomBoxOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import com.catpuppyapp.puppygit.utils.storagepaths.StoragePaths
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
 import com.catpuppyapp.puppygit.utils.trimLineBreak
 import com.catpuppyapp.puppygit.utils.withMainContext
@@ -801,26 +802,47 @@ fun FilesInnerPage(
     // init repo dialog variables block end
 
 
-    val addStoragePath = { newPath: String ->
+    // save succeed return true, false otherwise
+    fun addStoragePath(
+        newPath: String,
+        storagePaths: StoragePaths = StoragePathsMan.get(),
+        callSave: Boolean = true,
+        showMsg: Boolean = true,
+    ) : Boolean {
         try {
             if (File(newPath).isDirectory.not()) {
-                throw RuntimeException(activityContext.getString(R.string.path_is_not_a_dir))
+                if(showMsg) {
+                    Msg.requireShowLongDuration("err: " + activityContext.getString(R.string.path_is_not_a_dir))
+                }
+
+                return false
             }
 
-            // used to save path
-            val spForSave = StoragePathsMan.get()
-            val currentList = spForSave.storagePaths
+            // use to save path
+            val currentList = storagePaths.storagePaths
 
             // save if not contains and not equals to app internal storage path(this is default repos storage path, can't delete or add, it always at first item of the Storage Paths in the CloneScreen)
             if (StoragePathsMan.allowAddPath(newPath) && !currentList.contains(newPath)) {
                 currentList.add(newPath)
-                StoragePathsMan.save(spForSave)
+
+                if(callSave) {
+                    StoragePathsMan.save(storagePaths)
+                }
             }
 
-            Msg.requireShow(activityContext.getString(R.string.success))
+            if(showMsg) {
+                Msg.requireShow(activityContext.getString(R.string.success))
+            }
+
+            return true
         } catch (e: Exception) {
-            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
-            MyLog.e(TAG, "add storage path at `$TAG` err: ${e.stackTraceToString()}")
+            if(showMsg) {
+                Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+            }
+
+            MyLog.e(TAG, "add storage path '$newPath' at `$TAG` err: ${e.localizedMessage}")
+
+            return false
         }
     }
 
@@ -994,6 +1016,7 @@ fun FilesInnerPage(
         },
         addStoragePath@{
             addStoragePath(it.fullPath)
+            Unit
         },
         details@{
             initDetailsDialog(listOf(it))
@@ -2708,6 +2731,7 @@ fun FilesInnerPage(
             stringResource(id = R.string.details),
             if (proFeatureEnabled(importReposFromFilesTestPassed)) stringResource(id = R.string.import_as_repo) else "",  // empty string will be ignore when display menu items
             if (proFeatureEnabled(initRepoFromFilesPageTestPassed)) stringResource(id = R.string.init_repo) else "",
+            stringResource(R.string.add_storage_path),
             if (showImportForBottomBar) stringResource(R.string.import_str) else "", // 底栏没必要显示import，避免以后修改，保留代码，用开关变量控制是否显示
             stringResource(R.string.export),
         ))
@@ -2740,6 +2764,33 @@ fun FilesInnerPage(
                 )
             },
 
+            addStoragePath@{
+                val selectedItems = selectedItems.value
+                if(selectedItems.isEmpty()) {
+                    return@addStoragePath
+                }
+
+                val storagePaths = StoragePathsMan.get()
+
+                var needSave = false
+                selectedItems.forEachBetter {
+                    if(addStoragePath(
+                        newPath =  it.fullPath,
+                        storagePaths = storagePaths,
+                        callSave = false,
+                        showMsg = false
+                    )) {
+                        needSave = true
+                    }
+                }
+
+                if(needSave) {
+                    StoragePathsMan.save(storagePaths)
+                }
+
+                Msg.requireShow(activityContext.getString(R.string.done))
+            },
+
             import@{
                 initSafImportDialog()
 //                choosenSafUri.value = null
@@ -2768,7 +2819,9 @@ fun FilesInnerPage(
             hasDirSelected,  // import as repos
             hasDirSelected, // init repo
 
-            //是否启用import （这个实际上已经弃用了，挪顶栏了）
+            hasDirSelected, // addStoragePath
+
+            //是否启用import （这个实际上已经弃用了，挪顶栏了，但这个函数要保留占位）
             {
                 //只要当前目录可读，就启用import
                 try {
