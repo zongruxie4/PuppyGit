@@ -746,11 +746,15 @@ fun SettingsInnerPage(
                     MyCheckBox(stringResource(R.string.all_snapshots), cleanSnapshot)  // file snapshots and content snapshots all will be delete
                     MyCheckBox(stringResource(R.string.storage_paths), cleanStoragePath)
                     if(cleanStoragePath.value) {
-                        DefaultPaddingText(stringResource(R.string.the_storage_path_are_the_paths_you_chosen_and_added_when_cloning_repo))
+                        MySelectionContainer {
+                            DefaultPaddingText(stringResource(R.string.the_storage_path_are_the_paths_you_chosen_and_added_when_cloning_repo))
+                        }
                     }
                     MyCheckBox(stringResource(R.string.file_opened_history), cleanFileOpenHistory)
                     if(cleanFileOpenHistory.value) {
-                        DefaultPaddingText(stringResource(R.string.this_include_editor_opened_files_history_and_their_last_edited_position))
+                        MySelectionContainer {
+                            DefaultPaddingText(stringResource(R.string.this_include_editor_opened_files_history_and_their_last_edited_position))
+                        }
                     }
                 }
             },
