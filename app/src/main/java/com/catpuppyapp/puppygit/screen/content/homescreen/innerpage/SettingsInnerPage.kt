@@ -827,7 +827,7 @@ fun SettingsInnerPage(
                     }
                 }
 
-                Msg.requireShow(activityContext.getString(R.string.success))
+                Msg.requireShow(activityContext.getString(R.string.done))
             }
         }
     }
