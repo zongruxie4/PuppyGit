@@ -1,4 +1,4 @@
-### I am an indie developer and I truly need your support! Your donations will help sustain my life and give me the opportunity to improve this app and create even more exciting projects!
+### Need your donations to buy foods.
 
 ---
 #### bitcoin:
