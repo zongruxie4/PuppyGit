@@ -1,6 +1,13 @@
 
+
 ---
-为内置Editor关联文件 20250718：
+update libgit2 procedure 20250816:
+1. replace headers: delete previous and copy latest headers to `src/main/jni/include`
+2. copy .so libs to repo for develope: build .so libs on github workflow then put them in to `src/main/jniLibs` (only for develope, when build release version, will build the .so libs from source of libgit2 and it's dependencies)
+
+
+---
+为内置Editor关联文件 流程 procedure 20250718：
 1 在 `MimeTypeMapCompat.kt` 添加对应的mime
 2 在 `MimeTypeIconKt.mimeTypeToIconMap` 关联对应的图标
 
