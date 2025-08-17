@@ -625,7 +625,7 @@ class TextEditorState(
                 EditCache.writeToFile(newText)
 
                 //更新当前行状态为已修改
-                updatedField.apply { updateLineChangeTypeIfNone(LineChangeType.UPDATED) }
+                updatedField.updateLineChangeTypeIfNone(LineChangeType.UPDATED)
 
                 if(closePairIfNeed) {
                     appendClosePairIfNeed(oldField, updatedField)
@@ -723,10 +723,16 @@ class TextEditorState(
         // if user deleting or paste text, don't add closed symbol
         val oldText = oldField.value.text
         val oldSelection = oldField.value.selection
-        // if length equals, maybe is select then paste, in that case, return
-        // if selection is not collapse, maybe select then type open pair,
-        //    e.g. select "abc", then input ", should not return if is that case
-        if(newText.length <= oldText.length && oldSelection.collapsed) {
+
+        if(
+            // haven't selection
+            // if newText.length < oldText.length, is deleting, just return;
+            // if equals, means no changed
+            (oldSelection.collapsed && newText.length <= oldText.length)
+            // have selection
+            // if the right condition is true, is a "Cut" or "Delete" action, just return
+            || (!oldSelection.collapsed && (oldText.length - oldSelection.end + oldSelection.start == newText.length))
+        ) {
             return newField
         }
 
@@ -736,10 +742,10 @@ class TextEditorState(
 //        }
 
         val newSelection = newField.value.selection
-        val cursorAt = newSelection.start
+        val newCursorAt = newSelection.start
 
         //if `start` is 0, the left of cursor is nothing, so return
-        if(!newSelection.collapsed || cursorAt <= 0) {
+        if(!newSelection.collapsed || newCursorAt <= 0) {
             return newField
         }
 
@@ -761,7 +767,7 @@ class TextEditorState(
 
 
         if(closedCharOfPair == null) {
-            val openedCharOfPair = newText.get(cursorAt - 1)
+            val openedCharOfPair = newText.get(newCursorAt - 1)
             closedCharOfPair = resolveClosedCharOfPair(openedCharOfPair)
 
             if(closedCharOfPair == null) {
