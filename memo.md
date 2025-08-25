@@ -14,7 +14,8 @@ pr_87链接：https://github.com/catpuppyapp/PuppyGit/pull/87
 5. 替换about页面中的`forEach`和`forEachIndexed`为 `forEachBetter` 和 `forEachIndexedBetter`，后者可避免某些情况下的并发修改异常（不过这里的list多数是只读的，所以其实无所谓，但最好换下）
 6. `animatedColorAsState` 好像和直接改颜色看不出太大区别，可删掉
 7. 需要确保开源项目的 LICENSE 可点击打开对应链接
-8. 添加 pr_87的贡献者名字和url到contributor集合，可点击pr_87链接查看其名字和主页
+8. 添加 pr_87的贡献者名字和url到contributor集合(可点击pr_87链接查看其名字和主页)
+9. app icon 搞大点，图标的内边距可删掉
 
 
 ---
