@@ -665,8 +665,8 @@ fun TagListScreen(
     val textOfItemMsgDialog = rememberSaveable { mutableStateOf("") }
     val previewModeOnOfItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgPreviewModeOn) }
     val useSystemFontsForItemMsgDialog = rememberSaveable { mutableStateOf(settings.commitMsgUseSystemFonts) }
-    val showItemMsg = { curItem: TagDto ->
-        textOfItemMsgDialog.value = curItem.msg
+    val showItemMsg = { msg: String ->
+        textOfItemMsgDialog.value = msg
         showItemMsgDialog.value = true
     }
     if(showItemMsgDialog.value) {
@@ -865,9 +865,20 @@ fun TagListScreen(
                                 // annotated tag对象的oid；非annotated tag此值和targetFullOidStr一样
                                 || it.fullOidStr.contains(keyword, ignoreCase = true)
 
+                                || it.pointedCommitDto.let { commit ->
+                                    if(commit == null) {
+                                        false
+                                    }else {
+                                        commit.msg.contains(keyword, ignoreCase = true)
+                                                || commit.getFormattedAuthorInfo().contains(keyword, ignoreCase = true)
+                                                || commit.dateTime.contains(keyword, ignoreCase = true)
+                                    }
+                                }
+                                || it.getFormattedDate().contains(keyword, ignoreCase = true)
+                                || it.getFormattedTaggerNameAndEmail().contains(keyword, ignoreCase = true)
                                 || it.getType(activityContext, false).contains(keyword, ignoreCase = true)
                                 || it.getType(activityContext, true).contains(keyword, ignoreCase = true)
-                                || formatMinutesToUtc(it.originTimeOffsetInMinutes).contains(keyword, ignoreCase = true)
+                                || it.getOriginTimeOffsetFormatted().contains(keyword, ignoreCase = true)
                     }
                 )
 
@@ -1033,7 +1044,11 @@ fun TagListScreen(
                     if(repoFromDb!=null) {
                         curRepo.value = repoFromDb
                         Repository.open(repoFromDb.fullSavePath).use {repo ->
-                            val tags = Libgit2Helper.getAllTags(repo, settings);
+                            val tags = Libgit2Helper.getAllTags(repoId, repo, settings)
+                                .sortedByDescending {
+                                    it.pointedCommitDto?.originTimeInSecs ?: 0L
+                                }
+
                             list.value.clear()
                             list.value.addAll(tags)
 

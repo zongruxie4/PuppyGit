@@ -1295,5 +1295,7 @@
     <string name="import_ssl_certs">Import SSL Certs</string>
     <string name="manage_ssl_certs">Manage SSL Certs</string>
     <string name="import_ssl_certs_intro_text">Just copy and paste your certs to \'AppData://cert-user\', then restart app.</string>
+    <string name="url_links">Links</string>
+    <string name="contributors">Contributors</string>
 
 </resources>

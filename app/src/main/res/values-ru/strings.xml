@@ -1292,6 +1292,8 @@
     <string name="import_ssl_certs">Импортировать SSL-сертификаты</string>
     <string name="manage_ssl_certs">Управление SSL-сертификатами</string>
     <string name="import_ssl_certs_intro_text">Просто скопируйте и вставьте ваши сертификаты в \'AppData://cert-user\', затем перезапустите приложение.</string>
+    <string name="url_links">Ссылки</string>
+    <string name="contributors">Участники</string>
 
 
 </resources>

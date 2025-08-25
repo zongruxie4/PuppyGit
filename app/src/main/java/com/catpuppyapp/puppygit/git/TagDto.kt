@@ -3,24 +3,26 @@ package com.catpuppyapp.puppygit.git
 import android.content.Context
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import java.time.OffsetDateTime
 
-class TagDto (
+class TagDto(
     var name:String="",
     var shortName:String="",
     var fullOidStr:String="",   // see below annotation of `targetFullOidStr`
     var targetFullOidStr:String="",  // if "isAnnotated" is false, this equals fullOidStr, else this is commit's oid, fullOidStr is Tag's oid
     var isAnnotated:Boolean=false,
 
+    var pointedCommitDto: CommitDto? = null,
+
     // below only make sense for annotated tags
     var taggerName:String="",
     var taggerEmail:String="",
     val date:OffsetDateTime?=null,
     var originTimeOffsetInMinutes:Int=0,
-    var msg:String=""
+    var msg:String="",
+
 ) {
 
     private var targetShortOidStr:String?=null
@@ -40,6 +42,10 @@ class TagDto (
         }
 
         return formatMinutesToUtc(date!!.offset.totalSeconds / 60)
+    }
+
+    fun getOriginTimeOffsetFormatted():String {
+        return formatMinutesToUtc(originTimeOffsetInMinutes)
     }
 
     fun getType(activityContext: Context, searchable:Boolean):String {
@@ -87,6 +93,7 @@ class TagDto (
         if (originTimeOffsetInMinutes != other.originTimeOffsetInMinutes) return false
         if (date != other.date) return false
         if (msg != other.msg) return false
+        if (pointedCommitDto != other.pointedCommitDto) return false
 
         return true
     }
@@ -102,11 +109,12 @@ class TagDto (
         result = 31 * result + originTimeOffsetInMinutes.hashCode()
         result = 31 * result + (date?.hashCode() ?: 0)
         result = 31 * result + msg.hashCode()
+        result = 31 * result + pointedCommitDto.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "TagDto(name='$name', shortName='$shortName', fullOidStr='$fullOidStr', targetFullOidStr='$targetFullOidStr', isAnnotated=$isAnnotated, taggerName='$taggerName', taggerEmail='$taggerEmail', date=$date, msg='$msg', originTimeOffsetInMinutes='$originTimeOffsetInMinutes')"
+        return "TagDto(name='$name', shortName='$shortName', fullOidStr='$fullOidStr', targetFullOidStr='$targetFullOidStr', isAnnotated=$isAnnotated, taggerName='$taggerName', taggerEmail='$taggerEmail', date=$date, msg='$msg', originTimeOffsetInMinutes='$originTimeOffsetInMinutes, pointedCommitDto=$pointedCommitDto')"
     }
 
 

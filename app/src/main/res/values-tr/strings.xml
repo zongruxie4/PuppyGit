@@ -1199,5 +1199,7 @@
     <string name="import_ssl_certs">SSL Sertifikalarını İçe Aktar</string>
     <string name="manage_ssl_certs">SSL Sertifikalarını Yönet</string>
     <string name="import_ssl_certs_intro_text">Sertifikalarınızı \'AppData://cert-user\' konumuna kopyalayıp yapıştırın, ardından uygulamayı yeniden başlatın.</string>
+    <string name="url_links">Bağlantılar</string>
+    <string name="contributors">Katkıda Bulunanlar</string>
 
 </resources>

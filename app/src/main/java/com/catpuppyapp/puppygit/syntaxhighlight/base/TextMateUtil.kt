@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import io.github.rosemoe.sora.lang.Language
@@ -133,30 +134,44 @@ object TextMateUtil {
         var start = 0
         var spanIdx = 1
 
-        while (spanIdx <= spans.size) {
+        while (spanIdx <= spans.size && start < rawText.length) {
             val curSpan = spans.get(spanIdx - 1)
             val nextSpan = spans.getOrNull(spanIdx++)
-            val endExclusive = nextSpan?.column ?: rawText.length
+            var endExclusive = nextSpan?.column ?: rawText.length
 
-            val isRangeInvalid = start < 0 || endExclusive > rawText.length
+            // invalid start index check
+            // don't break, if break, maybe will lost data
+            if(start < 0) { // this should never happened
+                MyLog.i(TAG, "should never happened, plz check the code: invalid `start` index when apply syntax highlight styles: start=$start, endExclusive=$endExclusive, rawText.length=${rawText.length}")
 
-            if(isRangeInvalid) {
+                start = 0
+            }
+
+            // invalid end index check
+            // fix: editor lost data
+            // if the range invalid and break, then the text will
+            //   become a substring which doesn't covered whole text,
+            //   for users, they will see the data lost, but don't know why.
+            // 修复编辑器丢失数据
+            // 如果范围无效，然后直接break（之前就是这么干的），会导致text被截断到上个有效的`endExclusive`，
+            //   若其值不等于rawText.length，会表现为数据丢失
+            if(endExclusive > rawText.length) { // this maybe happens
                 if(AppModel.devModeOn) {
-                    MyLog.d(TAG, "invalid range when apply syntax highlight styles: start=$start, endExclusive=$endExclusive, rawText.length=${rawText.length}")
+                    MyLog.d(TAG, "invalid `end` index when apply syntax highlight styles: start=$start, endExclusive=$endExclusive, rawText.length=${rawText.length}")
                 }
 
-                // due to the range is ordered,
-                //   so if have invalid range,
-                //   consequence must invalid as well,
-                //   so we can break now
-                break
+                endExclusive = rawText.length
             }
 
             // must is valid substring range when reached here
 
             // empty range, should never happen
             if(start >= endExclusive) {
+                MyLog.i(TAG, "should never happened, plz check the code: empty range when apply syntax highlight styles: start=$start, endExclusive=$endExclusive, rawText.length=${rawText.length}")
+
                 start = endExclusive
+
+                // is empty range, so no text will append, so, just continue
                 continue
             }
 
@@ -177,6 +192,16 @@ object TextMateUtil {
             )
 
             start = endExclusive
+        }
+
+
+        // make sure no text omitted
+        if(start < rawText.length) {
+            foreach(
+                start,
+                rawText.length,
+                MyStyleKt.emptySpanStyle
+            )
         }
     }
 }

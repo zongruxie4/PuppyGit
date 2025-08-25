@@ -1,16 +1,10 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,11 +14,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.Forum
-import androidx.compose.material.icons.outlined.Help
-import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material.icons.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -33,7 +24,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -48,12 +38,10 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AppIcon
 import com.catpuppyapp.puppygit.compose.AppIconMonoChrome
-import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
-import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -62,7 +50,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
-import com.catpuppyapp.puppygit.utils.forEachBetter
+import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 
 
 const val authorMail = "luckyclover33xx@gmail.com"
@@ -81,19 +69,24 @@ const val httpServiceApiUrl = "$sourceCodeLink/blob/main/http_service_api.md"
 const val automationDocUrl = "$sourceCodeLink/blob/main/automation_doc.md"
 
 
-var versionCode: Int = AppModel.getAppVersionCode()
-var versionName: String = AppModel.getAppVersionName()
+val versionCode: Int = AppModel.getAppVersionCode()
+val versionName: String = AppModel.getAppVersionName()
 
-data class OpenSource(
+private data class OpenSource(
     val projectName:String,
     val projectLink:String,
     val licenseLink:String,
 )
 
-data class Contributor(
+private data class Contributor(
     val name:String,
     val link:String,
     val desc:String,
+)
+
+private data class Link(
+    val title: String,
+    val link: String,
 )
 
 private val openSourceList = listOf(
@@ -114,7 +107,9 @@ private val contributorList = listOf(
     Contributor(name = "Hussain96o", link = "https://github.com/Hussain96o", desc = "Arabic translator"),
     Contributor(name = "sebastien46", link = "https://github.com/sebastien46", desc = "Monochrome app icon"),
     Contributor(name = "kamilhussen24", link = "https://github.com/kamilhussen24", desc = "Bangla translator"),
+    Contributor(name = "OutlinedArc217", link = "https://github.com/OutlinedArc217", desc = "UI improvement"),
 )
+
 
 @Composable
 fun AboutInnerPage(
@@ -126,8 +121,20 @@ fun AboutInnerPage(
     val activityContext = LocalContext.current
     val exitApp = AppModel.exitApp
 
+    val donateLink = Link(title = "💖 "+stringResource(R.string.donate)+" 💖", link = donateLink)
+
+    val links = listOf(
+        Link(title = stringResource(R.string.source_code), link = sourceCodeLink),
+        Link(title = stringResource(R.string.discussions), link = discussionLink),
+        Link(title = stringResource(R.string.report_bugs), link = reportBugsLink),
+        Link(title = stringResource(R.string.contact_author), link = authorMailLink),
+        Link(title = stringResource(R.string.faq), link = faqLink),
+        Link(title = stringResource(R.string.privacy_policy), link = privacyPolicyLink),
+    )
+
+
     //back handler block start
-    val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
+    val isBackHandlerEnable = rememberSaveable { mutableStateOf(true) }
     val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(context = activityContext, openDrawer = openDrawer, exitApp= exitApp)
     //注册BackHandler，拦截返回键，实现双击返回和返回上级目录
     BackHandler(enabled = isBackHandlerEnable.value, onBack = {backHandlerOnBack()})
@@ -135,12 +142,6 @@ fun AboutInnerPage(
 
     val appLogoEasterEggOn = rememberSaveable { mutableStateOf(false) }
     val appLogoEasterEggIconColor = remember { mutableStateOf(Color.Magenta) }
-    
-    val animatedIconColor by animateColorAsState(
-        targetValue = if (appLogoEasterEggOn.value) appLogoEasterEggIconColor.value else MaterialTheme.colorScheme.primary,
-        animationSpec = tween(300),
-        label = "IconColorAnimation"
-    )
 
     Column(
         modifier = Modifier
@@ -148,7 +149,7 @@ fun AboutInnerPage(
             .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        
+
         // App Header Card
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -169,8 +170,8 @@ fun AboutInnerPage(
                         .size(80.dp)
                         .clip(RoundedCornerShape(20.dp))
                         .clickable {
-                            if(appLogoEasterEggOn.value) {
-                                appLogoEasterEggIconColor.value = UIHelper.getRandomColor()
+                            if (appLogoEasterEggOn.value) {
+                                appLogoEasterEggIconColor.value = UIHelper.randomRainbowColor()
                             } else {
                                 appLogoEasterEggOn.value = true
                             }
@@ -178,38 +179,33 @@ fun AboutInnerPage(
                     color = MaterialTheme.colorScheme.surface,
                     shadowElevation = 4.dp
                 ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.padding(12.dp)
-                    ) {
-                        if(appLogoEasterEggOn.value) {
-                            AppIconMonoChrome(tint = animatedIconColor)
-                        } else {
-                            AppIcon()
-                        }
+                    if(appLogoEasterEggOn.value) {
+                        AppIconMonoChrome(tint = appLogoEasterEggIconColor.value)
+                    } else {
+                        AppIcon()
                     }
                 }
-                
+
                 Spacer(Modifier.height(24.dp))
-                
+
                 // App Name and Version
                 Text(
-                    text = stringResource(id = R.string.app_name),
+                    text = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                
+
                 Spacer(Modifier.height(8.dp))
-                
+
                 Text(
                     text = "$versionName ($versionCode)",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
+
                 Spacer(Modifier.height(16.dp))
-                
+
                 // Made By
                 TextButton(
                     onClick = {
@@ -223,53 +219,37 @@ fun AboutInnerPage(
                         textAlign = TextAlign.Center
                     )
                 }
+
+                TextButton(
+                    onClick = {
+                        ActivityUtil.openUrl(activityContext, donateLink.link)
+                    }
+                ) {
+                    Text(
+                        text = donateLink.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = MyStyleKt.TextSize.medium,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
-        
+
         Spacer(Modifier.height(24.dp))
-        
+
         // Quick Links Section
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+        SectionCard(
+            title = stringResource(R.string.url_links),
+            icon = Icons.Outlined.Link
         ) {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
-                Text(
-                    text = "Quick Links",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-                
-                QuickLinkItem(
-                    icon = Icons.Outlined.Code,
-                    title = stringResource(R.string.source_code),
-                    onClick = { ActivityUtil.openUrl(activityContext, sourceCodeLink) }
-                )
-                
-                QuickLinkItem(
-                    icon = Icons.Outlined.Forum,
-                    title = stringResource(R.string.discussions),
-                    onClick = { ActivityUtil.openUrl(activityContext, discussionLink) }
-                )
-                
-                QuickLinkItem(
-                    icon = Icons.Outlined.Help,
-                    title = stringResource(R.string.faq),
-                    onClick = { ActivityUtil.openUrl(activityContext, faqLink) }
-                )
-                
-                QuickLinkItem(
-                    icon = Icons.Outlined.Policy,
-                    title = stringResource(R.string.privacy_policy),
-                    onClick = { ActivityUtil.openUrl(activityContext, privacyPolicyLink) },
-                    isLast = true
+            val lastIndex = links.size - 1
+            links.forEachIndexedBetter { index, it ->
+                CardItem(
+                    line1 = it.title,
+                    line2 = "",
+                    isLast = index == lastIndex,
+                    onClick = { ActivityUtil.openUrl(activityContext, it.link) }
                 )
             }
         }
@@ -278,15 +258,17 @@ fun AboutInnerPage(
 
         // Open Source Section
         SectionCard(
-            title = stringResource(id = R.string.powered_by_open_source),
+            title = stringResource(R.string.powered_by_open_source),
             icon = Icons.Outlined.Code
         ) {
-            openSourceList.forEachIndexed { index, openSource ->
-                OpenSourceItem(
-                    openSource = openSource,
-                    isLast = index == openSourceList.size - 1,
-                    onProjectClick = { ActivityUtil.openUrl(activityContext, openSource.projectLink) },
-                    onLicenseClick = { ActivityUtil.openUrl(activityContext, openSource.licenseLink) }
+            val lastIndex = openSourceList.size - 1
+            openSourceList.forEachIndexedBetter { index, openSource ->
+                CardItem(
+                    line1 = openSource.projectName,
+                    line2 = stringResource(R.string.license),
+                    isLast = index == lastIndex,
+                    line2OnClick = { ActivityUtil.openUrl(activityContext, openSource.licenseLink) },
+                    onClick = { ActivityUtil.openUrl(activityContext, openSource.projectLink) },
                 )
             }
         }
@@ -295,73 +277,21 @@ fun AboutInnerPage(
 
         // Contributors Section
         SectionCard(
-            title = "Contributors",
+            title = stringResource(R.string.contributors),
             icon = Icons.Outlined.Favorite
         ) {
-            contributorList.forEachIndexed { index, contributor ->
-                ContributorItem(
-                    contributor = contributor,
-                    isLast = index == contributorList.size - 1,
+            val lastIndex = contributorList.size - 1
+            contributorList.forEachIndexedBetter { index, contributor ->
+                CardItem(
+                    line1 = contributor.name,
+                    line2 = contributor.desc,
+                    isLast = index == lastIndex,
                     onClick = { ActivityUtil.openUrl(activityContext, contributor.link) }
                 )
             }
         }
 
         SpacerRow()
-    }
-}
-
-@Composable
-private fun QuickLinkItem(
-    icon: ImageVector,
-    title: String,
-    onClick: () -> Unit,
-    isLast: Boolean = false
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        color = Color.Transparent
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-            
-            Spacer(Modifier.width(16.dp))
-            
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
-            )
-            
-            Icon(
-                imageVector = Icons.Outlined.OpenInNew,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-    }
-    
-    if (!isLast) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-        )
     }
 }
 
@@ -375,15 +305,14 @@ private fun SectionCard(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         )
     ) {
         Column(
             modifier = Modifier.padding(20.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 16.dp)
+            ScrollableRow(
+                modifier = Modifier.padding(bottom = 10.dp)
             ) {
                 Icon(
                     imageVector = icon,
@@ -391,112 +320,71 @@ private fun SectionCard(
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
-                
+
                 Spacer(Modifier.width(12.dp))
-                
+
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = MyStyleKt.TextSize.medium
                 )
             }
-            
+
             content()
         }
     }
 }
 
 @Composable
-private fun OpenSourceItem(
-    openSource: OpenSource,
+private fun CardItem(
+    line1: String,
+    line2: String,
     isLast: Boolean,
-    onProjectClick: () -> Unit,
-    onLicenseClick: () -> Unit
-) {
-    Column {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onProjectClick() },
-            color = Color.Transparent
-        ) {
-            Column(
-                modifier = Modifier.padding(vertical = 8.dp)
-            ) {
-                Text(
-                    text = openSource.projectName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                
-                Spacer(Modifier.height(4.dp))
-                
-                Surface(
-                    modifier = Modifier.clickable { onLicenseClick() },
-                    color = Color.Transparent
-                ) {
-                    Text(
-                        text = "(${stringResource(R.string.license)})",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-        
-        if (!isLast) {
-            Spacer(Modifier.height(8.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-            )
-            Spacer(Modifier.height(8.dp))
-        }
-    }
-}
-
-@Composable
-private fun ContributorItem(
-    contributor: Contributor,
-    isLast: Boolean,
+    line2OnClick: (() -> Unit)? = null,
     onClick: () -> Unit
 ) {
     Surface(
         modifier = Modifier
+            .clickable { onClick() }
             .fillMaxWidth()
-            .clickable { onClick() },
+            .padding(10.dp)
+        ,
         color = Color.Transparent
     ) {
         Column(
             modifier = Modifier.padding(vertical = 12.dp)
         ) {
-            Text(
-                text = contributor.name,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            
-            Spacer(Modifier.height(4.dp))
-            
-            Text(
-                text = contributor.desc,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            ScrollableRow {
+                Text(
+                    text = line1,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            if(line2.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+
+                ScrollableRow {
+                    Text(
+                        text = line2,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = if(line2OnClick == null) {
+                            Modifier
+                        } else MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                            line2OnClick()
+                        }
+                    )
+                }
+            }
         }
     }
-    
+
     if (!isLast) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-        )
+        MyHorizontalDivider()
     }
 }

@@ -29,6 +29,9 @@ data class CommitDto (
     // draw graph related
     var draw_inputs: List<DrawCommitNode> = listOf(),
     var draw_outputs: List<DrawCommitNode> = listOf(),
+
+    // origin time in minutes without timezone offset
+    var originTimeInSecs: Long = 0L,
 ) {
 
     private var otherMsg:String?=null
@@ -119,6 +122,9 @@ data class CommitDto (
     fun cachedLineSeparatedBranchList():String = cached_LineSeparated_BranchShortNameList ?: branchShortNameList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_BranchShortNameList=it; it };
     fun cachedLineSeparatedTagList():String = cached_LineSeparated_TagShortNameList ?: tagShortNameList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_TagShortNameList=it; it };
     fun cachedLineSeparatedParentFullOidList():String = cached_LineSeparated_ParentFullOidStrList ?: parentOidStrList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_ParentFullOidStrList=it; it };
+
+    fun getFormattedAuthorInfo() = Libgit2Helper.getFormattedUsernameAndEmail(author, email)
+    fun getFormattedCommitterInfo() = Libgit2Helper.getFormattedUsernameAndEmail(committerUsername, committerEmail)
 
 }
 

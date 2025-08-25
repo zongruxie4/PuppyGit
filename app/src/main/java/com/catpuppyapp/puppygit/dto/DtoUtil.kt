@@ -26,18 +26,17 @@ import com.github.git24j.core.Submodule
 import java.io.File
 
 fun createSimpleCommitDto(
-    commitOid: Oid,
     commit: Commit,
     repoId: String,
     settings:AppSettings
 ):CommitDto = createCommitDto(
-        commitOid = commitOid,
-        allBranchList = listOf(),
-        allTagList = listOf(),
+        commitOid = commit.id(),
+        allBranchList = null,
+        allTagList = null,
         commit = commit,
         repoId = repoId,
         repoIsShallow = false,
-        shallowOidList = listOf(),
+        shallowOidList = null,
         settings = settings
     )
 
@@ -102,6 +101,7 @@ fun createCommitDto(
 
     c.dateTime = Libgit2Helper.getDateTimeStrOfCommit(commit, settings)
     c.originTimeOffsetInMinutes = commit.timeOffset()
+    c.originTimeInSecs = commit.time().epochSecond
 
     val commitSignature = commit.author()  // git log 命令默认输出的author
     c.author = commitSignature.name
