@@ -2,6 +2,14 @@
 
 
 ---
+1.1.3.8v114 - 20250825:
+- fix editor may lost data when syntax highlighting on
+
+
+
+- 修复语法高亮开启时编辑器可能丢失数据的bug
+
+---
 1.1.3.7v113 - 20250811:
 - minor bug fixed
 
