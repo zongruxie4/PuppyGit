@@ -69,8 +69,8 @@ const val httpServiceApiUrl = "$sourceCodeLink/blob/main/http_service_api.md"
 const val automationDocUrl = "$sourceCodeLink/blob/main/automation_doc.md"
 
 
-var versionCode: Int = AppModel.getAppVersionCode()
-var versionName: String = AppModel.getAppVersionName()
+val versionCode: Int = AppModel.getAppVersionCode()
+val versionName: String = AppModel.getAppVersionName()
 
 private data class OpenSource(
     val projectName:String,
