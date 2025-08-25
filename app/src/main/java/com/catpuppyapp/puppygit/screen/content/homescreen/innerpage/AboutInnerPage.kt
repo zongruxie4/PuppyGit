@@ -6,7 +6,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,9 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.Forum
-import androidx.compose.material.icons.outlined.Help
-import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material3.Card
@@ -48,21 +44,17 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AppIcon
 import com.catpuppyapp.puppygit.compose.AppIconMonoChrome
-import com.catpuppyapp.puppygit.compose.ClickableText
-import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
-import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.forEachBetter
+import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 
 
 const val authorMail = "luckyclover33xx@gmail.com"
@@ -263,30 +255,13 @@ fun AboutInnerPage(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                QuickLinkItem(
-                    icon = Icons.Outlined.Code,
-                    title = stringResource(R.string.source_code),
-                    onClick = { ActivityUtil.openUrl(activityContext, sourceCodeLink) }
-                )
-
-                QuickLinkItem(
-                    icon = Icons.Outlined.Forum,
-                    title = stringResource(R.string.discussions),
-                    onClick = { ActivityUtil.openUrl(activityContext, discussionLink) }
-                )
-
-                QuickLinkItem(
-                    icon = Icons.Outlined.Help,
-                    title = stringResource(R.string.faq),
-                    onClick = { ActivityUtil.openUrl(activityContext, faqLink) }
-                )
-
-                QuickLinkItem(
-                    icon = Icons.Outlined.Policy,
-                    title = stringResource(R.string.privacy_policy),
-                    onClick = { ActivityUtil.openUrl(activityContext, privacyPolicyLink) },
-                    isLast = true
-                )
+                links.forEachBetter {
+                    QuickLinkItem(
+                        icon = Icons.Outlined.Code,
+                        title = it.title,
+                        onClick = { ActivityUtil.openUrl(activityContext, it.link) }
+                    )
+                }
             }
         }
 
@@ -297,7 +272,7 @@ fun AboutInnerPage(
             title = stringResource(id = R.string.powered_by_open_source),
             icon = Icons.Outlined.Code
         ) {
-            openSourceList.forEachIndexed { index, openSource ->
+            openSourceList.forEachIndexedBetter { index, openSource ->
                 OpenSourceItem(
                     openSource = openSource,
                     isLast = index == openSourceList.size - 1,
@@ -314,7 +289,7 @@ fun AboutInnerPage(
             title = "Contributors",
             icon = Icons.Outlined.Favorite
         ) {
-            contributorList.forEachIndexed { index, contributor ->
+            contributorList.forEachIndexedBetter { index, contributor ->
                 ContributorItem(
                     contributor = contributor,
                     isLast = index == contributorList.size - 1,
