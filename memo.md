@@ -6,8 +6,8 @@ pr_87链接：https://github.com/catpuppyapp/PuppyGit/pull/87
 
 
 需要修改：
+0. 合并最新main分支 （提交 `0a30bd52ad4975efc97a99ad75adf4b958b0cf3a` 修改了about页面，创建了links集合，并包含缺失的联系作者等url，以及设置了部分class为private）
 1. 文案“Quick Links”改成“Links”
-   1.2 和最新的main分支合并 （提交 `0a30bd52ad4975efc97a99ad75adf4b958b0cf3a` 创建了links集合，并包含缺失的联系作者等url，以及设置了部分class为private）
 2. 暗黑主题下的卡片背景颜色需要调整，不要和页面背景太接近
 3. "Links"、"Contributors"等新增的字符串资源添加到strings.xml，不会的语言可使用ai协助翻译
 4. 替换about页面中的`forEach`和`forEachIndexed`为 `forEachBetter` 和 `forEachIndexedBetter`，后者可避免某些情况下的并发修改异常（不过这里的list多数是只读的，所以其实无所谓，但最好换下）
