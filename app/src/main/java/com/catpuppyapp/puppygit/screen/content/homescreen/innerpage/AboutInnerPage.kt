@@ -5,7 +5,6 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.AppIcon
 import com.catpuppyapp.puppygit.compose.AppIconMonoChrome
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -311,9 +311,8 @@ private fun SectionCard(
         Column(
             modifier = Modifier.padding(20.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 16.dp)
+            ScrollableRow(
+                modifier = Modifier.padding(bottom = 10.dp)
             ) {
                 Icon(
                     imageVector = icon,
@@ -357,26 +356,30 @@ private fun CardItem(
         Column(
             modifier = Modifier.padding(vertical = 12.dp)
         ) {
-            Text(
-                text = line1,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primary
-            )
+            ScrollableRow {
+                Text(
+                    text = line1,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
             if(line2.isNotEmpty()) {
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(8.dp))
 
-                Text(
-                    text = line2,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = if(line2OnClick == null) {
-                        Modifier
-                    } else MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                        line2OnClick()
-                    }
-                )
+                ScrollableRow {
+                    Text(
+                        text = line2,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = if(line2OnClick == null) {
+                            Modifier
+                        } else MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                            line2OnClick()
+                        }
+                    )
+                }
             }
         }
     }
