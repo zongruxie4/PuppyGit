@@ -170,7 +170,7 @@ fun AboutInnerPage(
                         .size(80.dp)
                         .clip(RoundedCornerShape(20.dp))
                         .clickable {
-                            if(appLogoEasterEggOn.value) {
+                            if (appLogoEasterEggOn.value) {
                                 appLogoEasterEggIconColor.value = UIHelper.randomRainbowColor()
                             } else {
                                 appLogoEasterEggOn.value = true
@@ -240,7 +240,7 @@ fun AboutInnerPage(
 
         // Quick Links Section
         SectionCard(
-            title = "Links",
+            title = stringResource(R.string.url_links),
             icon = Icons.Outlined.Link
         ) {
             val lastIndex = links.size - 1
@@ -258,7 +258,7 @@ fun AboutInnerPage(
 
         // Open Source Section
         SectionCard(
-            title = stringResource(id = R.string.powered_by_open_source),
+            title = stringResource(R.string.powered_by_open_source),
             icon = Icons.Outlined.Code
         ) {
             val lastIndex = openSourceList.size - 1
@@ -277,7 +277,7 @@ fun AboutInnerPage(
 
         // Contributors Section
         SectionCard(
-            title = "Contributors",
+            title = stringResource(R.string.contributors),
             icon = Icons.Outlined.Favorite
         ) {
             val lastIndex = contributorList.size - 1
