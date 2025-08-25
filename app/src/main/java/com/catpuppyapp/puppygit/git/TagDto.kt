@@ -3,24 +3,26 @@ package com.catpuppyapp.puppygit.git
 import android.content.Context
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import java.time.OffsetDateTime
 
-class TagDto (
+class TagDto(
     var name:String="",
     var shortName:String="",
     var fullOidStr:String="",   // see below annotation of `targetFullOidStr`
     var targetFullOidStr:String="",  // if "isAnnotated" is false, this equals fullOidStr, else this is commit's oid, fullOidStr is Tag's oid
     var isAnnotated:Boolean=false,
 
+    var pointedCommitDto: CommitDto? = null,
+
     // below only make sense for annotated tags
     var taggerName:String="",
     var taggerEmail:String="",
     val date:OffsetDateTime?=null,
     var originTimeOffsetInMinutes:Int=0,
-    var msg:String=""
+    var msg:String="",
+
 ) {
 
     private var targetShortOidStr:String?=null

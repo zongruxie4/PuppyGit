@@ -32,12 +32,12 @@ fun createSimpleCommitDto(
     settings:AppSettings
 ):CommitDto = createCommitDto(
         commitOid = commitOid,
-        allBranchList = listOf(),
-        allTagList = listOf(),
+        allBranchList = null,
+        allTagList = null,
         commit = commit,
         repoId = repoId,
         repoIsShallow = false,
-        shallowOidList = listOf(),
+        shallowOidList = null,
         settings = settings
     )
 

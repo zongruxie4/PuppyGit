@@ -4341,7 +4341,7 @@ object Libgit2Helper {
 //            val shallowOidList = ShallowManage.getShallowOidList(repo.workdir().toString()+File.separator+".git")
         val shallowOidList = ShallowManage.getShallowOidList(repo)
 
-        val allTagList = getAllTags(repo, settings)
+        val allTagList = getAllTags(repoId, repo, settings)
         return createCommitDto(commitOid, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList, settings)
     }
 
@@ -4429,7 +4429,7 @@ object Libgit2Helper {
 //            val shallowOidList = ShallowManage.getShallowOidList(repo.workdir().toString()+File.separator+".git")
         val shallowOidList = ShallowManage.getShallowOidList(repo)
 
-        val allTagList = getAllTags(repo, settings)
+        val allTagList = getAllTags(repoId, repo, settings)
 
         var checkChannelCount = 0
 
@@ -5311,42 +5311,59 @@ object Libgit2Helper {
         )
     }
 
-    fun getAllTags(repo: Repository, settings: AppSettings): List<TagDto> {
+    fun getAllTags(repoId: String, repo: Repository, settings: AppSettings): List<TagDto> {
         val timeOffsetInMins = readTimeZoneOffsetInMinutesFromSettingsOrDefaultNullable(settings, null)
 
         val tags = mutableListOf<TagDto>()
         Tag.foreach(repo) { name, oidStr ->
-            try {
+            val oid = try {
+                Oid.of(oidStr)
+            }catch (e: Exception) {
+                MyLog.e(TAG, "tag pointed an invalid oid: $oidStr")
+                Cons.git_AllZeroOid
+            }
+
+            val tagDto = try {
                 // only annotated tag lookup-able, light tag will throw exception
-                val tag = Tag.lookup(repo, Oid.of(oidStr))
+
+                val tag = Tag.lookup(repo, oid)
                 val tagger = tag.tagger()
-                tags.add(
-                    TagDto(
-                        name = name,
-                        shortName = getShortTagNameByFull(name),
-                        fullOidStr = oidStr,
-                        targetFullOidStr = tag.targetId().toString(),
-                        isAnnotated = true,
-                        taggerName = tagger?.name ?:"",
-                        taggerEmail = tagger?.email ?:"",
-                        date = tagger?.getWhenWithOffset(timeOffsetInMins),
-                        originTimeOffsetInMinutes = tagger?.timeOffsetInMinutes() ?: 0,
-                        msg = tag.message(),
-                    )
+
+                TagDto(
+                    name = name,
+                    shortName = getShortTagNameByFull(name),
+                    fullOidStr = oidStr,
+                    targetFullOidStr = tag.targetId().toString(),
+                    isAnnotated = true,
+                    taggerName = tagger?.name ?:"",
+                    taggerEmail = tagger?.email ?:"",
+                    date = tagger?.getWhenWithOffset(timeOffsetInMins),
+                    originTimeOffsetInMinutes = tagger?.timeOffsetInMinutes() ?: 0,
+                    msg = tag.message(),
                 )
 
             }catch (e:Exception) {
                 //light weight tag
-                tags.add(
-                    TagDto(
-                        name = name,
-                        shortName = getShortTagNameByFull(name),
-                        fullOidStr = oidStr,
-                        targetFullOidStr = oidStr,
-                        isAnnotated = false
-                    )
+                TagDto(
+                    name = name,
+                    shortName = getShortTagNameByFull(name),
+                    fullOidStr = oidStr,
+                    targetFullOidStr = oidStr,
+                    isAnnotated = false
                 )
             }
+
+            val commit = Libgit2Helper.resolveCommitByHash(repo, oidStr)
+            if(commit != null) {
+                tagDto.pointedCommitDto = createSimpleCommitDto(
+                    commitOid = oid,
+                    commit = commit,
+                    repoId = repoId,
+                    settings = settings
+                )
+            }
+
+            tags.add(tagDto)
 
             0
         }
