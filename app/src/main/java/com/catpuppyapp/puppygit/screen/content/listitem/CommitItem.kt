@@ -207,7 +207,7 @@ fun CommitItem(
 //            Text(text = stringResource(R.string.author) +": ")
 
             ScrollableRow {
-                Text(text = Libgit2Helper.getFormattedUsernameAndEmail(commitDto.author, commitDto.email),
+                Text(text = commitDto.getFormattedAuthorInfo(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = defaultFontWeight
@@ -230,7 +230,7 @@ fun CommitItem(
 //                Text(text = stringResource(R.string.committer) +": ")
 
                 ScrollableRow {
-                    Text(text = Libgit2Helper.getFormattedUsernameAndEmail(commitDto.committerUsername, commitDto.committerEmail),
+                    Text(text = commitDto.getFormattedCommitterInfo(),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         fontWeight = defaultFontWeight

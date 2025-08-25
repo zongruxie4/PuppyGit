@@ -120,6 +120,9 @@ data class CommitDto (
     fun cachedLineSeparatedTagList():String = cached_LineSeparated_TagShortNameList ?: tagShortNameList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_TagShortNameList=it; it };
     fun cachedLineSeparatedParentFullOidList():String = cached_LineSeparated_ParentFullOidStrList ?: parentOidStrList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_ParentFullOidStrList=it; it };
 
+    fun getFormattedAuthorInfo() = Libgit2Helper.getFormattedUsernameAndEmail(author, email)
+    fun getFormattedCommitterInfo() = Libgit2Helper.getFormattedUsernameAndEmail(committerUsername, committerEmail)
+
 }
 
 private object CommitDtoSearchableText {

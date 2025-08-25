@@ -2285,6 +2285,8 @@ fun CommitListScreen(
 
                         val match = { idx:Int, it: CommitDto ->
                             var found = it.oidStr.contains(keyword, ignoreCase = true)
+                                    || it.getFormattedCommitterInfo().contains(keyword, ignoreCase = true)
+                                    || it.getFormattedAuthorInfo().contains(keyword, ignoreCase = true)
                                     || it.email.contains(keyword, ignoreCase = true)
                                     || it.author.contains(keyword, ignoreCase = true)
                                     || it.committerEmail.contains(keyword, ignoreCase = true)
@@ -2298,6 +2300,7 @@ fun CommitListScreen(
                                     || it.getOther(activityContext, false).contains(keyword, ignoreCase = true)
                                     || it.getOther(activityContext, true).contains(keyword, ignoreCase = true)
                                     || formatMinutesToUtc(it.originTimeOffsetInMinutes).contains(keyword, ignoreCase = true)
+
 
                             if(found) {
                                 // filter by path
