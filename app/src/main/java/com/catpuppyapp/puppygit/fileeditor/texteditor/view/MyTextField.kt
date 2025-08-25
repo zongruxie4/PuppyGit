@@ -15,13 +15,16 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.MyTextFieldState
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLFont
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.forEachBetter
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -156,10 +159,21 @@ private fun keepStylesIfPossible(
         // try keep styles if possible, will use more cpu and memory, but can reduce text flashing
         val newTextLen = newState.text.length
         // the `it.end` is exclusive, so can be equals to length
-        val validSpans = lastState.annotatedString.spanStyles.filter { it.start >= 0 && it.end <= newTextLen }
+        val validSpans = mutableListOf<AnnotatedString.Range<SpanStyle>>()
+        lastState.annotatedString.spanStyles.forEachBetter {
+            if(it.start >= 0 && it.end <= newTextLen) {
+                validSpans.add(it)
+            }
+        }
 
         if(validSpans.isEmpty()) {
             return newState
+        }
+
+        // make sure spans covered whole text
+        val lastSpanIndex = validSpans.last().end
+        if(lastSpanIndex < newTextLen) {
+            validSpans.add(AnnotatedString.Range(MyStyleKt.emptySpanStyle, lastSpanIndex, newTextLen))
         }
 
         val newAnnotatedString = newState.annotatedString
