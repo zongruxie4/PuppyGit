@@ -7,15 +7,14 @@ pr_87链接：https://github.com/catpuppyapp/PuppyGit/pull/87
 
 需要修改：
 1. 文案“Quick Links”改成“Links”
-   1.2 把当前的链接加到一个List<Pair<String, String>>里，Pair.first是链接标题，Pair.second是链接，点击可跳转到链接，创建集合后改成遍历显示链接
-2. 捐赠链接、报告bug、联系作者，加回到Links里
-3. 暗黑主题下的卡片背景颜色需要调整，不要和页面背景太接近
-4. "Links"、"Contributors"等新增的字符串资源添加到strings.xml，其他语言可使用ai协助翻译
-5. 替换about页面中的`forEach`和`forEachIndexed`为 `forEachBetter` 和 `forEachIndexedBetter`，后者可避免某些情况下的并发修改异常（不过这里的list多数是只读的，所以其实无所谓，但最好换下）
-6. `animatedColorAsState` 好像和直接改颜色看不出太大区别，可删掉
-7. 需要确保开源项目的 LICENSE 可点击打开对应链接
-8. 添加 pr_87的贡献者名字和url到contributor集合(可点击pr_87链接查看其名字和主页)
-9. app icon 搞大点，图标的内边距可删掉
+   1.2 合并 提交 `0a30bd52ad4975efc97a99ad75adf4b958b0cf3a` 的修改。（创建了links对象，并包含缺失的联系作者等url，以及设置了部分class为private）
+2. 暗黑主题下的卡片背景颜色需要调整，不要和页面背景太接近
+3. "Links"、"Contributors"等新增的字符串资源添加到strings.xml，不会的语言可使用ai协助翻译
+4. 替换about页面中的`forEach`和`forEachIndexed`为 `forEachBetter` 和 `forEachIndexedBetter`，后者可避免某些情况下的并发修改异常（不过这里的list多数是只读的，所以其实无所谓，但最好换下）
+5. `animatedColorAsState` 好像和直接改颜色看不出太大区别，可删掉
+6. 需要确保开源项目的 LICENSE 可点击打开对应链接
+7. 添加 pr_87的贡献者名字和url到contributor集合(可点击pr_87链接查看其名字和主页)
+8. app icon 搞大点，图标的内边距可删掉
 
 
 ---
