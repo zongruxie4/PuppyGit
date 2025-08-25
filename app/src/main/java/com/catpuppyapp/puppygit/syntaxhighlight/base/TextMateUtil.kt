@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import io.github.rosemoe.sora.lang.Language
@@ -191,6 +192,16 @@ object TextMateUtil {
             )
 
             start = endExclusive
+        }
+
+
+        // make sure no text omitted
+        if(start < rawText.length) {
+            foreach(
+                start,
+                rawText.length,
+                MyStyleKt.emptySpanStyle
+            )
         }
     }
 }
