@@ -670,4 +670,22 @@ object UIHelper {
         }
     }
 
+    fun randomRainbowColor(index: Int = Random.nextInt(from = 0, until = 7)):Color {
+        return if(index == 0) {
+            Color.Red
+        }else if(index == 1) {
+            Color(0xFFA84C00)
+        }else if(index == 2) {
+            Color.Yellow
+        }else if(index == 3) {
+            Color.Green
+        }else if(index == 4) {
+            Color.Cyan
+        }else if(index == 5) {
+            Color.Blue
+        }else {
+            Color.Magenta
+        }
+    }
+
 }

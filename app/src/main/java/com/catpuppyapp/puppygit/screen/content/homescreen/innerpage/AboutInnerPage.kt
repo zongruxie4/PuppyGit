@@ -171,7 +171,7 @@ fun AboutInnerPage(
                         .clip(RoundedCornerShape(20.dp))
                         .clickable {
                             if(appLogoEasterEggOn.value) {
-                                appLogoEasterEggIconColor.value = UIHelper.getRandomColor()
+                                appLogoEasterEggIconColor.value = UIHelper.randomRainbowColor()
                             } else {
                                 appLogoEasterEggOn.value = true
                             }
