@@ -138,38 +138,39 @@ object TextMateUtil {
             val nextSpan = spans.getOrNull(spanIdx++)
             var endExclusive = nextSpan?.column ?: rawText.length
 
-            val badStart = start < 0
-            val badEnd = endExclusive > rawText.length
+            // invalid start index check
+            // don't break, if break, maybe will lost data
+            if(start < 0) { // this should never happened
+                MyLog.i(TAG, "should never happened, plz check the code: invalid `start` index when apply syntax highlight styles: start=$start, endExclusive=$endExclusive, rawText.length=${rawText.length}")
 
-            if(badStart || badEnd) {
+                start = 0
+            }
+
+            // invalid end index check
+            // fix: editor lost data
+            // if the range invalid and break, then the text will
+            //   become a substring which doesn't covered whole text,
+            //   for users, they will see the data lost, but don't know why.
+            // 修复编辑器丢失数据
+            // 如果范围无效，然后直接break（之前就是这么干的），会导致text被截断到上个有效的`endExclusive`，
+            //   若其值不等于rawText.length，会表现为数据丢失
+            if(endExclusive > rawText.length) { // this maybe happens
                 if(AppModel.devModeOn) {
-                    MyLog.d(TAG, "invalid range when apply syntax highlight styles: start=$start, endExclusive=$endExclusive, rawText.length=${rawText.length}")
+                    MyLog.d(TAG, "invalid `end` index when apply syntax highlight styles: start=$start, endExclusive=$endExclusive, rawText.length=${rawText.length}")
                 }
 
-                // don't break, if break, maybe will lost data
-                if(badStart) { // this should never happened
-                    start = 0
-                }
-
-                // fix: editor lost data
-                // if the range invalid and break, then the text will
-                //   become a substring which doesn't covered whole text,
-                //   for users, they will see the data lost, but don't know why.
-                // 修复编辑器丢失数据
-                // 如果范围无效，然后直接break（之前就是这么干的），会导致text被截断到上个有效的`endExclusive`，
-                //   若其值不等于rawText.length，会表现为数据丢失
-                if(badEnd) { // this maybe happens
-                    endExclusive = rawText.length
-                }
+                endExclusive = rawText.length
             }
 
             // must is valid substring range when reached here
 
             // empty range, should never happen
             if(start >= endExclusive) {
-                MyLog.d(TAG, "empty range when apply syntax highlight styles: start=$start, endExclusive=$endExclusive, rawText.length=${rawText.length}")
+                MyLog.i(TAG, "should never happened, plz check the code: empty range when apply syntax highlight styles: start=$start, endExclusive=$endExclusive, rawText.length=${rawText.length}")
 
                 start = endExclusive
+
+                // is empty range, so no text will append, so, just continue
                 continue
             }
 
