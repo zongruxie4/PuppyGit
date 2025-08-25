@@ -5353,10 +5353,9 @@ object Libgit2Helper {
                 )
             }
 
-            val commit = Libgit2Helper.resolveCommitByHash(repo, oidStr)
+            val commit = Libgit2Helper.resolveCommitByHash(repo, tagDto.targetFullOidStr)
             if(commit != null) {
                 tagDto.pointedCommitDto = createSimpleCommitDto(
-                    commitOid = oid,
                     commit = commit,
                     repoId = repoId,
                     settings = settings
@@ -7574,10 +7573,9 @@ object Libgit2Helper {
                 val commit = ret.data!!
 
                 createSimpleCommitDto(
-                    commitOid = commit.id(),
                     commit = commit,
                     repoId = repoId,
-                    settings
+                    settings = settings
                 )
             }
 

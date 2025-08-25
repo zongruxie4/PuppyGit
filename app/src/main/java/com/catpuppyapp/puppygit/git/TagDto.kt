@@ -44,6 +44,10 @@ class TagDto(
         return formatMinutesToUtc(date!!.offset.totalSeconds / 60)
     }
 
+    fun getOriginTimeOffsetFormatted():String {
+        return formatMinutesToUtc(originTimeOffsetInMinutes)
+    }
+
     fun getType(activityContext: Context, searchable:Boolean):String {
 
         return if(isAnnotated) {
@@ -89,6 +93,7 @@ class TagDto(
         if (originTimeOffsetInMinutes != other.originTimeOffsetInMinutes) return false
         if (date != other.date) return false
         if (msg != other.msg) return false
+        if (pointedCommitDto != other.pointedCommitDto) return false
 
         return true
     }
@@ -104,11 +109,12 @@ class TagDto(
         result = 31 * result + originTimeOffsetInMinutes.hashCode()
         result = 31 * result + (date?.hashCode() ?: 0)
         result = 31 * result + msg.hashCode()
+        result = 31 * result + pointedCommitDto.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "TagDto(name='$name', shortName='$shortName', fullOidStr='$fullOidStr', targetFullOidStr='$targetFullOidStr', isAnnotated=$isAnnotated, taggerName='$taggerName', taggerEmail='$taggerEmail', date=$date, msg='$msg', originTimeOffsetInMinutes='$originTimeOffsetInMinutes')"
+        return "TagDto(name='$name', shortName='$shortName', fullOidStr='$fullOidStr', targetFullOidStr='$targetFullOidStr', isAnnotated=$isAnnotated, taggerName='$taggerName', taggerEmail='$taggerEmail', date=$date, msg='$msg', originTimeOffsetInMinutes='$originTimeOffsetInMinutes, pointedCommitDto=$pointedCommitDto')"
     }
 
 

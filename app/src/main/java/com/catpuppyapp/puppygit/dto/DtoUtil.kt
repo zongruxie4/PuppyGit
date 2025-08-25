@@ -26,12 +26,11 @@ import com.github.git24j.core.Submodule
 import java.io.File
 
 fun createSimpleCommitDto(
-    commitOid: Oid,
     commit: Commit,
     repoId: String,
     settings:AppSettings
 ):CommitDto = createCommitDto(
-        commitOid = commitOid,
+        commitOid = commit.id(),
         allBranchList = null,
         allTagList = null,
         commit = commit,
