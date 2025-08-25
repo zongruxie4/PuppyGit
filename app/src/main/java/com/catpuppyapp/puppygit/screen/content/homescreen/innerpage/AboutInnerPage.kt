@@ -1,7 +1,10 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,19 +15,38 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Forum
+import androidx.compose.material.icons.outlined.Help
+import androidx.compose.material.icons.outlined.Policy
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.OpenInNew
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AppIcon
@@ -102,15 +124,7 @@ fun AboutInnerPage(
 ){
 
     val activityContext = LocalContext.current
-    val exitApp = AppModel.exitApp;
-
-
-//    val clipboardManager = LocalClipboardManager.current
-
-//    val copy={text:String ->
-//        clipboardManager.setText(AnnotatedString(text))
-//        Msg.requireShow(activityContext.getString(R.string.copied))
-//    }
+    val exitApp = AppModel.exitApp
 
     //back handler block start
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
@@ -121,265 +135,368 @@ fun AboutInnerPage(
 
     val appLogoEasterEggOn = rememberSaveable { mutableStateOf(false) }
     val appLogoEasterEggIconColor = remember { mutableStateOf(Color.Magenta) }
+    
+    val animatedIconColor by animateColorAsState(
+        targetValue = if (appLogoEasterEggOn.value) appLogoEasterEggIconColor.value else MaterialTheme.colorScheme.primary,
+        animationSpec = tween(300),
+        label = "IconColorAnimation"
+    )
 
     Column(
         modifier = Modifier
             .baseVerticalScrollablePageModifier(contentPadding, listState)
-            .padding(MyStyleKt.defaultItemPadding)
-        ,
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-
-        //垂直应从上到下，不需要居中
-//        verticalArrangement = Arrangement.Center
     ) {
-        //图标，app名，contact
-        Row(
+        
+        // App Header Card
+        Card(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            )
         ) {
-            Box(
-                modifier = Modifier.clickable {
-                    //若启用则换颜色；否则启用。
-                    if(appLogoEasterEggOn.value) {
-                        appLogoEasterEggIconColor.value = UIHelper.getRandomColor()
-                    }else {
-                        appLogoEasterEggOn.value = true
-                    }
-                }
-            ) {
-                if(appLogoEasterEggOn.value) {
-                    AppIconMonoChrome(tint = appLogoEasterEggIconColor.value)
-                }else {
-                    AppIcon()
-                }
-            }
-
-        }
-
-        MySelectionContainer {
             Column(
-                modifier = Modifier.padding(MyStyleKt.defaultItemPadding),
-                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = stringResource(id = R.string.app_name), fontWeight = FontWeight.ExtraBold)
-
-                Text(text = "$versionName ($versionCode)", fontSize = 12.sp)
+                // App Icon with Easter Egg
+                Surface(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .clickable {
+                            if(appLogoEasterEggOn.value) {
+                                appLogoEasterEggIconColor.value = UIHelper.getRandomColor()
+                            } else {
+                                appLogoEasterEggOn.value = true
+                            }
+                        },
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 4.dp
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        if(appLogoEasterEggOn.value) {
+                            AppIconMonoChrome(tint = animatedIconColor)
+                        } else {
+                            AppIcon()
+                        }
+                    }
+                }
+                
+                Spacer(Modifier.height(24.dp))
+                
+                // App Name and Version
+                Text(
+                    text = stringResource(id = R.string.app_name),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                Spacer(Modifier.height(8.dp))
+                
+                Text(
+                    text = "$versionName ($versionCode)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Spacer(Modifier.height(16.dp))
+                
+                // Made By
+                TextButton(
+                    onClick = {
+                        ActivityUtil.openUrl(activityContext, madeByLink)
+                    }
+                ) {
+                    Text(
+                        text = madeBy,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontStyle = FontStyle.Italic,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
-
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+        
+        Spacer(Modifier.height(24.dp))
+        
+        // Quick Links Section
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
-            TextButton(
-                onClick = {
-                    ActivityUtil.openUrl(activityContext, madeByLink)
-                }
+            Column(
+                modifier = Modifier.padding(20.dp)
             ) {
                 Text(
-                    text = madeBy,
-                    fontStyle = FontStyle.Italic,
+                    text = "Quick Links",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                QuickLinkItem(
+                    icon = Icons.Outlined.Code,
+                    title = stringResource(R.string.source_code),
+                    onClick = { ActivityUtil.openUrl(activityContext, sourceCodeLink) }
+                )
+                
+                QuickLinkItem(
+                    icon = Icons.Outlined.Forum,
+                    title = stringResource(R.string.discussions),
+                    onClick = { ActivityUtil.openUrl(activityContext, discussionLink) }
+                )
+                
+                QuickLinkItem(
+                    icon = Icons.Outlined.Help,
+                    title = stringResource(R.string.faq),
+                    onClick = { ActivityUtil.openUrl(activityContext, faqLink) }
+                )
+                
+                QuickLinkItem(
+                    icon = Icons.Outlined.Policy,
+                    title = stringResource(R.string.privacy_policy),
+                    onClick = { ActivityUtil.openUrl(activityContext, privacyPolicyLink) },
+                    isLast = true
                 )
             }
         }
-        Spacer(Modifier.height(10.dp))
-//
-//        Row(
-//            horizontalArrangement = Arrangement.Center,
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            TextButton(
-//                onClick = {
-//                    ActivityUtil.openUrl(appContext, donateLink)
-//                }
-//            ) {
-//                Text(
-//                    text = stringResource(R.string.donate),
-//                    fontStyle = FontStyle.Italic,
-//                )
-//            }
-//        }
 
-//        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(24.dp))
 
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+        // Open Source Section
+        SectionCard(
+            title = stringResource(id = R.string.powered_by_open_source),
+            icon = Icons.Outlined.Code
         ) {
-            ClickableText(
-                text = stringResource(R.string.source_code),
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    ActivityUtil.openUrl(activityContext, sourceCodeLink)
-                },
-
-            )
+            openSourceList.forEachIndexed { index, openSource ->
+                OpenSourceItem(
+                    openSource = openSource,
+                    isLast = index == openSourceList.size - 1,
+                    onProjectClick = { ActivityUtil.openUrl(activityContext, openSource.projectLink) },
+                    onLicenseClick = { ActivityUtil.openUrl(activityContext, openSource.licenseLink) }
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
 
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+        // Contributors Section
+        SectionCard(
+            title = "Contributors",
+            icon = Icons.Outlined.Favorite
         ) {
-            ClickableText(
-                text = stringResource(R.string.discussions),
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    //                    copy(authorMail)
-                    ActivityUtil.openUrl(activityContext, discussionLink)
-                },
-
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ClickableText(
-                text = stringResource(R.string.report_bugs),
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    ActivityUtil.openUrl(activityContext, reportBugsLink)
-                },
-
-            )
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-//            Text(text = stringResource(R.string.contact_author)+":")
-            ClickableText(
-                text = stringResource(R.string.contact_author),
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-//                    copy(authorMail)
-                    ActivityUtil.openUrl(activityContext, authorMailLink)
-                },
-
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-//            Text(text = stringResource(R.string.contact_author)+":")
-            ClickableText(
-                text = "💖"+stringResource(R.string.donate)+"💖",
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-//                    copy(authorMail)
-                    ActivityUtil.openUrl(activityContext, donateLink)
-                },
-
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ClickableText(
-                text = stringResource(R.string.faq),
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    ActivityUtil.openUrl(activityContext, faqLink)
-                },
-
-            )
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ClickableText(
-                text = stringResource(R.string.privacy_policy),
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-//                    copy(authorMail)
-                    ActivityUtil.openUrl(activityContext, privacyPolicyLink)
-                },
-
-            )
-        }
-
-        MyHorizontalDivider(modifier = Modifier.padding(MyStyleKt.defaultItemPadding))
-
-        //开源项目列表
-        TitleRow(stringResource(id = R.string.powered_by_open_source))
-
-        val licenseStrRes = stringResource(R.string.license)
-
-        openSourceList.forEachBetter {
-            DoubleClickableRow(
-                row1Text = it.projectName,
-                row2Text = licenseStrRes,
-                row1OnClick = { ActivityUtil.openUrl(activityContext, it.projectLink) },
-                row2OnClick = { ActivityUtil.openUrl(activityContext, it.licenseLink) },
-            )
-        }
-
-        MyHorizontalDivider(modifier = Modifier.padding(MyStyleKt.defaultItemPadding))
-
-        //开源项目列表
-        TitleRow("Thanks")
-
-        contributorList.forEachBetter {
-            DoubleClickableRow(
-                row1Text = it.name,
-                row2Text = it.desc,
-                row1OnClick = { ActivityUtil.openUrl(activityContext, it.link) },
-                row2OnClick = { ActivityUtil.openUrl(activityContext, it.link) },
-            )
+            contributorList.forEachIndexed { index, contributor ->
+                ContributorItem(
+                    contributor = contributor,
+                    isLast = index == contributorList.size - 1,
+                    onClick = { ActivityUtil.openUrl(activityContext, contributor.link) }
+                )
+            }
         }
 
         SpacerRow()
     }
-
 }
 
 @Composable
-private fun TitleRow(title:String) {
-    MySelectionContainer {
-        Row (modifier = Modifier.padding(MyStyleKt.defaultItemPadding)){
-            Text(text = title, fontWeight = FontWeight.Bold)
+private fun QuickLinkItem(
+    icon: ImageVector,
+    title: String,
+    onClick: () -> Unit,
+    isLast: Boolean = false
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        color = Color.Transparent
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+            
+            Spacer(Modifier.width(16.dp))
+            
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            
+            Icon(
+                imageVector = Icons.Outlined.OpenInNew,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+    }
+    
+    if (!isLast) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+        )
+    }
+}
+
+@Composable
+private fun SectionCard(
+    title: String,
+    icon: ImageVector,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                
+                Spacer(Modifier.width(12.dp))
+                
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            
+            content()
         }
     }
 }
 
 @Composable
-private fun DoubleClickableRow(
-    row1Text:String,
-    row2Text:String,
-    row1OnClick:()->Unit,
-    row2OnClick:()->Unit,
+private fun OpenSourceItem(
+    openSource: OpenSource,
+    isLast: Boolean,
+    onProjectClick: () -> Unit,
+    onLicenseClick: () -> Unit
 ) {
-    Column (
-        modifier = Modifier.padding(5.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ){
-        ClickableText(
-            text = row1Text,
-            modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                row1OnClick()
-            },
-        )
-        Spacer(Modifier.height(2.dp))
-        ClickableText(
-            text = "($row2Text)",
-            fontSize = 12.sp,
-            modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                row2OnClick()
-            },
-        )
+    Column {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onProjectClick() },
+            color = Color.Transparent
+        ) {
+            Column(
+                modifier = Modifier.padding(vertical = 8.dp)
+            ) {
+                Text(
+                    text = openSource.projectName,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                
+                Spacer(Modifier.height(4.dp))
+                
+                Surface(
+                    modifier = Modifier.clickable { onLicenseClick() },
+                    color = Color.Transparent
+                ) {
+                    Text(
+                        text = "(${stringResource(R.string.license)})",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+        
+        if (!isLast) {
+            Spacer(Modifier.height(8.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+            )
+            Spacer(Modifier.height(8.dp))
+        }
+    }
+}
 
-        Spacer(Modifier.height(10.dp))
-
+@Composable
+private fun ContributorItem(
+    contributor: Contributor,
+    isLast: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        color = Color.Transparent
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 12.dp)
+        ) {
+            Text(
+                text = contributor.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            
+            Spacer(Modifier.height(4.dp))
+            
+            Text(
+                text = contributor.desc,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+    
+    if (!isLast) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+        )
     }
 }
