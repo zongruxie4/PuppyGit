@@ -121,13 +121,13 @@ fun AboutInnerPage(
     val activityContext = LocalContext.current
     val exitApp = AppModel.exitApp
 
+    val donateLink = Link(title = "💖 "+stringResource(R.string.donate)+" 💖", link = donateLink)
 
     val links = listOf(
         Link(title = stringResource(R.string.source_code), link = sourceCodeLink),
         Link(title = stringResource(R.string.discussions), link = discussionLink),
         Link(title = stringResource(R.string.report_bugs), link = reportBugsLink),
         Link(title = stringResource(R.string.contact_author), link = authorMailLink),
-        Link(title = "💖"+stringResource(R.string.donate)+"💖", link = donateLink),
         Link(title = stringResource(R.string.faq), link = faqLink),
         Link(title = stringResource(R.string.privacy_policy), link = privacyPolicyLink),
     )
@@ -190,7 +190,7 @@ fun AboutInnerPage(
 
                 // App Name and Version
                 Text(
-                    text = stringResource(id = R.string.app_name),
+                    text = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -217,6 +217,20 @@ fun AboutInnerPage(
                         style = MaterialTheme.typography.bodyMedium,
                         fontStyle = FontStyle.Italic,
                         textAlign = TextAlign.Center
+                    )
+                }
+
+                TextButton(
+                    onClick = {
+                        ActivityUtil.openUrl(activityContext, donateLink.link)
+                    }
+                ) {
+                    Text(
+                        text = donateLink.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = MyStyleKt.TextSize.medium,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
