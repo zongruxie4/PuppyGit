@@ -1045,6 +1045,10 @@ fun TagListScreen(
                         curRepo.value = repoFromDb
                         Repository.open(repoFromDb.fullSavePath).use {repo ->
                             val tags = Libgit2Helper.getAllTags(repoId, repo, settings)
+                                .sortedByDescending {
+                                    it.pointedCommitDto?.originTimeInSecs ?: 0L
+                                }
+
                             list.value.clear()
                             list.value.addAll(tags)
 

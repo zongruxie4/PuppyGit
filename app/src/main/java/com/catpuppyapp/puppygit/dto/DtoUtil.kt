@@ -101,6 +101,7 @@ fun createCommitDto(
 
     c.dateTime = Libgit2Helper.getDateTimeStrOfCommit(commit, settings)
     c.originTimeOffsetInMinutes = commit.timeOffset()
+    c.originTimeInSecs = commit.time().epochSecond
 
     val commitSignature = commit.author()  // git log 命令默认输出的author
     c.author = commitSignature.name

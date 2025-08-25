@@ -29,6 +29,9 @@ data class CommitDto (
     // draw graph related
     var draw_inputs: List<DrawCommitNode> = listOf(),
     var draw_outputs: List<DrawCommitNode> = listOf(),
+
+    // origin time in minutes without timezone offset
+    var originTimeInSecs: Long = 0L,
 ) {
 
     private var otherMsg:String?=null
