@@ -160,10 +160,12 @@ private fun keepStylesIfPossible(
         val newTextLen = newState.text.length
         // the `it.end` is exclusive, so can be equals to length
         val validSpans = mutableListOf<AnnotatedString.Range<SpanStyle>>()
-        lastState.annotatedString.spanStyles.forEachBetter {
-            if(it.start >= 0 && it.end <= newTextLen) {
-                validSpans.add(it)
+        for(it in lastState.annotatedString.spanStyles) {
+            if(!(it.start >= 0 && it.end <= newTextLen)) {
+                break
             }
+
+            validSpans.add(it)
         }
 
         if(validSpans.isEmpty()) {
