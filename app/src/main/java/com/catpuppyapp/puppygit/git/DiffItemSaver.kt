@@ -7,6 +7,7 @@ import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.msg.OneTimeToast
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLTheme
 import com.catpuppyapp.puppygit.syntaxhighlight.hunk.HunkSyntaxHighlighter
@@ -611,6 +612,20 @@ data class PuppyLine(
 
 
                 }
+            }
+
+            // make sure cover whole text
+            val retStyleLastEndIndex = retStylePartList.last().end
+            val lastStringPart = stringPartList.last()
+            val stringPartLastEndIndex = lastStringPart.end
+            if(retStyleLastEndIndex < stringPartLastEndIndex) {
+                retStylePartList.add(
+                    LineStylePart(
+                        start = retStyleLastEndIndex,
+                        end = stringPartLastEndIndex,
+                        style = if(lastStringPart.modified) modifiedBgColorSpanStyle else MyStyleKt.emptySpanStyle
+                    )
+                )
             }
 
             return retStylePartList
