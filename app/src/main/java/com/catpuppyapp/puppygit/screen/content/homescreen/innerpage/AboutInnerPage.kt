@@ -62,16 +62,21 @@ const val automationDocUrl = "$sourceCodeLink/blob/main/automation_doc.md"
 var versionCode: Int = AppModel.getAppVersionCode()
 var versionName: String = AppModel.getAppVersionName()
 
-data class OpenSource(
+private data class OpenSource(
     val projectName:String,
     val projectLink:String,
     val licenseLink:String,
 )
 
-data class Contributor(
+private data class Contributor(
     val name:String,
     val link:String,
     val desc:String,
+)
+
+private data class Link(
+    val title: String,
+    val link: String,
 )
 
 private val openSourceList = listOf(
@@ -104,16 +109,19 @@ fun AboutInnerPage(
     val activityContext = LocalContext.current
     val exitApp = AppModel.exitApp;
 
+    val links = listOf(
+        Link(title = stringResource(R.string.source_code), link = sourceCodeLink),
+        Link(title = stringResource(R.string.discussions), link = discussionLink),
+        Link(title = stringResource(R.string.report_bugs), link = reportBugsLink),
+        Link(title = stringResource(R.string.contact_author), link = authorMailLink),
+        Link(title = "💖"+stringResource(R.string.donate)+"💖", link = donateLink),
+        Link(title = stringResource(R.string.faq), link = faqLink),
+        Link(title = stringResource(R.string.privacy_policy), link = privacyPolicyLink),
+    )
 
-//    val clipboardManager = LocalClipboardManager.current
-
-//    val copy={text:String ->
-//        clipboardManager.setText(AnnotatedString(text))
-//        Msg.requireShow(activityContext.getString(R.string.copied))
-//    }
 
     //back handler block start
-    val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
+    val isBackHandlerEnable = rememberSaveable { mutableStateOf(true) }
     val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(context = activityContext, openDrawer = openDrawer, exitApp= exitApp)
     //注册BackHandler，拦截返回键，实现双击返回和返回上级目录
     BackHandler(enabled = isBackHandlerEnable.value, onBack = {backHandlerOnBack()})
@@ -163,7 +171,7 @@ fun AboutInnerPage(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = stringResource(id = R.string.app_name), fontWeight = FontWeight.ExtraBold)
+                Text(text = stringResource(R.string.app_name), fontWeight = FontWeight.ExtraBold)
 
                 Text(text = "$versionName ($versionCode)", fontSize = 12.sp)
             }
@@ -185,128 +193,21 @@ fun AboutInnerPage(
             }
         }
         Spacer(Modifier.height(10.dp))
-//
-//        Row(
-//            horizontalArrangement = Arrangement.Center,
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            TextButton(
-//                onClick = {
-//                    ActivityUtil.openUrl(appContext, donateLink)
-//                }
-//            ) {
-//                Text(
-//                    text = stringResource(R.string.donate),
-//                    fontStyle = FontStyle.Italic,
-//                )
-//            }
-//        }
 
-//        Spacer(Modifier.height(20.dp))
+        links.forEachBetter {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ClickableText(
+                    text = it.title,
+                    modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                        ActivityUtil.openUrl(activityContext, it.link)
+                    },
+                )
+            }
 
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ClickableText(
-                text = stringResource(R.string.source_code),
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    ActivityUtil.openUrl(activityContext, sourceCodeLink)
-                },
-
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ClickableText(
-                text = stringResource(R.string.discussions),
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    //                    copy(authorMail)
-                    ActivityUtil.openUrl(activityContext, discussionLink)
-                },
-
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ClickableText(
-                text = stringResource(R.string.report_bugs),
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    ActivityUtil.openUrl(activityContext, reportBugsLink)
-                },
-
-            )
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-//            Text(text = stringResource(R.string.contact_author)+":")
-            ClickableText(
-                text = stringResource(R.string.contact_author),
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-//                    copy(authorMail)
-                    ActivityUtil.openUrl(activityContext, authorMailLink)
-                },
-
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-//            Text(text = stringResource(R.string.contact_author)+":")
-            ClickableText(
-                text = "💖"+stringResource(R.string.donate)+"💖",
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-//                    copy(authorMail)
-                    ActivityUtil.openUrl(activityContext, donateLink)
-                },
-
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ClickableText(
-                text = stringResource(R.string.faq),
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    ActivityUtil.openUrl(activityContext, faqLink)
-                },
-
-            )
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ClickableText(
-                text = stringResource(R.string.privacy_policy),
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-//                    copy(authorMail)
-                    ActivityUtil.openUrl(activityContext, privacyPolicyLink)
-                },
-
-            )
+            Spacer(modifier = Modifier.height(20.dp))
         }
 
         MyHorizontalDivider(modifier = Modifier.padding(MyStyleKt.defaultItemPadding))
