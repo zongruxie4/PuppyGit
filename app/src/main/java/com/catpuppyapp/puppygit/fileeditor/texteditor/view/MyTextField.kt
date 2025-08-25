@@ -158,10 +158,19 @@ private fun keepStylesIfPossible(
 
         // try keep styles if possible, will use more cpu and memory, but can reduce text flashing
         val newTextLen = newState.text.length
-        // the `it.end` is exclusive, so can be equals to length
         val validSpans = mutableListOf<AnnotatedString.Range<SpanStyle>>()
         for(it in lastState.annotatedString.spanStyles) {
-            if(!(it.start >= 0 && it.end <= newTextLen)) {
+            // this shouldn't happen
+            if(it.start < 0) {
+                break
+            }
+
+            // this maybe happen
+            // the `it.end` is exclusive, so can be equals to length, but can't greater than
+            if(it.end > newTextLen) {
+                validSpans.add(it.copy(start = it.start, end = newTextLen))
+
+                // already out of range, so break
                 break
             }
 
