@@ -4,10 +4,12 @@
 ---
 1.1.3.8v114 - 20250825:
 - fix editor may lost data when syntax highlighting on
+- sort tag list by commit time
 
 
 
 - 修复语法高亮开启时编辑器可能丢失数据的bug
+- 按提交时间排序tag列表
 
 ---
 1.1.3.7v113 - 20250811:
