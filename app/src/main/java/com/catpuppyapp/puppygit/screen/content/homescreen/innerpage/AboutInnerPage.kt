@@ -5,6 +5,7 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -150,14 +151,8 @@ fun AboutInnerPage(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
-        // App Header Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
-            )
-        ) {
+        // App Icon etc
+        CardContainer {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -216,10 +211,11 @@ fun AboutInnerPage(
                         text = madeBy,
                         style = MaterialTheme.typography.bodyMedium,
                         fontStyle = FontStyle.Italic,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                 }
 
+                // donate link
                 TextButton(
                     onClick = {
                         ActivityUtil.openUrl(activityContext, donateLink.link)
@@ -229,16 +225,16 @@ fun AboutInnerPage(
                         text = donateLink.title,
                         style = MaterialTheme.typography.bodyMedium,
                         fontSize = MyStyleKt.TextSize.medium,
+                        fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
 
-        Spacer(Modifier.height(24.dp))
+        SectionSpacer()
 
-        // Quick Links Section
+        // Links Section
         SectionCard(
             title = stringResource(R.string.url_links),
             icon = Icons.Outlined.Link
@@ -254,7 +250,7 @@ fun AboutInnerPage(
             }
         }
 
-        Spacer(Modifier.height(24.dp))
+        SectionSpacer()
 
         // Open Source Section
         SectionCard(
@@ -273,7 +269,7 @@ fun AboutInnerPage(
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        SectionSpacer()
 
         // Contributors Section
         SectionCard(
@@ -295,19 +291,30 @@ fun AboutInnerPage(
     }
 }
 
+
+@Composable
+private fun CardContainer(
+    content: @Composable () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
+    ) {
+        content()
+    }
+}
+
+
 @Composable
 private fun SectionCard(
     title: String,
     icon: ImageVector,
     content: @Composable () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        )
-    ) {
+    CardContainer {
         Column(
             modifier = Modifier.padding(20.dp)
         ) {
@@ -345,13 +352,12 @@ private fun CardItem(
     line2OnClick: (() -> Unit)? = null,
     onClick: () -> Unit
 ) {
-    Surface(
+    Row(
         modifier = Modifier
             .clickable { onClick() }
             .fillMaxWidth()
             .padding(10.dp)
         ,
-        color = Color.Transparent
     ) {
         Column(
             modifier = Modifier.padding(vertical = 12.dp)
@@ -384,4 +390,9 @@ private fun CardItem(
     if (!isLast) {
         MyHorizontalDivider()
     }
+}
+
+@Composable
+private fun SectionSpacer() {
+    Spacer(Modifier.height(24.dp))
 }
