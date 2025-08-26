@@ -109,6 +109,7 @@ private val contributorList = listOf(
     Contributor(name = "sebastien46", link = "https://github.com/sebastien46", desc = "Monochrome app icon"),
     Contributor(name = "kamilhussen24", link = "https://github.com/kamilhussen24", desc = "Bangla translator"),
     Contributor(name = "OutlinedArc217", link = "https://github.com/OutlinedArc217", desc = "UI improvement"),
+    Contributor(name = "RokeJulianLockhart", link = "https://github.com/RokeJulianLockhart", desc = "UI improvement"),
 )
 
 
