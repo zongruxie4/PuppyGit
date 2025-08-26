@@ -373,11 +373,8 @@ private fun CardItem(
                         text = line2,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = if(line2OnClick == null) {
-                            Modifier
-                        } else MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                            line2OnClick()
-                        }
+                        modifier = if(line2OnClick == null) Modifier
+                            else MyStyleKt.ClickableText.modifierNoPadding.clickable { line2OnClick() }
                     )
                 }
             }
