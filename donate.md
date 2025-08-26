@@ -10,6 +10,8 @@ https://www.patreon.com/c/catpuppyapp
 #### PayPal:
 https://paypal.me/catpuppyapp
 
+#### Ko-fi
+https://ko-fi.com/bandeapart1964
 
 #### wechat
 <img src="image-assets/donate/wechat_rec_money.png" width=300px />
