@@ -594,11 +594,17 @@ fun EditorInnerPage(
         }
     }
 
+    val reloadOnOkBeforeCb = remember { mutableStateOf<(()->Unit)?>(null) }
+    val initReloadDialogWithCallback = { onOkBeforeCb: (()->Unit)? ->
+        reloadOnOkBeforeCb.value = onOkBeforeCb
+        showReloadDialog.value = true
+    }
+
     //重新加载文件确认弹窗
     if(showReloadDialog.value) {
         //未编辑过文件，直接重载
         if(!needAndReadyDoSave()) {
-            showReloadDialog.value=false  //立即关弹窗避免重入
+            showReloadDialog.value = false  //立即关弹窗避免重入
 
             //检查源文件是否被外部修改过，若修改过，创建快照，然后再重载
             val newDto = FileSimpleDto.genByFile(editorPageShowingFilePath.value.toFuckSafFile(activityContext))
@@ -623,17 +629,28 @@ fun EditorInnerPage(
                 }
             }
 
+            reloadOnOkBeforeCb.value?.invoke()
+            reloadOnOkBeforeCb.value = null
+
             //重载文件
             forceReloadFile()
         }else {
             // 编辑过文件，弹窗询问是否确认重载
             ConfirmDialog(
-                title = stringResource(id = R.string.reload_file),
-                text = stringResource(id = R.string.will_reload_file_are_u_sure),
+                title = stringResource(R.string.reload_file),
+                text = stringResource(R.string.will_reload_file_are_u_sure),
                 okTextColor = MyStyleKt.TextColor.danger(),
-                onCancel = { showReloadDialog.value=false }
+                onCancel = {
+                    showReloadDialog.value = false
+
+                    reloadOnOkBeforeCb.value = null
+                }
             ) {
-                showReloadDialog.value=false
+                showReloadDialog.value = false
+
+                reloadOnOkBeforeCb.value?.invoke()
+                reloadOnOkBeforeCb.value = null
+
                 forceReloadFile()
             }
         }
@@ -917,9 +934,9 @@ fun EditorInnerPage(
             showSelectEncodingDialog.value = false
 
             if(newCharset != editorCharset.value) {
-                editorCharset.value = newCharset
-
-                showReloadDialog.value = true
+                initReloadDialogWithCallback {
+                    editorCharset.value = newCharset
+                }
             }
         }
     }
@@ -1262,6 +1279,8 @@ fun EditorInnerPage(
                 sb.append(activityContext.getString(R.string.file_size)+": "+fileSize).append(suffix)
                 sb.append(activityContext.getString(R.string.last_modified)+": "+lastModifiedTimeStr).append(suffix)
             }
+
+            sb.append(activityContext.getString(R.string.encoding)+": "+editorCharset.value).append(suffix)
 
             detailsStr.value = sb.removeSuffix(suffix).toString()
             showDetailsDialog.value = true
