@@ -5,6 +5,7 @@ import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.EncodingUtil
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.getNowInSecFormatted
@@ -50,7 +51,7 @@ object SnapshotUtil:SnapshotCreator {
     override fun createSnapshotByContentAndGetResult(
         srcFileName:String,
         fileContent:String?,
-        editorState: TextEditorState?,
+        editorState: TextEditorState,
         trueUseContentFalseUseEditorState: Boolean,
         flag:SnapshotFileFlag
     ): Ret<Pair<String, String>?> {
@@ -65,9 +66,13 @@ object SnapshotUtil:SnapshotCreator {
                 val (snapshotFileName, snapFileFullPath, snapFile) = getSnapshotFileNameAndFullPathAndFile(srcFileName, flag)
                 MyLog.d(TAG, "#$funName: will save snapFile to: '$snapFileFullPath'")
                 val snapRet = if(trueUseContentFalseUseEditorState) {
-                    FsUtils.saveFileAndGetResult(fileFullPath = snapFileFullPath, text = fileContent!!)
+                    FsUtils.saveFileAndGetResult(
+                        fileFullPath = snapFileFullPath,
+                        text = fileContent!!,
+                        charset = EncodingUtil.resolveCharset(editorState.codeEditor?.editorCharset?.value)
+                    )
                 } else {
-                    editorState!!.dumpLinesAndGetRet(File(snapFileFullPath).outputStream())
+                    editorState.dumpLinesAndGetRet(File(snapFileFullPath).outputStream())
                 }
 
                 if(snapRet.hasError()) {
@@ -133,7 +138,7 @@ object SnapshotUtil:SnapshotCreator {
 
     fun createSnapshotByContentWithRandomFileName(
         fileContent: String?,
-        editorState: TextEditorState?,
+        editorState: TextEditorState,
         trueUseContentFalseUseEditorState: Boolean,
         flag:SnapshotFileFlag
     ): Ret<Pair<String, String>?> {

@@ -17,7 +17,7 @@ interface SnapshotCreator{
     fun createSnapshotByContentAndGetResult(
         srcFileName: String,
         fileContent: String?,
-        editorState: TextEditorState?,
+        editorState: TextEditorState,
         trueUseContentFalseUseEditorState: Boolean,
         flag: SnapshotFileFlag
     ): Ret<Pair<String, String>?>

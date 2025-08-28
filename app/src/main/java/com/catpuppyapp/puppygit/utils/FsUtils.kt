@@ -427,7 +427,7 @@ object FsUtils {
         }
     }
 
-    fun saveFile(fileFullPath:String, text:String, charset:Charset=Charsets.UTF_8) {
+    fun saveFile(fileFullPath:String, text:String, charset:Charset) {
         val fos = FileOutputStream(fileFullPath)
         val bw = fos.bufferedWriter(charset)
         //                                bw.write(editorPageShowingFileText.value)
@@ -439,9 +439,9 @@ object FsUtils {
 
     //操作成功返回成功，否则返回失败
     //这里我用Unit?代表此函数不会返回有意义的值，只会返回null
-    fun saveFileAndGetResult(fileFullPath:String, text:String):Ret<Unit?> {
+    fun saveFileAndGetResult(fileFullPath:String, text:String, charset:Charset):Ret<Unit?> {
         try {
-            saveFile(fileFullPath, text)
+            saveFile(fileFullPath, text, charset)
 //            val retFileName = if(fileName.isEmpty()) getFileNameFromCanonicalPath(fileFullPath) else fileName
             return Ret.createSuccess(null)
         }catch (e:Exception) {
@@ -645,7 +645,7 @@ object FsUtils {
     fun simpleSafeFastSave(
         context: Context,
         content: String?,
-        editorState: TextEditorState?,
+        editorState: TextEditorState,
         trueUseContentFalseUseEditorState: Boolean,
         targetFilePath: FilePath,
         requireBackupContent: Boolean,
@@ -703,7 +703,7 @@ object FsUtils {
 
             //将内容写入到目标文件
             if(trueUseContentFalseUseEditorState) {
-                content!!.byteInputStream().use { input ->
+                content!!.byteInputStream(EncodingUtil.resolveCharset(editorState.codeEditor?.editorCharset?.value)).use { input ->
                     targetFile.outputStream().use { output ->
                         input.copyTo(output)
                     }
