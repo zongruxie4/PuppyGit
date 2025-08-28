@@ -450,9 +450,8 @@ object FsUtils {
         }
     }
 
-    fun readFile(fileFullPath: String, charset:Charset=Charsets.UTF_8):String {
-        val fis = FileInputStream(fileFullPath)
-        val br = fis.bufferedReader(charset)
+    fun readFile(fileFullPath: String, charset:Charset? = null):String {
+        val br = FileInputStream(fileFullPath).bufferedReader(charset ?: EncodingUtil.detectEncoding(FileInputStream(fileFullPath)))
 
         br.use {
             return it.readText()

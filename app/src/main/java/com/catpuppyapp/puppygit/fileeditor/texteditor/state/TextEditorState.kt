@@ -20,6 +20,7 @@ import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.scopeInvalid
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.EditCache
+import com.catpuppyapp.puppygit.utils.EncodingUtil
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -1874,7 +1875,7 @@ class TextEditorState(
     fun dumpLines(output: OutputStream, lineBreak:String=lb) {
         val fieldsSize = fields.size
         var count = 0
-        output.bufferedWriter().use { bw ->
+        output.bufferedWriter(EncodingUtil.resolveCharset(codeEditor?.editorCharset?.value)).use { bw ->
             for(f in fields) {
                 if(++count != fieldsSize) {
                     bw.write("${f.value.text}$lineBreak")
