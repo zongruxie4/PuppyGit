@@ -35,6 +35,7 @@ import java.io.FileWriter
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import kotlin.coroutines.cancellation.CancellationException
 
 private const val TAG = "FsUtils"
@@ -1288,7 +1289,8 @@ object FsUtils {
         startLineNum: Int,
         newLines: List<String>,
         trueInsertFalseReplaceNullDelete:Boolean?,
-        settings: AppSettings
+        settings: AppSettings,
+        charset: Charset = StandardCharsets.UTF_8
     ) {
         if(trueInsertFalseReplaceNullDelete != null && newLines.isEmpty()) {
             return
@@ -1314,8 +1316,8 @@ object FsUtils {
         val tempFile = FuckSafFile.fromFile(createTempFile("${TempFileFlag.FROM_DIFF_SCREEN_REPLACE_LINES_TO_FILE.flag}-${file.name}"))
         var found = false
 
-        file.bufferedReader().use { reader ->
-            tempFile.bufferedWriter().use { writer ->
+        file.bufferedReader(charset).use { reader ->
+            tempFile.bufferedWriter(charset).use { writer ->
                 var currentLine = 1
 
                 while(true) {
@@ -1397,7 +1399,11 @@ object FsUtils {
      *  else will return an empty list. set it to true, if you expect this function has same behavior with `String.lines()`
      *  (如果为true，文件为空时返回只有一个空字符串元素的list，否则返回空list。如果期望此函数和`String.lines()`行为一致（空字符串返回元素1的list），此值应传true。)
      */
-    fun readLinesFromFile(file: FuckSafFile, addNewLineIfFileEmpty:Boolean = true): List<String> {
+    fun readLinesFromFile(
+        file: FuckSafFile,
+        charset: Charset,
+        addNewLineIfFileEmpty:Boolean = true,
+    ): List<String> {
 //        val lines = ArrayList<String>(30)  //不确定用户打开的文件到底多少行啊，算了，用默认吧
         //readLines() api 说不能用于 huge files?我看源代码好像也是用readLine一行行读的，我自己写好像差不多，不过不会创建迭代器之类的，可能稍微快一点点，但应该也不能用于huge files吧？大概
 //        File(filePath).bufferedReader().readLines()
@@ -1410,7 +1416,7 @@ object FsUtils {
         val arrBuf = CharArray(4096)
         val aline = StringBuilder(100)
         var lastChar:Char? = null
-        file.bufferedReader().use { reader ->
+        file.bufferedReader(charset).use { reader ->
             while (true) {
                 val readSize = reader.read(arrBuf)
                 if(readSize == -1) {
@@ -1515,11 +1521,15 @@ object FsUtils {
         }
     }
 
-    fun readShortContent(file: FuckSafFile, contentCharsLimit:Int = 80):String {
+    fun readShortContent(
+        file: FuckSafFile,
+        charset: Charset,
+        contentCharsLimit:Int = 80
+    ):String {
         return try {
             val sb = StringBuilder()
 
-            file.bufferedReader().use { br ->
+            file.bufferedReader(charset).use { br ->
                 while (true) {
                     if(sb.length >= contentCharsLimit) {
                         break

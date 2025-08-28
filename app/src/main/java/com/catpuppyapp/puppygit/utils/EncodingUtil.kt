@@ -127,4 +127,15 @@ object EncodingUtil {
 
         return Charset.forName(makeSureUseASupportedCharset(encoding))
     }
+
+    fun resolveCharset(name:String?): Charset {
+        return try {
+            Charset.forName(makeSureUseASupportedCharset(name))
+        }catch (e: Exception) {
+            MyLog.e(TAG, "#resolveCharset err, name=$name, err=${e.localizedMessage}")
+            e.printStackTrace()
+            StandardCharsets.UTF_8
+        }
+    }
+
 }

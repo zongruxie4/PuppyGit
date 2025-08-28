@@ -34,6 +34,7 @@ import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import com.catpuppyapp.puppygit.utils.parseLongOrDefault
 import com.catpuppyapp.puppygit.utils.tabToSpaces
 import io.github.rosemoe.sora.text.CharPosition
+import io.ktor.utils.io.charsets.Charset
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -2768,7 +2769,7 @@ class TextEditorState(
     companion object {
         fun linesToFields(lines: List<String>) = createInitTextFieldStates(lines)
 
-        fun fuckSafFileToFields(file: FuckSafFile) = linesToFields(FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true))
+        fun fuckSafFileToFields(file: FuckSafFile, charset: Charset) = linesToFields(FsUtils.readLinesFromFile(file, charset, addNewLineIfFileEmpty = true))
 
         fun textToFields(text: String) = linesToFields(text.lines())
 

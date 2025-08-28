@@ -64,6 +64,10 @@ class MyCodeEditor(
     // code editor will bind this at init block
     val undoStack: CustomStateSaveable<UndoStack>,
     val plScope: MutableState<PLScope>,
+
+    // file encoding used charset, e.g. utf8
+    // note: this is not related to syntax highlighting
+    val editorCharset: MutableState<String?>,
 ) {
     val appContext: Context = AppModel.realAppContext
 
@@ -180,6 +184,8 @@ class MyCodeEditor(
         if(force.not() && newFile.path.ioPath == file.path.ioPath) {
             return
         }
+
+        editorCharset.value = null
 
         resetPlScope()
         resetFile(newFile)

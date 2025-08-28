@@ -92,6 +92,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.EncodingUtil
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -116,6 +117,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
+import io.ktor.utils.io.charsets.name
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -128,6 +130,8 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 @Composable
 fun EditorInnerPage(
     stateKeyTag:String,
+
+    editorCharset: MutableState<String?>,
 
     lastSavedFieldsId: MutableState<String>,
     codeEditor: CustomStateSaveable<MyCodeEditor>,
@@ -1321,7 +1325,8 @@ fun EditorInnerPage(
                                 val file = FuckSafFile(activityContext, FilePath(k))
                                 //若文件名为空，说明失去读写权限了，不添加到列表
                                 if(file.name.isNotEmpty()) {
-                                    val fileShortContent = FsUtils.readShortContent(file)
+                                    // auto detect encoding when reading content
+                                    val fileShortContent = FsUtils.readShortContent(file, EncodingUtil.detectEncoding(file.inputStream()))
 
                                     //如果从外部app请求本app打开文件，然后对方app没允许获取永久uri权限，那么下次重启本app后，这个文件名有可能会变成空白，除非请求打开的路径可以解析出相应的绝对路径，那样本app就会使用绝对路径访问文件，就是 "/storage/emulate/0" 那种路径，这时文件名就不会有错了，除非用户没授权访问外部存储
                                     // Pair(fileName, FilePath对象)
@@ -1878,6 +1883,7 @@ fun EditorInnerPage(
 
                 doActWithLockIfFree(loadLock, "EditorInnerPage#Init#${needRefreshEditorPage.value}#${editorPageShowingFilePath.value.ioPath}") {
                     doInit(
+                        editorCharset = editorCharset,
                         lastSavedFieldsId = lastSavedFieldsId,
                         codeEditor = codeEditor.value,
                         resetLastCursorAtColumn = resetLastCursorAtColumn,
@@ -1947,6 +1953,7 @@ fun EditorInnerPage(
 
 
 private suspend fun doInit(
+    editorCharset: MutableState<String?>,
     lastSavedFieldsId: MutableState<String>,
     codeEditor: MyCodeEditor,
     resetLastCursorAtColumn: ()->Unit,
@@ -2127,10 +2134,17 @@ private suspend fun doInit(
             if(soraEditorComposeTestPassed) {
 //                codeEditorState!!.content.value = Content(file.bufferedReader().use { it.readText() })
             }else {
+                // detect charset if need
+                val charset = if (editorCharset.value == null) {
+                    EncodingUtil.detectEncoding(file.inputStream()).also { editorCharset.value = it.name() }
+                } else {
+                    EncodingUtil.resolveCharset(editorCharset.value)
+                }
+
                 val newState = TextEditorState(
                     codeEditor = codeEditor,
 
-                    fields = TextEditorState.fuckSafFileToFields(file),
+                    fields = TextEditorState.fuckSafFileToFields(file, charset),
                     isContentEdited = isEdited,
                     editorPageIsContentSnapshoted = isContentSnapshoted,
                     isMultipleSelectionMode = false,

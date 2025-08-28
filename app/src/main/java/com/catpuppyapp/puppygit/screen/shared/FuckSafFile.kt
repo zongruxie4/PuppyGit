@@ -8,6 +8,7 @@ import com.catpuppyapp.puppygit.etc.PathType
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import io.ktor.utils.io.charsets.Charset
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import java.io.BufferedReader
@@ -109,12 +110,12 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
         return if(isSaf) context!!.contentResolver.openOutputStream(safUri!!)!! else file!!.outputStream()
     }
 
-    fun bufferedReader():BufferedReader {
-        return inputStream().bufferedReader()
+    fun bufferedReader(charset: Charset):BufferedReader {
+        return inputStream().bufferedReader(charset)
     }
 
-    fun bufferedWriter(): BufferedWriter {
-        return outputStream().bufferedWriter()
+    fun bufferedWriter(charset: Charset): BufferedWriter {
+        return outputStream().bufferedWriter(charset)
     }
 
     fun exists():Boolean {
@@ -204,7 +205,7 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
     // due to the saf apis are unreliable, so need a simple test to check the file is actually readable and exist or not
     fun isActuallyReadable(): Boolean {
         return try {
-            bufferedReader().use { it.read() }
+            inputStream().use { it.read() }
             true
         }catch(_: Exception) {
             false

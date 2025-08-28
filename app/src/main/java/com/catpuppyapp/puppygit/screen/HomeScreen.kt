@@ -633,12 +633,15 @@ fun HomeScreen(
     val editorLoadLock = mutableCustomBoxOf(stateKeyTag, "editorLoadLock") { Mutex() }.value
 
 
+    // null to auto detect file encoding
+    val editorCharset = rememberSaveable { mutableStateOf<String?>(null) }
     val editorPlScope = rememberSaveable { mutableStateOf(PLScope.AUTO) }
     val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
         MyCodeEditor(
             editorState = editorPageTextEditorState,
             undoStack = editorUndoStack,
-            plScope = editorPlScope
+            plScope = editorPlScope,
+            editorCharset = editorCharset,
         )
     }.apply {
         // save it for release when activity destroy
@@ -1477,6 +1480,8 @@ fun HomeScreen(
                 EditorInnerPage(
 //                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
                     stateKeyTag = stateKeyTag,
+
+                    editorCharset = editorCharset,
 
                     lastSavedFieldsId = lastSavedFieldsId,
                     codeEditor = codeEditor,

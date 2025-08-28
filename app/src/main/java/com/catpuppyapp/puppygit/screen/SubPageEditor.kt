@@ -142,12 +142,15 @@ fun SubPageEditor(
 //    val editorUndoStack = remember { SharedState.subEditorUndoStack }
     val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack("") }
 
+    // null to auto detect file encoding
+    val editorCharset = rememberSaveable { mutableStateOf<String?>(null) }
     val editorPlScope = rememberSaveable { mutableStateOf(PLScope.AUTO) }
     val codeEditor = mutableCustomStateOf(stateKeyTag, "codeEditor") {
         MyCodeEditor(
             editorState = editorPageTextEditorState,
             undoStack = editorUndoStack,
-            plScope = editorPlScope
+            plScope = editorPlScope,
+            editorCharset = editorCharset,
         )
     }
 
@@ -519,6 +522,8 @@ fun SubPageEditor(
         EditorInnerPage(
 //            stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
             stateKeyTag = stateKeyTag,
+
+            editorCharset = editorCharset,
 
             lastSavedFieldsId = lastSavedFieldsId,
 
