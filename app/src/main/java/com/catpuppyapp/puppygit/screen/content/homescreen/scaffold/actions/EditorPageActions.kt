@@ -365,6 +365,17 @@ fun EditorPageActions(
             DropdownMenuItem(
                 enabled = enableMenuItem,
 
+                text = { Text(stringResource(R.string.convert_encoding)) },
+                onClick = {
+                    editorPageRequest.value = PageRequest.convertEncoding
+
+                    closeMenu()
+                }
+            )
+
+            DropdownMenuItem(
+                enabled = enableMenuItem,
+
                 text = { Text(stringResource(R.string.file_history)) },
                 onClick = {
                     editorPageRequest.value = PageRequest.requireGoToFileHistory

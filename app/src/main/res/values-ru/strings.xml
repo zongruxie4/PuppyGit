@@ -1295,6 +1295,7 @@
     <string name="url_links">Ссылки</string>
     <string name="contributors">Участники</string>
     <string name="encoding">Encoding</string>
+    <string name="convert_encoding">Convert Encoding</string>
 
 
 </resources>

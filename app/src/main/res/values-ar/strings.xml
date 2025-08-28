@@ -1192,5 +1192,6 @@
     <string name="url_links">روابط</string>
     <string name="contributors">المساهمون</string>
     <string name="encoding">Encoding</string>
+    <string name="convert_encoding">Convert Encoding</string>
 
 </resources>

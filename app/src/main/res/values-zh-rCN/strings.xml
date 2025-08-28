@@ -1274,6 +1274,7 @@
     <string name="url_links">链接</string>
     <string name="contributors">贡献者</string>
     <string name="encoding">Encoding</string>
+    <string name="convert_encoding">Convert Encoding</string>
 
 
 </resources>

@@ -926,6 +926,12 @@ fun EditorInnerPage(
     }
 
     val showSelectEncodingDialog = rememberSaveable { mutableStateOf(false) }
+    val isConvertEncoding = rememberSaveable { mutableStateOf(false) }
+    val initSelectEncodingDialog = { convert: Boolean ->
+        isConvertEncoding.value = convert
+
+        showSelectEncodingDialog.value = true
+    }
     if(showSelectEncodingDialog.value) {
         SelectEncodingDialog(
             currentCharset = editorCharset.value,
@@ -934,8 +940,17 @@ fun EditorInnerPage(
             showSelectEncodingDialog.value = false
 
             if(newCharset != editorCharset.value) {
-                initReloadDialogWithCallback {
+                if(isConvertEncoding.value) {  // convert encoding when write content to file
                     editorCharset.value = newCharset
+
+                    // for show save button
+                    codeEditor.value.doActWithLatestEditorStateInCoroutine("#copyWithNewFieldsId") {
+                        it.copyWithNewFieldsId()
+                    }
+                }else {  // use another encoding read the file
+                    initReloadDialogWithCallback {
+                        editorCharset.value = newCharset
+                    }
                 }
             }
         }
@@ -971,7 +986,14 @@ fun EditorInnerPage(
 
     if(requestFromParent.value == PageRequest.showSelectEncodingDialog) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            showSelectEncodingDialog.value = true
+            initSelectEncodingDialog(false)
+        }
+    }
+
+
+    if(requestFromParent.value == PageRequest.convertEncoding) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            initSelectEncodingDialog(true)
         }
     }
 

@@ -2767,6 +2767,16 @@ class TextEditorState(
         selectField(targetIndex, provideTextFieldValue = textFieldValue)
     }
 
+    suspend fun copyWithNewFieldsId() {
+        lock.withLock {
+            //更新状态变量
+            isContentEdited?.value=true
+            editorPageIsContentSnapshoted?.value=false
+
+            onChanged(copy(fieldsId = newId()), null, false, this, null)
+        }
+    }
+
     companion object {
         fun linesToFields(lines: List<String>) = createInitTextFieldStates(lines)
 

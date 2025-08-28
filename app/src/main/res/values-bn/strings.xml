@@ -1267,6 +1267,7 @@
     <string name="url_links">লিংকসমূহ</string>
     <string name="contributors">অবদানকারীরা</string>
     <string name="encoding">Encoding</string>
+    <string name="convert_encoding">Convert Encoding</string>
 
 
 </resources>
