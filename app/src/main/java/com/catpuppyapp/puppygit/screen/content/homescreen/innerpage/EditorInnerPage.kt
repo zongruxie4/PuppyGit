@@ -121,6 +121,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
+import java.io.FileInputStream
 
 private const val TAG = "EditorInnerPage"
 
@@ -272,6 +273,8 @@ fun EditorInnerPage(
 
 //    val editorPageFileSavedSuccess = stringResource(R.string.file_saved)
     val unknownErrStrRes = stringResource(R.string.unknown_err)
+
+    val curPreviewFileUsedCharset = rememberSaveable { mutableStateOf<String?>(null) }
 
     // lastCursorAtColumn block start
     // save last cursor at column when navigate line with keyboard Down/Up, will ignore less value than current, and will reset when open file
@@ -851,7 +854,9 @@ fun EditorInnerPage(
         }
 
         if(needRefresh) {
-            mdText.value = FsUtils.readFile(previewPath)
+            val encoding = EncodingUtil.detectEncoding(FileInputStream(previewPath))
+            curPreviewFileUsedCharset.value = encoding.name()
+            mdText.value = FsUtils.readFile(previewPath, encoding)
             updatePreviewDto(previewPath)
         }
 
@@ -1095,14 +1100,17 @@ fun EditorInnerPage(
                 previewNavStack.previewingPath = pathWillPreview
                 updatePreviewPath(pathWillPreview)
                 basePath.value = FsUtils.getParentPath(pathWillPreview)
-                // 取出当前文件内容，may take time
-//                mdText.value = editorPageTextEditorState.value.getAllText()
                 //如果要预览的路径和当前正在编辑的文件路径一样，直接使用内存中的数据；否则从文件读取
-                mdText.value = if(pathWillPreview == editorPageShowingFilePath) editorPageTextEditorState.value.getAllText() else FsUtils.readFile(pathWillPreview)
+                mdText.value = if(pathWillPreview == editorPageShowingFilePath) {
+                    editorPageTextEditorState.value.getAllText()
+                } else {
+                    val encoding = EncodingUtil.detectEncoding(FileInputStream(pathWillPreview))
+                    curPreviewFileUsedCharset.value = encoding.name()
+                    FsUtils.readFile(pathWillPreview, encoding)
+                }
 
                 //每次更新mdText后，都更新下dto，用来快速检测文件是否改变
                 updatePreviewDto(pathWillPreview)
-//                mdText.value = FsUtils.readFile(path)
                 //开启预览模式
                 isPreviewModeOn.value = true
 
@@ -1301,7 +1309,7 @@ fun EditorInnerPage(
                 sb.append(activityContext.getString(R.string.last_modified)+": "+lastModifiedTimeStr).append(suffix)
             }
 
-            sb.append(activityContext.getString(R.string.encoding)+": "+editorCharset.value).append(suffix)
+            sb.append(activityContext.getString(R.string.encoding)+": "+(if(isPreviewModeOn.value) curPreviewFileUsedCharset.value else editorCharset.value)).append(suffix)
 
             detailsStr.value = sb.removeSuffix(suffix).toString()
             showDetailsDialog.value = true
