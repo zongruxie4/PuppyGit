@@ -1273,8 +1273,8 @@
     <string name="import_ssl_certs_intro_text">只需将您的证书复制粘贴到 \'AppData://cert-user\'，然后重启应用程序即可。</string>
     <string name="url_links">链接</string>
     <string name="contributors">贡献者</string>
-    <string name="encoding">Encoding</string>
-    <string name="convert_encoding">Convert Encoding</string>
+    <string name="encoding">编码</string>
+    <string name="convert_encoding">转换编码</string>
 
 
 </resources>
