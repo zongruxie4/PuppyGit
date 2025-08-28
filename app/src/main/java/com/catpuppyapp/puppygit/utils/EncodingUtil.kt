@@ -3,8 +3,8 @@ package com.catpuppyapp.puppygit.utils
 import org.mozilla.universalchardet.Constants
 import org.mozilla.universalchardet.UniversalDetector
 import java.io.InputStream
+import java.io.OutputStream
 import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 
 
 /**
@@ -139,6 +139,32 @@ object EncodingUtil {
             e.printStackTrace()
             defaultCharset
         }
+    }
+
+    /**
+     * add bom to output stream if need, "BOM" is abbreviation of "Byte order mark"
+     *
+     * see: https://en.wikipedia.org/wiki/Byte_order_mark#Byte-order_marks_by_encoding
+     */
+    fun addBomIfNeed(outputStream: OutputStream, charsetName: String) {
+        if(charsetName == Constants.CHARSET_UTF_16LE) {
+            outputStream.write(0xFF)
+            outputStream.write(0xFE)
+        }else if(charsetName == Constants.CHARSET_UTF_32LE) {
+            outputStream.write(0xFF)
+            outputStream.write(0xFE)
+            outputStream.write(0x00)
+            outputStream.write(0x00)
+        }else if(charsetName == Constants.CHARSET_UTF_16BE) {
+            outputStream.write(0xFE)
+            outputStream.write(0xFF)
+        }else if(charsetName == Constants.CHARSET_UTF_32BE) {
+            outputStream.write(0x00)
+            outputStream.write(0x00)
+            outputStream.write(0xFE)
+            outputStream.write(0xFF)
+        }
+
     }
 
 }
