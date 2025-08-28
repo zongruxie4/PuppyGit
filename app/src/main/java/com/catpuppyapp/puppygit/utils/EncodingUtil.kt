@@ -61,11 +61,12 @@ object EncodingUtil {
         Constants.CHARSET_WINDOWS_1255,
     )
 
-    val defaultCharset = Constants.CHARSET_UTF_8
+    val defaultCharsetName:String = Constants.CHARSET_UTF_8
+    val defaultCharset: Charset = Charset.forName(defaultCharsetName)
 
     private fun makeSureUseASupportedCharset(originCharset: String?): String {
         if(originCharset == null) {
-            return defaultCharset
+            return defaultCharsetName
         }
 
         // java doesn't support this, use gbk instead, gbk included gb2312, so should be ok
@@ -79,14 +80,14 @@ object EncodingUtil {
         if(originCharset == Constants.CHARSET_X_ISO_10646_UCS_4_3412
             || originCharset == Constants.CHARSET_X_ISO_10646_UCS_4_2143
         ) {
-            return defaultCharset
+            return defaultCharsetName
         }
 
         if(supportedCharsetList.contains(originCharset)) {
             return originCharset
         }
 
-        return defaultCharset
+        return defaultCharsetName
     }
 
 
@@ -94,9 +95,9 @@ object EncodingUtil {
         return try {
             detectEncodingNoCatch(inputStream)
         }catch (e: Exception) {
-            MyLog.e(TAG, "#detectEncoding() err, will use '$defaultCharset', err msg=${e.localizedMessage}")
+            MyLog.e(TAG, "#detectEncoding() err, will use '$defaultCharsetName', err msg=${e.localizedMessage}")
             e.printStackTrace()
-            StandardCharsets.UTF_8
+            defaultCharset
         }
     }
 
@@ -136,7 +137,7 @@ object EncodingUtil {
         }catch (e: Exception) {
             MyLog.e(TAG, "#resolveCharset err, name=$name, err=${e.localizedMessage}")
             e.printStackTrace()
-            StandardCharsets.UTF_8
+            defaultCharset
         }
     }
 

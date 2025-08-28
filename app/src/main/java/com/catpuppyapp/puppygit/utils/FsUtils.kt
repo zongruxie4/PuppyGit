@@ -1526,13 +1526,13 @@ object FsUtils {
 
     fun readShortContent(
         file: FuckSafFile,
-        charset: Charset,
+        charset: Charset? = null,
         contentCharsLimit:Int = 80
     ):String {
         return try {
             val sb = StringBuilder()
 
-            file.bufferedReader(charset).use { br ->
+            file.bufferedReader(charset ?: file.detectEncoding()).use { br ->
                 while (true) {
                     if(sb.length >= contentCharsLimit) {
                         break

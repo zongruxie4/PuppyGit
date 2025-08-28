@@ -1392,7 +1392,7 @@ fun EditorInnerPage(
                                 //若文件名为空，说明失去读写权限了，不添加到列表
                                 if(file.name.isNotEmpty()) {
                                     // auto detect encoding when reading content
-                                    val fileShortContent = FsUtils.readShortContent(file, EncodingUtil.detectEncoding(file.inputStream()))
+                                    val fileShortContent = FsUtils.readShortContent(file)
 
                                     //如果从外部app请求本app打开文件，然后对方app没允许获取永久uri权限，那么下次重启本app后，这个文件名有可能会变成空白，除非请求打开的路径可以解析出相应的绝对路径，那样本app就会使用绝对路径访问文件，就是 "/storage/emulate/0" 那种路径，这时文件名就不会有错了，除非用户没授权访问外部存储
                                     // Pair(fileName, FilePath对象)

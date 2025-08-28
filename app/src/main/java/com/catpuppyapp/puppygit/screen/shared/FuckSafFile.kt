@@ -5,6 +5,8 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.catpuppyapp.puppygit.compose.FileChangeListenerState
 import com.catpuppyapp.puppygit.etc.PathType
+import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.EncodingUtil
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -209,6 +211,18 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
             true
         }catch(_: Exception) {
             false
+        }
+    }
+
+    fun detectEncoding(): Charset {
+        return try {
+            EncodingUtil.detectEncoding(inputStream())
+        }catch (e: Exception) {
+            if(AppModel.devModeOn) {
+                MyLog.e(TAG, "$TAG#detectEncoding err: ${e.localizedMessage}")
+            }
+
+            EncodingUtil.defaultCharset
         }
     }
 
