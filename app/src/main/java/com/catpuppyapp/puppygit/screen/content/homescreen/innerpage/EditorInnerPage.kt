@@ -41,11 +41,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
-import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
@@ -91,6 +88,8 @@ import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.screen.shared.doActIfIsExpectLifeCycle
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.EncodingUtil
@@ -118,7 +117,6 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
-import io.ktor.utils.io.charsets.name
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -932,6 +930,7 @@ fun EditorInnerPage(
 
         showSelectEncodingDialog.value = true
     }
+
     if(showSelectEncodingDialog.value) {
         SelectEncodingDialog(
             currentCharset = editorCharset.value,
