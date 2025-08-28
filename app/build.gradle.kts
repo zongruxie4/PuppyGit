@@ -131,6 +131,10 @@ android {
 dependencies {
     //TODO move dependency versions to libs.versions.toml file
 
+
+    // file encoding detector
+    implementation("com.github.albfernandez:juniversalchardet:2.5.0")
+
     // start: sora editor
 //    implementation(platform("io.github.Rosemoe.sora-editor:bom:0.23.6"))
 //    implementation("io.github.Rosemoe.sora-editor:editor")
