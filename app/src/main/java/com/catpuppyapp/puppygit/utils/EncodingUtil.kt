@@ -51,7 +51,9 @@ object EncodingUtil {
         Constants.CHARSET_UTF_16LE,
         Constants.CHARSET_UTF_32BE,
         Constants.CHARSET_UTF_32LE,
-        Constants.CHARSET_US_ASCII,
+
+        // utf8 fully covered ASCII, so no need this encoding
+//        Constants.CHARSET_US_ASCII,
 
         Constants.CHARSET_WINDOWS_1251,
         Constants.CHARSET_WINDOWS_1252,
