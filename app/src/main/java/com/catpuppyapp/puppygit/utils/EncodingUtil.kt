@@ -146,23 +146,50 @@ object EncodingUtil {
      *
      * see: https://en.wikipedia.org/wiki/Byte_order_mark#Byte-order_marks_by_encoding
      */
-    fun addBomIfNeed(outputStream: OutputStream, charsetName: String) {
+    fun addBomIfNeed(inputStream: InputStream?, outputStream: OutputStream, charsetName: String) {
+        val buf = ByteArray(4)
+        val nBytes = if(inputStream != null) IOUtil.readBytes(inputStream, buf) else 0
+
         if(charsetName == Constants.CHARSET_UTF_16LE) {
-            outputStream.write(0xFF)
-            outputStream.write(0xFE)
+            if(nBytes <= 0
+                || buf.getOrNull(0)?.toInt() != 0xFF
+                || buf.getOrNull(1)?.toInt() != 0xFE
+            ) {
+                outputStream.write(0xFF)
+                outputStream.write(0xFE)
+            }
         }else if(charsetName == Constants.CHARSET_UTF_32LE) {
-            outputStream.write(0xFF)
-            outputStream.write(0xFE)
-            outputStream.write(0x00)
-            outputStream.write(0x00)
+            if(nBytes <= 0
+                || buf.getOrNull(0)?.toInt() != 0xFF
+                || buf.getOrNull(1)?.toInt() != 0xFE
+                || buf.getOrNull(2)?.toInt() != 0x00
+                || buf.getOrNull(3)?.toInt() != 0x00
+            ) {
+                outputStream.write(0xFF)
+                outputStream.write(0xFE)
+                outputStream.write(0x00)
+                outputStream.write(0x00)
+            }
         }else if(charsetName == Constants.CHARSET_UTF_16BE) {
-            outputStream.write(0xFE)
-            outputStream.write(0xFF)
+            if(nBytes <= 0
+                || buf.getOrNull(0)?.toInt() != 0xFE
+                || buf.getOrNull(1)?.toInt() != 0xFF
+            ) {
+                outputStream.write(0xFE)
+                outputStream.write(0xFF)
+            }
         }else if(charsetName == Constants.CHARSET_UTF_32BE) {
-            outputStream.write(0x00)
-            outputStream.write(0x00)
-            outputStream.write(0xFE)
-            outputStream.write(0xFF)
+            if(nBytes <= 0
+                || buf.getOrNull(0)?.toInt() != 0x00
+                || buf.getOrNull(1)?.toInt() != 0x00
+                || buf.getOrNull(2)?.toInt() != 0xFE
+                || buf.getOrNull(3)?.toInt() != 0xFF
+            ) {
+                outputStream.write(0x00)
+                outputStream.write(0x00)
+                outputStream.write(0xFE)
+                outputStream.write(0xFF)
+            }
         }
 
     }
