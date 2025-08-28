@@ -1266,6 +1266,7 @@
     <string name="import_ssl_certs_intro_text">আপনার সার্টিফিকেটগুলো শুধু \'AppData://cert-user\' এ কপি-পেস্ট করুন, তারপর অ্যাপটি পুনরায় চালু করুন।</string>
     <string name="url_links">লিংকসমূহ</string>
     <string name="contributors">অবদানকারীরা</string>
+    <string name="encoding">Encoding</string>
 
 
 </resources>

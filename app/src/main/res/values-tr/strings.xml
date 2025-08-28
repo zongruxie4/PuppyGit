@@ -1201,5 +1201,6 @@
     <string name="import_ssl_certs_intro_text">Sertifikalarınızı \'AppData://cert-user\' konumuna kopyalayıp yapıştırın, ardından uygulamayı yeniden başlatın.</string>
     <string name="url_links">Bağlantılar</string>
     <string name="contributors">Katkıda Bulunanlar</string>
+    <string name="encoding">Encoding</string>
 
 </resources>

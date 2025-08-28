@@ -354,6 +354,17 @@ fun EditorPageActions(
             DropdownMenuItem(
                 enabled = enableMenuItem,
 
+                text = { Text(stringResource(R.string.encoding)) },
+                onClick = {
+                    editorPageRequest.value = PageRequest.showSelectEncodingDialog
+
+                    closeMenu()
+                }
+            )
+
+            DropdownMenuItem(
+                enabled = enableMenuItem,
+
                 text = { Text(stringResource(R.string.file_history)) },
                 onClick = {
                     editorPageRequest.value = PageRequest.requireGoToFileHistory

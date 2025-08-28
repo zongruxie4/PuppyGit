@@ -1191,5 +1191,6 @@
     <string name="import_ssl_certs_intro_text">فقط انسخ والصق شهاداتك في \'AppData://cert-user\'، ثم أعد تشغيل التطبيق.</string>
     <string name="url_links">روابط</string>
     <string name="contributors">المساهمون</string>
+    <string name="encoding">Encoding</string>
 
 </resources>

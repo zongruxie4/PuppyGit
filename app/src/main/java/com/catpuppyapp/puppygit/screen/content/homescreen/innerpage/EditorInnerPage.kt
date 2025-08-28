@@ -62,6 +62,7 @@ import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.PageCenterIconButton
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.SelectEncodingDialog
 import com.catpuppyapp.puppygit.compose.SelectSyntaxHighlightingDialog
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.SelectionRow
@@ -907,6 +908,22 @@ fun EditorInnerPage(
         )
     }
 
+    val showSelectEncodingDialog = rememberSaveable { mutableStateOf(false) }
+    if(showSelectEncodingDialog.value) {
+        SelectEncodingDialog(
+            currentCharset = editorCharset.value,
+            onCancel = { showSelectEncodingDialog.value = false },
+        ) { newCharset ->
+            showSelectEncodingDialog.value = false
+
+            if(newCharset != editorCharset.value) {
+                editorCharset.value = newCharset
+
+                showReloadDialog.value = true
+            }
+        }
+    }
+
     val showSelectSyntaxHighlightDialog = rememberSaveable { mutableStateOf(false) }
     val initSelectSyntaxHighlightingDialog = {
         doJobThenOffLoading {
@@ -921,6 +938,8 @@ fun EditorInnerPage(
             plScope = plScope.value,
             onCancel = { showSelectSyntaxHighlightDialog.value = false }
         ) {
+            showSelectSyntaxHighlightDialog.value = false
+
             if(it != plScope.value) {
                 plScope.value = it
 
@@ -929,6 +948,13 @@ fun EditorInnerPage(
                     forceReloadFile()
                 }
             }
+        }
+    }
+
+
+    if(requestFromParent.value == PageRequest.showSelectEncodingDialog) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            showSelectEncodingDialog.value = true
         }
     }
 
