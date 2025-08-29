@@ -113,7 +113,10 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
     }
 
     fun bufferedReader(charset: Charset):BufferedReader {
-        return inputStream().bufferedReader(charset)
+        return EncodingUtil.ignoreBomIfNeed(
+            getNewInputStream = { inputStream() },
+            charsetName = charset.name()
+        ).bufferedReader(charset)
     }
 
     fun bufferedWriter(charset: Charset): BufferedWriter {

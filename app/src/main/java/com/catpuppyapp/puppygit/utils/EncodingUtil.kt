@@ -194,4 +194,52 @@ object EncodingUtil {
 
     }
 
+    fun ignoreBomIfNeed(getNewInputStream: () -> InputStream, charsetName: String): InputStream {
+        if(charsetName == Constants.CHARSET_UTF_16LE) {
+            val inputStream = getNewInputStream()
+
+            if(inputStream.read() == 0xFF
+                && inputStream.read() == 0xFE
+            ) {
+                return inputStream
+            }
+        }
+
+        if(charsetName == Constants.CHARSET_UTF_32LE) {
+            val inputStream = getNewInputStream()
+
+            if(inputStream.read() == 0xFF
+                && inputStream.read() == 0xFE
+                && inputStream.read() == 0x00
+                && inputStream.read() == 0x00
+            ) {
+                return inputStream
+            }
+        }
+
+        if(charsetName == Constants.CHARSET_UTF_16BE) {
+            val inputStream = getNewInputStream()
+
+            if(inputStream.read() == 0xFE
+                && inputStream.read() == 0xFF
+            ) {
+                return inputStream
+            }
+        }
+
+        if(charsetName == Constants.CHARSET_UTF_32BE) {
+            val inputStream = getNewInputStream()
+
+            if(inputStream.read() == 0x00
+                && inputStream.read() == 0x00
+                && inputStream.read() == 0xFE
+                && inputStream.read() == 0xFF
+            ) {
+                return inputStream
+            }
+        }
+
+        return getNewInputStream()
+    }
+
 }
