@@ -1875,7 +1875,13 @@ class TextEditorState(
     fun dumpLines(output: OutputStream, lineBreak:String=lb) {
         val fieldsSize = fields.size
         var count = 0
-        output.bufferedWriter(EncodingUtil.resolveCharset(codeEditor?.editorCharset?.value)).use { bw ->
+
+        val charset = EncodingUtil.resolveCharset(codeEditor?.editorCharset?.value)
+
+        // add bom if need
+        EncodingUtil.addBomIfNeed(null, output, charset.name())
+
+        output.bufferedWriter(charset).use { bw ->
             for(f in fields) {
                 if(++count != fieldsSize) {
                     bw.write("${f.value.text}$lineBreak")

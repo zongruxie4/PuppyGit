@@ -428,12 +428,13 @@ object FsUtils {
     }
 
     fun saveFile(fileFullPath:String, text:String, charset:Charset) {
-        val fos = FileOutputStream(fileFullPath)
-        val bw = fos.bufferedWriter(charset)
-        //                                bw.write(editorPageShowingFileText.value)
         // 覆盖式保存文件
-        bw.use {
-            it.write(text)
+        FileOutputStream(fileFullPath).use { fos ->
+            EncodingUtil.addBomIfNeed(null, fos, charset.name())
+
+            fos.bufferedWriter(charset).use {
+                it.write(text)
+            }
         }
     }
 
@@ -700,12 +701,15 @@ object FsUtils {
             contentAndFileSnapshotPathPair = Pair(contentRet.data?.second?:"", fileRet.data?.second?:"")
 
 
-
             //将内容写入到目标文件
             if(trueUseContentFalseUseEditorState) {
-                content!!.byteInputStream(EncodingUtil.resolveCharset(editorState.codeEditor?.editorCharset?.value)).use { input ->
-                    targetFile.outputStream().use { output ->
-                        input.copyTo(output)
+                val charset = EncodingUtil.resolveCharset(editorState.codeEditor?.editorCharset?.value)
+
+                targetFile.outputStream().use { output ->
+                    EncodingUtil.addBomIfNeed(null, output, charset.name())
+
+                    output.bufferedWriter(charset).use { writer ->
+                        writer.write(content!!)
                     }
                 }
             }else {
