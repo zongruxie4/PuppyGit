@@ -1872,14 +1872,14 @@ class TextEditorState(
         }
     }
 
-    fun dumpLines(output: OutputStream, lineBreak:String=lb) {
+    fun dumpLines(output: OutputStream, lineBreak:String = lb) {
         val fieldsSize = fields.size
         var count = 0
 
-        val charset = EncodingUtil.resolveCharset(codeEditor?.editorCharset?.value)
+        val charset = resolveCharset()
 
         // add bom if need
-        EncodingUtil.addBomIfNeed(null, output, charset.name())
+        EncodingUtil.addBomIfNeed(null, output, charset)
 
         output.bufferedWriter(charset).use { bw ->
             for(f in fields) {
@@ -2781,6 +2781,10 @@ class TextEditorState(
 
             onChanged(copy(fieldsId = newId()), null, false, this, null)
         }
+    }
+
+    fun resolveCharset() : Charset {
+        return EncodingUtil.resolveCharset(codeEditor?.editorCharset?.value)
     }
 
     companion object {

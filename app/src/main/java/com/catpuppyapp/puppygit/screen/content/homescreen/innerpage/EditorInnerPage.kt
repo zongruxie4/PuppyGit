@@ -2211,7 +2211,7 @@ private suspend fun doInit(
             }else {
                 // detect charset if need
                 val charset = if (editorCharset.value == null) {
-                    EncodingUtil.detectEncoding(file.inputStream()).also { editorCharset.value = it.name() }
+                    file.detectEncoding().also { editorCharset.value = it.name() }
                 } else {
                     EncodingUtil.resolveCharset(editorCharset.value)
                 }

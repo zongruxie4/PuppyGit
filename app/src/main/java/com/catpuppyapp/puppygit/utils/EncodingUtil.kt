@@ -144,9 +144,16 @@ object EncodingUtil {
     /**
      * add bom to output stream if need, "BOM" is abbreviation of "Byte order mark"
      *
+     * if `inputStream` is not null, read up to 4 bytes to check already included BOM or not, if included, will not add again;
+     * if `inputStream` is null, will add BOM
+     *
+     * due to will remove BOM when read file, so when call this method before write, in most time, passing `inputStream` as null should be fine
+     *
      * see: https://en.wikipedia.org/wiki/Byte_order_mark#Byte-order_marks_by_encoding
      */
-    fun addBomIfNeed(inputStream: InputStream?, outputStream: OutputStream, charsetName: String) {
+    fun addBomIfNeed(inputStream: InputStream?, outputStream: OutputStream, charset: Charset) {
+        val charsetName = charset.name()
+
         val buf = ByteArray(4)
         val nBytes = if(inputStream != null) IOUtil.readBytes(inputStream, buf) else 0
 
@@ -194,7 +201,9 @@ object EncodingUtil {
 
     }
 
-    fun ignoreBomIfNeed(getNewInputStream: () -> InputStream, charsetName: String): InputStream {
+    fun ignoreBomIfNeed(getNewInputStream: () -> InputStream, charset: Charset): InputStream {
+        val charsetName = charset.name()
+
         if(charsetName == Constants.CHARSET_UTF_16LE) {
             val inputStream = getNewInputStream()
 

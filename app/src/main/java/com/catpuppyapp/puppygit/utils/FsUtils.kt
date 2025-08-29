@@ -430,7 +430,7 @@ object FsUtils {
     fun saveFile(fileFullPath:String, text:String, charset:Charset) {
         // 覆盖式保存文件
         FileOutputStream(fileFullPath).use { fos ->
-            EncodingUtil.addBomIfNeed(null, fos, charset.name())
+            EncodingUtil.addBomIfNeed(null, fos, charset)
 
             fos.bufferedWriter(charset).use {
                 it.write(text)
@@ -703,10 +703,10 @@ object FsUtils {
 
             //将内容写入到目标文件
             if(trueUseContentFalseUseEditorState) {
-                val charset = EncodingUtil.resolveCharset(editorState.codeEditor?.editorCharset?.value)
+                val charset = editorState.resolveCharset()
 
                 targetFile.outputStream().use { output ->
-                    EncodingUtil.addBomIfNeed(null, output, charset.name())
+                    EncodingUtil.addBomIfNeed(null, output, charset)
 
                     output.bufferedWriter(charset).use { writer ->
                         writer.write(content!!)
