@@ -1512,17 +1512,13 @@ object FsUtils {
         }
     }
 
-    /**
-     * warn: no charset param
-     * 警告：这个没编码设置，不太确定非utf8是否会乱码，慎用。
-     */
-    fun appendTextToFile(file: File, text:String) {
+    fun appendTextToFile(file: File, text:String, charset: Charset = StandardCharsets.UTF_8) {
         if(text.isEmpty()) {
             return
         }
 
         val append = true
-        val filerWriter = FileWriter(file, append)
+        val filerWriter = FileWriter(file, charset, append)
         filerWriter.buffered().use { writer ->
             writer.write(text)
         }
