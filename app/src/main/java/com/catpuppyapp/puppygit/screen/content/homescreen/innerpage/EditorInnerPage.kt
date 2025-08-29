@@ -1102,6 +1102,7 @@ fun EditorInnerPage(
                 basePath.value = FsUtils.getParentPath(pathWillPreview)
                 //如果要预览的路径和当前正在编辑的文件路径一样，直接使用内存中的数据；否则从文件读取
                 mdText.value = if(pathWillPreview == editorPageShowingFilePath) {
+                    curPreviewFileUsedCharset.value = editorCharset.value
                     editorPageTextEditorState.value.getAllText()
                 } else {
                     val encoding = EncodingUtil.detectEncoding(FileInputStream(pathWillPreview))
