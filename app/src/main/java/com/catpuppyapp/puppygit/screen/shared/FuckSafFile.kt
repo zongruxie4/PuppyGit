@@ -10,7 +10,6 @@ import com.catpuppyapp.puppygit.utils.EncodingUtil
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import io.ktor.utils.io.charsets.Charset
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import java.io.BufferedReader
@@ -18,6 +17,7 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import java.nio.charset.Charset
 import kotlin.coroutines.cancellation.CancellationException
 
 

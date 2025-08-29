@@ -35,11 +35,11 @@ import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import com.catpuppyapp.puppygit.utils.parseLongOrDefault
 import com.catpuppyapp.puppygit.utils.tabToSpaces
 import io.github.rosemoe.sora.text.CharPosition
-import io.ktor.utils.io.charsets.Charset
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.OutputStream
+import java.nio.charset.Charset
 
 
 private const val TAG = "TextEditorState"

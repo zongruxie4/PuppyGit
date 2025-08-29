@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.webkit.MimeTypeMap
 import androidx.compose.runtime.MutableLongState
 import androidx.compose.runtime.MutableState
 import androidx.core.content.FileProvider
@@ -31,9 +30,9 @@ import com.catpuppyapp.puppygit.utils.temp.TempFileFlag
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.FileWriter
 import java.io.InputStream
 import java.io.OutputStream
+import java.io.OutputStreamWriter
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import kotlin.coroutines.cancellation.CancellationException
@@ -1518,7 +1517,7 @@ object FsUtils {
         }
 
         val append = true
-        val filerWriter = FileWriter(file, charset, append)
+        val filerWriter = OutputStreamWriter(FileOutputStream(file, append), charset)
         filerWriter.buffered().use { writer ->
             writer.write(text)
         }

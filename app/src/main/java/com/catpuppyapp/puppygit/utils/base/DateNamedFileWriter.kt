@@ -3,7 +3,6 @@ package com.catpuppyapp.puppygit.utils.base
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import kotlinx.coroutines.Job
@@ -13,7 +12,10 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.BufferedWriter
 import java.io.File
-import java.io.FileWriter
+import java.io.FileOutputStream
+import java.io.OutputStreamWriter
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -144,7 +146,7 @@ open class DateNamedFileWriter(
         writeChannel.send(msg)
     }
 
-    private fun initWriter():Pair<File, BufferedWriter>{
+    private fun initWriter(charset: Charset = StandardCharsets.UTF_8):Pair<File, BufferedWriter>{
         val funName = "initWriter"
 
 
@@ -171,7 +173,7 @@ open class DateNamedFileWriter(
 
         //新开一个writer
         val append = true
-        val filerWriter = FileWriter(file, append) // 后面这个参数代表是不是要接上文件中原来的数据，不进行覆盖
+        val filerWriter = OutputStreamWriter(FileOutputStream(file, append), charset)
         val newBufferedWriter = filerWriter.buffered()
         fileWriter = newBufferedWriter
 
