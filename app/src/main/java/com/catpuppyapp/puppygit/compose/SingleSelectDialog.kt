@@ -47,9 +47,9 @@ fun <T> SingleSelectDialog(
     LaunchedEffect(Unit) {
         scope.launch {
             delay(200)
-            val indexOf = itemList.indexOfFirst { selected(it) }
-            if(indexOf != -1) {
-                UIHelper.scrollToItem(scope, listState, indexOf-3, animation = true)
+
+            UIHelper.scrollByPredicate(scope, itemList, listState, animation = true) { _, it ->
+                selected(it)
             }
         }
     }
