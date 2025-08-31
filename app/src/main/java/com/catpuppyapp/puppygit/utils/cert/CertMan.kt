@@ -16,11 +16,11 @@ object CertMan {
     private const val TAG = "CertMan"
 
     //若更新证书，应更新此值
-    const val currentVersion = 6
+    const val currentVersion = 7
 
     private val certRawId = R.raw.cert_bundle_pem
 
-    private val inited = mutableStateOf(false)
+//    private val inited = mutableStateOf(false)
 
     const val defaultCertBundleDirName = "cert-bundle"
     const val defaultCertUserDirName = "cert-user"  //存放用户证书的目录，自签证书之类的可以放这里，app会自动加载，自签证书并不是在加密上有问题，只是不被公众信任，用户如果自签，也并非一定不安全，另外：这块功能我没测试
