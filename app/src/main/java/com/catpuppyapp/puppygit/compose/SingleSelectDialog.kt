@@ -15,6 +15,7 @@ fun <T> SingleSelectDialog(
     currentItem: T?,
     itemList: List<T>,
     text: (T) -> String,
+    selected:(T) -> Boolean = { it == currentItem },
     onCancel: () -> Unit,
     onOK: (selectedItem: T) -> Unit,
 ) {
@@ -29,7 +30,7 @@ fun <T> SingleSelectDialog(
                     SingleSelectionItem(
                         idx = idx,
                         item = it,
-                        selected = currentItem == it,
+                        selected = selected(it),
                         minHeight = 60.dp,
                         text = { idx, it -> text(it) },
                         onClick = { idx, it ->
@@ -46,7 +47,7 @@ fun <T> SingleSelectDialog(
     LaunchedEffect(Unit) {
         scope.launch {
             delay(200)
-            val indexOf = itemList.indexOf(currentItem)
+            val indexOf = itemList.indexOfFirst { selected(it) }
             if(indexOf != -1) {
                 UIHelper.scrollToItem(scope, listState, indexOf-3, animation = true)
             }
