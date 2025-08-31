@@ -109,6 +109,7 @@ import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.isFileSizeOverLimit
+import com.catpuppyapp.puppygit.utils.nameUppercase
 import com.catpuppyapp.puppygit.utils.parseIntOrDefault
 import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
@@ -855,7 +856,7 @@ fun EditorInnerPage(
 
         if(needRefresh) {
             val encoding = EncodingUtil.detectEncoding(FileInputStream(previewPath))
-            curPreviewFileUsedCharset.value = encoding.name()
+            curPreviewFileUsedCharset.value = encoding.nameUppercase()
             mdText.value = FsUtils.readFile(previewPath, encoding)
             updatePreviewDto(previewPath)
         }
@@ -1106,7 +1107,7 @@ fun EditorInnerPage(
                     editorPageTextEditorState.value.getAllText()
                 } else {
                     val encoding = EncodingUtil.detectEncoding(FileInputStream(pathWillPreview))
-                    curPreviewFileUsedCharset.value = encoding.name()
+                    curPreviewFileUsedCharset.value = encoding.nameUppercase()
                     FsUtils.readFile(pathWillPreview, encoding)
                 }
 
@@ -2211,7 +2212,7 @@ private suspend fun doInit(
             }else {
                 // detect charset if need
                 val charset = if (editorCharset.value == null) {
-                    file.detectEncoding().also { editorCharset.value = it.name() }
+                    file.detectEncoding().also { editorCharset.value = it.nameUppercase() }
                 } else {
                     EncodingUtil.resolveCharset(editorCharset.value)
                 }

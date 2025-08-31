@@ -133,6 +133,8 @@ object EncodingUtil {
 
     fun resolveCharset(name:String?): Charset {
         return try {
+            // `name` lowercase or uppercase all be fine
+            // `name` 小写大写皆可
             Charset.forName(makeSureUseASupportedCharset(name))
         }catch (e: Exception) {
             MyLog.e(TAG, "#resolveCharset err, name=$name, err=${e.localizedMessage}")
@@ -152,7 +154,7 @@ object EncodingUtil {
      * see: https://en.wikipedia.org/wiki/Byte_order_mark#Byte-order_marks_by_encoding
      */
     fun addBomIfNeed(inputStream: InputStream?, outputStream: OutputStream, charset: Charset) {
-        val charsetName = charset.name()
+        val charsetName = charset.nameUppercase()
 
         val buf = ByteArray(4)
         val nBytes = if(inputStream != null) IOUtil.readBytes(inputStream, buf) else 0
@@ -202,7 +204,7 @@ object EncodingUtil {
     }
 
     fun ignoreBomIfNeed(getNewInputStream: () -> InputStream, charset: Charset): InputStream {
-        val charsetName = charset.name()
+        val charsetName = charset.nameUppercase()
 
         if(charsetName == Constants.CHARSET_UTF_16LE) {
             val inputStream = getNewInputStream()
