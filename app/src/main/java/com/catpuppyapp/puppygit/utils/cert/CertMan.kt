@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.utils.cert
 
 import android.content.Context
-import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.etc.CertSaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.FsUtils

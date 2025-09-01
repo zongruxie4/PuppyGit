@@ -5,6 +5,7 @@ import org.mozilla.universalchardet.UniversalDetector
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 
 /**
@@ -62,7 +63,7 @@ object EncodingUtil {
     )
 
     val defaultCharsetName:String = Constants.CHARSET_UTF_8
-    val defaultCharset: Charset = Charset.forName(defaultCharsetName)
+    val defaultCharset: Charset = forName(defaultCharsetName)
 
     private fun makeSureUseASupportedCharset(originCharset: String?): String {
         if(originCharset == null) {
@@ -128,14 +129,14 @@ object EncodingUtil {
         // (5)
         detector.reset()
 
-        return Charset.forName(makeSureUseASupportedCharset(encoding))
+        return forName(makeSureUseASupportedCharset(encoding))
     }
 
     fun resolveCharset(name:String?): Charset {
         return try {
             // `name` lowercase or uppercase all be fine
             // `name` 小写大写皆可
-            Charset.forName(makeSureUseASupportedCharset(name))
+            forName(makeSureUseASupportedCharset(name))
         }catch (e: Exception) {
             MyLog.e(TAG, "#resolveCharset err, name=$name, err=${e.localizedMessage}")
             e.printStackTrace()
@@ -251,6 +252,16 @@ object EncodingUtil {
         }
 
         return getNewInputStream()
+    }
+
+    private fun forName(charsetName: String) : Charset {
+        return try {
+            Charset.forName(charsetName)
+        }catch (e: Exception) {
+            MyLog.e(TAG, "#forName: find charset err, will use utf8, err=${e.localizedMessage}")
+            e.printStackTrace()
+            StandardCharsets.UTF_8
+        }
     }
 
 }
