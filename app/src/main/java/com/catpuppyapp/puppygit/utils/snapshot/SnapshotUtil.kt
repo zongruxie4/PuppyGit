@@ -69,7 +69,7 @@ object SnapshotUtil:SnapshotCreator {
                     FsUtils.saveFileAndGetResult(
                         fileFullPath = snapFileFullPath,
                         text = fileContent!!,
-                        charset = editorState.resolveCharset()
+                        charsetName = editorState.codeEditor?.editorCharset?.value
                     )
                 } else {
                     editorState.dumpLinesAndGetRet(File(snapFileFullPath).outputStream())

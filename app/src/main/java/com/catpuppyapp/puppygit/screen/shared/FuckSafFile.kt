@@ -112,15 +112,17 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
         return if(isSaf) context!!.contentResolver.openOutputStream(safUri!!)!! else file!!.outputStream()
     }
 
-    fun bufferedReader(charset: Charset):BufferedReader {
+    fun bufferedReader(charsetName: String?):BufferedReader {
         return EncodingUtil.ignoreBomIfNeed(
-            getNewInputStream = { inputStream() },
-            charset = charset
-        ).bufferedReader(charset)
+            newInputStream = { inputStream() },
+            charsetName = charsetName
+        ).inputStream.bufferedReader(EncodingUtil.resolveCharset(charsetName))
     }
 
-    fun bufferedWriter(charset: Charset): BufferedWriter {
-        return outputStream().bufferedWriter(charset)
+    fun bufferedWriter(charsetName: String?): BufferedWriter {
+        val output = outputStream()
+        EncodingUtil.addBomIfNeed(output, charsetName)
+        return output.bufferedWriter(EncodingUtil.resolveCharset(charsetName))
     }
 
     fun exists():Boolean {
@@ -217,15 +219,15 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
         }
     }
 
-    fun detectEncoding(): Charset {
+    fun detectEncoding(): String {
         return try {
-            EncodingUtil.detectEncoding(inputStream())
+            EncodingUtil.detectEncoding(newInputStream = { inputStream() })
         }catch (e: Exception) {
             if(AppModel.devModeOn) {
                 MyLog.e(TAG, "$TAG#detectEncoding err: ${e.localizedMessage}")
             }
 
-            EncodingUtil.defaultCharset
+            EncodingUtil.defaultCharsetName
         }
     }
 

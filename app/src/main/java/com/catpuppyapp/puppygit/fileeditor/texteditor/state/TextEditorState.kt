@@ -1876,12 +1876,13 @@ class TextEditorState(
         val fieldsSize = fields.size
         var count = 0
 
-        val charset = resolveCharset()
+
+        val charsetName = codeEditor?.editorCharset?.value
 
         // add bom if need
-        EncodingUtil.addBomIfNeed(null, output, charset)
+        EncodingUtil.addBomIfNeed(output, charsetName)
 
-        output.bufferedWriter(charset).use { bw ->
+        output.bufferedWriter(EncodingUtil.resolveCharset(charsetName)).use { bw ->
             for(f in fields) {
                 if(++count != fieldsSize) {
                     bw.write("${f.value.text}$lineBreak")
@@ -2783,14 +2784,10 @@ class TextEditorState(
         }
     }
 
-    fun resolveCharset() : Charset {
-        return EncodingUtil.resolveCharset(codeEditor?.editorCharset?.value)
-    }
-
     companion object {
         fun linesToFields(lines: List<String>) = createInitTextFieldStates(lines)
 
-        fun fuckSafFileToFields(file: FuckSafFile, charset: Charset) = linesToFields(FsUtils.readLinesFromFile(file, charset, addNewLineIfFileEmpty = true))
+        fun fuckSafFileToFields(file: FuckSafFile, charsetName: String?) = linesToFields(FsUtils.readLinesFromFile(file, charsetName, addNewLineIfFileEmpty = true))
 
         fun textToFields(text: String) = linesToFields(text.lines())
 

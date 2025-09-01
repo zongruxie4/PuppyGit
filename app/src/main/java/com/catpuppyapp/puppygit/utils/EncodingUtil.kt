@@ -166,7 +166,7 @@ object EncodingUtil {
      *
      * see: https://en.wikipedia.org/wiki/Byte_order_mark#Byte-order_marks_by_encoding
      */
-    fun addBomIfNeed(outputStream: OutputStream, charsetName: String) {
+    fun addBomIfNeed(outputStream: OutputStream, charsetName: String?) {
         if(charsetName == UTF8_BOM) {
             outputStream.write(0xEF)
             outputStream.write(0xBB)
@@ -190,7 +190,7 @@ object EncodingUtil {
         }
     }
 
-    fun ignoreBomIfNeed(newInputStream: () -> InputStream, charsetName: String): IgnoreBomResult {
+    fun ignoreBomIfNeed(newInputStream: () -> InputStream, charsetName: String?): IgnoreBomResult {
         if(charsetName == UTF8_BOM) {
             val inputStream = newInputStream()
 

@@ -109,7 +109,6 @@ import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.isFileSizeOverLimit
-import com.catpuppyapp.puppygit.utils.nameUppercase
 import com.catpuppyapp.puppygit.utils.parseIntOrDefault
 import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
@@ -855,9 +854,9 @@ fun EditorInnerPage(
         }
 
         if(needRefresh) {
-            val encoding = EncodingUtil.detectEncoding(FileInputStream(previewPath))
-            curPreviewFileUsedCharset.value = encoding.nameUppercase()
-            mdText.value = FsUtils.readFile(previewPath, encoding)
+            val encoding = EncodingUtil.detectEncoding(newInputStream = { FileInputStream(previewPath) })
+            curPreviewFileUsedCharset.value = encoding
+            mdText.value = FsUtils.readFile(previewPath, EncodingUtil.resolveCharset(encoding))
             updatePreviewDto(previewPath)
         }
 
@@ -1106,9 +1105,9 @@ fun EditorInnerPage(
                     curPreviewFileUsedCharset.value = editorCharset.value
                     editorPageTextEditorState.value.getAllText()
                 } else {
-                    val encoding = EncodingUtil.detectEncoding(FileInputStream(pathWillPreview))
-                    curPreviewFileUsedCharset.value = encoding.nameUppercase()
-                    FsUtils.readFile(pathWillPreview, encoding)
+                    val encoding = EncodingUtil.detectEncoding(newInputStream = { FileInputStream(pathWillPreview) })
+                    curPreviewFileUsedCharset.value = encoding
+                    FsUtils.readFile(pathWillPreview, EncodingUtil.resolveCharset(encoding))
                 }
 
                 //每次更新mdText后，都更新下dto，用来快速检测文件是否改变
@@ -2211,16 +2210,14 @@ private suspend fun doInit(
 //                codeEditorState!!.content.value = Content(file.bufferedReader().use { it.readText() })
             }else {
                 // detect charset if need
-                val charset = if (editorCharset.value == null) {
-                    file.detectEncoding().also { editorCharset.value = it.nameUppercase() }
-                } else {
-                    EncodingUtil.resolveCharset(editorCharset.value)
+                if (editorCharset.value == null) {
+                    editorCharset.value = file.detectEncoding()
                 }
 
                 val newState = TextEditorState(
                     codeEditor = codeEditor,
 
-                    fields = TextEditorState.fuckSafFileToFields(file, charset),
+                    fields = TextEditorState.fuckSafFileToFields(file, editorCharset.value),
                     isContentEdited = isEdited,
                     editorPageIsContentSnapshoted = isContentSnapshoted,
                     isMultipleSelectionMode = false,

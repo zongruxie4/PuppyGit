@@ -27,6 +27,7 @@ import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.temp.TempFileFlag
+import org.mozilla.universalchardet.Constants
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -426,12 +427,12 @@ object FsUtils {
         }
     }
 
-    fun saveFile(fileFullPath:String, text:String, charset:Charset) {
+    fun saveFile(fileFullPath:String, text:String, charsetName: String?) {
         // 覆盖式保存文件
         FileOutputStream(fileFullPath).use { fos ->
-            EncodingUtil.addBomIfNeed(null, fos, charset)
+            EncodingUtil.addBomIfNeed(fos, charsetName)
 
-            fos.bufferedWriter(charset).use {
+            fos.bufferedWriter(EncodingUtil.resolveCharset(charsetName)).use {
                 it.write(text)
             }
         }
@@ -439,9 +440,9 @@ object FsUtils {
 
     //操作成功返回成功，否则返回失败
     //这里我用Unit?代表此函数不会返回有意义的值，只会返回null
-    fun saveFileAndGetResult(fileFullPath:String, text:String, charset:Charset):Ret<Unit?> {
+    fun saveFileAndGetResult(fileFullPath:String, text:String, charsetName: String?):Ret<Unit?> {
         try {
-            saveFile(fileFullPath, text, charset)
+            saveFile(fileFullPath, text, charsetName)
 //            val retFileName = if(fileName.isEmpty()) getFileNameFromCanonicalPath(fileFullPath) else fileName
             return Ret.createSuccess(null)
         }catch (e:Exception) {
@@ -451,7 +452,11 @@ object FsUtils {
     }
 
     fun readFile(fileFullPath: String, charset:Charset? = null):String {
-        val br = FileInputStream(fileFullPath).bufferedReader(charset ?: EncodingUtil.detectEncoding(FileInputStream(fileFullPath)))
+        val br = FileInputStream(fileFullPath).bufferedReader(charset ?: EncodingUtil.resolveCharset(
+            EncodingUtil.detectEncoding(
+                newInputStream = { FileInputStream(fileFullPath) }
+            )
+        ))
 
         br.use {
             return it.readText()
@@ -702,12 +707,12 @@ object FsUtils {
 
             //将内容写入到目标文件
             if(trueUseContentFalseUseEditorState) {
-                val charset = editorState.resolveCharset()
+                val charsetName = editorState.codeEditor?.editorCharset?.value
 
                 targetFile.outputStream().use { output ->
-                    EncodingUtil.addBomIfNeed(null, output, charset)
+                    EncodingUtil.addBomIfNeed(output, charsetName)
 
-                    output.bufferedWriter(charset).use { writer ->
+                    output.bufferedWriter(EncodingUtil.resolveCharset(charsetName)).use { writer ->
                         writer.write(content!!)
                     }
                 }
@@ -1292,7 +1297,7 @@ object FsUtils {
         newLines: List<String>,
         trueInsertFalseReplaceNullDelete:Boolean?,
         settings: AppSettings,
-        charset: Charset = StandardCharsets.UTF_8
+        charsetName: String = Constants.CHARSET_UTF_8
     ) {
         if(trueInsertFalseReplaceNullDelete != null && newLines.isEmpty()) {
             return
@@ -1318,8 +1323,8 @@ object FsUtils {
         val tempFile = FuckSafFile.fromFile(createTempFile("${TempFileFlag.FROM_DIFF_SCREEN_REPLACE_LINES_TO_FILE.flag}-${file.name}"))
         var found = false
 
-        file.bufferedReader(charset).use { reader ->
-            tempFile.bufferedWriter(charset).use { writer ->
+        file.bufferedReader(charsetName).use { reader ->
+            tempFile.bufferedWriter(charsetName).use { writer ->
                 var currentLine = 1
 
                 while(true) {
@@ -1403,7 +1408,7 @@ object FsUtils {
      */
     fun readLinesFromFile(
         file: FuckSafFile,
-        charset: Charset,
+        charsetName: String?,
         addNewLineIfFileEmpty:Boolean = true,
     ): List<String> {
 //        val lines = ArrayList<String>(30)  //不确定用户打开的文件到底多少行啊，算了，用默认吧
@@ -1418,7 +1423,7 @@ object FsUtils {
         val arrBuf = CharArray(4096)
         val aline = StringBuilder(100)
         var lastChar:Char? = null
-        file.bufferedReader(charset).use { reader ->
+        file.bufferedReader(charsetName).use { reader ->
             while (true) {
                 val readSize = reader.read(arrBuf)
                 if(readSize == -1) {
@@ -1525,13 +1530,13 @@ object FsUtils {
 
     fun readShortContent(
         file: FuckSafFile,
-        charset: Charset? = null,
+        charsetName: String? = null,
         contentCharsLimit:Int = 80
     ):String {
         return try {
             val sb = StringBuilder()
 
-            file.bufferedReader(charset ?: file.detectEncoding()).use { br ->
+            file.bufferedReader(charsetName ?: file.detectEncoding()).use { br ->
                 while (true) {
                     if(sb.length >= contentCharsLimit) {
                         break
