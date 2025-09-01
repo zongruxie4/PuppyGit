@@ -136,8 +136,7 @@ object EncodingUtil {
 
         // utf8 with bom
         if(encoding == Constants.CHARSET_UTF_8) {
-            val ignoreBomResult = ignoreBomIfNeed(newInputStream, encoding)
-            if(ignoreBomResult.wasHasBom) {
+            if(isUtf8Bom(newInputStream())) {
                 return UTF8_BOM
             }
         }
@@ -190,14 +189,23 @@ object EncodingUtil {
         }
     }
 
+    fun isUtf8Bom(inputStream: InputStream): Boolean {
+        return inputStream.read() == 0xEF && inputStream.read() == 0xBB && inputStream.read() == 0xBF
+    }
+
+    /**
+     * @return true is utf8 bom and consumed, else is not utf8 bom
+     * @return 真代表是utf8且已消耗bom，否则代表不是utf8
+     *
+     * note: even isn't utf8bom, the `inputStream` still already read (即使不是utf8bom，inputStream也已经被读取过了)
+     */
+    fun consumeUtf8Bom(inputStream: InputStream) = isUtf8Bom(inputStream)
+
     fun ignoreBomIfNeed(newInputStream: () -> InputStream, charsetName: String?): IgnoreBomResult {
         if(charsetName == UTF8_BOM) {
             val inputStream = newInputStream()
 
-            if(inputStream.read() == 0xEF
-                && inputStream.read() == 0xBB
-                && inputStream.read() == 0xBF
-            ) {
+            if(consumeUtf8Bom(inputStream)) {
                 return IgnoreBomResult(true, inputStream)
             }
         }
