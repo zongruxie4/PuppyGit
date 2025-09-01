@@ -97,7 +97,12 @@ class FilePath(
     private fun tryResolveKnownUriToRealPath(): String {
         val funName = "tryResolveKnownUriToRealPath"
 
-        return try {
+        try {
+            val path = FsUtils.translateContentUriToRealPath(Uri.parse(rawPath))
+            if(path != null) {
+                return path
+            }
+
             //有的软件会先编码再发uri，例如 raival 的 文件管理器和material files(不过material files的uri没在这处理）
             val uriStr = decodeTheFuckingUriPath(rawPath)
 
@@ -108,7 +113,7 @@ class FilePath(
             val maybeCanGetPathFromUri = knownSystemFilesManagerUris.any { uriStr.startsWith(it) }
 
 
-            if(maybeCanGetPathFromUri) {
+            return if(maybeCanGetPathFromUri) {
                 readableCanonicalPathOrDefault(File(FsUtils.getRealPathFromUri(Uri.parse(rawPath))), emptyPath)
             } else {
                 //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
@@ -141,7 +146,7 @@ class FilePath(
         }catch (e:Exception) {
             MyLog.e(TAG, "#$funName: resolved uri err: ${e.localizedMessage}")
 
-            emptyPath
+            return emptyPath
         }
     }
 

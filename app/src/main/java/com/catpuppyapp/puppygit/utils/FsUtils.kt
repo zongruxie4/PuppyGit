@@ -1575,4 +1575,39 @@ object FsUtils {
         }
     }
 
+    fun translateContentUriToRealPath(uri: Uri, appContext:Context = AppModel.realAppContext, mode: String = "rw"): String? {
+        try {
+            val resolver = appContext.contentResolver
+            MyLog.v(TAG, "Resolving content URI: $uri")
+
+            resolver.openFileDescriptor(uri, mode)?.use { pfd ->
+                // See if we can skip the indirection and read the real file directly
+                val path = findRealPath(pfd.fd)
+                if (path != null) {
+                    MyLog.v(TAG, "Found real file path: $path")
+                    return path
+                }
+            }
+        } catch(e: Exception) {
+            MyLog.e(TAG, "Failed to open content fd: ${e.localizedMessage}")
+            e.printStackTrace()
+        }
+
+        return null
+    }
+
+    fun findRealPath(fd: Int): String? {
+        var ins: InputStream? = null
+        try {
+            val path = File("/proc/self/fd/${fd}").canonicalPath
+            if (!path.startsWith("/proc") && File(path).canRead()) {
+                // Double check that we can read it
+                ins = FileInputStream(path)
+                ins.read()
+                return path
+            }
+        } catch(e: Exception) { } finally { ins?.close() }
+
+        return null
+    }
 }
