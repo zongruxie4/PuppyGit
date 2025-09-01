@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets
 object EncodingUtil {
     private const val TAG = "EncodingUtil"
 
+    internal const val UTF8_BOM = "UTF-8 BOM"
+
     /**
      * note: CHARSET_GB18030 include GBK, GBK include GB2312
      */
@@ -48,6 +50,8 @@ object EncodingUtil {
         Constants.CHARSET_TIS620,
 
         Constants.CHARSET_UTF_8,
+        UTF8_BOM,
+
         Constants.CHARSET_UTF_16BE,
         Constants.CHARSET_UTF_16LE,
         Constants.CHARSET_UTF_32BE,
@@ -63,7 +67,7 @@ object EncodingUtil {
     )
 
     val defaultCharsetName:String = Constants.CHARSET_UTF_8
-    val defaultCharset: Charset = forName(defaultCharsetName)
+    val defaultCharset: Charset = resolveCharset(defaultCharsetName)
 
     private fun makeSureUseASupportedCharset(originCharset: String?): String {
         if(originCharset == null) {
@@ -92,17 +96,17 @@ object EncodingUtil {
     }
 
 
-    fun detectEncoding(inputStream: InputStream): Charset {
+    fun detectEncoding(newInputStream: () -> InputStream): String {
         return try {
-            detectEncodingNoCatch(inputStream)
+            detectEncodingNoCatch(newInputStream)
         }catch (e: Exception) {
             MyLog.e(TAG, "#detectEncoding() err, will use '$defaultCharsetName', err msg=${e.localizedMessage}")
             e.printStackTrace()
-            defaultCharset
+            defaultCharsetName
         }
     }
 
-    private fun detectEncodingNoCatch(inputStream: InputStream): Charset {
+    private fun detectEncodingNoCatch(newInputStream: () -> InputStream): String {
         // most time only need read few bytes to detect encoding, maybe thousands
         val buf = ByteArray(4096)
 
@@ -114,6 +118,7 @@ object EncodingUtil {
         // (2)
         var nread: Int = -1
         // read until detector detected the encoding
+        val inputStream = newInputStream()
         while ((inputStream.read(buf).also { nread = it }) > 0 && !detector.isDone()) {
             detector.handleData(buf, 0, nread)
         }
@@ -129,139 +134,127 @@ object EncodingUtil {
         // (5)
         detector.reset()
 
-        return forName(makeSureUseASupportedCharset(encoding))
+        // utf8 with bom
+        if(encoding == Constants.CHARSET_UTF_8) {
+            val ignoreBomResult = ignoreBomIfNeed(newInputStream, encoding)
+            if(ignoreBomResult.wasHasBom) {
+                return UTF8_BOM
+            }
+        }
+
+        return makeSureUseASupportedCharset(encoding)
     }
 
-    fun resolveCharset(name:String?): Charset {
-        return try {
+    fun resolveCharset(charsetName: String?) : Charset {
+        try {
+            if(charsetName == UTF8_BOM){
+                return StandardCharsets.UTF_8
+            }
+
             // `name` lowercase or uppercase all be fine
             // `name` 小写大写皆可
-            forName(makeSureUseASupportedCharset(name))
+            return Charset.forName(charsetName)
         }catch (e: Exception) {
-            MyLog.e(TAG, "#resolveCharset err, name=$name, err=${e.localizedMessage}")
+            MyLog.e(TAG, "#resolveCharset err, will use '$defaultCharsetName', param `charsetName`=$charsetName, err=${e.localizedMessage}")
             e.printStackTrace()
-            defaultCharset
+            return defaultCharset
         }
     }
 
     /**
      * add bom to output stream if need, "BOM" is abbreviation of "Byte order mark"
      *
-     * if `inputStream` is not null, read up to 4 bytes to check already included BOM or not, if included, will not add again;
-     * if `inputStream` is null, will add BOM
-     *
-     * due to will remove BOM when read file, so when call this method before write, in most time, passing `inputStream` as null should be fine
-     *
      * see: https://en.wikipedia.org/wiki/Byte_order_mark#Byte-order_marks_by_encoding
      */
-    fun addBomIfNeed(inputStream: InputStream?, outputStream: OutputStream, charset: Charset) {
-        val charsetName = charset.nameUppercase()
-
-        val buf = ByteArray(4)
-        val nBytes = if(inputStream != null) IOUtil.readBytes(inputStream, buf) else 0
-
-        if(charsetName == Constants.CHARSET_UTF_16LE) {
-            if(nBytes <= 0
-                || buf.getOrNull(0)?.toInt() != 0xFF
-                || buf.getOrNull(1)?.toInt() != 0xFE
-            ) {
-                outputStream.write(0xFF)
-                outputStream.write(0xFE)
-            }
+    fun addBomIfNeed(outputStream: OutputStream, charsetName: String) {
+        if(charsetName == UTF8_BOM) {
+            outputStream.write(0xEF)
+            outputStream.write(0xBB)
+            outputStream.write(0xBF)
+        }else if(charsetName == Constants.CHARSET_UTF_16LE) {
+            outputStream.write(0xFF)
+            outputStream.write(0xFE)
         }else if(charsetName == Constants.CHARSET_UTF_32LE) {
-            if(nBytes <= 0
-                || buf.getOrNull(0)?.toInt() != 0xFF
-                || buf.getOrNull(1)?.toInt() != 0xFE
-                || buf.getOrNull(2)?.toInt() != 0x00
-                || buf.getOrNull(3)?.toInt() != 0x00
-            ) {
-                outputStream.write(0xFF)
-                outputStream.write(0xFE)
-                outputStream.write(0x00)
-                outputStream.write(0x00)
-            }
+            outputStream.write(0xFF)
+            outputStream.write(0xFE)
+            outputStream.write(0x00)
+            outputStream.write(0x00)
         }else if(charsetName == Constants.CHARSET_UTF_16BE) {
-            if(nBytes <= 0
-                || buf.getOrNull(0)?.toInt() != 0xFE
-                || buf.getOrNull(1)?.toInt() != 0xFF
-            ) {
-                outputStream.write(0xFE)
-                outputStream.write(0xFF)
-            }
+            outputStream.write(0xFE)
+            outputStream.write(0xFF)
         }else if(charsetName == Constants.CHARSET_UTF_32BE) {
-            if(nBytes <= 0
-                || buf.getOrNull(0)?.toInt() != 0x00
-                || buf.getOrNull(1)?.toInt() != 0x00
-                || buf.getOrNull(2)?.toInt() != 0xFE
-                || buf.getOrNull(3)?.toInt() != 0xFF
+            outputStream.write(0x00)
+            outputStream.write(0x00)
+            outputStream.write(0xFE)
+            outputStream.write(0xFF)
+        }
+    }
+
+    fun ignoreBomIfNeed(newInputStream: () -> InputStream, charsetName: String): IgnoreBomResult {
+        if(charsetName == UTF8_BOM) {
+            val inputStream = newInputStream()
+
+            if(inputStream.read() == 0xEF
+                && inputStream.read() == 0xBB
+                && inputStream.read() == 0xBF
             ) {
-                outputStream.write(0x00)
-                outputStream.write(0x00)
-                outputStream.write(0xFE)
-                outputStream.write(0xFF)
+                return IgnoreBomResult(true, inputStream)
             }
         }
 
-    }
-
-    fun ignoreBomIfNeed(getNewInputStream: () -> InputStream, charset: Charset): InputStream {
-        val charsetName = charset.nameUppercase()
-
         if(charsetName == Constants.CHARSET_UTF_16LE) {
-            val inputStream = getNewInputStream()
+            val inputStream = newInputStream()
 
             if(inputStream.read() == 0xFF
                 && inputStream.read() == 0xFE
             ) {
-                return inputStream
+                return IgnoreBomResult(true, inputStream)
             }
         }
 
         if(charsetName == Constants.CHARSET_UTF_32LE) {
-            val inputStream = getNewInputStream()
+            val inputStream = newInputStream()
 
             if(inputStream.read() == 0xFF
                 && inputStream.read() == 0xFE
                 && inputStream.read() == 0x00
                 && inputStream.read() == 0x00
             ) {
-                return inputStream
+                return IgnoreBomResult(true, inputStream)
             }
         }
 
         if(charsetName == Constants.CHARSET_UTF_16BE) {
-            val inputStream = getNewInputStream()
+            val inputStream = newInputStream()
 
             if(inputStream.read() == 0xFE
                 && inputStream.read() == 0xFF
             ) {
-                return inputStream
+                return IgnoreBomResult(true, inputStream)
             }
         }
 
         if(charsetName == Constants.CHARSET_UTF_32BE) {
-            val inputStream = getNewInputStream()
+            val inputStream = newInputStream()
 
             if(inputStream.read() == 0x00
                 && inputStream.read() == 0x00
                 && inputStream.read() == 0xFE
                 && inputStream.read() == 0xFF
             ) {
-                return inputStream
+                return IgnoreBomResult(true, inputStream)
             }
         }
 
-        return getNewInputStream()
+        return IgnoreBomResult(false, newInputStream())
     }
 
-    private fun forName(charsetName: String) : Charset {
-        return try {
-            Charset.forName(charsetName)
-        }catch (e: Exception) {
-            MyLog.e(TAG, "#forName: find charset err, will use utf8, err=${e.localizedMessage}")
-            e.printStackTrace()
-            StandardCharsets.UTF_8
-        }
-    }
+
 
 }
+
+
+data class IgnoreBomResult(
+    val wasHasBom: Boolean,
+    val inputStream: InputStream,
+)

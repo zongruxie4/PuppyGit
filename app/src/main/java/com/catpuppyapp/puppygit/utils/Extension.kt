@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.utils
 
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import kotlinx.coroutines.delay
-import java.nio.charset.Charset
 
 fun <T : CharSequence> T.takeIfNotBlank(): T? = if (isNotBlank()) this else null
 
@@ -60,5 +59,3 @@ fun String.pairClosed(openSign: String, closeSign:String) = (this.countSub(openS
         }
     }
 })
-
-fun Charset.nameUppercase() = name().uppercase()
