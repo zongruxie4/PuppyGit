@@ -78,7 +78,10 @@ class FilePath(
             try {
                 MyLog.d(TAG, "#initIoPath: type=CONTENT_URI, rawPath=$rawPath")
 
-                resolveFileSlashSlashUri().ifBlank { tryResolveKnownUriToRealPath() }.ifBlank { rawPath }
+                FsUtils.translateContentUriToRealPath(Uri.parse(rawPath))
+                    ?: resolveFileSlashSlashUri()
+                    .ifBlank { tryResolveKnownUriToRealPath() }
+                    .ifBlank { rawPath }
             }catch (_: Exception) {
                 rawPath
             }
@@ -98,11 +101,6 @@ class FilePath(
         val funName = "tryResolveKnownUriToRealPath"
 
         try {
-            val path = FsUtils.translateContentUriToRealPath(Uri.parse(rawPath))
-            if(path != null) {
-                return path
-            }
-
             //有的软件会先编码再发uri，例如 raival 的 文件管理器和material files(不过material files的uri没在这处理）
             val uriStr = decodeTheFuckingUriPath(rawPath)
 
