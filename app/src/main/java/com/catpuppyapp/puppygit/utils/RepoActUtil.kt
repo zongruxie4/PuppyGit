@@ -41,7 +41,7 @@ object RepoActUtil {
         gitEmailFromUrl:String,    // leave empty to read from config
         autoCommit:Boolean,
         force:Boolean,  // force push
-
+        pullWithRebase: Boolean, // true rebase, else merge
     ){
         val funName = "syncRepoList"
 
@@ -75,6 +75,7 @@ object RepoActUtil {
                             sendSuccessNotification = notiSender?.sendSuccessNotification,
                             autoCommit = autoCommit,
                             routeName = routeName,
+                            pullWithRebase = pullWithRebase,
                             sendErrNotification = notiSender?.sendErrNotification,
                             force = force
                         )
@@ -109,6 +110,7 @@ object RepoActUtil {
         sendSuccessNotification: ((title: String?, msg: String?, startPage: Int?, startRepoId: String?) -> Unit)?,
         autoCommit: Boolean,
         routeName: String,
+        pullWithRebase: Boolean,
         sendErrNotification: ((title: String, msg: String, startPage: Int, startRepoId: String) -> Unit)?,
         force: Boolean
     ) {
@@ -124,6 +126,7 @@ object RepoActUtil {
                 gitUsernameFromUrl = gitUsernameFromUrl,
                 gitEmailFromUrl = gitEmailFromUrl,
                 settings = settings,
+                pullWithRebase = pullWithRebase,
                 sendSuccessNotification = sendSuccessNotification
             )
 
@@ -156,6 +159,7 @@ object RepoActUtil {
         routeName: String,
         gitUsernameFromUrl:String,  // leave empty to read from config
         gitEmailFromUrl:String,  // leave empty to read from config
+        pullWithRebase: Boolean,
     ) {
         val funName = "pullRepoList"
 
@@ -184,6 +188,7 @@ object RepoActUtil {
                             gitUsernameFromUrl = gitUsernameFromUrl,
                             gitEmailFromUrl = gitEmailFromUrl,
                             settings = settings,
+                            pullWithRebase = pullWithRebase,
                             sendSuccessNotification = notiSender?.sendSuccessNotification
                         )
 
@@ -213,6 +218,7 @@ object RepoActUtil {
         masterPassword: String,
         gitUsernameFromUrl: String,
         gitEmailFromUrl: String,
+        pullWithRebase: Boolean,
         settings: AppSettings,
         sendSuccessNotification: ((title: String?, msg: String?, startPage: Int?, startRepoId: String?) -> Unit)?
     ) {
@@ -278,11 +284,14 @@ object RepoActUtil {
                 )
 
                 //merge
-                val mergeRet = Libgit2Helper.mergeOneHead(
-                    gitRepo,
-                    remoteRefSpec,
-                    username,
-                    email,
+                val mergeRet = Libgit2Helper.mergeOrRebase(
+                    repo = gitRepo,
+                    targetRefName = remoteRefSpec,
+                    username = username,
+                    email = email,
+                    requireMergeByRevspec = false,
+                    revspec = "",
+                    trueMergeFalseRebase = !pullWithRebase,
                     settings = settings
                 )
 

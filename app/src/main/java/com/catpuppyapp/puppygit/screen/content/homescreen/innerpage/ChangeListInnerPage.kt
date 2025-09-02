@@ -1532,7 +1532,7 @@ fun ChangeListInnerPage(
                                         loadingOn = loadingOn,
                                         loadingOff = loadingOff,
                                         requireCloseBottomBar = true,
-                                        trueMergeFalseRebase = true,
+                                        trueMergeFalseRebase = !SettingsUtil.pullWithRebase(),
                                         curRepoFromParentPage = curRepo,
                                         requireShowToast = requireShowToast,
                                         activityContext = activityContext,
@@ -2863,7 +2863,7 @@ fun ChangeListInnerPage(
                                                                 loadingOn = loadingOn,
                                                                 loadingOff = loadingOff,
                                                                 requireCloseBottomBar = true,
-                                                                trueMergeFalseRebase = true,
+                                                                trueMergeFalseRebase = !SettingsUtil.pullWithRebase(),
                                                                 curRepoFromParentPage = curRepo,
                                                                 requireShowToast = requireShowToast,
                                                                 activityContext = activityContext,
@@ -2959,7 +2959,7 @@ fun ChangeListInnerPage(
                                                                 loadingText = loadingText,
                                                                 bottomBarActDoneCallback = bottomBarActDoneCallback,
                                                                 changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
-                                                                trueMergeFalseRebase = true,
+                                                                trueMergeFalseRebase = !SettingsUtil.pullWithRebase(),
                                                                 requireCloseBottomBar = true
                                                             )
                                                         }

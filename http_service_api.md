@@ -61,6 +61,7 @@ params:
 - gitEmail: using for create commit, if not pass this param, will use PuppyGit settings
 - forceUseIdMatchRepo: 1 enable or 0 disable, default 0, if enable, will force match repo by repo id, else will match by name first, if no match, then match by id
 - token: a valid token in your token list
+- pullWithRebase: 1 or 0, if 1, will use rebase when pulling, else merge, if omitted, will follow settings
 
 example:<br>
 http://127.0.0.1/pull?repoNameOrId=your_repo_name&token=your_token
@@ -109,6 +110,7 @@ params:
 - forceUseIdMatchRepo: 1 enable or 0 disable, default 0, if enable, will force match repo by repo id, else will match by name first, if no match, then match by id
 - token: a valid token in your token list
 - autoCommit: 1 enable or 0 disable, default 1: if enable and no conflict items exists, will auto commit all changes, and will check index, if index empty, will not pushing; if disable, will only do push, no commit changes, no index empty check, no conflict items check.
+- pullWithRebase: 1 or 0, if 1, will use rebase when pulling, else merge, if omitted, will follow settings
 
 example:<br>
 http://127.0.0.1/sync?repoNameOrId=your_repo_name&token=your_token
@@ -130,6 +132,7 @@ params:
 - gitUsername: using for create commit, if not pass this param, will use PuppyGit settings
 - gitEmail: using for create commit, if not pass this param, will use PuppyGit settings
 - token: a valid token in your token list
+- pullWithRebase: 1 or 0, if 1, will use rebase when pulling, else merge, if omitted, will follow settings
 
 
 example:<br>
@@ -172,6 +175,7 @@ params:
 - force: force push, 1 enable , 0 disable, default 0
 - autoCommit: 1 enable or 0 disable, default 1: if enable and no conflict items exists, will auto commit all changes, and will check index, if index empty, will not pushing; if disable, will only do push, no commit changes, no index empty check, no conflict items check.
 - token: a valid token in your token list
+- pullWithRebase: 1 or 0, if 1, will use rebase when pulling, else merge, if omitted, will follow settings
 
 
 example:<br>

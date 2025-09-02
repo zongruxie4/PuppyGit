@@ -158,6 +158,9 @@ internal class HttpServer(
                             val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
                             val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
 
+                            val pullWithRebase = call.request.queryParameters.get("pullWithRebase")?.let { it == "1" } ?: SettingsUtil.pullWithRebase()
+
+
                             //从数据库查询仓库列表
                             val validRepoListFromDb = getRepoListFromDb(
                                 call.request.queryParameters.getAll("repoNameOrId"),
@@ -196,6 +199,7 @@ internal class HttpServer(
                                     routeName = routeName,
                                     gitUsernameFromUrl = gitUsernameFromUrl,
                                     gitEmailFromUrl = gitEmailFromUrl,
+                                    pullWithRebase = pullWithRebase
                                 )
                             }
 
@@ -367,6 +371,8 @@ internal class HttpServer(
                             val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
                             val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
 
+                            val pullWithRebase = call.request.queryParameters.get("pullWithRebase")?.let { it == "1" } ?: SettingsUtil.pullWithRebase()
+
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
 
@@ -411,6 +417,7 @@ internal class HttpServer(
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     autoCommit = autoCommit,
                                     force = force,
+                                    pullWithRebase = pullWithRebase,
                                 )
                             }
 
@@ -462,6 +469,8 @@ internal class HttpServer(
                             val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
                             val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
 
+                            val pullWithRebase = call.request.queryParameters.get("pullWithRebase")?.let { it == "1" } ?: SettingsUtil.pullWithRebase()
+
 
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
                             doJobThenOffLoading {
@@ -488,6 +497,7 @@ internal class HttpServer(
                                     routeName = routeName,
                                     gitUsernameFromUrl = gitUsernameFromUrl,
                                     gitEmailFromUrl = gitEmailFromUrl,
+                                    pullWithRebase = pullWithRebase,
                                 )
                             }
 
@@ -611,6 +621,8 @@ internal class HttpServer(
                             val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
                             val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
 
+                            val pullWithRebase = call.request.queryParameters.get("pullWithRebase")?.let { it == "1" } ?: SettingsUtil.pullWithRebase()
+
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
                             doJobThenOffLoading {
@@ -639,6 +651,7 @@ internal class HttpServer(
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     autoCommit = autoCommit,
                                     force = force,
+                                    pullWithRebase = pullWithRebase,
                                 )
                             }
 
@@ -759,6 +772,7 @@ internal class HttpServer(
         routeName: String,
         gitUsernameFromUrl:String,
         gitEmailFromUrl:String,
+        pullWithRebase: Boolean, // true rebase, else merge
     ) {
         RepoActUtil.pullRepoList(
             sessionId = sessionId,
@@ -767,6 +781,8 @@ internal class HttpServer(
             routeName = routeName,
             gitUsernameFromUrl = gitUsernameFromUrl,
             gitEmailFromUrl = gitEmailFromUrl,
+
+            pullWithRebase = pullWithRebase,
         )
     }
 
@@ -800,6 +816,8 @@ internal class HttpServer(
         gitEmailFromUrl:String,
         autoCommit:Boolean,
         force:Boolean,
+        pullWithRebase: Boolean, // true rebase, else merge
+
     ) {
         RepoActUtil.syncRepoList(
             sessionId = sessionId,
@@ -809,6 +827,7 @@ internal class HttpServer(
             gitEmailFromUrl = gitEmailFromUrl,
             autoCommit = autoCommit,
             force = force,
+            pullWithRebase = pullWithRebase,
         )
     }
 }

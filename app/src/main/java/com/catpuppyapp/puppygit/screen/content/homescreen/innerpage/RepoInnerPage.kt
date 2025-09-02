@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -23,7 +22,6 @@ import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Publish
 import androidx.compose.material.icons.filled.SelectAll
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,7 +49,6 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
@@ -88,7 +85,6 @@ import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.etc.Ret
-import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
@@ -121,7 +117,6 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.forEachIndexedBetter
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
-import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.isLocked
 import com.catpuppyapp.puppygit.utils.isRepoReadyAndPathExist
@@ -579,7 +574,9 @@ fun RepoInnerPage(
 
     }
 
-    suspend fun doMerge(upstreamParam: Upstream?, curRepo:RepoEntity, trueMergeFalseRebase:Boolean=true):Unit {
+    suspend fun doMerge(upstreamParam: Upstream?, curRepo:RepoEntity):Unit {
+        val trueMergeFalseRebase = !SettingsUtil.pullWithRebase()
+
         //这的repo不能共享，不然一释放就要完蛋了，这repo不是rc是box单指针
         Repository.open(curRepo.fullSavePath).use { repo ->
             var upstream = upstreamParam
@@ -607,26 +604,16 @@ fun RepoInnerPage(
 //                    return@doMerge false
             }
 
-            val mergeResult = if(trueMergeFalseRebase) {
-                Libgit2Helper.mergeOneHead(
-                    repo,
-                    remoteRefSpec,
-                    usernameFromConfig,
-                    emailFromConfig,
-                    settings = settings
-                )
-            }else {
-                Libgit2Helper.mergeOrRebase(
-                    repo,
-                    targetRefName = remoteRefSpec,
-                    username = usernameFromConfig,
-                    email = emailFromConfig,
-                    requireMergeByRevspec = false,
-                    revspec = "",
-                    trueMergeFalseRebase = false,
-                    settings = settings
-                )
-            }
+            val mergeResult = Libgit2Helper.mergeOrRebase(
+                repo,
+                targetRefName = remoteRefSpec,
+                username = usernameFromConfig,
+                email = emailFromConfig,
+                requireMergeByRevspec = false,
+                revspec = "",
+                trueMergeFalseRebase = trueMergeFalseRebase,
+                settings = settings
+            )
 
             if (mergeResult.hasError()) {
                 //检查是否存在冲突条目
