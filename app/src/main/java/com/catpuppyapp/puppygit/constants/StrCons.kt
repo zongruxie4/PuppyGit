@@ -4,6 +4,8 @@ package com.catpuppyapp.puppygit.constants
  * non-translatable or no need translate strings (such as language name text)
  */
 object StrCons {
+    const val git = "Git"
+
     // language name
     // order by language code a-z
     const val langName_Arabic = "العربية"

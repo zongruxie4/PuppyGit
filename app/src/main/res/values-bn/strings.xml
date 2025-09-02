@@ -1268,6 +1268,7 @@
     <string name="contributors">অবদানকারীরা</string>
     <string name="encoding">এনকোডিং</string>
     <string name="convert_encoding">এনকোডিং রূপান্তর</string>
+    <string name="pull_with_rebase">Pull with Rebase</string>
 
 
 </resources>

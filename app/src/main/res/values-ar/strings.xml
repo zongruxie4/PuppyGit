@@ -1193,5 +1193,6 @@
     <string name="contributors">المساهمون</string>
     <string name="encoding">ترميز</string>
     <string name="convert_encoding">تحويل الترميز</string>
+    <string name="pull_with_rebase">Pull with Rebase</string>
 
 </resources>

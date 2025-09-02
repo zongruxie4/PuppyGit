@@ -1203,5 +1203,6 @@
     <string name="contributors">Katkıda Bulunanlar</string>
     <string name="encoding">Kodlama</string>
     <string name="convert_encoding">Kodlama Dönüştürme</string>
+    <string name="pull_with_rebase">Pull with Rebase</string>
 
 </resources>

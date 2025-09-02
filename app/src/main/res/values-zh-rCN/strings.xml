@@ -1275,6 +1275,7 @@
     <string name="contributors">贡献者</string>
     <string name="encoding">编码</string>
     <string name="convert_encoding">转换编码</string>
+    <string name="pull_with_rebase">Pull with Rebase</string>
 
 
 </resources>

@@ -1299,5 +1299,6 @@
     <string name="contributors">Contributors</string>
     <string name="encoding">Encoding</string>
     <string name="convert_encoding">Convert Encoding</string>
+    <string name="pull_with_rebase">Pull with Rebase</string>
 
 </resources>

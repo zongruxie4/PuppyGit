@@ -61,6 +61,7 @@ import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.compose.TwoLineSettingsItem
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dev.DevItem
 import com.catpuppyapp.puppygit.play.pro.R
@@ -155,6 +156,7 @@ fun SettingsInnerPage(
     val enableSnapshot_File = rememberSaveable { mutableStateOf(settingsState.value.editor.enableFileSnapshot) }
     val enableSnapshot_Content = rememberSaveable { mutableStateOf(settingsState.value.editor.enableContentSnapshot) }
     val diff_CreateSnapShotForOriginFileBeforeSave = rememberSaveable { mutableStateOf(settingsState.value.diff.createSnapShotForOriginFileBeforeSave) }
+    val pullWithRebase = rememberSaveable { mutableStateOf(settingsState.value.globalGitConfig.pullWithRebase) }
 
 
     val fileAssociationList = mutableCustomStateListOf(stateKeyTag, "fileAssociationList") { settingsState.value.editor.fileAssociationList }
@@ -1294,6 +1296,30 @@ fun SettingsInnerPage(
         // diff settings block end
 
 //        SettingsTitle(stringResource(R.string.clean))
+
+        SettingsTitle(StrCons.git)
+
+        SettingsContentSwitcher(
+            left = {
+                Text(stringResource(R.string.pull_with_rebase), fontSize = itemFontSize)
+            },
+            right = {
+                Switch(
+                    checked = pullWithRebase.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                val newValue = !pullWithRebase.value
+
+                //save
+                pullWithRebase.value = newValue
+                SettingsUtil.update {
+                    it.globalGitConfig.pullWithRebase = newValue
+                }
+            }
+        )
+
 
 
         SettingsTitle(stringResource(R.string.ssh))

@@ -1296,6 +1296,7 @@
     <string name="contributors">Участники</string>
     <string name="encoding">Кодирование</string>
     <string name="convert_encoding">Преобразование кодировки</string>
+    <string name="pull_with_rebase">Pull with Rebase</string>
 
 
 </resources>
