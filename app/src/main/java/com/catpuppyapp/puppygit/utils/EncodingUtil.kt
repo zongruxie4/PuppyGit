@@ -74,6 +74,14 @@ object EncodingUtil {
             return defaultCharsetName
         }
 
+        // UTF8 full covered ASCII, can't distinguish both when a file only contains ASCII chars.
+        // if a file only contains ASCII chars but expect UTF8,
+        //   it will detected ASCII rather than UTF8,
+        //   so just return UTF8, simple and better
+        if(originCharset == Constants.CHARSET_US_ASCII) {
+            return Constants.CHARSET_UTF_8
+        }
+
         // java doesn't support this, use gbk instead, gbk included gb2312, so should be ok
         // java不支持这个，用gbk替代，gbk包含gb2312，所以应该不会乱码
         if(originCharset == Constants.CHARSET_HZ_GB_2312) {
@@ -134,14 +142,18 @@ object EncodingUtil {
         // (5)
         detector.reset()
 
+
+
+        val encodingSupported = makeSureUseASupportedCharset(encoding)
+
         // utf8 with bom
-        if(encoding == Constants.CHARSET_UTF_8) {
-            if(isUtf8Bom(newInputStream())) {
+        if(encodingSupported == Constants.CHARSET_UTF_8) {
+            if(hasUtf8Bom(newInputStream())) {
                 return UTF8_BOM
             }
         }
 
-        return makeSureUseASupportedCharset(encoding)
+        return encodingSupported
     }
 
     fun resolveCharset(charsetName: String?) : Charset {
@@ -189,7 +201,7 @@ object EncodingUtil {
         }
     }
 
-    fun isUtf8Bom(inputStream: InputStream): Boolean {
+    fun hasUtf8Bom(inputStream: InputStream): Boolean {
         return inputStream.read() == 0xEF && inputStream.read() == 0xBB && inputStream.read() == 0xBF
     }
 
@@ -199,7 +211,7 @@ object EncodingUtil {
      *
      * note: even isn't utf8bom, the `inputStream` still already read (即使不是utf8bom，inputStream也已经被读取过了)
      */
-    fun consumeUtf8Bom(inputStream: InputStream) = isUtf8Bom(inputStream)
+    fun consumeUtf8Bom(inputStream: InputStream) = hasUtf8Bom(inputStream)
 
     fun ignoreBomIfNeed(newInputStream: () -> InputStream, charsetName: String?): IgnoreBomResult {
         if(charsetName == UTF8_BOM) {
