@@ -4,10 +4,12 @@
 ---
 1.1.3.9v115 - 20250828:
 - editor support detect file encoding
+- support rebase as default when pull
 
 
 
 - 文本编辑器支持检测文件编码
+- 支持pull时默认rebase
 
 ---
 1.1.3.8v114 - 20250825:
