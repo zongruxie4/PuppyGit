@@ -8,5 +8,11 @@ data class GlobalGitConfig(
 //    var version = SettingsVersion.commonStartVer  // since version 1
 
     var username:String="",
-    var email:String=""
+    var email:String="",
+
+    /**
+     * if true, will do rebase when pulling,
+     * if false, will do merge when pulling
+     */
+    var pullWithRebase: Boolean = false,
 )
