@@ -107,6 +107,7 @@ class AutomationService: BaseAccessibilityService() {
                 routeName = "'auto pull service'",
                 gitUsernameFromUrl="",
                 gitEmailFromUrl="",
+                pullWithRebase = SettingsUtil.pullWithRebase(),
             )
         }
 
