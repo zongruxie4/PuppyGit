@@ -726,9 +726,9 @@ object ChangeListFunctions {
                         dbContainer = dbContainer
                     )
                     if(pushSuccess) {
-                        requireShowToast(activityContext.getString(R.string.sync_success))
+                        requireShowToast(activityContext.getString(if(trueMergeFalseRebase) R.string.sync_merge_success else R.string.sync_rebase_success))
                     }else {
-                        requireShowToast(activityContext.getString(R.string.sync_failed))
+                        requireShowToast(activityContext.getString(if(trueMergeFalseRebase) R.string.sync_merge_failed else R.string.sync_rebase_failed))
                     }
 
                     if(requireCloseBottomBar) {
@@ -857,7 +857,7 @@ object ChangeListFunctions {
                 if(!mergeSuccess){
                     requireShowToast(activityContext.getString(if(trueMergeFalseRebase) R.string.merge_failed else R.string.rebase_failed))
                 }else {
-                    requireShowToast(activityContext.getString(if(trueMergeFalseRebase) R.string.pull_success else R.string.pull_rebase_success))
+                    requireShowToast(activityContext.getString(if(trueMergeFalseRebase) R.string.pull_merge_success else R.string.pull_rebase_success))
                 }
             }
 
@@ -872,7 +872,7 @@ object ChangeListFunctions {
             showErrAndSaveLog(
                 logTag = TAG,
                 logMsg = "doPull(trueMergeFalseRebase=$trueMergeFalseRebase) err: "+e.stackTraceToString(),
-                showMsg = activityContext.getString(if(trueMergeFalseRebase) R.string.pull_failed else R.string.pull_rebase_failed)+": "+e.localizedMessage,
+                showMsg = activityContext.getString(if(trueMergeFalseRebase) R.string.pull_merge_failed else R.string.pull_rebase_failed)+": "+e.localizedMessage,
                 showMsgMethod = requireShowToast,
                 repoId = curRepo.id
             )

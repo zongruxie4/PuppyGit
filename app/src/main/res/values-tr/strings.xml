@@ -1205,4 +1205,12 @@
     <string name="convert_encoding">Kodlama Dönüştürme</string>
     <string name="pull_with_rebase">Pull with Rebase</string>
 
+    <string name="pull_merge">Çek(Birleştir)</string>
+    <string name="pull_merge_success">Çek(Birleştir) Başarılı</string>
+    <string name="pull_merge_failed">Çek(Birleştir) Başarısız</string>
+    <string name="sync_merge">Senkronize Et(Birleştir)</string>
+    <string name="sync_merge_success">Senkronize Et(Birleştir) Başarılı</string>
+    <string name="sync_merge_failed">Senkronize Et(Birleştir) Başarısız</string>
+    <string name="sync_rebase_success">Senkronize Et(Yeniden Temel Oluştur) Başarılı</string>
+
 </resources>

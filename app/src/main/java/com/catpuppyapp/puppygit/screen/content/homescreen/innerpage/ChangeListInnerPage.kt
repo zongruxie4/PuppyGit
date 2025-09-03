@@ -868,7 +868,7 @@ fun ChangeListInnerPage(
                                     dbContainer = dbContainer
                                 )
                             }catch (e:Exception){
-                                showErrAndSaveLog(TAG,"require sync error: "+e.stackTraceToString(), activityContext.getString(R.string.sync_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
+                                showErrAndSaveLog(TAG, "require Sync(Merge) error: "+e.stackTraceToString(), activityContext.getString(R.string.sync_merge_failed)+": "+e.localizedMessage, requireShowToast, curRepo.id)
                             }finally {
                                 changeListRequireRefreshFromParentPage(curRepo)
                             }
@@ -896,7 +896,7 @@ fun ChangeListInnerPage(
                                     dbContainer = dbContainer
                                 )
                             }catch (e:Exception){
-                                showErrAndSaveLog(TAG,"require Sync(Rebase) error: "+e.stackTraceToString(), activityContext.getString(R.string.sync_rebase_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
+                                showErrAndSaveLog(TAG, "require Sync(Rebase) error: "+e.stackTraceToString(), activityContext.getString(R.string.sync_rebase_failed)+": "+e.localizedMessage, requireShowToast, curRepo.id)
                             }finally {
                                 changeListRequireRefreshFromParentPage(curRepo)
                             }

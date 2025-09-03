@@ -1195,4 +1195,12 @@
     <string name="convert_encoding">تحويل الترميز</string>
     <string name="pull_with_rebase">Pull with Rebase</string>
 
+    <string name="pull_merge">سحب (دمج)</string>
+    <string name="pull_merge_success">نجح السحب (دمج)</string>
+    <string name="pull_merge_failed">فشل السحب (دمج)</string>
+    <string name="sync_merge">مزامنة (دمج)</string>
+    <string name="sync_merge_success">نجحت المزامنة (دمج)</string>
+    <string name="sync_merge_failed">فشلت المزامنة (دمج)</string>
+    <string name="sync_rebase_success">نجحت المزامنة (إعادة تأسيس)</string>
+
 </resources>

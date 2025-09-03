@@ -1301,4 +1301,12 @@
     <string name="convert_encoding">Convert Encoding</string>
     <string name="pull_with_rebase">Pull with Rebase</string>
 
+    <string name="pull_merge">Pull(Merge)</string>
+    <string name="pull_merge_success">Pull(Merge) Success</string>
+    <string name="pull_merge_failed">Pull(Merge) Failed</string>
+    <string name="sync_merge">Sync(Merge)</string>
+    <string name="sync_merge_success">Sync(Merge) Success</string>
+    <string name="sync_merge_failed">Sync(Merge) Failed</string>
+    <string name="sync_rebase_success">Sync(Rebase) Success</string>
+
 </resources>

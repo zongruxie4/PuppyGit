@@ -206,7 +206,7 @@ fun ChangeListPageActions(
             DropdownMenuItem(
                 enabled = enableRepoAction,
 
-                text = { Text(stringResource(R.string.pull)) },
+                text = { Text(stringResource(R.string.pull_merge)) },
                 onClick = {
                     Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.pull)
                     requireDoActFromParentShowTextWhenDoingAct.value = activityContext.getString(R.string.pulling)
@@ -265,7 +265,7 @@ fun ChangeListPageActions(
             DropdownMenuItem(
                 enabled = enableRepoAction,
 
-                text = { Text(stringResource(R.string.sync)) },
+                text = { Text(stringResource(R.string.sync_merge)) },
                 onClick = {
                     Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.sync)
                     requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.syncing)

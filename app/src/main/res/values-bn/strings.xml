@@ -1270,5 +1270,12 @@
     <string name="convert_encoding">এনকোডিং রূপান্তর</string>
     <string name="pull_with_rebase">Pull with Rebase</string>
 
+    <string name="pull_merge">পুল(মার্জ)</string>
+    <string name="pull_merge_success">পুল(মার্জ) সফল</string>
+    <string name="pull_merge_failed">পুল(মার্জ) ব্যর্থ</string>
+    <string name="sync_merge">সিঙ্ক(মার্জ)</string>
+    <string name="sync_merge_success">সিঙ্ক(মার্জ) সফল</string>
+    <string name="sync_merge_failed">সিঙ্ক(মার্জ) ব্যর্থ</string>
+    <string name="sync_rebase_success">সিঙ্ক(রিবেস) সফল</string>
 
 </resources>

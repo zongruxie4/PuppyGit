@@ -1298,5 +1298,12 @@
     <string name="convert_encoding">Преобразование кодировки</string>
     <string name="pull_with_rebase">Pull with Rebase</string>
 
+    <string name="pull_merge">Получить (Слияние)</string>
+    <string name="pull_merge_success">Получение (Слияние) успешно</string>
+    <string name="pull_merge_failed">Получение (Слияние) не удалось</string>
+    <string name="sync_merge">Синхронизировать (Слияние)</string>
+    <string name="sync_merge_success">Синхронизировать (Слияние) успешно</string>
+    <string name="sync_merge_failed">Синхронизация (Слияние) не удалась</string>
+    <string name="sync_rebase_success">Синхронизировать (Перебазировать) успешно</string>
 
 </resources>

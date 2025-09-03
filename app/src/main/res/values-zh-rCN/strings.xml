@@ -1277,5 +1277,12 @@
     <string name="convert_encoding">转换编码</string>
     <string name="pull_with_rebase">Pull with Rebase</string>
 
+    <string name="pull_merge">拉取(合并)</string>
+    <string name="pull_merge_success">拉取(合并) 成功</string>
+    <string name="pull_merge_failed">拉取(合并) 失败</string>
+    <string name="sync_merge">同步(合并)</string>
+    <string name="sync_merge_success">同步(合并) 成功</string>
+    <string name="sync_merge_failed">同步(合并) 失败</string>
+    <string name="sync_rebase_success">同步(变基) 成功</string>
 
 </resources>
