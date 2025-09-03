@@ -1050,6 +1050,30 @@ fun SettingsInnerPage(
         }
 
 
+        SettingsTitle(StrCons.git)
+
+        SettingsContentSwitcher(
+            left = {
+                Text(stringResource(R.string.pull_with_rebase), fontSize = itemFontSize)
+            },
+            right = {
+                Switch(
+                    checked = pullWithRebase.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                val newValue = !pullWithRebase.value
+
+                //save
+                pullWithRebase.value = newValue
+                SettingsUtil.update {
+                    it.globalGitConfig.pullWithRebase = newValue
+                }
+            }
+        )
+
+
 
         SettingsTitle(stringResource(R.string.editor))
 
@@ -1296,30 +1320,6 @@ fun SettingsInnerPage(
         // diff settings block end
 
 //        SettingsTitle(stringResource(R.string.clean))
-
-        SettingsTitle(StrCons.git)
-
-        SettingsContentSwitcher(
-            left = {
-                Text(stringResource(R.string.pull_with_rebase), fontSize = itemFontSize)
-            },
-            right = {
-                Switch(
-                    checked = pullWithRebase.value,
-                    onCheckedChange = null
-                )
-            },
-            onClick = {
-                val newValue = !pullWithRebase.value
-
-                //save
-                pullWithRebase.value = newValue
-                SettingsUtil.update {
-                    it.globalGitConfig.pullWithRebase = newValue
-                }
-            }
-        )
-
 
 
         SettingsTitle(stringResource(R.string.ssh))
