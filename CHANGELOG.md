@@ -2,6 +2,14 @@
 
 
 ---
+1.1.4.0v116 - 20250907:
+- add name for intents
+
+
+
+- 为intents添加名称
+
+---
 1.1.3.9v115 - 20250828:
 - editor support detect file encoding
 - support rebase as default when pull
