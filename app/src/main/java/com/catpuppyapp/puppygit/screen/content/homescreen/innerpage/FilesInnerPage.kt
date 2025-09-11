@@ -658,6 +658,7 @@ fun FilesInnerPage(
         stringResource(R.string.copy_full_path),
         if (isFileChooser) "" else stringResource(R.string.copy_repo_relative_path),
         stringResource(R.string.details),
+        stringResource(R.string.share),
         stringResource(R.string.delete),
     )
 
@@ -980,6 +981,10 @@ fun FilesInnerPage(
 
         details@{
             initDetailsDialog(listOf(it))
+        },
+
+        share@{
+            FsUtils.shareFiles(activityContext, listOf(it))
         },
 
         delete@{
@@ -2729,6 +2734,8 @@ fun FilesInnerPage(
             stringResource(id = R.string.ignore),
             stringResource(id = R.string.remove_from_git),
             stringResource(id = R.string.details),
+            stringResource(R.string.share),
+
             if (proFeatureEnabled(importReposFromFilesTestPassed)) stringResource(id = R.string.import_as_repo) else "",  // empty string will be ignore when display menu items
             if (proFeatureEnabled(initRepoFromFilesPageTestPassed)) stringResource(id = R.string.init_repo) else "",
             stringResource(R.string.add_storage_path),
@@ -2745,6 +2752,10 @@ fun FilesInnerPage(
             },
             details@{
                 initDetailsDialog(selectedItems.value.toList())
+            },
+
+            share@{
+                FsUtils.shareFiles(activityContext, selectedItems.value.toList())
             },
 
             importAsRepo@{
@@ -2810,11 +2821,14 @@ fun FilesInnerPage(
 
         val hasItemSelected = { getSelectedFilesCount() > 0 }
         val hasDirSelected = { selectedItems.value.any { it.isDir } }
+        val hasFileSelected = { selectedItems.value.any { it.isFile } }
 
         val selectionModeMoreItemEnableList = (listOf(
             hasItemSelected, //是否启用ignore
             hasItemSelected, //是否启用remove from git
             hasItemSelected, //是否启用details
+            hasFileSelected, // enable `Share` or not
+
 //            {selectedItems.value.indexOfFirst{it.isDir} != -1}  //enable import as repo. (if has dirs in selected items, then enable else disbale) (after clicked then check better than check at every time selected list change)
             hasDirSelected,  // import as repos
             hasDirSelected, // init repo

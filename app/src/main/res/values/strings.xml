@@ -1309,4 +1309,7 @@
     <string name="sync_merge_failed">Sync(Merge) Failed</string>
     <string name="sync_rebase_success">Sync(Rebase) Success</string>
 
+    <string name="activity_not_found">No application found to handle this action</string>
+    <string name="share">Share</string>
+
 </resources>

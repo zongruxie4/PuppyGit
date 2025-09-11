@@ -10,11 +10,13 @@ import androidx.compose.runtime.MutableLongState
 import androidx.compose.runtime.MutableState
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
+import com.catpuppyapp.puppygit.activity.findActivity
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.EditorPayload
+import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
@@ -23,6 +25,8 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.AppSettings
+import com.catpuppyapp.puppygit.utils.mime.MimeType
+import com.catpuppyapp.puppygit.utils.mime.guessFromFile
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
@@ -1612,4 +1616,30 @@ object FsUtils {
 
         return null
     }
+
+    fun shareFiles(activityContext: Context, files: List<FileItemDto>) {
+        if(files.isEmpty()) {
+            return
+        }
+
+        val uris = mutableListOf<Uri>()
+        val mimeTypes = mutableListOf<MimeType>()
+        for (f in files) {
+            if(f.isFile) {
+                val file = f.toFile()
+                uris.add(getUriForFile(activityContext, file))
+                mimeTypes.add(MimeType.guessFromFile(file))
+            }
+        }
+
+        if(uris.isEmpty()) {
+            return
+        }
+
+        val intent = uris.createSendStreamIntent(activityContext, mimeTypes)
+            .withChooser()
+
+        ActivityUtil.startActivitySafe(activityContext.findActivity(), intent)
+    }
+
 }

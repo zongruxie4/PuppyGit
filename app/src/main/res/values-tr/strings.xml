@@ -1213,4 +1213,7 @@
     <string name="sync_merge_failed">Senkronize Et(Birleştir) Başarısız</string>
     <string name="sync_rebase_success">Senkronize Et(Yeniden Temel Oluştur) Başarılı</string>
 
+    <string name="activity_not_found">Bu eylemi gerçekleştirecek uygulama bulunamadı</string>
+    <string name="share">Paylaş</string>
+
 </resources>

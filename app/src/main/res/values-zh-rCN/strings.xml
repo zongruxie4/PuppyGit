@@ -1285,4 +1285,7 @@
     <string name="sync_merge_failed">同步(合并) 失败</string>
     <string name="sync_rebase_success">同步(变基) 成功</string>
 
+    <string name="activity_not_found">未找到可处理此操作的应用</string>
+    <string name="share">分享</string>
+
 </resources>

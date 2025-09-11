@@ -1306,4 +1306,7 @@
     <string name="sync_merge_failed">Синхронизация (Слияние) не удалась</string>
     <string name="sync_rebase_success">Синхронизировать (Перебазировать) успешно</string>
 
+    <string name="activity_not_found">Приложение не найдено для обработки данного действия</string>
+    <string name="share">Поделиться</string>
+
 </resources>

@@ -1203,4 +1203,7 @@
     <string name="sync_merge_failed">فشلت المزامنة (دمج)</string>
     <string name="sync_rebase_success">نجحت المزامنة (إعادة تأسيس)</string>
 
+    <string name="activity_not_found">لم يتم العثور على تطبيق للتعامل مع هذا الإجراء</string>
+    <string name="share">مشاركة</string>
+
 </resources>

@@ -1,12 +1,14 @@
 package com.catpuppyapp.puppygit.utils
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import android.provider.Settings
-import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.activity.findActivity
+import com.catpuppyapp.puppygit.play.pro.R
 
 private const val TAG = "ActivityUtil"
 
@@ -78,4 +80,20 @@ object ActivityUtil {
         }
     }
 
+    fun startActivitySafe(activity: Activity?, intent: Intent, options: Bundle? = null) {
+        if(activity == null) {
+            Msg.requireShowLongDuration("Can't found Activity for action.")
+
+            return
+        }
+
+        try {
+            activity.startActivity(intent, options)
+        } catch (e: ActivityNotFoundException) {
+            Msg.requireShowLongDuration(activity.getString(R.string.activity_not_found))
+        } catch (e: Exception) {
+            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+            MyLog.e(TAG, "#startActivitySafe() err: ${e.localizedMessage}")
+        }
+    }
 }
