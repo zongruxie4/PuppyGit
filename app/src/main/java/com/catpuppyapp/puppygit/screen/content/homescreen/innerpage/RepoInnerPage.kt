@@ -1086,16 +1086,18 @@ fun RepoInnerPage(
     }
 
 
-    val showUnshallowDialog = rememberSaveable { mutableStateOf(false)}
-    val unshallowRepoNames = rememberSaveable { mutableStateOf("")}
+    val showUnshallowDialog = rememberSaveable { mutableStateOf(false) }
+    val unshallowRepoNames = rememberSaveable { mutableStateOf("") }
     if(showUnshallowDialog.value) {
-        ConfirmDialog(
-            title = stringResource(id = R.string.unshallow),
+        ConfirmDialog2(
+            title = stringResource(R.string.unshallow),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Row {
-                        Text(text = stringResource(R.string.will_do_unshallow_for_repos) + ":")
+                    MySelectionContainer {
+                        Row {
+                            Text(text = stringResource(R.string.will_do_unshallow_for_repos) + ":")
+                        }
                     }
                     MySelectionContainer {
                         Row(
@@ -1109,25 +1111,26 @@ fun RepoInnerPage(
                                 text = unshallowRepoNames.value,
                                 fontWeight = FontWeight.ExtraBold,
                                 modifier = Modifier.padding(start = 16.dp),
-                                //                                color = Color.Unspecified
                             )
 
                         }
 
                     }
 
-                    Column {
-                        Text(
-                            text = stringResource(R.string.are_you_sure),
-                        )
-                        Text(
-                            text = "(" + stringResource(R.string.unshallow_success_cant_back) + ")",
-                            color = MyStyleKt.TextColor.danger()
-                        )
+                    Spacer(Modifier.height(10.dp))
+
+                    MySelectionContainer {
+                        Column {
+                            Text(
+                                text = stringResource(R.string.unshallow_success_cant_back),
+                                color = MyStyleKt.TextColor.danger()
+                            )
+                        }
                     }
                 }
             },
-            onCancel = { showUnshallowDialog.value=false}
+            okTextColor = MyStyleKt.TextColor.danger(),
+            onCancel = { showUnshallowDialog.value = false }
         ) {
             showUnshallowDialog.value = false
 
