@@ -2,6 +2,14 @@
 
 
 ---
+1.1.4.1v117 - 20250911:
+- add 'Share' for Files item
+
+
+
+- 文件管理器支持分享功能
+
+---
 1.1.4.0v116 - 20250907:
 - add name for intents
 
