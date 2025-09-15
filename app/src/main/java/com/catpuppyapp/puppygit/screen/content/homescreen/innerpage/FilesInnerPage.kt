@@ -928,6 +928,16 @@ fun FilesInnerPage(
         showRenameDialog.value = true  // 显示弹窗
     }
 
+    val shareFiles = { files: List<FileItemDto> ->
+        try {
+            FsUtils.shareFiles(activityContext, files)
+        }catch (e: Exception) {
+            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+            MyLog.e(TAG, "$TAG#shareFiles err: ${e.localizedMessage}")
+            e.printStackTrace()
+        }
+    }
+
     val fileMenuKeyActList = listOf<(FileItemDto) -> Unit>(
         open@{ item: FileItemDto ->
             val expectReadOnly = false
@@ -984,7 +994,7 @@ fun FilesInnerPage(
         },
 
         share@{
-            FsUtils.shareFiles(activityContext, listOf(it))
+            shareFiles(listOf(it))
         },
 
         delete@{
@@ -2755,7 +2765,7 @@ fun FilesInnerPage(
             },
 
             share@{
-                FsUtils.shareFiles(activityContext, selectedItems.value)
+                shareFiles(selectedItems.value)
             },
 
             importAsRepo@{
