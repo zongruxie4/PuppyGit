@@ -2755,7 +2755,7 @@ fun FilesInnerPage(
             },
 
             share@{
-                FsUtils.shareFiles(activityContext, selectedItems.value.toList())
+                FsUtils.shareFiles(activityContext, selectedItems.value)
             },
 
             importAsRepo@{
