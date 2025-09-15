@@ -1,1 +1,1 @@
-- add 'Share' for Files item
+- The file manager supports share files

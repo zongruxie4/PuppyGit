@@ -3,7 +3,7 @@
 
 ---
 1.1.4.1v117 - 20250911:
-- add 'Share' for Files item
+- The file manager supports share files
 
 
 
