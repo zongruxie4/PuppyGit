@@ -2,6 +2,14 @@
 
 
 ---
+1.1.4.2v118 - 20250918:
+- Make text of forget ssh keys dialog copyable 
+
+
+
+- 使忘记ssh密钥弹窗文字可拷贝
+
+---
 1.1.4.1v117 - 20250911:
 - The file manager supports share files
 
