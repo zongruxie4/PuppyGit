@@ -275,17 +275,23 @@ fun SettingsInnerPage(
 //    val showResetKnownHostsDialog = rememberSaveable { mutableStateOf(false) }
     val showForgetHostKeysDialog = rememberSaveable { mutableStateOf(false) }
     if(showForgetHostKeysDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.confirm),
+        ConfirmDialog3(
+            requireShowTitleCompose = true,
+            titleCompose = {},
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Text(stringResource(R.string.after_forgetting_the_host_keys_may_ask_confirm_again))
+                    MySelectionContainer {
+                        Text(
+                            text = stringResource(R.string.after_forgetting_the_host_keys_may_ask_confirm_again),
+                            fontSize = MyStyleKt.TextSize.medium
+                        )
+                    }
                 }
             },
             okBtnText = stringResource(R.string.forget),
             okTextColor = MyStyleKt.TextColor.danger(),
-            onCancel = {showForgetHostKeysDialog.value = false}
+            onCancel = { showForgetHostKeysDialog.value = false }
         ) {
             showForgetHostKeysDialog.value = false
             doJobThenOffLoading {
