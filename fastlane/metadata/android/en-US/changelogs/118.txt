@@ -1,1 +1,1 @@
-- Make text of forget ssh keys dialog copyable 
+- Make text of dialog copyable
