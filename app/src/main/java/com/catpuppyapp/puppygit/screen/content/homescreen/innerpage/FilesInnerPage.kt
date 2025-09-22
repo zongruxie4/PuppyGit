@@ -82,6 +82,7 @@ import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CardButton
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog2
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
@@ -2425,7 +2426,9 @@ fun FilesInnerPage(
                         Spacer(Modifier.height(5.dp))
 
                         if (isReposParentFolderForImport.value) {
-                            DefaultPaddingText(stringResource(R.string.will_scan_repos_under_folders))
+                            MySelectionContainer {
+                                DefaultPaddingText(stringResource(R.string.will_scan_repos_under_folders))
+                            }
                         }
                     }
                 },
@@ -2470,7 +2473,7 @@ fun FilesInnerPage(
             //用compose，这样就可仅更新大小记数，size(counting...): 变化的size
             textCompose = {
                 MySelectionContainer {
-                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    ScrollableColumn {
                         //这显示的是选中条目数，如果size==1显示，会产生是文件夹内文件和文件夹数量的错觉，令人困惑
                         if (itemList.size > 1) {
                             Row {
@@ -3099,7 +3102,7 @@ fun FilesInnerPage(
             title = stringResource(id = R.string.export),
             requireShowTextCompose = true,
             textCompose = {
-                ScrollableColumn {
+                CopyScrollableColumn {
                     Row {
                         Text(text = stringResource(id = R.string.will_export_files_to) + ":")
 

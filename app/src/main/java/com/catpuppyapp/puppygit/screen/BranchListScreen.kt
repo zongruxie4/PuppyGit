@@ -11,8 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -56,6 +55,7 @@ import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateBranchDialog
 import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
@@ -718,11 +718,13 @@ fun BranchListScreen(
                           replaceStringResList(stringResource(R.string.merge_left_into_right), listOf(left, right))
                       }
 
-                      Text(
-                          text = text,
-                          softWrap = true,
-                          overflow = TextOverflow.Visible
-                      )
+                      MySelectionContainer {
+                          Text(
+                              text = text,
+                              softWrap = true,
+                              overflow = TextOverflow.Visible
+                          )
+                      }
 
                   }
 
@@ -1128,7 +1130,7 @@ fun BranchListScreen(
             title = stringResource(R.string.rename),
             requireShowTextCompose = true,
             textCompose = {
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                ScrollableColumn {
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1266,20 +1268,23 @@ fun BranchListScreen(
             showPublishDialog.value = false  //关弹窗，不然页面重新渲染时会反复执行这里的代码块
             Msg.requireShowLongDuration(stringResource(R.string.plz_set_upstream_first))
         }else {  //显示弹窗
-            ConfirmDialog(title = stringResource(R.string.publish),
+            ConfirmDialog(
+                title = stringResource(R.string.publish),
                 requireShowTextCompose = true,
                 textCompose = {
-                    ScrollableColumn {
+                    CopyScrollableColumn {
                         Row {
                             Text(text = stringResource(R.string.local) +": ")
-                            Text(text = curBranch.shortName,
+                            Text(
+                                text = curBranch.shortName,
                                 fontWeight = FontWeight.ExtraBold
-                                )
+                            )
                         }
 
                         Row {
                             Text(text = stringResource(R.string.remote) +": ")
-                            Text(text = upstream?.remoteBranchShortRefSpec ?: "",
+                            Text(
+                                text = upstream?.remoteBranchShortRefSpec ?: "",
                                 fontWeight = FontWeight.ExtraBold
                             )
                         }
@@ -1293,7 +1298,9 @@ fun BranchListScreen(
                         // 你勾选了force，就会错误覆盖，但如果本地没有有效上游则禁用force，这样就不会错误覆盖了
                         if(upstream != null && upstream.isPublished) {
                             Spacer(modifier = Modifier.height(10.dp))
-                            MyCheckBox(text = stringResource(R.string.force), value = forcePublish)
+                            DisableSelection {
+                                MyCheckBox(text = stringResource(R.string.force), value = forcePublish)
+                            }
 
                             //如果勾选force，显示注意事项和push with lease选项
                             if(forcePublish.value) {

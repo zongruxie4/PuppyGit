@@ -30,46 +30,44 @@ fun RepoInfoDialog(
     val context = LocalContext.current
 
     InfoDialog(showTitleInfoDialog) {
-        ScrollableColumn {
-            if(prependContent != null) {
-                prependContent()
-                RepoInfoDialogItemSpacer()
-            }
-
-            Row {
-                Text(stringResource(id = R.string.repo) + ": " + curRepo.repoName)
-            }
+        if(prependContent != null) {
+            prependContent()
             RepoInfoDialogItemSpacer()
-
-            if (dbIntToBool(curRepo.isDetached)) {
-                Row {
-                    Text(stringResource(R.string.branch) + ": " + Cons.gitDetachedHead)
-                }
-            } else {
-                Row {
-                    Text(stringResource(R.string.branch) + ": " + (curRepo.branch))
-                }
-
-                if (curRepo.upstreamBranch.isNotBlank()) {
-                    RepoInfoDialogItemSpacer()
-
-                    Row {
-                        Text(stringResource(R.string.upstream) + ": " + (curRepo.upstreamBranch))
-                    }
-                }
-            }
-
-            RepoInfoDialogItemSpacer()
-            Row {
-                Text(stringResource(R.string.repo_state) + ": " + curRepo.getRepoStateStr(context))
-            }
-
-            if(appendContent != null) {
-                RepoInfoDialogItemSpacer()
-                appendContent()
-            }
-
         }
+
+        Row {
+            Text(stringResource(id = R.string.repo) + ": " + curRepo.repoName)
+        }
+        RepoInfoDialogItemSpacer()
+
+        if (dbIntToBool(curRepo.isDetached)) {
+            Row {
+                Text(stringResource(R.string.branch) + ": " + Cons.gitDetachedHead)
+            }
+        } else {
+            Row {
+                Text(stringResource(R.string.branch) + ": " + (curRepo.branch))
+            }
+
+            if (curRepo.upstreamBranch.isNotBlank()) {
+                RepoInfoDialogItemSpacer()
+
+                Row {
+                    Text(stringResource(R.string.upstream) + ": " + (curRepo.upstreamBranch))
+                }
+            }
+        }
+
+        RepoInfoDialogItemSpacer()
+        Row {
+            Text(stringResource(R.string.repo_state) + ": " + curRepo.getRepoStateStr(context))
+        }
+
+        if(appendContent != null) {
+            RepoInfoDialogItemSpacer()
+            appendContent()
+        }
+
     }
 }
 

@@ -40,8 +40,10 @@ fun ConfirmDialog(
             if(requireShowTextCompose) {
                 textCompose()
             }else {
-                Row {
-                    Text(text)
+                CopyScrollableColumn {
+                    Row {
+                        Text(text)
+                    }
                 }
             }
         },

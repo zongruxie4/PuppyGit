@@ -42,6 +42,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.InLineCopyIcon
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.SettingsContent
 import com.catpuppyapp.puppygit.compose.SettingsContentSwitcher
@@ -137,12 +138,19 @@ fun ServiceInnerPage(
                         componentHeight.intValue = layoutCoordinates.size.height
                     }
                 ) {
-                    Text(stringResource(R.string.per_line_one_ip), fontWeight = FontWeight.Light)
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Text(stringResource(R.string.if_empty_will_reject_all_requests), fontWeight = FontWeight.Light)
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Text(stringResource(R.string.use_asterisk_to_match_all_ips), fontWeight = FontWeight.Light)
-                    Spacer(modifier = Modifier.height(5.dp))
+                    MySelectionContainer {
+                        Column {
+                            Text(stringResource(R.string.per_line_one_ip), fontWeight = FontWeight.Light)
+                            Spacer(modifier = Modifier.height(5.dp))
+
+                            Text(stringResource(R.string.if_empty_will_reject_all_requests), fontWeight = FontWeight.Light)
+                            Spacer(modifier = Modifier.height(5.dp))
+
+                            Text(stringResource(R.string.use_asterisk_to_match_all_ips), fontWeight = FontWeight.Light)
+                            Spacer(modifier = Modifier.height(5.dp))
+                        }
+                    }
+
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -205,10 +213,15 @@ fun ServiceInnerPage(
                         componentHeight.intValue = layoutCoordinates.size.height
                     }
                 ) {
-                    Text(stringResource(R.string.per_line_one_token), fontWeight = FontWeight.Light)
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Text(stringResource(R.string.if_empty_will_reject_all_requests), fontWeight = FontWeight.Light)
-                    Spacer(modifier = Modifier.height(5.dp))
+                    MySelectionContainer {
+                        Column {
+                            Text(stringResource(R.string.per_line_one_token), fontWeight = FontWeight.Light)
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Text(stringResource(R.string.if_empty_will_reject_all_requests), fontWeight = FontWeight.Light)
+                            Spacer(modifier = Modifier.height(5.dp))
+                        }
+                    }
+
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()

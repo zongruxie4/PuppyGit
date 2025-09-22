@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -91,7 +92,10 @@ fun SshUnknownHostDialog(
                     Spacer(Modifier.height(spacerHeight))
                 }
 
-                MyCheckBox(stringResource(R.string.i_trust_the_host), iTrustTheHost)
+                DisableSelection {
+                    MyCheckBox(stringResource(R.string.i_trust_the_host), iTrustTheHost)
+                }
+
                 if (iTrustTheHost.value) {
                     DefaultPaddingText(stringResource(R.string.operation_aborted_after_allowing_maybe_retry), color = MyStyleKt.TextColor.getHighlighting())
                 }

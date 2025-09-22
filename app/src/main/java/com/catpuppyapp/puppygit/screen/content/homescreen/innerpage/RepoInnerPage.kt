@@ -900,7 +900,6 @@ fun RepoInnerPage(
                                 text = willDeleteRepoNames.value,
                                 fontWeight = FontWeight.ExtraBold,
                                 modifier = Modifier.padding(start = 16.dp),
-                                //                                color = Color.Unspecified
                             )
 
                         }
@@ -1007,7 +1006,7 @@ fun RepoInnerPage(
             title = stringResource(R.string.rename_repo),
             requireShowTextCompose = true,
             textCompose = {
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                ScrollableColumn {
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1120,12 +1119,10 @@ fun RepoInnerPage(
                     Spacer(Modifier.height(10.dp))
 
                     MySelectionContainer {
-                        Column {
-                            Text(
-                                text = stringResource(R.string.unshallow_success_cant_back),
-                                color = MyStyleKt.TextColor.danger()
-                            )
-                        }
+                        Text(
+                            text = stringResource(R.string.unshallow_success_cant_back),
+                            color = MyStyleKt.TextColor.danger()
+                        )
                     }
                 }
             },
@@ -1442,245 +1439,120 @@ fun RepoInnerPage(
             title = stringResource(R.string.api),
             requireShowTextCompose = true,
             textCompose = {
-                MySelectionContainer {
-                    ScrollableColumn {
-                        val pullurl = apiPullUrl.value
-                        val pushurl = apiPushUrl.value
-                        val syncurl = apiSyncUrl.value
+                ScrollableColumn {
+                    val pullurl = apiPullUrl.value
+                    val pushurl = apiPushUrl.value
+                    val syncurl = apiSyncUrl.value
 
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(.8f)
+                                .align(Alignment.CenterStart),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth(.8f)
-                                    .align(Alignment.CenterStart),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(stringResource(R.string.pull)+": ", fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.pull)+": ", fontWeight = FontWeight.Bold)
 
+                            MySelectionContainer {
                                 Text(text = pullurl)
                             }
-
-                            IconButton(
-                                modifier = Modifier
-                                    .fillMaxWidth(.2f)
-                                    .align(Alignment.CenterEnd),
-                                onClick = {
-                                    clipboardManager.setText(AnnotatedString(pullurl))
-                                    Msg.requireShow(activityContext.getString(R.string.copied))
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ContentCopy,
-                                    contentDescription = stringResource(R.string.copy)
-                                )
-                            }
                         }
 
-                        MyHorizontalDivider(Modifier.padding(top = 10.dp, bottom = 10.dp))
-
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
+                        IconButton(
+                            modifier = Modifier
+                                .fillMaxWidth(.2f)
+                                .align(Alignment.CenterEnd),
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(pullurl))
+                                Msg.requireShow(activityContext.getString(R.string.copied))
+                            }
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth(.8f)
-                                    .align(Alignment.CenterStart),
-                                verticalAlignment = Alignment.CenterVertically
-                            )  {
-                                Text(stringResource(R.string.push)+": ", fontWeight = FontWeight.Bold)
+                            Icon(
+                                imageVector = Icons.Filled.ContentCopy,
+                                contentDescription = stringResource(R.string.copy)
+                            )
+                        }
+                    }
+
+                    MyHorizontalDivider(Modifier.padding(top = 10.dp, bottom = 10.dp))
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(.8f)
+                                .align(Alignment.CenterStart),
+                            verticalAlignment = Alignment.CenterVertically
+                        )  {
+                            Text(stringResource(R.string.push)+": ", fontWeight = FontWeight.Bold)
+
+                            MySelectionContainer {
                                 Text(text = pushurl)
                             }
-
-                            IconButton(
-                                modifier = Modifier
-                                    .fillMaxWidth(.2f)
-                                    .align(Alignment.CenterEnd),
-                                onClick = {
-                                    clipboardManager.setText(AnnotatedString(pushurl))
-                                    Msg.requireShow(activityContext.getString(R.string.copied))
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ContentCopy,
-                                    contentDescription = stringResource(R.string.copy)
-                                )
-                            }
                         }
 
-                        MyHorizontalDivider(Modifier.padding(top = 10.dp, bottom = 10.dp))
-
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
+                        IconButton(
+                            modifier = Modifier
+                                .fillMaxWidth(.2f)
+                                .align(Alignment.CenterEnd),
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(pushurl))
+                                Msg.requireShow(activityContext.getString(R.string.copied))
+                            }
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth(.8f)
-                                    .align(Alignment.CenterStart),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(stringResource(R.string.sync)+": ", fontWeight = FontWeight.Bold)
+                            Icon(
+                                imageVector = Icons.Filled.ContentCopy,
+                                contentDescription = stringResource(R.string.copy)
+                            )
+                        }
+                    }
 
+                    MyHorizontalDivider(Modifier.padding(top = 10.dp, bottom = 10.dp))
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(.8f)
+                                .align(Alignment.CenterStart),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(stringResource(R.string.sync)+": ", fontWeight = FontWeight.Bold)
+
+                            MySelectionContainer {
                                 Text(text = syncurl)
                             }
-
-                            IconButton(
-                                modifier = Modifier
-                                    .fillMaxWidth(.2f)
-                                    .align(Alignment.CenterEnd),
-                                onClick = {
-                                    clipboardManager.setText(AnnotatedString(syncurl))
-                                    Msg.requireShow(activityContext.getString(R.string.copied))
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ContentCopy,
-                                    contentDescription = stringResource(R.string.copy)
-                                )
-                            }
                         }
 
-//                        HorizontalDivider()
-
-//                        Spacer(Modifier.height(30.dp))
-
-
+                        IconButton(
+                            modifier = Modifier
+                                .fillMaxWidth(.2f)
+                                .align(Alignment.CenterEnd),
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(syncurl))
+                                Msg.requireShow(activityContext.getString(R.string.copied))
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ContentCopy,
+                                contentDescription = stringResource(R.string.copy)
+                            )
+                        }
                     }
                 }
             },
-            onCancel = {showApiDialog2.value = false},
+            onCancel = { showApiDialog2.value = false },
             cancelBtnText = stringResource(R.string.close),
             showOk = false
         ) {}
     }
 
 
-    val apiConfigBeanList = mutableCustomStateListOf(stateKeyTag, "apiConfigDtoList") { listOf<ConfigBean>() }
-    val showApiDialog = rememberSaveable { mutableStateOf(false) }
-    if(showApiDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.api),
-            requireShowTextCompose = true,
-            textCompose = {
-                MySelectionContainer {
-                    ScrollableColumn {
-                        apiConfigBeanList.value.forEachBetter {
-                            val pullurl = it.api.pull_example
-                            val pushurl = it.api.push_example
-                            val syncurl = it.api.sync_example
 
-                            Row {
-                                Text(it.repoName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            }
-                            Spacer(Modifier.height(10.dp))
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(.8f)
-                                        .align(Alignment.CenterStart),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(stringResource(R.string.pull)+": ", fontWeight = FontWeight.Bold)
-
-                                    Text(text = pullurl)
-                                }
-
-                                IconButton(
-                                    modifier = Modifier
-                                        .fillMaxWidth(.2f)
-                                        .align(Alignment.CenterEnd),
-                                    onClick = {
-                                        clipboardManager.setText(AnnotatedString(pullurl))
-                                        Msg.requireShow(activityContext.getString(R.string.copied))
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.ContentCopy,
-                                        contentDescription = stringResource(R.string.copy)
-                                    )
-                                }
-                            }
-
-                            MyHorizontalDivider()
-
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(.8f)
-                                        .align(Alignment.CenterStart),
-                                    verticalAlignment = Alignment.CenterVertically
-                                )  {
-                                    Text(stringResource(R.string.push)+": ", fontWeight = FontWeight.Bold)
-                                    Text(text = pushurl)
-                                }
-
-                                IconButton(
-                                    modifier = Modifier
-                                        .fillMaxWidth(.2f)
-                                        .align(Alignment.CenterEnd),
-                                    onClick = {
-                                        clipboardManager.setText(AnnotatedString(pushurl))
-                                        Msg.requireShow(activityContext.getString(R.string.copied))
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.ContentCopy,
-                                        contentDescription = stringResource(R.string.copy)
-                                    )
-                                }
-                            }
-
-                            MyHorizontalDivider()
-
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(.8f)
-                                        .align(Alignment.CenterStart),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(stringResource(R.string.sync)+": ", fontWeight = FontWeight.Bold)
-
-                                    Text(text = syncurl)
-                                }
-
-                                IconButton(
-                                    modifier = Modifier
-                                        .fillMaxWidth(.2f)
-                                        .align(Alignment.CenterEnd),
-                                    onClick = {
-                                        clipboardManager.setText(AnnotatedString(syncurl))
-                                        Msg.requireShow(activityContext.getString(R.string.copied))
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.ContentCopy,
-                                        contentDescription = stringResource(R.string.copy)
-                                    )
-                                }
-                            }
-
-                            MyHorizontalDivider()
-
-                            Spacer(Modifier.height(30.dp))
-
-                        }
-
-                    }
-                }
-            },
-            onCancel = {showApiDialog.value = false},
-            cancelBtnText = stringResource(R.string.close),
-            showOk = false
-        ) {}
-    }
 
 
 

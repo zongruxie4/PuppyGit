@@ -350,13 +350,11 @@ fun DomainCredentialListScreen(
     val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
     if(showTitleInfoDialog.value) {
         InfoDialog(showTitleInfoDialog) {
-            ScrollableColumn {
-                Text(titleString.value)
+            Text(titleString.value)
 
-                if(titleSecondaryString.value.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(titleSecondaryString.value)
-                }
+            if(titleSecondaryString.value.isNotBlank()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(titleSecondaryString.value)
             }
         }
     }

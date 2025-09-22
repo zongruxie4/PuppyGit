@@ -70,11 +70,15 @@ fun DiffCommitsDialog(
             //只能有一个节点，因为这个东西会在lambda后返回，而lambda只能有一个返回值，弄两个布局就乱了，和react组件只能有一个root div一个道理 。
             ScrollableColumn {
 
-                Text(text = stringResource(R.string.compare_left_to_right))
+                MySelectionContainer {
+                    Text(text = stringResource(R.string.compare_left_to_right))
+                }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Text(text = stringResource(R.string.note_leave_commit_hash_empty_to_compare_with_local_worktree), fontWeight = FontWeight.Light)
+                MySelectionContainer {
+                    Text(text = stringResource(R.string.note_leave_commit_hash_empty_to_compare_with_local_worktree), fontWeight = FontWeight.Light)
+                }
 
                 Spacer(modifier = Modifier.height(15.dp))
 

@@ -161,12 +161,6 @@ fun CheckoutDialog(
         textCompose = {
             //只能有一个节点，因为这个东西会在lambda后返回，而lambda只能有一个返回值，弄两个布局就乱了，和react组件只能有一个root div一个道理 。
             ScrollableColumn {
-//                    Row {
-//                        Text(
-//                            text = appContext.getString(R.string.warn_please_commit_your_change_before_checkout_or_merge),
-//                            color = Color.Red
-//                        )
-//                    }
                 Row(modifier = Modifier.padding(5.dp)) {
                     // spacer
                 }
@@ -261,11 +255,13 @@ fun CheckoutDialog(
                     if(proFeatureEnabled(overwriteExistWhenCreateBranchTestPassed)) {
                         MyCheckBox(text = stringResource(R.string.overwrite_if_exist), value = overwriteIfBranchExist)
                         if(overwriteIfBranchExist.value) {
-                            Row {
-                                DefaultPaddingText(
-                                    text = stringResource(R.string.will_overwrite_if_branch_already_exists),
-                                    color = MyStyleKt.TextColor.danger(),
-                                )
+                            MySelectionContainer {
+                                Row {
+                                    DefaultPaddingText(
+                                        text = stringResource(R.string.will_overwrite_if_branch_already_exists),
+                                        color = MyStyleKt.TextColor.danger(),
+                                    )
+                                }
                             }
 
                         }
@@ -274,10 +270,12 @@ fun CheckoutDialog(
                     if(proFeatureEnabled(dontCheckoutWhenCreateBranchAtCheckoutDialogTestPassed)) {
                         MyCheckBox(text = stringResource(R.string.dont_checkout), value = dontCheckout)
                         if(dontCheckout.value) {
-                            Row {
-                                DefaultPaddingText(
-                                    text = stringResource(R.string.wont_checkout_only_create_branch),
-                                )
+                            MySelectionContainer {
+                                Row {
+                                    DefaultPaddingText(
+                                        text = stringResource(R.string.wont_checkout_only_create_branch),
+                                    )
+                                }
                             }
 
                         }
@@ -306,11 +304,13 @@ fun CheckoutDialog(
                     MyCheckBox(text = stringResource(R.string.force), value = forceCheckout)
 
                     if(forceCheckout.value) {
-                        Row {
-                            DefaultPaddingText(
-                                text = stringResource(R.string.warn_force_checkout_will_overwrite_uncommitted_changes),
-                                color = MyStyleKt.TextColor.danger(),
-                            )
+                        MySelectionContainer {
+                            Row {
+                                DefaultPaddingText(
+                                    text = stringResource(R.string.warn_force_checkout_will_overwrite_uncommitted_changes),
+                                    color = MyStyleKt.TextColor.danger(),
+                                )
+                            }
                         }
                     }
                 }

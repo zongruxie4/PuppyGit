@@ -54,6 +54,7 @@ import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
@@ -319,12 +320,14 @@ fun RemoteListScreen(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Row {
-                        Text(text = stringResource(id = R.string.remote)+": ")
-                        Text(text = curObjInState.value.remoteName,
-                            fontWeight = FontWeight.ExtraBold,
-                            overflow = TextOverflow.Visible
-                        )
+                    MySelectionContainer {
+                        Row {
+                            Text(text = stringResource(id = R.string.remote)+": ")
+                            Text(text = curObjInState.value.remoteName,
+                                fontWeight = FontWeight.ExtraBold,
+                                overflow = TextOverflow.Visible
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(15.dp))
                     TextField(
@@ -359,7 +362,9 @@ fun RemoteListScreen(
                     )
 
                     if(isPushUrl.value) {
-                        Text(text = stringResource(R.string.leave_it_empty_will_use_url), color=MyStyleKt.TextColor.getHighlighting())
+                        MySelectionContainer {
+                            Text(text = stringResource(R.string.leave_it_empty_will_use_url), color=MyStyleKt.TextColor.getHighlighting())
+                        }
                     }
                 }
             },

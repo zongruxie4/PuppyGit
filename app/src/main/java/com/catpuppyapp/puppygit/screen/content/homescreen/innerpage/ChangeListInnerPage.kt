@@ -1897,7 +1897,7 @@ fun ChangeListInnerPage(
             title = stringResource(R.string.checkout),
             requireShowTextCompose = true,
             textCompose = {
-                Column {
+                ScrollableColumn {
 //                    PaddingText(stringResource(R.string.target)+":", fontWeight = FontWeight.ExtraBold)
                     SingleSelection(
                         itemList = checkoutList.value,
@@ -1931,10 +1931,12 @@ fun ChangeListInnerPage(
 
                     MyCheckBox(text = stringResource(R.string.force), value = checkoutForce)
                     if(checkoutForce.value) {
-                        DefaultPaddingText(
-                            text = stringResource(R.string.if_local_has_uncommitted_changes_will_overwrite),
-                            color = MyStyleKt.TextColor.danger(),
-                        )
+                        MySelectionContainer {
+                            DefaultPaddingText(
+                                text = stringResource(R.string.if_local_has_uncommitted_changes_will_overwrite),
+                                color = MyStyleKt.TextColor.danger(),
+                            )
+                        }
                     }
                 }
             },

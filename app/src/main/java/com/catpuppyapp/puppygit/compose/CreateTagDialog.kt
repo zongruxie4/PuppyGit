@@ -178,10 +178,12 @@ fun CreateTagDialog(
 
                 if(annotate.value) {
                     if(gitConfigUsername.value.isBlank() || gitConfigEmail.value.isBlank()) {  //未设置用户名和邮箱
-                        DefaultPaddingText(
-                            text = stringResource(R.string.err_must_set_username_and_email_before_create_annotate_tag),
-                            color = MyStyleKt.TextColor.error()
-                        )
+                        MySelectionContainer {
+                            DefaultPaddingText(
+                                text = stringResource(R.string.err_must_set_username_and_email_before_create_annotate_tag),
+                                color = MyStyleKt.TextColor.error()
+                            )
+                        }
                     }else {  //设置了用户名和邮箱，显示msg输入框
                         Row(modifier = Modifier.padding(5.dp)) {
                             // spacer
@@ -234,11 +236,13 @@ fun CreateTagDialog(
                 MyCheckBox(text = stringResource(R.string.force), value = force)
 
                 if(force.value) {
-                    Row {
-                        DefaultPaddingText(
-                            text = stringResource(R.string.warn_will_override_if_tag_name_already_exists),
-                            color = MyStyleKt.TextColor.danger()
-                        )
+                    MySelectionContainer {
+                        Row {
+                            DefaultPaddingText(
+                                text = stringResource(R.string.warn_will_override_if_tag_name_already_exists),
+                                color = MyStyleKt.TextColor.danger()
+                            )
+                        }
                     }
                 }
 

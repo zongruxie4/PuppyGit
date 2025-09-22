@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CenterPaddingRow
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
@@ -58,6 +59,7 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
@@ -348,7 +350,9 @@ fun SubmoduleListScreen(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Text(stringResource(R.string.will_sync_info_from_gitmodules_to_selected_configs))
+                    MySelectionContainer {
+                        Text(stringResource(R.string.will_sync_info_from_gitmodules_to_selected_configs))
+                    }
                     Spacer(Modifier.height(15.dp))
                     MyCheckBox(text = stringResource(R.string.parent_config), value = syncParentConfig)
                     MyCheckBox(text = stringResource(R.string.submodule_config), value = syncSubmoduleConfig)
@@ -400,7 +404,7 @@ fun SubmoduleListScreen(
         ConfirmDialog2(title = activityContext.getString(R.string.init_repo),
             requireShowTextCompose = true,
             textCompose = {
-                ScrollableColumn {
+                CopyScrollableColumn {
                     Text(stringResource(R.string.will_do_init_repo_for_selected_submodules), fontWeight = FontWeight.Light)
                     Spacer(Modifier.height(10.dp))
                     Text(stringResource(R.string.most_time_need_not_do_init_repo_by_yourself))
@@ -443,7 +447,7 @@ fun SubmoduleListScreen(
             title = activityContext.getString(R.string.restore_dot_git_file),
             requireShowTextCompose = true,
             textCompose = {
-                ScrollableColumn {
+                CopyScrollableColumn {
                     Text(stringResource(R.string.will_try_restore_git_file_for_selected_submodules), fontWeight = FontWeight.Light)
                     Spacer(Modifier.height(10.dp))
                     Text(stringResource(R.string.most_time_need_not_restore_dot_git_file_by_yourself))
@@ -487,7 +491,9 @@ fun SubmoduleListScreen(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Text(stringResource(R.string.reload_submodule_note))
+                    MySelectionContainer {
+                        Text(stringResource(R.string.reload_submodule_note))
+                    }
                     Spacer(Modifier.height(15.dp))
                     MyCheckBox(text = stringResource(R.string.force), forceReload)
                 }
@@ -577,7 +583,9 @@ fun SubmoduleListScreen(
                     CredentialSelector(credentialList.value, selectedCredentialIdx)
 
                     Spacer(Modifier.height(10.dp))
-                    DefaultPaddingText(stringResource(R.string.import_repos_link_credential_note))
+                    MySelectionContainer {
+                        DefaultPaddingText(stringResource(R.string.import_repos_link_credential_note))
+                    }
                 }
             },
             onCancel = { showImportToReposDialog.value = false },
@@ -694,14 +702,18 @@ fun SubmoduleListScreen(
                 ScrollableColumn {
                     MyCheckBox(text = stringResource(R.string.del_config), value = deleteConfigForDeleteDialog)
                     if(deleteConfigForDeleteDialog.value) {
-                        DefaultPaddingText(stringResource(R.string.submodule_del_config_info_note))
+                        MySelectionContainer {
+                            DefaultPaddingText(stringResource(R.string.submodule_del_config_info_note))
+                        }
                     }
 
                     Spacer(Modifier.height(15.dp))
 
                     MyCheckBox(text = stringResource(R.string.del_files), value = deleteFilesForDeleteDialog)
                     if(deleteFilesForDeleteDialog.value) {
-                        DefaultPaddingText(stringResource(R.string.submodule_del_files_on_disk_note))
+                        MySelectionContainer {
+                            DefaultPaddingText(stringResource(R.string.submodule_del_files_on_disk_note))
+                        }
                     }
                 }
             },
@@ -777,7 +789,9 @@ fun SubmoduleListScreen(
 
                     MyCheckBox(text = stringResource(R.string.recursive), value = recursiveClone)
                     if(recursiveClone.value) {
-                        DefaultPaddingText(stringResource(R.string.recursive_clone_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger())
+                        MySelectionContainer {
+                            DefaultPaddingText(stringResource(R.string.recursive_clone_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger())
+                        }
                     }
                     Spacer(Modifier.height(10.dp))
 
@@ -884,7 +898,9 @@ fun SubmoduleListScreen(
 
                     MyCheckBox(text = stringResource(R.string.recursive), value = recursiveUpdate)
                     if(recursiveUpdate.value) {
-                        DefaultPaddingText(stringResource(R.string.recursive_update_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger())
+                        MySelectionContainer {
+                            DefaultPaddingText(stringResource(R.string.recursive_update_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger())
+                        }
                     }
                     Spacer(Modifier.height(10.dp))
 

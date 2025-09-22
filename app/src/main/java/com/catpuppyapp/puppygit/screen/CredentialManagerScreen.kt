@@ -256,23 +256,21 @@ fun CredentialManagerScreen(
     val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
     if(showTitleInfoDialog.value) {
         InfoDialog(showTitleInfoDialog) {
-            ScrollableColumn {
-                Text(titleString.value)
+            Text(titleString.value)
 
-                if(titleSecondaryString.value.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(titleSecondaryString.value)
-                }
+            if(titleSecondaryString.value.isNotBlank()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(titleSecondaryString.value)
+            }
 
-                if(isLinkMode) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(stringResource(R.string.repo)+": "+curRepo.value.repoName)
-                    Text(stringResource(R.string.remote)+": "+remote.value.remoteName)
-                    val fetchCredential = list.value.find { remote.value.credentialId == it.id }
-                    val pushCredential = list.value.find { remote.value.pushCredentialId == it.id }
-                    Text(stringResource(R.string.fetch_credential)+": "+fetchCredential?.name)
-                    Text(stringResource(R.string.push_credential)+": "+pushCredential?.name)
-                }
+            if(isLinkMode) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(stringResource(R.string.repo)+": "+curRepo.value.repoName)
+                Text(stringResource(R.string.remote)+": "+remote.value.remoteName)
+                val fetchCredential = list.value.find { remote.value.credentialId == it.id }
+                val pushCredential = list.value.find { remote.value.pushCredentialId == it.id }
+                Text(stringResource(R.string.fetch_credential)+": "+fetchCredential?.name)
+                Text(stringResource(R.string.push_credential)+": "+pushCredential?.name)
             }
         }
     }

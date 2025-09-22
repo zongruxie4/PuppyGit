@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -23,7 +24,9 @@ fun ForcePushWithLeaseCheckBox(
 ) {
 
     // push with lease
-    MyCheckBox(StrCons.withLease, forcePush_pushWithLease)
+    DisableSelection {
+        MyCheckBox(StrCons.withLease, forcePush_pushWithLease)
+    }
 
     if(forcePush_pushWithLease.value) {
         TextField(

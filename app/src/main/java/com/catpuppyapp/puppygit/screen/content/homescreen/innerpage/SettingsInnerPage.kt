@@ -184,7 +184,9 @@ fun SettingsInnerPage(
                         componentHeight.intValue = layoutCoordinates.size.height
                     }
                 ) {
-                    Text(stringResource(R.string.file_association_note), fontWeight = FontWeight.Light)
+                    MySelectionContainer {
+                        Text(stringResource(R.string.file_association_note), fontWeight = FontWeight.Light)
+                    }
                     Spacer(modifier = Modifier.height(5.dp))
                     TextField(
                         modifier = Modifier
