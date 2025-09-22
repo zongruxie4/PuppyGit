@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -76,6 +75,7 @@ import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
+import com.catpuppyapp.puppygit.compose.SelectionRow
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
 import com.catpuppyapp.puppygit.compose.checkoutOptionJustCheckoutForLocalBranch
 import com.catpuppyapp.puppygit.compose.getDefaultCheckoutOption
@@ -1272,8 +1272,8 @@ fun BranchListScreen(
                 title = stringResource(R.string.publish),
                 requireShowTextCompose = true,
                 textCompose = {
-                    CopyScrollableColumn {
-                        Row {
+                    ScrollableColumn {
+                        SelectionRow {
                             Text(text = stringResource(R.string.local) +": ")
                             Text(
                                 text = curBranch.shortName,
@@ -1281,7 +1281,7 @@ fun BranchListScreen(
                             )
                         }
 
-                        Row {
+                        SelectionRow {
                             Text(text = stringResource(R.string.remote) +": ")
                             Text(
                                 text = upstream?.remoteBranchShortRefSpec ?: "",
@@ -1290,7 +1290,9 @@ fun BranchListScreen(
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text(text = stringResource(R.string.will_push_local_branch_to_remote_are_you_sure))
+                        SelectionRow {
+                            Text(text = stringResource(R.string.will_push_local_branch_to_remote_are_you_sure))
+                        }
 
                         //如果上游已经发布，则显示force push选项
                         // 注意：不要改成无脑显示force，不然有可能错误覆盖别人的提交，
@@ -1303,10 +1305,12 @@ fun BranchListScreen(
 
                             //如果勾选force，显示注意事项和push with lease选项
                             if(forcePublish.value) {
-                                DefaultPaddingText(
-                                    text = stringResource(R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
-                                    color = MyStyleKt.TextColor.danger(),
-                                )
+                                SelectionRow {
+                                    DefaultPaddingText(
+                                        text = stringResource(R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
+                                        color = MyStyleKt.TextColor.danger(),
+                                    )
+                                }
 
                                 Spacer(Modifier.height(15.dp))
 

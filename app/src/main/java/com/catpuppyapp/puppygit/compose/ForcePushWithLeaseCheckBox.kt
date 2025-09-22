@@ -43,7 +43,7 @@ fun ForcePushWithLeaseCheckBox(
 
         Spacer(Modifier.height(10.dp))
 
-        MySelectionContainer {
+        SelectionRow {
             DefaultPaddingText(stringResource(R.string.push_force_with_lease_note))
         }
     }
