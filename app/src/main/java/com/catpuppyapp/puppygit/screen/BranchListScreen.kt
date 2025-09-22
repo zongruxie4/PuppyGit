@@ -1298,9 +1298,8 @@ fun BranchListScreen(
                         // 你勾选了force，就会错误覆盖，但如果本地没有有效上游则禁用force，这样就不会错误覆盖了
                         if(upstream != null && upstream.isPublished) {
                             Spacer(modifier = Modifier.height(10.dp))
-                            DisableSelection {
-                                MyCheckBox(text = stringResource(R.string.force), value = forcePublish)
-                            }
+                            MyCheckBox(text = stringResource(R.string.force), value = forcePublish)
+
 
                             //如果勾选force，显示注意事项和push with lease选项
                             if(forcePublish.value) {

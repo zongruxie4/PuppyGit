@@ -1701,9 +1701,8 @@ fun ChangeListInnerPage(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    DisableSelection {
-                        MyCheckBox(text = stringResource(R.string.auto_commit), value = cherrypickAutoCommit)
-                    }
+                    MyCheckBox(text = stringResource(R.string.auto_commit), value = cherrypickAutoCommit)
+
                 }
             },
             onCancel = { showCherrypickDialog.value = false }

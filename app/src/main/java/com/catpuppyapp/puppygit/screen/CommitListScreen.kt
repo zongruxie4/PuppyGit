@@ -1660,9 +1660,8 @@ fun CommitListScreen(
 
                     Spacer(modifier = Modifier.height(padding))
 
-                    DisableSelection {
-                        MyCheckBox(text = stringResource(R.string.auto_commit), value = cherrypickAutoCommit)
-                    }
+                    MyCheckBox(text = stringResource(R.string.auto_commit), value = cherrypickAutoCommit)
+
                 }
             },
             onCancel = { showCherrypickDialog.value = false }
