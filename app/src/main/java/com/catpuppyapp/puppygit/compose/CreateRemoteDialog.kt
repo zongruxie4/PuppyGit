@@ -60,8 +60,7 @@ fun CreateRemoteDialog(
                     label = {
                         Text(stringResource(R.string.name))
                     },
-                    placeholder = {
-                    }
+//                    placeholder = {}
                 )
                 Row(modifier = Modifier.padding(5.dp)) {
 
@@ -77,8 +76,7 @@ fun CreateRemoteDialog(
                     label = {
                         Text(stringResource(R.string.url))
                     },
-                    placeholder = {
-                    }
+//                    placeholder = {}
                 )
             }
 

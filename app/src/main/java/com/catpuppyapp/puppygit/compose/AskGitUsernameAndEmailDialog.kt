@@ -46,12 +46,15 @@ fun AskGitUsernameAndEmailDialog(
         },
         text = {
             ScrollableColumn {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(text = text, fontWeight = FontWeight.Light)
+                MySelectionContainer {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(text = text, fontWeight = FontWeight.Light)
+                    }
                 }
+
 
                 Spacer(Modifier.height(15.dp))
 

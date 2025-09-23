@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
@@ -36,7 +35,7 @@ fun UnLinkCredentialAndRemoteDialogForRemoteListPage(
         },
         text = {
             ScrollableColumn {
-                Row{
+                SelectionRow {
                     Text(text = stringResource(id = R.string.remote)+": ")
                     Text(text = remoteName,
                         fontWeight = FontWeight.ExtraBold,

@@ -15,7 +15,7 @@ fun OpenAsAskReloadDialog(
         title = stringResource(R.string.reload_file),
         requireShowTextCompose = true,
         textCompose = {
-            MySelectionContainer {
+            CopyScrollableColumn {
                 Text(stringResource(R.string.back_editor_from_external_app_ask_reload))
             }
         },

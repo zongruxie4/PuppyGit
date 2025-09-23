@@ -57,7 +57,7 @@ fun ConfirmDialogAndDisableSelection(
                 if(requireShowTextCompose) {
                     textCompose()
                 }else {
-                    Row {
+                    ScrollableColumn {
                         Text(text)
                     }
                 }
