@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -56,24 +55,24 @@ fun SetBranchForRemoteDialog(
 
     AlertDialog(
         title = {
-            DialogTitle(activityContext.getString(R.string.set_branch_mode))
+            DialogTitle(stringResource(R.string.set_branch_mode))
         },
         text = {
             ScrollableColumn {
                 SelectionRow {
-                    Text(text = stringResource(R.string.branch_mode_note))
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-
-
-                SelectionRow {
-                    Text(text = activityContext.getString(R.string.remote) + ": ")
+                    Text(text = stringResource(R.string.remote) + ": ")
                     Text(text = remoteName,
                         fontWeight = FontWeight.ExtraBold
                     )
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
+
+                SelectionRow {
+                    Text(text = stringResource(R.string.branch_mode_note))
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
 
                 SingleSelection(
                     itemList = BranchMode.entries,
@@ -105,7 +104,7 @@ fun SetBranchForRemoteDialog(
         onDismissRequest = { onCancel() },
         dismissButton = {
             TextButton(onClick = { onCancel() }) {
-                Text(text = activityContext.getString(R.string.cancel))
+                Text(text = stringResource(R.string.cancel))
             }
         },
         confirmButton = {
