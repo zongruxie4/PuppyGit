@@ -938,12 +938,6 @@ fun HomeScreen(
 
 
 
-    if(AppModel.showChangelogDialog.value) {
-        ChangelogDialog(
-            onClose = { AppModel.showChangelogDialog.value = false }
-        )
-    }
-
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -1366,6 +1360,14 @@ fun HomeScreen(
                 }
             }
         ) { contentPadding ->
+
+
+            if(AppModel.showChangelogDialog.value) {
+                ChangelogDialog(
+                    onClose = { AppModel.showChangelogDialog.value = false }
+                )
+            }
+
 
             // was used for saving file, but usually saving file very fast, don't need a loading dialog
 //            if(editorPageIsLoading.value || editorPagePreviewLoading.value) {
