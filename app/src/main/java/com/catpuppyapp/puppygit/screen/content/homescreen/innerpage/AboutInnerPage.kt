@@ -64,11 +64,11 @@ const val sourceCodeLink = "https://github.com/catpuppyapp/PuppyGit"
 const val privacyPolicyLink = "$sourceCodeLink/blob/main/PrivacyPolicy.md"
 const val discussionLink = "$sourceCodeLink/discussions"
 const val reportBugsLink = "$sourceCodeLink/issues/new"
-const val donateLink = "$sourceCodeLink/blob/main/donate.md"
 const val faqLink = "$sourceCodeLink/blob/main/FAQ.md"
 const val httpServiceApiUrl = "$sourceCodeLink/blob/main/http_service_api.md"
 const val automationDocUrl = "$sourceCodeLink/blob/main/automation_doc.md"
 
+const val donateLink = "https://github.com/catpuppyapp/PuppyGit/blob/main/donate.md"
 
 val versionCode: Int = AppModel.getAppVersionCode()
 val versionName: String = AppModel.getAppVersionName()

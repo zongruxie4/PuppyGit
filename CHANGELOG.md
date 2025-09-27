@@ -4,10 +4,12 @@
 ---
 1.1.4.2v118 - 20250918:
 - Make text of dialog copyable 
+- Add changelog dialog
 
 
 
 - 使弹窗文字可拷贝
+- 添加更新日志弹窗
 
 ---
 1.1.4.1v117 - 20250911:

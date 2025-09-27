@@ -50,6 +50,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import com.catpuppyapp.puppygit.compose.ChangelogDialog
 import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
@@ -933,6 +934,14 @@ fun HomeScreen(
                 }
             }
         }
+    }
+
+
+
+    if(AppModel.showChangelogDialog.value) {
+        ChangelogDialog(
+            onClose = { AppModel.showChangelogDialog.value = false }
+        )
     }
 
     ModalNavigationDrawer(
