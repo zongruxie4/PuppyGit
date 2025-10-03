@@ -224,7 +224,7 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
             EncodingUtil.detectEncoding(newInputStream = { inputStream() })
         }catch (e: Exception) {
             if(AppModel.devModeOn) {
-                MyLog.w(TAG, "$TAG#detectEncoding err: ${e.localizedMessage}")
+                MyLog.d(TAG, "$TAG#detectEncoding err: ${e.localizedMessage}")
             }
 
             EncodingUtil.defaultCharsetName

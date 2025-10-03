@@ -108,8 +108,11 @@ object EncodingUtil {
         return try {
             detectEncodingNoCatch(newInputStream)
         }catch (e: Exception) {
-            MyLog.w(TAG, "#detectEncoding() err, will use '$defaultCharsetName', err msg=${e.localizedMessage}")
-            e.printStackTrace()
+            if(AppModel.devModeOn) {
+                MyLog.d(TAG, "#detectEncoding() err, will use '$defaultCharsetName', err msg=${e.localizedMessage}")
+                e.printStackTrace()
+            }
+
             defaultCharsetName
         }
     }
