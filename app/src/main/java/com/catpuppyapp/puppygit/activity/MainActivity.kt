@@ -27,13 +27,12 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.sp
+import com.catpuppyapp.puppygit.base.BaseComposeActivity
 import com.catpuppyapp.puppygit.compose.CopyableDialog2
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.SshUnknownHostDialog
-import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.base.BaseComposeActivity
 import com.catpuppyapp.puppygit.screen.AppScreenNavigator
 import com.catpuppyapp.puppygit.screen.RequireMasterPasswordScreen
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
@@ -47,7 +46,6 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.RndText
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -253,9 +251,9 @@ private fun MainCompose() {
         try {
 
             //获取随机 loading text
-            if(DevFeature.showRandomLaunchingText.state.value) {
-                loadingText.value = RndText.getOne();
-            }
+//            if(DevFeature.showRandomLaunchingText.state.value) {
+//                loadingText.value = RndText.getOne();
+//            }
 
 //        读取配置文件，初始化状态之类的操作，初始化时显示一个loading页面，完成后更新状态变量，接着加载app页面
             //初始化完成之后，设置变量，显示应用界面

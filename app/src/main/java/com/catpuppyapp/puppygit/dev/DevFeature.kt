@@ -112,7 +112,7 @@ object DevFeature {
         treatNoWordMatchAsNoMatchedForDiff,
         degradeMatchByWordsToMatchByCharsIfNonMatched,
         showMatchedAllAtDiff,
-        showRandomLaunchingText,
+//        showRandomLaunchingText,
         legacyChangeListLoadMethod,
     )
 
