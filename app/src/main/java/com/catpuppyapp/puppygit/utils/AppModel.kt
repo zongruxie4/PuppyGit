@@ -304,8 +304,6 @@ object AppModel {
 
         AppModel.realAppContext = realAppContext
 
-        //注册通知渠道
-        NotifyUtil.initAllNotify(realAppContext)
 
         //获取主密码 (若与AppSettings里记的hash不匹配，启动时会弹窗请求用户输入）
         AppModel.masterPassword.value = MasterPassUtil.get(realAppContext)
@@ -355,8 +353,20 @@ object AppModel {
         //设置对用户可见的app工作目录
         AppModel.appDataUnderAllReposDir = createDirIfNonexists(AppModel.allRepoParentDir, Cons.defalutPuppyGitDataUnderAllReposDirName)
         //与sd相关代码互斥，结束
+        AppModel.logDir = createDirIfNonexists(AppModel.appDataUnderAllReposDir, Cons.defaultLogDirName)
 
-        SafUtil.init(AppModel.appDataUnderAllReposDir)
+
+        /*
+            init log
+         */
+        //初始化日志
+        //设置 日志保存时间和日志等级
+        MyLog.init(
+            logDir=AppModel.getOrCreateLogDir(),
+            logKeepDays=PrefMan.getInt(realAppContext, PrefMan.Key.logKeepDays, MyLog.fileKeepDays),
+            logLevel=PrefMan.getChar(realAppContext, PrefMan.Key.logLevel, MyLog.myLogLevel),
+        )
+
 
 
         //存放app内置证书的路径
@@ -374,9 +384,15 @@ object AppModel {
         //create settings folder
         AppModel.settingsDir = createDirIfNonexists(AppModel.appDataUnderAllReposDir, Cons.defaultSettingsDirName)
 
-        // log dir，必须在初始化log前初始化这个变量
-        AppModel.logDir = createDirIfNonexists(AppModel.appDataUnderAllReposDir, Cons.defaultLogDirName)
         AppModel.submoduleDotGitBackupDir = createDirIfNonexists(AppModel.appDataUnderAllReposDir, Cons.defaultSubmoduleDotGitFileBakDirName)
+
+
+        SafUtil.init(AppModel.appDataUnderAllReposDir)
+
+
+        //注册通知渠道
+        NotifyUtil.initAllNotify(realAppContext)
+
 
         //设置文件快照目录
 //            AppModel.fileSnapshotDir = createFileSnapshotDirIfNonexists(AppModel.allRepoParentDir, Cons.defaultFileSnapshotDirName)
@@ -417,18 +433,6 @@ object AppModel {
         val applicationContext = AppModel.realAppContext
 
         // one time task in one time app process life time
-
-        /*
-            init log
-         */
-        //初始化日志
-        //设置 日志保存时间和日志等级，(考虑：以后把这个改成从配置文件读取相关设置项的值，另外，用runBlocking可以实现阻塞调用suspend方法查db，但不推荐)
-        //            MyLog.init(saveDays=3, logLevel='w', logDirPath=AppModel.logDir.canonicalPath);
-        MyLog.init(
-            logDir=AppModel.getOrCreateLogDir(),
-            logKeepDays=PrefMan.getInt(applicationContext, PrefMan.Key.logKeepDays, MyLog.fileKeepDays),
-            logLevel=PrefMan.getChar(applicationContext, PrefMan.Key.logLevel, MyLog.myLogLevel),
-        )
 
         /*
            init settings
