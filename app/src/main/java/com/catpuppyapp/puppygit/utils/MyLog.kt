@@ -17,7 +17,9 @@ object MyLog: DateNamedFileWriter(
     fileNameTag = "Log",
 ) {
 
+    private const val DISABLED_SIGN = "0"
     val logLevelList = listOf(
+        DISABLED_SIGN,
         "e",
         "w",
         "i",
@@ -109,6 +111,10 @@ object MyLog: DateNamedFileWriter(
      */
     private fun log(tag: String, msg: String, level: Char) {
         try {
+            if(level.toString() == DISABLED_SIGN) {
+                return
+            }
+
             //如果未初始化MyLog，无法记日志，用安卓官方Log类打印下，然后返回
             if(isInited.not()) {
                 if(level == 'e') {
@@ -207,7 +213,9 @@ object MyLog: DateNamedFileWriter(
     }
 
     fun getTextByLogLevel(level:String, context: Context):String {
-        if(level == "e") {
+        if(level == DISABLED_SIGN) {
+            return context.getString(R.string.disable)
+        } else if(level == "e") {
             return context.getString(R.string.error)
         }else if(level=="w"){
             return context.getString(R.string.warn)
