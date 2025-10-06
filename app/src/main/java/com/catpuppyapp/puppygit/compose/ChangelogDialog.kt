@@ -13,13 +13,11 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.donateLink
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 
 
-private const val version = "1.1.4.2v118"
+private const val version = "1.1.4.3v119"
 
 private val changelog = """
-    - Make text of dialog copyable 
-    - Add changelog dialog
-    - 使弹窗文字可拷贝
-    - 添加更新日志弹窗
+- support disable log
+- 支持禁用日志
 """.trimIndent()
 
 

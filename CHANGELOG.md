@@ -2,6 +2,14 @@
 
 
 ---
+1.1.4.3v119 - 20251006:
+- support disable log
+
+
+
+- 支持禁用日志
+
+---
 1.1.4.2v118 - 20250918:
 - Make text of dialog copyable 
 - Add changelog dialog
