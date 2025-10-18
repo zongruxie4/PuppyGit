@@ -70,8 +70,6 @@ const val automationDocUrl = "$sourceCodeLink/blob/main/automation_doc.md"
 
 const val donateLink = "https://github.com/catpuppyapp/PuppyGit/blob/main/donate.md"
 
-val versionCode: Int = AppModel.getAppVersionCode()
-val versionName: String = AppModel.getAppVersionName()
 
 private data class OpenSource(
     val projectName:String,
@@ -195,7 +193,7 @@ fun AboutInnerPage(
                 Spacer(Modifier.height(8.dp))
 
                 Text(
-                    text = "$versionName ($versionCode)",
+                    text = AppModel.getAppVersionNameAndCode(),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

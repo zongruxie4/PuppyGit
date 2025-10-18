@@ -704,6 +704,10 @@ object AppModel {
         return BuildConfig.VERSION_NAME
     }
 
+    fun getAppVersionNameAndCode():String {
+        return getAppVersionName()+"v"+getAppVersionCode()
+    }
+
     //根据资源键名获取值而不是用 R.string.xxx 的id
     fun getStringByResKey(context: Context, resKey: String): String {
         val funName = "getStringByResKey"
