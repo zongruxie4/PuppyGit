@@ -351,7 +351,7 @@ class TextEditorState(
                 return
             }
 
-            if (!textFieldValue.text.contains('\n')) {
+            if (!textFieldValue.text.contains(lb)) {
 //                throw InvalidParameterException("textFieldValue doesn't contains newline")
                 return
             }
@@ -481,7 +481,7 @@ class TextEditorState(
                     baseFields = fields,
                     stylesResult = baseStyles,
                     ignoreThis = false,
-                    insertedContent = splitFieldValues.joinToString("\n") { it.text },
+                    insertedContent = splitFieldValues.joinToString(lb) { it.text },
                     insertedContentRangeInNewFields = newContentRangeInNewFields,
                     newTextEditorState = newState
                 )
@@ -595,7 +595,7 @@ class TextEditorState(
             }
 
             // contains new line should call `splitNewLine`, reached here means has bug
-            if (textFieldValue.text.contains('\n')) {
+            if (textFieldValue.text.contains(lb)) {
 //                throw InvalidParameterException("textFieldValue contains newline")
                 return@p
             }
@@ -2439,7 +2439,7 @@ class TextEditorState(
         MyLog.d(TAG, "#$funName: adjusted on delete, spans.lineCount = ${stylesResult.styles.spans.lineCount}, baseFields.size = ${baseFields.size}")
 
 
-        val selectedText = "\n"
+        val selectedText = lb
         val lang = codeEditor?.myLang
         if(lang != null) {
             codeEditor.sendUpdateStylesRequest(
@@ -2514,7 +2514,7 @@ class TextEditorState(
         val deletedContent = if(keepLine) {  // only clear field but keep the line
             baseFields.get(startLineIndex).value.text
         } else {  // remove the line
-            baseFields.get(endLineIndex).value.text + "\n"
+            baseFields.get(endLineIndex).value.text + lb
         }
 
         // baseFields size should - 1 after deleted
