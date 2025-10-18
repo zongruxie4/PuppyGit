@@ -1327,6 +1327,8 @@ object FsUtils {
         val tempFile = FuckSafFile.fromFile(createTempFile("${TempFileFlag.FROM_DIFF_SCREEN_REPLACE_LINES_TO_FILE.flag}-${file.name}"))
         var found = false
 
+        val lineBreak = file.detectLineBreak(charsetName).value
+
         file.bufferedReader(charsetName).use { reader ->
             tempFile.bufferedWriter(charsetName).use { writer ->
                 var currentLine = 1
@@ -1345,17 +1347,17 @@ object FsUtils {
 
                         for(i in newLines.indices) {
                             writer.write(newLines[i])
-                            writer.newLine()
+                            writer.write(lineBreak)
                         }
 
                         // prepend(insert) line
                         if(trueInsertFalseReplaceNullDelete == true) {
                             writer.write(line)
-                            writer.newLine()
+                            writer.write(lineBreak)
                         }
                     }else {  // not match
                         writer.write(line)
-                        writer.newLine()
+                        writer.write(lineBreak)
                     }
                 }
 
@@ -1363,7 +1365,7 @@ object FsUtils {
                 if (found.not() && trueInsertFalseReplaceNullDelete!=null) {
                     for(i in newLines.indices) {
                         writer.write(newLines[i])
-                        writer.newLine()
+                        writer.write(lineBreak)
                     }
                 }
             }
