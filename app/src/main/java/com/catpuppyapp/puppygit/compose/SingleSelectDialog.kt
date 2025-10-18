@@ -16,14 +16,14 @@ fun <T> SingleSelectDialog(
     itemList: List<T>,
     text: (T) -> String,
     selected:(T) -> Boolean = { it == currentItem },
-    onCancel: () -> Unit,
-    onOK: (selectedItem: T) -> Unit,
+    closeDialog: () -> Unit,
+    onClick: (selectedItem: T) -> Unit,
 ) {
 
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
-    PlainDialogWithPadding(onClose = onCancel) {
+    PlainDialogWithPadding(onClose = closeDialog) {
         LazyColumn(state = listState) {
             itemList.forEachIndexed { idx, it ->
                 item {
@@ -34,8 +34,8 @@ fun <T> SingleSelectDialog(
                         minHeight = 60.dp,
                         text = { idx, it -> text(it) },
                         onClick = { idx, it ->
-                            onCancel()
-                            onOK(it)
+                            closeDialog()
+                            onClick(it)
                         },
                     )
                 }

@@ -7,14 +7,14 @@ import com.catpuppyapp.puppygit.utils.EncodingUtil
 @Composable
 fun SelectEncodingDialog(
     currentCharset: String?,
-    onCancel: () -> Unit,
-    onOK: (selectedCharset: String) -> Unit,
+    closeDialog: () -> Unit,
+    onClick: (selectedCharset: String) -> Unit,
 ) {
     SingleSelectDialog(
         currentItem = currentCharset,
         itemList = EncodingUtil.supportedCharsetList,
         text = { it },
-        onCancel = onCancel,
-        onOK = onOK
+        closeDialog = closeDialog,
+        onClick = onClick
     )
 }

@@ -697,10 +697,8 @@ fun EditorInnerPage(
             currentItem = codeEditor.value.lineBreak,
             itemList = LineBreak.list,
             text = { it.visibleValue },
-            onCancel = { showLineBreakDialog.value = false },
-            onOK = {
-                showLineBreakDialog.value = false
-
+            closeDialog = { showLineBreakDialog.value = false },
+            onClick = {
                 // if line break changed, update it
                 if(it != codeEditor.value.lineBreak) {
                    codeEditor.value.lineBreak = it
@@ -964,7 +962,7 @@ fun EditorInnerPage(
     if(showSelectEncodingDialog.value) {
         SelectEncodingDialog(
             currentCharset = editorCharset.value,
-            onCancel = { showSelectEncodingDialog.value = false },
+            closeDialog = { showSelectEncodingDialog.value = false },
         ) { newCharset ->
             showSelectEncodingDialog.value = false
 
@@ -994,7 +992,7 @@ fun EditorInnerPage(
     if(showSelectSyntaxHighlightDialog.value) {
         SelectSyntaxHighlightingDialog(
             plScope = plScope.value,
-            onCancel = { showSelectSyntaxHighlightDialog.value = false }
+            closeDialog = { showSelectSyntaxHighlightDialog.value = false }
         ) {
             showSelectSyntaxHighlightDialog.value = false
 

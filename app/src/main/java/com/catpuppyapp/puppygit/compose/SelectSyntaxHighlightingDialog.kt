@@ -7,14 +7,14 @@ import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 @Composable
 fun SelectSyntaxHighlightingDialog(
     plScope: PLScope,
-    onCancel: () -> Unit,
-    onOK: (selectedScope: PLScope) -> Unit,
+    closeDialog: () -> Unit,
+    onClick: (selectedScope: PLScope) -> Unit,
 ) {
     SingleSelectDialog(
         currentItem = plScope,
         itemList = PLScope.SCOPES_NO_AUTO,
         text = { it.name },
-        onCancel = onCancel,
-        onOK = onOK
+        closeDialog = closeDialog,
+        onClick = onClick
     )
 }

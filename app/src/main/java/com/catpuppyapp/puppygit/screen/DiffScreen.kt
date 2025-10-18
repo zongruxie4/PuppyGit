@@ -1323,7 +1323,7 @@ fun DiffScreen(
     if(showSelectSyntaxLangDialog.value) {
         SelectSyntaxHighlightingDialog(
             plScope = plScopeForSelctSyntaxLangDialog.value,
-            onCancel = { showSelectSyntaxLangDialog.value = false }
+            closeDialog = { showSelectSyntaxLangDialog.value = false }
         ) { newScope ->
             // the null-check `?:` just in case, actually the left hand variable never be null when reached here
             val item = diffableItemForSelectSyntaxLangDialog.value ?: getCurItem()
