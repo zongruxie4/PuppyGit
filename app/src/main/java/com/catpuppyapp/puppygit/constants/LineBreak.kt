@@ -1,14 +1,14 @@
 package com.catpuppyapp.puppygit.constants
 
-enum class LineBreak(val value: String) {
+enum class LineBreak(val value: String, val visibleValue: String) {
     // old mac
-    CR("\r"),
+    CR("\r", "\\r"),
 
     // unix and modern mac
-    LF("\n"),
+    LF("\n", "\\n"),
 
     // windows
-    CRLF("\r\n")
+    CRLF("\r\n", "\\r\\n")
 
     ;
 

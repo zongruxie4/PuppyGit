@@ -1280,5 +1280,6 @@
 
     <string name="activity_not_found">এই কার্য সম্পাদনের জন্য কোনো অ্যাপ্লিকেশন পাওয়া যায়নি</string>
     <string name="share">শেয়ার</string>
+    <string name="line_break">Line Break</string>
 
 </resources>

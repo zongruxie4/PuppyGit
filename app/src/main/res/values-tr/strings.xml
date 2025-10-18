@@ -1215,5 +1215,6 @@
 
     <string name="activity_not_found">Bu eylemi gerçekleştirecek uygulama bulunamadı</string>
     <string name="share">Paylaş</string>
+    <string name="line_break">Line Break</string>
 
 </resources>

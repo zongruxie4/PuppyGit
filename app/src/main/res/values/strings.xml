@@ -1311,5 +1311,6 @@
 
     <string name="activity_not_found">No application found to handle this action</string>
     <string name="share">Share</string>
+    <string name="line_break">Line Break</string>
 
 </resources>

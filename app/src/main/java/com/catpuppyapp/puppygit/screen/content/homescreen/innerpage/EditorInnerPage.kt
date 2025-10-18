@@ -1311,6 +1311,7 @@ fun EditorInnerPage(
             }
 
             sb.append(activityContext.getString(R.string.encoding)+": "+(if(isPreviewModeOn.value) curPreviewFileUsedCharset.value else editorCharset.value)).append(suffix)
+            sb.append(activityContext.getString(R.string.line_break)+": "+codeEditor.value.lineBreak.visibleValue).append(suffix)
 
             detailsStr.value = sb.removeSuffix(suffix).toString()
             showDetailsDialog.value = true
