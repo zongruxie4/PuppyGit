@@ -351,6 +351,38 @@ fun EditorPageActions(
                 }
             )
 
+
+
+            DropdownMenuItem(
+                enabled = enableMenuItem,
+                text = { Text(stringResource(R.string.go_to_line)) },
+                onClick = {
+                    editorPageRequest.value = PageRequest.goToLine  //发请求，由TextEditor组件开启搜索模式
+                    closeMenu()
+                }
+            )
+
+            if(UserUtil.isPro() && (dev_EnableUnTestedFeature || editorSearchTestPassed)){
+                DropdownMenuItem(
+                    enabled = enableMenuItem,
+                    text = { Text(stringResource(R.string.find)) },
+                    onClick = {
+                        editorPageRequest.value = PageRequest.requireSearch  //发请求，由TextEditor组件开启搜索模式
+                        closeMenu()
+                    }
+                )
+            }
+
+            DropdownMenuItem(
+                enabled = enableMenuItem,
+                text = { Text(stringResource(R.string.syntax_highlighting)) },
+                onClick = {
+                    editorPageRequest.value = PageRequest.selectSyntaxHighlighting
+                    closeMenu()
+                }
+            )
+
+
             DropdownMenuItem(
                 enabled = enableMenuItem,
 
@@ -399,39 +431,6 @@ fun EditorPageActions(
                 )
 
             }
-
-
-            DropdownMenuItem(
-                enabled = enableMenuItem,
-                text = { Text(stringResource(R.string.go_to_line)) },
-                onClick = {
-                    editorPageRequest.value = PageRequest.goToLine  //发请求，由TextEditor组件开启搜索模式
-                    closeMenu()
-                }
-            )
-
-            if(UserUtil.isPro() && (dev_EnableUnTestedFeature || editorSearchTestPassed)){
-                DropdownMenuItem(
-                    enabled = enableMenuItem,
-
-//                    text = { Text(stringResource(R.string.search)) },  //纠结一番，感觉search不如find合适
-                    text = { Text(stringResource(R.string.find)) },
-                    onClick = {
-//                        editorPageSearchMode.value = true  //需要初始化搜索位置，所以不能简单设为true开启，不过可以简单设为false来关闭搜索模式
-                        editorPageRequest.value = PageRequest.requireSearch  //发请求，由TextEditor组件开启搜索模式
-                        closeMenu()
-                    }
-                )
-            }
-
-            DropdownMenuItem(
-                enabled = enableMenuItem,
-                text = { Text(stringResource(R.string.syntax_highlighting)) },
-                onClick = {
-                    editorPageRequest.value = PageRequest.selectSyntaxHighlighting
-                    closeMenu()
-                }
-            )
 
             DropdownMenuItem(
                 //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
