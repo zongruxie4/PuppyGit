@@ -382,6 +382,15 @@ fun EditorPageActions(
                 }
             )
 
+            DropdownMenuItem(
+                enabled = enableMenuItem,
+                text = { Text(stringResource(R.string.line_break)) },
+                onClick = {
+                    editorPageRequest.value = PageRequest.showLineBreakDialog
+                    closeMenu()
+                }
+            )
+
 
             DropdownMenuItem(
                 enabled = enableMenuItem,

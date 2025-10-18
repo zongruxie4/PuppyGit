@@ -1010,6 +1010,12 @@ fun EditorInnerPage(
     }
 
 
+    if(requestFromParent.value == PageRequest.showLineBreakDialog) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            showLineBreakDialog.value = true
+        }
+    }
+
     if(requestFromParent.value == PageRequest.showSelectEncodingDialog) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             initSelectEncodingDialog(false)
