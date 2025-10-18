@@ -7,6 +7,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import com.catpuppyapp.puppygit.constants.LineBreak
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.MyTextFieldState
@@ -74,6 +75,9 @@ class MyCodeEditor(
     val uid = getShortUUID()
     private var file: FuckSafFile = FuckSafFile(appContext, FilePath(""))
 
+
+    // line break of the file
+    var lineBreak = LineBreak.LF
 
 
     internal var latestStyles: StylesResult? = null

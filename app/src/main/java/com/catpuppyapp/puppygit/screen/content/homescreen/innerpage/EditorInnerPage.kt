@@ -2234,6 +2234,8 @@ private suspend fun doInit(
                 editorPageTextEditorState.value = newState
 //                lastTextEditorState.value = newState
 
+                codeEditor.lineBreak = file.detectLineBreak(editorCharset.value)
+
                 // syntax highlightings
                 codeEditor.updatePlScopeThenAnalyze()
 

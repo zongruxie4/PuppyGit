@@ -1834,6 +1834,7 @@ class TextEditorState(
     }
 
 
+    private fun lbForDump() = codeEditor?.lineBreak?.value ?: lb;
 
     /**
      * note: if you want to save lines to file, recommend to use `dumpLines` instead
@@ -1851,10 +1852,12 @@ class TextEditorState(
      */
     fun getAllText(): String {
         val sb = StringBuilder()
-        fields.forEachBetter { sb.append(it.value.text).append(lb) }
+        val lineBreak = lbForDump()
+
+        fields.forEachBetter { sb.append(it.value.text).append(lineBreak) }
 
         //移除遍历时多添加的末尾换行符，然后返回
-        return sb.removeSuffix(lb).toString()
+        return sb.removeSuffix(lineBreak).toString()
 
         //below code very slow when file over 1MB，主要原因是字符串拼接，次要是隐含多次循环
 //        return fields.map { it.value.text }.foldIndexed("") { index, acc, s ->
@@ -1862,20 +1865,20 @@ class TextEditorState(
 //        }
     }
 
-    fun dumpLinesAndGetRet(output: OutputStream, lineBreak:String=lb): Ret<Unit?> {
+    fun dumpLinesAndGetRet(output: OutputStream): Ret<Unit?> {
         try {
-            dumpLines(output, lineBreak)
+            dumpLines(output)
             return Ret.createSuccess(null)
         }catch (e:Exception) {
             return Ret.createError(null, e.localizedMessage ?: "dump lines err", exception = e)
         }
     }
 
-    fun dumpLines(output: OutputStream, lineBreak:String = lb) {
+    fun dumpLines(output: OutputStream) {
+        val lineBreak = lbForDump()
+
         val fieldsSize = fields.size
         var count = 0
-
-
         val charsetName = codeEditor?.editorCharset?.value
 
         // add bom if need
@@ -1883,10 +1886,12 @@ class TextEditorState(
 
         output.bufferedWriter(EncodingUtil.resolveCharset(charsetName)).use { bw ->
             for(f in fields) {
+                bw.write(f.value.text)
+
+                // if is not the last line of the file,
+                //   append a line break
                 if(++count != fieldsSize) {
-                    bw.write("${f.value.text}$lineBreak")
-                }else {
-                    bw.write(f.value.text)
+                    bw.write(lineBreak)
                 }
             }
         }

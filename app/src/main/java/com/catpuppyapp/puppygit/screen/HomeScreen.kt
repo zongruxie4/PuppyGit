@@ -51,8 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.compose.ChangelogDialog
-import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
-import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
@@ -105,6 +103,8 @@ import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.syntaxhighlight.base.PLScope
+import com.catpuppyapp.puppygit.syntaxhighlight.codeeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
