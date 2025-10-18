@@ -684,8 +684,8 @@ fun EditorInnerPage(
 
     // for show save button
     val editorAsUnsaved = {
-        codeEditor.value.doActWithLatestEditorStateInCoroutine("#copyWithNewFieldsId") {
-            it.copyWithNewFieldsId()
+        codeEditor.value.doActWithLatestEditorStateInCoroutine("#asUnsaved") {
+            it.asUnsaved()
         }
     }
 

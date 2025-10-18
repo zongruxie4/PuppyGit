@@ -369,11 +369,9 @@ fun getEditorStateOnChange(
             // 如果内容改变，重置记录的光标所在列，这样下次按键盘上下键导航的位置就会重新更新为期望的值
             resetLastCursorAtColumn()
 
-            if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
+            if(trueSaveToUndoFalseRedoNullNoSave == true) {
                 // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
-                // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
-//                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
-                //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
+
                 if(clearRedoStack && !undoStack.redoStackIsEmpty()) {
                     undoStack.clearRedoStackThenPushToUndoStack(lastState, force = true)
                 }else {
@@ -381,7 +379,7 @@ fun getEditorStateOnChange(
                     undoStack.undoStackPush(lastState, force = lastState.fieldsId == lastSavedFieldsId.value)
                 }
 
-            }else {  // false
+            }else if(trueSaveToUndoFalseRedoNullNoSave == false) {
                 undoStack.redoStackPush(lastState)
             }
 

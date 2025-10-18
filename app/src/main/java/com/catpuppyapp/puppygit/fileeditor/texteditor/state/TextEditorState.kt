@@ -2778,12 +2778,15 @@ class TextEditorState(
         selectField(targetIndex, provideTextFieldValue = textFieldValue)
     }
 
-    suspend fun copyWithNewFieldsId() {
+    // haven't changed the content, just mark as unsaved.
+    // it is useful in case of change encoding or line break
+    suspend fun asUnsaved() {
         lock.withLock {
             //更新状态变量
             isContentEdited?.value=true
             editorPageIsContentSnapshoted?.value=false
 
+            //create new fieldsId for enable save button, but needn't update the undo stack because content no change
             onChanged(copy(fieldsId = newId()), null, false, this, null)
         }
     }
