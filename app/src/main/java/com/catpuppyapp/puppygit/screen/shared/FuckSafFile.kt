@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.catpuppyapp.puppygit.compose.FileChangeListenerState
+import com.catpuppyapp.puppygit.constants.LineBreak
 import com.catpuppyapp.puppygit.etc.PathType
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.EncodingUtil
@@ -17,7 +18,6 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
-import java.nio.charset.Charset
 import kotlin.coroutines.cancellation.CancellationException
 
 
@@ -229,6 +229,51 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
 
             EncodingUtil.defaultCharsetName
         }
+    }
+
+    fun detectLineBreak(charsetName: String?): LineBreak {
+        var lineBreak = ""
+        val arrBuf = CharArray(2048)
+
+        bufferedReader(charsetName).use { reader ->
+            while (lineBreak.isEmpty()) {
+                val readSize = reader.read(arrBuf)
+                if(readSize == -1) {
+                    break
+                }
+
+                for (i in 0 until readSize) {
+                    val char = arrBuf[i]
+
+                    if(char == '\r') {
+                        val nextChar = arrBuf.getOrNull(i+1)
+
+                        lineBreak = if(nextChar == null) {
+
+                            // if is null, maybe is the end of the buffer, so try another read once,
+                            //   then whatever was read, break the loop
+                            if(reader.read() == '\n'.code) {
+                                "\r\n"
+                            }else {  // is not '\n' or is -1 EOF
+                                "\r"
+                            }
+                        }else if(nextChar == '\n') {
+                            "\r\n"
+                        }else {
+                            "\r"
+                        }
+
+                        break
+                    }else if(char == '\n') {
+                        lineBreak = "\n"
+
+                        break
+                    }
+                }
+            }
+        }
+
+        return LineBreak.getType(lineBreak, default = LineBreak.LF)!!
     }
 
 }
