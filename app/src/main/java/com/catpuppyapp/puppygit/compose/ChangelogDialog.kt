@@ -11,13 +11,12 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.donateLink
 import com.catpuppyapp.puppygit.utils.ActivityUtil
+import com.catpuppyapp.puppygit.utils.AppModel
 
-
-private const val version = "1.1.4.3v119"
 
 private val changelog = """
-- support disable log
-- 支持禁用日志
+- editor support detect line break
+- 编辑器支持检测换行符
 """.trimIndent()
 
 
@@ -39,7 +38,7 @@ fun ChangelogDialog(
         cancelBtnText = stringResource(R.string.ok),
         onCancel = onClose,
 
-        title = version,
+        title = AppModel.getAppVersionNameAndCode(),
         requireShowTextCompose = true,
         textCompose = {
             ScrollableColumn {

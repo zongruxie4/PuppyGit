@@ -2,6 +2,14 @@
 
 
 ---
+1.1.4.4v120 - 20251018:
+- editor support detect line break
+
+
+
+- 编辑器支持检测换行符
+
+---
 1.1.4.3v119 - 20251006:
 - support disable log
 
