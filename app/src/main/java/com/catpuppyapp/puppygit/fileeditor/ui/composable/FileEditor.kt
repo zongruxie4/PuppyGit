@@ -1200,20 +1200,20 @@ fun FileEditor(
                                 return@onAppendALine
                             }
 
-                        textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#appendTextToLastSelectedLine") { textEditorState ->
+                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#appendTextToLastSelectedLine") { textEditorState ->
 
-                            textEditorState.appendTextToLastSelectedLine(
-                                    text = "",
-                                    afterAppendThenDoAct = { targetIndex ->
-                                        doJobThenOffLoading {
-                                            delay(100)
-                                            scrollIfIndexInvisible(targetIndex)
+                                textEditorState.appendTextToLastSelectedLine(
+                                        text = "",
+                                        afterAppendThenDoAct = { targetIndex ->
+                                            doJobThenOffLoading {
+                                                delay(100)
+                                                scrollIfIndexInvisible(targetIndex)
+                                            }
                                         }
-                                    }
-                                )
-                            }
+                                    )
+                                }
 
-                            Unit
+                                Unit
                         },
                         onSelectAll@{
                             textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#createSelectAllState") { textEditorState ->
