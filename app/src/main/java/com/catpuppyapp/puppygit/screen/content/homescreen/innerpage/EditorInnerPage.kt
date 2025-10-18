@@ -64,8 +64,10 @@ import com.catpuppyapp.puppygit.compose.SelectSyntaxHighlightingDialog
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.SelectionRow
 import com.catpuppyapp.puppygit.compose.SetTabSizeDialog
+import com.catpuppyapp.puppygit.compose.SingleSelectDialog
 import com.catpuppyapp.puppygit.compose.rememberFileChangeListenerState
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.LineBreak
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.soraEditorComposeTestPassed
@@ -681,9 +683,32 @@ fun EditorInnerPage(
         }
     }
 
+    // for show save button
+    val editorAsUnsaved = {
+        codeEditor.value.doActWithLatestEditorStateInCoroutine("#copyWithNewFieldsId") {
+            it.copyWithNewFieldsId()
+        }
+    }
 
 
+    val showLineBreakDialog = rememberSaveable { mutableStateOf(false) }
+    if(showLineBreakDialog.value) {
+        SingleSelectDialog(
+            currentItem = codeEditor.value.lineBreak,
+            itemList = LineBreak.list,
+            text = { it.visibleValue },
+            onCancel = { showLineBreakDialog.value = false },
+            onOK = {
+                showLineBreakDialog.value = false
 
+                // if line break changed, update it
+                if(it != codeEditor.value.lineBreak) {
+                   codeEditor.value.lineBreak = it
+                   editorAsUnsaved()
+                }
+            }
+        )
+    }
 
 
 
@@ -947,10 +972,7 @@ fun EditorInnerPage(
                 if(isConvertEncoding.value) {  // convert encoding when write content to file
                     editorCharset.value = newCharset
 
-                    // for show save button
-                    codeEditor.value.doActWithLatestEditorStateInCoroutine("#copyWithNewFieldsId") {
-                        it.copyWithNewFieldsId()
-                    }
+                    editorAsUnsaved()
                 }else {  // use another encoding read the file
                     initReloadDialogWithCallback {
                         editorCharset.value = newCharset

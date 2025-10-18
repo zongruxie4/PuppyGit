@@ -13,6 +13,8 @@ enum class LineBreak(val value: String, val visibleValue: String) {
     ;
 
     companion object {
+        val list = listOf(CR, LF, CRLF)
+
         fun getType(value:String, default: LineBreak?): LineBreak? {
             return if(value == CR.value) {
                 CR
