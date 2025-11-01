@@ -175,7 +175,7 @@ fun CloneScreen(
     val optNumSelectCredential = 2
     val optNumMatchCredentialByDomain = 3
     val credentialRadioOptions = listOf(noCredential, newCredential, selectCredential, matchCredentialByDomain)  // 编号: 文本
-    val (credentialSelectedOption, onCredentialOptionSelected) = rememberSaveable{mutableIntStateOf(optNumNoCredential)}
+    val (credentialSelectedOption, onCredentialOptionSelected) = rememberSaveable{ mutableIntStateOf(optNumNoCredential) }
 
     val (isRecursiveClone, onIsRecursiveCloneStateChange) = rememberSaveable { mutableStateOf(false)}
     val (isSingleBranch, onIsSingleBranchStateChange) = rememberSaveable { mutableStateOf(false)}
@@ -683,21 +683,20 @@ fun CloneScreen(
 //                    val newCredentialType = Cons.dbCredentialTypeHttp  //nossh
                     // 20240414 废弃ssh支持，修改结束
 
-                    val oldCredentialType = curCredentialType.intValue
 
-                    //更新凭据相关字段
-                    //credentialName.value=""  //title没必要清，ssh和http的title通用，只是用于标识凭据的名称而已
-//                    credentialVal.value=""  //没必要清，用户觉得不对，他自己全选删除不就行了？
-//                    credentialPass.value=""  //这个也没必要清，理由同上
-                    //类型改变时需要重置一些字段
-                    if(newCredentialType != oldCredentialType) {  //为true代表url类型改变了，credential类型也需要跟着改变，并且重置一些状态变量
-                        //选择凭据相关字段，这两个有必要清，因为类型一换，凭据列表就变了，而且不同类型的凭据也不通用，所以这个得在凭据类型改变时清一下
-                        selectedCredential.value = CredentialEntity(id = "")
-                        //如果url类型改变 且 凭据选的是选择凭据，则将其改为无凭据，因为ssh和http的凭据不通用
-                        if(credentialSelectedOption == optNumSelectCredential) {  //如果当前是选择凭据，则改成无凭据（若是无凭据或新建凭据，则不执行操作）
-                            onCredentialOptionSelected(optNumNoCredential)
-                        }
-                    }
+                    // 20251101更新：由于目前实际上架空了凭据类型字段，在连接远程仓库时会自动url类型决定创建http还是ssh凭据对象，因此不需要判断这个了
+                    // 开始：url类型改变，则清除已选择凭据并选中无凭据
+//                    val oldCredentialType = curCredentialType.intValue
+//                    if(newCredentialType != oldCredentialType) {  //为true代表url类型改变了，credential类型也需要跟着改变，并且重置一些状态变量
+//                        //选择凭据相关字段，这两个有必要清，因为类型一换，凭据列表就变了，而且不同类型的凭据也不通用，所以这个得在凭据类型改变时清一下
+//                        selectedCredential.value = CredentialEntity(id = "")
+//                        //如果url类型改变 且 凭据选的是选择凭据，则将其改为无凭据，因为ssh和http的凭据不通用
+//                        if(credentialSelectedOption == optNumSelectCredential) {
+//                            //如果当前是'选择凭据'，则改成'无凭据'（若是无凭据或新建凭据，则不执行操作）
+//                            onCredentialOptionSelected(optNumNoCredential)
+//                        }
+//                    }
+                    // 结束
 
                     //更新状态，最好在最后更新状态，感觉在上面更新，如果渲染周期。。。不，应该也不会有问题，总之就在这更新吧
                     //更新凭据类型和giturl状态变量
