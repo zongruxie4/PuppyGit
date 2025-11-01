@@ -668,9 +668,10 @@ fun CloneScreen(
 
                 value = gitUrl.value,
                 onValueChange = {
-                    gitUrl.value=it
-                    val repoNameFromGitUrl:String = getRepoNameFromGitUrl(it)
-                    if(repoNameFromGitUrl.isNotBlank()) {
+                    gitUrl.value = it
+                    val repoNameFromGitUrl = getRepoNameFromGitUrl(it)
+                    // 若仓库名为空，更新为url中的名字
+                    if(repoNameFromGitUrl.isNotBlank() && repoName.value.text.isBlank()) {
                         updateRepoName(TextFieldValue(repoNameFromGitUrl))
                     }
 
@@ -752,7 +753,6 @@ fun CloneScreen(
                             tint = MaterialTheme.colorScheme.error)
                     }
                 },
-                //TODO 可选：如果可以的话，检查下用户是否手动在这里输入过文件夹名，若输过，即使url改变，也不再自动改变值。另外，用户手动输入的值依然会被检测是否存在路径以及路径名是否有坏字符
                 onValueChange = {
                     updateRepoName(it)
                 },
