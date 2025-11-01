@@ -162,12 +162,18 @@ object Cons {
     //repo
     //repo createType
     const val dbRepoCreateByClone=1
-    const val dbRepoCreateByInit=2  // git init on local storage
+    // git init on local storage，
+    // 若只init不导入，则不入库，亦不用记录，
+    // 所以实际只需要区分clone和import两个类型
+    // 这字段暂时留着
+    const val dbRepoCreateByInit=2
     const val dbRepoCreateByImport=3
 
     //repo workStatus start
     //err
     const val dbRepoWorkStatusCloneErr=dbCommonErrValStart+3
+    // init err实际上不会入库，所以不需要记录错误类型呢
+    // 这字段暂时留着
     const val dbRepoWorkStatusInitErr=dbCommonErrValStart+4
 
     //normal

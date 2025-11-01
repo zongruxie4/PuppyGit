@@ -67,7 +67,8 @@ data class RepoEntity(
     @Deprecated("实际上没用到这个字段")
     var isActive: Int=Cons.dbCommonTrue,
 
-    var createBy:Int= Cons.dbRepoCreateByClone,
+    // 日后如果想区分克隆的仓库和从本地导入的仓库，会用到这字段
+    var createBy:Int = Cons.dbRepoCreateByClone,
 
     //是否开启递归克隆
     var isRecursiveCloneOn:Int=Cons.dbCommonFalse,
