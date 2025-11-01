@@ -15,8 +15,8 @@ import com.catpuppyapp.puppygit.utils.AppModel
 
 
 private val changelog = """
-- editor support detect line break
-- 编辑器支持检测换行符
+- adjust UI of clone screen
+- 调整克隆页面UI
 """.trimIndent()
 
 

@@ -2,6 +2,14 @@
 
 
 ---
+1.1.4.5v121 - 20251101:
+- adjust UI of clone screen
+
+
+
+- 调整克隆页面UI
+
+---
 1.1.4.4v120 - 20251018:
 - editor support detect line break
 
