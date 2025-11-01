@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.screen
 
 import android.util.Log
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
@@ -23,10 +21,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -59,7 +54,6 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.DepthTextField
-import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.InternalFileChooser
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -148,29 +142,28 @@ fun CloneScreen(
     val credentialVal = rememberSaveable { mutableStateOf("")}
     val credentialPass = rememberSaveable { mutableStateOf("")}
 
-    val gitUrlType = rememberSaveable{mutableIntStateOf(Cons.gitUrlTypeHttp)}
+    val gitUrlType = rememberSaveable { mutableIntStateOf(Cons.gitUrlTypeHttp) }
 
-    val curCredentialType = rememberSaveable{mutableIntStateOf(Cons.dbCredentialTypeHttp)}
+    val curCredentialType = rememberSaveable { mutableIntStateOf(Cons.dbCredentialTypeHttp) }
 //    val credentialListHttp = MockData.getAllCredentialList(type = Cons.dbCredentialTypeHttp)
 //    val credentialListSsh = MockData.getAllCredentialList(type = Cons.dbCredentialTypeSsh)
-    val allCredentialList = mutableCustomStateListOf(keyTag=stateKeyTag, keyName = "allCredentialList", initValue = listOf<CredentialEntity>())
+    val allCredentialList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "allCredentialList", initValue = listOf<CredentialEntity>())
+    val selectedCredential = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "selectedCredential", initValue = CredentialEntity(id = ""))
 //    val credentialHttpList = mutableCustomStateListOf(keyTag=stateKeyTag, keyName = "credentialHttpList", initValue = listOf<CredentialEntity>())
 //    val credentialSshList = mutableCustomStateListOf(keyTag=stateKeyTag, keyName = "credentialSshList", initValue = listOf<CredentialEntity>())
     //这个用我写的自定义状态存储器没意义，因为如果屏幕旋转（手机的显示设置改变），本质上就会重新创建组件，重新加载列表，除非改成如果列表不为空，就不查询，但那样意义不大
 //    val curCredentialList:SnapshotStateList<CredentialEntity> = remember { mutableStateListOf() }  //切换http和ssh后里面存对应的列表
 
-    val selectedCredentialId= rememberSaveable { mutableStateOf("")}
-    val selectedCredentialName= rememberSaveable { mutableStateOf("")}
 
     //获取输入焦点，弹出键盘
-    val focusRequesterGitUrl = remember { FocusRequester()}  // 1
-    val focusRequesterRepoName = remember { FocusRequester()}  // 2
-    val focusRequesterCredentialName = remember { FocusRequester()}  // 3
+    val focusRequesterGitUrl = remember { FocusRequester() }  // 1
+    val focusRequesterRepoName = remember { FocusRequester() }  // 2
+    val focusRequesterCredentialName = remember { FocusRequester() }  // 3
     val focusToNone = 0
-    val focusToGitUrl = 1;
-    val focusToRepoName = 2;
-    val focusToCredentialName = 3;
-    val requireFocusTo = rememberSaveable{mutableIntStateOf(focusToNone)}  //初始值0谁都不聚焦，修改后的值： 1聚焦url；2聚焦仓库名；3聚焦凭据名
+    val focusToGitUrl = 1
+    val focusToRepoName = 2
+    val focusToCredentialName = 3
+    val requireFocusTo = rememberSaveable{ mutableIntStateOf(focusToNone) }  //初始值0谁都不聚焦，修改后的值： 1聚焦url；2聚焦仓库名；3聚焦凭据名
 
     val noCredential = stringResource(R.string.no_credential)
     val newCredential = stringResource(R.string.new_credential)
@@ -191,7 +184,6 @@ fun CloneScreen(
 
     val passwordVisible =rememberSaveable { mutableStateOf(false)}
 
-    val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false)}
 
     val showRepoNameAlreadyExistsErr = rememberSaveable { mutableStateOf(false)}
     val showCredentialNameAlreadyExistsErr =rememberSaveable { mutableStateOf(false)}
@@ -280,7 +272,7 @@ fun CloneScreen(
 
     val storagePathSelectedIndex = rememberSaveable{ mutableIntStateOf(
         try {
-            // if not found, just use fisrt item, it is must existed internal storage
+            // if not found, just use first item, it is must existed internal storage
             storagePathList.value.indexOfFirst { storagePathSelectedPath.value.path == it.path }.coerceAtLeast(0)
         }catch (_: Exception) {
             // 0 to select app internal repos storage path
@@ -533,26 +525,26 @@ fun CloneScreen(
                     return@launch
                 }
 
-                credentialForSave = CredentialEntity(name = credentialNameText,
-                                                    value = credentialVal.value,
-                                                    pass = credentialPass.value,
-                                                    type = curCredentialType.intValue,
-
+                credentialForSave = CredentialEntity(
+                    name = credentialNameText,
+                    value = credentialVal.value,
+                    pass = credentialPass.value,
+                    type = curCredentialType.intValue,
                 )
                 credentialDb.insertWithEncrypt(credentialForSave)
 
                 //为仓库更新credentialId
                 credentialIdForClone = credentialForSave.id
             } else if(credentialSelectedOption == optNumSelectCredential) {
-                credentialIdForClone = selectedCredentialId.value
+                credentialIdForClone = selectedCredential.value.id
             } else if(credentialSelectedOption == optNumMatchCredentialByDomain) {
                 credentialIdForClone = SpecialCredential.MatchByDomain.credentialId
             }
 
 
 
-            var intDepth = 0;
-            var isShallow= Cons.dbCommonFalse
+            var intDepth = 0
+            var isShallow = Cons.dbCommonFalse
             if(depth.value.isNotBlank()) {
                 try {  //如果在这不出错，intDepth大于等于0
                     //虽然输入限制了仅限数字，但用户依然可以粘贴非数字内容，所以parse还是有可能出错，因此需要try catch
@@ -560,21 +552,21 @@ fun CloneScreen(
                     //注：coerceAtLeast(0)确保解析出的数字不小于0
                     intDepth = depth.value.toInt().coerceAtLeast(0)
                 }catch (e:Exception) {  //如果try代码块出错，intDepth将等于0
-                    intDepth=0
-                    Log.e(TAG,"invalid depth value, will use default value(0)")
+                    intDepth = 0
+                    Log.d(TAG,"invalid depth value '${depth.value}', will use default value '0', err=${e.localizedMessage}")
                 }
 
                 //执行到这intDepth必然大于等于0，所以不需再判断
 //                intDepth = if(intDepth>0) intDepth else 0  //避免intDepth小于0
 
                 //执行到这intDepth必然大于等于0，等于0等于非shallow，大于0等于shallow(暂且等于，实际上如果其值大于所有提交数，最终仓库依然是非shallow状态)
-                if(intDepth>0) {  //注：这里的状态只是预判，如果depth大于仓库实际的提交数，克隆后仓库依然是非shallow的，isShallow也会被更新为假，可通过检测仓库.git目录是否存在shallow文件来判断仓库是否处于shallowed状态，我已经在克隆仓库实现了这个功能
+                if(intDepth > 0) {  //注：这里的状态只是预判，如果depth大于仓库实际的提交数，克隆后仓库依然是非shallow的，isShallow也会被更新为假，可通过检测仓库.git目录是否存在shallow文件来判断仓库是否处于shallowed状态，我已经在克隆仓库实现了这个功能
                     isShallow = Cons.dbCommonTrue
                 }
             }
 
             //这里不用判断repoFromDb.id，如果没成功更新repoFromDb为数据库中的值，那它的id会是空字符串，不会匹配到任何记录，而isEditMode为true时，会执行update操作，是按id匹配的，所以，最终不会影响任何数据，顶多就是用户输入的内容没保存上而已。
-            val repoForSave:RepoEntity = if(isEditMode) repoFromDb.value else RepoEntity(createBy = Cons.dbRepoCreateByClone);
+            val repoForSave:RepoEntity = if(isEditMode) repoFromDb.value else RepoEntity(createBy = Cons.dbRepoCreateByClone)
             //设置repo字段
             repoForSave.repoName = repoNameText
             repoForSave.fullSavePath = fullSavePath
@@ -653,7 +645,7 @@ fun CloneScreen(
                 scrollBehavior = homeTopBarScrollBehavior,
             )
         },
-    ){contentPadding->
+    ) { contentPadding->
         //遮罩loading，这里不用做if loading else show page 的判断，直接把loading遮盖在页面上即可
 //        showLoadingDialog.value=true  //test
         if (showLoadingDialog.value) {
@@ -697,10 +689,9 @@ fun CloneScreen(
 //                    credentialVal.value=""  //没必要清，用户觉得不对，他自己全选删除不就行了？
 //                    credentialPass.value=""  //这个也没必要清，理由同上
                     //类型改变时需要重置一些字段
-                    if(newCredentialType!=oldCredentialType) {  //为true代表url类型改变了，credential类型也需要跟着改变，并且重置一些状态变量
+                    if(newCredentialType != oldCredentialType) {  //为true代表url类型改变了，credential类型也需要跟着改变，并且重置一些状态变量
                         //选择凭据相关字段，这两个有必要清，因为类型一换，凭据列表就变了，而且不同类型的凭据也不通用，所以这个得在凭据类型改变时清一下
-                        selectedCredentialName.value=""
-                        selectedCredentialId.value=""
+                        selectedCredential.value = CredentialEntity(id = "")
                         //如果url类型改变 且 凭据选的是选择凭据，则将其改为无凭据，因为ssh和http的凭据不通用
                         if(credentialSelectedOption == optNumSelectCredential) {  //如果当前是选择凭据，则改成无凭据（若是无凭据或新建凭据，则不执行操作）
                             onCredentialOptionSelected(optNumNoCredential)
@@ -1038,51 +1029,22 @@ fun CloneScreen(
                 }
 
             }else if(credentialSelectedOption == optNumSelectCredential) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(MyStyleKt.defaultItemPadding)
-//                        .wrapContentSize(Alignment.Center)
-                    ,
+                Spacer(Modifier.height(MyStyleKt.defaultItemPadding))
 
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ){
-
-                    Row {  //让按钮和下拉菜单近点
-                        Button(onClick = { dropDownMenuExpandState.value = true }) {
-                            Text(stringResource(R.string.tap_for_select_credential))
-                        }
-                        //查询所有凭据，显示下拉选择框(selector)
-                        DropdownMenu(
-                            expanded = dropDownMenuExpandState.value,
-                            onDismissRequest = { dropDownMenuExpandState.value = false }
-                        ) {
-//                            val curList = if(curCredentialType.intValue == Cons.dbCredentialTypeHttp) credentialHttpList else credentialSshList
-                            val curList = allCredentialList
-                            for(item in curList.value.toList()) {
-                                DropdownMenuItem(
-                                    text = { DropDownMenuItemText(text1 = item.name) },
-                                    onClick = {
-                                        selectedCredentialId.value = item.id
-                                        selectedCredentialName.value = item.name
-                                        dropDownMenuExpandState.value=false
-                                    }
-                                )
-
-                            }
-                        }
-                    }
-                    Row {
-                        Text(stringResource(R.string.selected_credential))
-                        Spacer(modifier = Modifier.width(10.dp))
-
-                        //和下拉菜单已选中条目的样式统一
-                        DropDownMenuItemText(
-                            text1 = selectedCredentialName.value,
-                        )
-                    }
-                }
+                SingleSelectList(
+                    optionsList = allCredentialList.value,
+                    selectedOptionIndex = null,
+                    selectedOptionValue = selectedCredential.value,
+                    menuItemSelected = { _, item ->
+                        item.id == selectedCredential.value.id
+                    },
+                    menuItemFormatter = { _, item ->
+                        item?.name?:""
+                    },
+                    menuItemOnClick = { _, item ->
+                        selectedCredential.value = item
+                    },
+                )
             }else if(credentialSelectedOption == optNumMatchCredentialByDomain) {
                 MySelectionContainer {
                     DefaultPaddingRow {
@@ -1160,8 +1122,7 @@ fun CloneScreen(
                         } else {  //存在之前设置的credential
                             //设置选中的credential
                             onCredentialOptionSelected(optNumSelectCredential)  //选中“select credential”单选项
-                            selectedCredentialName.value = credential.name  //选中项的名字，显示给用户看的
-                            selectedCredentialId.value = credential.id  //选中项的id，保存时用的，不给用户看
+                            selectedCredential.value = credential
 //                            curCredentialType.intValue = credential.type  // deprecated
                             curCredentialType.intValue = Libgit2Helper.getCredentialTypeByUrl(repo.cloneUrl)  //设置当前credential类型
                         }
@@ -1200,7 +1161,7 @@ fun CloneScreen(
                     //要么是http且填了密码字段，要么是ssh且填了privatekey字段
 //                    && (curCredentialType.intValue==Cons.dbCredentialTypeHttp && credentialPass.value.isNotBlank()) || (curCredentialType.intValue==Cons.dbCredentialTypeSsh && credentialVal.value.isNotBlank())
                    )
-                || (credentialSelectedOption==optNumSelectCredential && selectedCredentialId.value.isNotBlank() && selectedCredentialName.value.isNotBlank()))
+                || (credentialSelectedOption==optNumSelectCredential && selectedCredential.value.id.isNotBlank() && selectedCredential.value.name.isNotBlank()))
         && !showRepoNameAlreadyExistsErr.value && !showRepoNameHasIllegalCharsOrTooLongErr.value && !showCredentialNameAlreadyExistsErr.value
         )
 
