@@ -5,9 +5,6 @@
 #### and, now I working on an e2ee note app, so PuppyGit develop temporary paused for now!
 
 ---
-#### PayPal:
-https://paypal.me/catpuppyapp
-
 #### Ko-fi
 https://ko-fi.com/bandeapart1964
 
