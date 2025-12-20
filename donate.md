@@ -2,7 +2,7 @@
 
 #### welcome follow my twitter: https://x.com/catpuppyapp
 #### btw: due to patreon can't withdraw in my country, so I will update news on twitter, my patreon page maybe will close in future.
-#### and, now I working on an e2ee note app, so PuppyGit develop temporary paused for now!
+
 
 ---
 #### Ko-fi
