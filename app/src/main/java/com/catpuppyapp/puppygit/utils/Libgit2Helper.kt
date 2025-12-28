@@ -2131,31 +2131,19 @@ object Libgit2Helper {
     //save failed return false, else return true
     fun saveGitUsernameAndEmailForGlobal(
         requireShowErr: (String) -> Unit,
-        errText: String,
-        errCode1:String,  // for noticed where caused error
-        errCode2:String,
         username: String,
         email: String
     ): Boolean {
         try {
-//                val commonGitConfigSettings = MoshiUtil.commonGitConfigSettingsJsonAdapter.fromJson(settingsEntity.jsonVal)
-            val commonGitConfigSettings = SettingsUtil.getSettingsSnapshot().globalGitConfig
-            if (commonGitConfigSettings == null) {
-                requireShowErr(errText + " :$errCode2")
-                return false
+            SettingsUtil.update {
+                val globalGitConfig = it.globalGitConfig
+                globalGitConfig.username = username
+                globalGitConfig.email = email
             }
-            commonGitConfigSettings.username = username
-            commonGitConfigSettings.email = email
 
-//                settingsEntity.jsonVal = MoshiUtil.commonGitConfigSettingsJsonAdapter.toJson(commonGitConfigSettings)
-//                settingsDb.update(settingsEntity)
-            //这里重新读取是用效率换正确性，如果在之前读取一个设置项，然后这直接写入，其他线程再读取配置再写入，有可能设置项会保存为不期望的值，不过就算在这重读，还是有可能保存错，但概率会降低，用内存和效率换正确性
-            val settingsWillSave = SettingsUtil.getSettingsSnapshot()
-            settingsWillSave.globalGitConfig = commonGitConfigSettings
-            SettingsUtil.updateSettings(settingsWillSave)
             return true
         }catch (e:Exception) {
-            requireShowErr(e.localizedMessage?:"error save username and email: 12490068")
+            requireShowErr(e.localizedMessage ?: "error save username and email: 12490068")
             MyLog.e(TAG, "#saveGitUsernameAndEmailForGlobal: "+e.stackTraceToString())
             return false
         }

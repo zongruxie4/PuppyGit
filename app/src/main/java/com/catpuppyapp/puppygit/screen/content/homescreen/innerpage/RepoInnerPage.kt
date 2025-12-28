@@ -340,9 +340,6 @@ fun RepoInnerPage(
                     //save email and username
                     Libgit2Helper.saveGitUsernameAndEmailForGlobal(
                         requireShowErr=Msg.requireShowLongDuration,
-                        errText=errWhenQuerySettingsFromDbStrRes,
-                        errCode1="15569470",  // for noticed where caused error
-                        errCode2="10405847",
                         username=globalUsername.value,
                         email=globalEmail.value
                     )

@@ -136,14 +136,12 @@ fun AskGitUsernameAndEmailDialogWithSelection(
 
                             // username and email are not blank
 
+                            val requireShowErr = Msg.requireShowLongDuration
                             //save username and email to global or repo, then redo commit
                             if (forGlobal) {  //为全局设置用户名和邮箱
                                 //如果保存失败，return
                                 if (!Libgit2Helper.saveGitUsernameAndEmailForGlobal(
-                                        requireShowErr = Msg.requireShowLongDuration,
-                                        errText = errWhenQuerySettingsFromDbStrRes,
-                                        errCode1 = "1",
-                                        errCode2 = "2",   //??? wtf errcode? I forgotten!
+                                        requireShowErr = requireShowErr,
                                         username = usernameValue,
                                         email = emailValue
                                     )
@@ -156,7 +154,7 @@ fun AskGitUsernameAndEmailDialogWithSelection(
                                     //如果保存失败，return，方法内会提示错误信息，这里就不用再提示了
                                     if (!Libgit2Helper.saveGitUsernameAndEmailForRepo(
                                             repo = repo,
-                                            requireShowErr = Msg.requireShowLongDuration,
+                                            requireShowErr = requireShowErr,
                                             username = usernameValue,
                                             email = emailValue
                                         )
