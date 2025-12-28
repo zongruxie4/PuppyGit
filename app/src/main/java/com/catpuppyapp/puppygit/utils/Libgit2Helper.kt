@@ -2184,18 +2184,10 @@ object Libgit2Helper {
 
     }
 
+    //查询公用的git配置文件
     fun getGitUsernameAndEmailFromGlobalConfig():Pair<String,String> {
-        //查询公用的git配置文件
-        var username = ""
-        var email = ""
-
-        val commonGitConfigSettings = SettingsUtil.getSettingsSnapshot().globalGitConfig
-        if(commonGitConfigSettings != null) {
-            username = commonGitConfigSettings.username
-            email = commonGitConfigSettings.email
-        }
-
-        return Pair(username, email)
+        val globalGitConfig = SettingsUtil.getSettingsSnapshot().globalGitConfig
+        return Pair(globalGitConfig.username, globalGitConfig.email)
     }
 
     fun repoUsernameAndEmailAreVaild(repo: Repository):Boolean {
