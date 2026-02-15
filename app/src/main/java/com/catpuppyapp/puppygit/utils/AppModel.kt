@@ -609,11 +609,13 @@ object AppModel {
 
         //根据App版本号执行迁移代码
         AppVersionMan.init migrate@{ oldVer ->
-            //如果文件不存在或解析失败或不是当前最新版本，可能是新安装app的用户，直接显示更新日志弹窗并返回true
-            if(oldVer == AppVersionMan.err_fileNonExists || oldVer == AppVersionMan.err_parseVersionFailed
-                || oldVer != AppVersionMan.currentVersion
-            ) {
+            // 如果不是最新版本，说明刚从旧版安装了新版，显示更新日志弹窗，然后继续执行迁移
+            if(oldVer != AppVersionMan.currentVersion) {
                 showChangelogDialog.value = true
+            }
+
+            //如果文件不存在或解析失败，可能是新安装app的用户，直接返回true
+            if(oldVer == AppVersionMan.err_fileNonExists || oldVer == AppVersionMan.err_parseVersionFailed) {
                 return@migrate true
             }
 
