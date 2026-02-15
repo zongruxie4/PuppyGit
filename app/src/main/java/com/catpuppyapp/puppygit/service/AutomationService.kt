@@ -24,6 +24,7 @@ import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.forEachBetter
 import com.catpuppyapp.puppygit.utils.generateRandomString
+import com.catpuppyapp.puppygit.utils.pref.PrefUtil
 import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -107,7 +108,7 @@ class AutomationService: BaseAccessibilityService() {
                 routeName = "'auto pull service'",
                 gitUsernameFromUrl="",
                 gitEmailFromUrl="",
-                pullWithRebase = SettingsUtil.pullWithRebase(),
+                pullWithRebase = PrefUtil.getGlobalGitConfigPullWithRebase(AppModel.realAppContext),
             )
         }
 

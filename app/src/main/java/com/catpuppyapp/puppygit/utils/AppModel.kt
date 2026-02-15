@@ -609,7 +609,7 @@ object AppModel {
 
         //根据App版本号执行迁移代码
         AppVersionMan.init migrate@{ oldVer ->
-            //如果文件不存在或解析失败或不是当前最新版本，显示更新日志弹窗并返回true
+            //如果文件不存在或解析失败或不是当前最新版本，可能是新安装app的用户，直接显示更新日志弹窗并返回true
             if(oldVer == AppVersionMan.err_fileNonExists || oldVer == AppVersionMan.err_parseVersionFailed
                 || oldVer != AppVersionMan.currentVersion
             ) {
@@ -626,6 +626,13 @@ object AppModel {
 
             if(oldVer < 48 && AppVersionMan.currentVersion >= 48) {
                 val success = AppMigrator.sinceVer48()
+                if(!success) {
+                    return@migrate false
+                }
+            }
+
+            if(oldVer < 122 && AppVersionMan.currentVersion >= 122) {
+                val success = AppMigrator.sinceVer122()
                 if(!success) {
                     return@migrate false
                 }
