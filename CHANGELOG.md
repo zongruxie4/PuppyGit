@@ -2,6 +2,14 @@
 
 
 ---
+1.1.4.6v122 - 20260215:
+- try to fix git global username and email lost sometimes
+
+
+
+- 尝试修复全局git用户名和邮箱有时丢失的bug
+
+---
 1.1.4.5v121 - 20251101:
 - adjust UI of clone screen
 

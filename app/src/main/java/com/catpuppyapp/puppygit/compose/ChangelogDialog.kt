@@ -15,8 +15,8 @@ import com.catpuppyapp.puppygit.utils.AppModel
 
 
 private val changelog = """
-- adjust UI of clone screen
-- 调整克隆页面UI
+- try to fix git global username and email lost sometimes
+- 尝试修复全局git用户名和邮箱有时丢失的bug
 """.trimIndent()
 
 
