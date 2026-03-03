@@ -1107,7 +1107,7 @@
     <string name="unknown_err_plz_try_another_name">Unknown Err: plz try another name</string>
     <string name="open_file_failed">Err: Open file failed!</string>
     <string name="error_file_name_has_illegal_chars">Err: file name has illegal chars!</string>
-    <string name="doesnt_support_view_binary_file">Doesn\'t support view binary file</string>
+    <string name="doesnt_support_view_binary_file">Viewing binary files is not supported</string>
 
 
     <!--    will replace "ph_a3f241dc_1" to a number of files count ,the final str will shown looks like: "5 files staged" -->
