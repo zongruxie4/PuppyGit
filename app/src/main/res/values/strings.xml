@@ -140,7 +140,7 @@
     <string name="open_file_failed">Err: Open file failed!</string>
     <string name="error_file_name_has_illegal_chars">Err: file name has illegal chars!</string>
     <string name="open">Open</string>
-    <string name="doesnt_support_view_binary_file">Doesn\'t support view binary file</string>
+    <string name="doesnt_support_view_binary_file">Viewing binary files is not supported</string>
     <string name="switch_repo">Switch Repository</string>
     <string name="refresh">Refresh</string>
 <!--    <string name="go_to_index_page">Go to Index page</string>-->
