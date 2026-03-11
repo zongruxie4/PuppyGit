@@ -2,6 +2,16 @@
 
 
 ---
+1.1.4.8v124 - 20260311:
+- upgrade dependencies: ligit2 to 1.9.2, openssl to 3.6.1
+- optimize english translation (pr #125, thx @clach04)
+
+
+
+- 升级依赖: ligit2 to 1.9.2, openssl to 3.6.1
+- 优化英语翻译 (pr #125, thx @clach04)
+
+---
 1.1.4.7v123 - 20260228:
 - try to fix automation service crash (pr #124, contributor @jiesou)
 
