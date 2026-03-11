@@ -100,7 +100,7 @@ archs=${2:-$default_archs}
 # set a constant time for make openssl reproducible, see: https://reproducible-builds.org/docs/timestamps/
 # openssl似乎会使用时间戳来干点什么导致输出的so文件hash不同，设这个常量可使openssl或其他依赖时间戳且兼容此环境变量的库输出相同的二进制文件
 # 单位是秒
-export SOURCE_DATE_EPOCH=1749296383
+export SOURCE_DATE_EPOCH=1773234300
 
 for arch in $archs; do
     echo "Current architecture: $arch"
@@ -151,7 +151,7 @@ for arch in $archs; do
     mkdir -p $build_out_tmp
     cd $build_out_tmp
     # cmake .. --preset android
-    $CMAKE_PATH .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DANDROID_ABI=$cur_android_abi -DANDROID_PLATFORM="android-$android_target_abi" -DCMAKE_INSTALL_PREFIX=$prefix -DOPENSSL_TARGET_PLATFORM=$opensslarch -DOPENSSL_CONFIGURE_OPTIONS="-D__ANDROID_API__=$android_target_abi;--openssldir=$prefix/ssl;--prefix=$prefix" -DOPENSSL_INSTALL=TRUE -DOPENSSL_PATCH="$openssl_cmake/patch/android.patch" -DBUILD_SHARED_LIBS=ON -DOPENSSL_SOURCE=$opensslsrc 1>/dev/null 2>&1
+    $CMAKE_PATH .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DANDROID_ABI=$cur_android_abi -DANDROID_PLATFORM="android-$android_target_abi" -DCMAKE_INSTALL_PREFIX=$prefix -DOPENSSL_TARGET_PLATFORM=$opensslarch -DOPENSSL_CONFIGURE_OPTIONS="-D__ANDROID_API__=$android_target_abi;--openssldir=$prefix/ssl;--prefix=$prefix;no-asm" -DOPENSSL_INSTALL=TRUE -DOPENSSL_PATCH="$openssl_cmake/patch/android.patch" -DBUILD_SHARED_LIBS=ON -DOPENSSL_SOURCE=$opensslsrc 1>/dev/null 2>&1
 
     $CMAKE_PATH --build . --target install 1>/dev/null 2>&1
 
