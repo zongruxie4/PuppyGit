@@ -95,6 +95,16 @@ android {
             )
         }
     }
+    splits {
+        abi {
+            isEnable = true
+            // 把 ABI 列表重置为空，然后 include(...) 只添加你指定的那些 ABI。
+            reset()
+            include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+            // 包含额外的全架构apk
+            isUniversalApk = true
+        }
+    }
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
