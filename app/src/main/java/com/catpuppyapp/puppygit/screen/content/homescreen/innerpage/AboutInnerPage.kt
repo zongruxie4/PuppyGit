@@ -110,6 +110,7 @@ private val contributorList = listOf(
     Contributor(name = "RokeJulianLockhart", link = "https://github.com/RokeJulianLockhart", desc = "UI improvement"),
     Contributor(name = "jiesou", link = "https://github.com/jiesou", desc = "Fix automation service crash"),
     Contributor(name = "clach04", link = "https://github.com/clach04", desc = "Optimize english translation"),
+    Contributor(name = "IzzySoft", link = "https://github.com/IzzySoft", desc = "Build workflow improvement"),
 )
 
 
