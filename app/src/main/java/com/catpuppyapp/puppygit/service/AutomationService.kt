@@ -13,6 +13,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.notification.AutomationServiceExecuteNotify
 import com.catpuppyapp.puppygit.notification.AutomationServiceHoldNotify
+import com.catpuppyapp.puppygit.notification.NotifyId
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
@@ -173,7 +174,8 @@ class AutomationService: BaseAccessibilityService() {
 
         // 添加前台服务通知，防止系统杀死进程
         val settings = SettingsUtil.getSettingsSnapshot();
-        val serviceNotify = AutomationServiceHoldNotify.create(1)
+        // 通知id是常量，我保留了前50个id，其余作为自动生成的候选，用来显示拉取推送通知等，常驻前台服务确保各自独立id，别冲突即可
+        val serviceNotify = AutomationServiceHoldNotify.create(NotifyId.foregroundServiceAutomation)
         // 启动前台服务
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // UPSIDE_DOWN_CAKE is sdk 34
             startForeground(serviceNotify.notifyId, getNotification(serviceNotify, settings), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
