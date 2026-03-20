@@ -46,6 +46,7 @@
         <service
             android:name="com.catpuppyapp.puppygit.service.AutomationService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:foregroundServiceType="specialUse"
             android:exported="true">
         <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
@@ -54,6 +55,11 @@
             <meta-data
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
+
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Automation Service to do pull/push when enter/leave app"
+                />
         </service>
 
         <service

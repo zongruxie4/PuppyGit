@@ -1,16 +1,22 @@
 package com.catpuppyapp.puppygit.service
 
+import android.app.Notification
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.InputMethodManager
+import com.catpuppyapp.puppygit.base.BaseAccessibilityService
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.notification.AutomationNotify
+import com.catpuppyapp.puppygit.notification.AutomationServiceHoldNotify
+import com.catpuppyapp.puppygit.notification.base.NotifyBase
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
-import com.catpuppyapp.puppygit.base.BaseAccessibilityService
 import com.catpuppyapp.puppygit.receiver.ScreenOnOffReceiver
 import com.catpuppyapp.puppygit.server.bean.NotificationSender
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -166,8 +172,34 @@ class AutomationService: BaseAccessibilityService() {
 
         registerScreenOnOffReceiver()
 
+        // 添加前台服务通知，防止系统杀死进程
+        val settings = SettingsUtil.getSettingsSnapshot();
+        val serviceNotify = AutomationServiceHoldNotify.create(1)
+        // 启动前台服务
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // UPSIDE_DOWN_CAKE is sdk 34
+            startForeground(serviceNotify.notifyId, getNotification(serviceNotify, settings), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        }else {
+            startForeground(serviceNotify.notifyId, getNotification(serviceNotify, settings))
+        }
+
         MyLog.d(TAG, "#onCreate() finished")
 
+    }
+
+    /**
+     * 在通知栏显示的常驻通知
+     */
+    private fun getNotification(notifyBase: NotifyBase, settings: AppSettings): Notification {
+        val builder = notifyBase.getNotificationBuilder(
+            this,
+            "PuppyGit Automation Service",
+            "Auto pull/push when enter/leave app",
+
+            //启动app并定位到Service页面
+            NotifyUtil.createPendingIntentGoToSpecifiedPage(applicationContext, Cons.selectedItem_Automation, startRepoId = ""),
+        )
+
+        return builder.build()
     }
 
     private fun registerScreenOnOffReceiver() {
@@ -199,6 +231,8 @@ class AutomationService: BaseAccessibilityService() {
     override fun onDestroy() {
         super.onDestroy()
         unregisterScreenOnOffReceiver()
+        // 确保清理前台服务
+        stopForeground(Service.STOP_FOREGROUND_REMOVE)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
