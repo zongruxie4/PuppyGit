@@ -4,7 +4,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.catpuppyapp.puppygit.constants.IntentCons
-import com.catpuppyapp.puppygit.notification.AutomationNotify
+import com.catpuppyapp.puppygit.notification.AutomationExecuteNotify
 import com.catpuppyapp.puppygit.notification.HttpServiceExecuteNotify
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
 import com.catpuppyapp.puppygit.notification.NormalNotify
@@ -21,7 +21,7 @@ object NotifyUtil {
         NormalNotify.create(1),
         HttpServiceHoldNotify.create(2),
         HttpServiceExecuteNotify.create(3),
-        AutomationNotify.create(4),
+        AutomationExecuteNotify.create(4),
         AutomationServiceHoldNotify.create(5),
     )
 

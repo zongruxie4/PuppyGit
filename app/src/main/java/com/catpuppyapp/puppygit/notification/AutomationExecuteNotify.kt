@@ -5,17 +5,17 @@ import com.catpuppyapp.puppygit.notification.base.NotifyBase
 /**
  * 执行自动化行为的通知，就是app打开、关闭时发送通知的渠道
  */
-class AutomationNotify private constructor(
+class AutomationExecuteNotify private constructor(
     override val notifyId:Int
 ): NotifyBase(
-    TAG = "AutomationNotify",
-    channelId="automation_notify",
-    channelName = "Automation",
-    channelDesc = "Show Automation Notifications",
+    TAG = "AutomationExecuteNotify",
+    channelId="automation_execute_notify",
+    channelName = "Automation Execute",
+    channelDesc = "Automation Execute Notifications",
 ) {
     companion object {
         fun create(notifyId:Int):NotifyBase {
-            return AutomationNotify(notifyId)
+            return AutomationExecuteNotify(notifyId)
         }
     }
 }

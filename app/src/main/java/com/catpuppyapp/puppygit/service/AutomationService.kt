@@ -11,7 +11,7 @@ import android.view.inputmethod.InputMethodManager
 import com.catpuppyapp.puppygit.base.BaseAccessibilityService
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
-import com.catpuppyapp.puppygit.notification.AutomationNotify
+import com.catpuppyapp.puppygit.notification.AutomationExecuteNotify
 import com.catpuppyapp.puppygit.notification.AutomationServiceHoldNotify
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
@@ -62,7 +62,7 @@ class AutomationService: BaseAccessibilityService() {
 
 
         private fun createNotify(notifyId:Int):ServiceNotify {
-            return ServiceNotify(AutomationNotify.create(notifyId))
+            return ServiceNotify(AutomationExecuteNotify.create(notifyId))
         }
 
 

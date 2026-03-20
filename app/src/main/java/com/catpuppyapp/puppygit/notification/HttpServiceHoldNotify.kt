@@ -8,13 +8,16 @@ import com.catpuppyapp.puppygit.notification.bean.Action
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.service.HttpService
 
+/**
+ * 保活前台通知
+ */
 class HttpServiceHoldNotify private constructor(
     override val notifyId:Int
 ): NotifyBase(
     TAG = "HttpServiceHoldNotify",
     channelId="http_service_hold_notify",
     channelName = "Http Service",
-    channelDesc = "Show Http Foreground Service Notification",
+    channelDesc = "Http Foreground Service Notification",
     actionList = { context ->
         listOf(
             // "stop" action, click stop service
