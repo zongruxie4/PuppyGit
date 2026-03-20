@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.service
 
 import android.app.Notification
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -232,7 +231,7 @@ class AutomationService: BaseAccessibilityService() {
         super.onDestroy()
         unregisterScreenOnOffReceiver()
         // 确保清理前台服务
-        stopForeground(Service.STOP_FOREGROUND_REMOVE)
+        stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
