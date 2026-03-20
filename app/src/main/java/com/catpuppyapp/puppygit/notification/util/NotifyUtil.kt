@@ -19,10 +19,10 @@ object NotifyUtil {
     private val notifyList:List<NotifyBase> = listOf(
         //这创建的实例只是用来注册通知渠道的，通知id随便填个数就行，反正不用
         NormalNotify.create(1),
-        HttpServiceHoldNotify.create(2),
-        HttpServiceExecuteNotify.create(3),
-        AutomationServiceExecuteNotify.create(4),
-        AutomationServiceHoldNotify.create(5),
+        HttpServiceHoldNotify.create(1),
+        HttpServiceExecuteNotify.create(1),
+        AutomationServiceExecuteNotify.create(1),
+        AutomationServiceHoldNotify.create(1),
     )
 
     /**

@@ -74,7 +74,7 @@ abstract class NotifyBase(
             MyLog.w(TAG, "notify channel '$channelId' registered")
         }
 
-        MyLog.w(TAG, "notification '$notifyId' inited")
+        // MyLog.w(TAG, "notification '$notifyId' inited")
     }
 
     // 发送通知
