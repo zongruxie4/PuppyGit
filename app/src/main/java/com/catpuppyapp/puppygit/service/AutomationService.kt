@@ -192,7 +192,7 @@ class AutomationService: BaseAccessibilityService() {
         val builder = notifyBase.getNotificationBuilder(
             this,
             "PuppyGit Automation Service",
-            "Auto pull/push when enter/leave app",
+            "Auto pull/push when enter/leave apps",
 
             //启动app并定位到Service页面
             NotifyUtil.createPendingIntentGoToSpecifiedPage(applicationContext, Cons.selectedItem_Automation, startRepoId = ""),
