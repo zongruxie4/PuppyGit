@@ -146,10 +146,10 @@ App图标由 Bandeapart1964(我自己)设计<br>
 App图标中的 Git Logo 由 Jason Long 设计，受 Creative Commons Attribution 3.0 Unported License保护。 (<a href=https://git-scm.com/downloads/logos>The Git Logo</a>)<br>
 
 ### 库
-The `libgit2.so` built from <a href=https://github.com/libgit2/libgit2/releases/tag/v1.9.1>libgit2 1.9.1</a>(<a href=https://raw.githubusercontent.com/libgit2/libgit2/main/COPYING>LICENSE</a>)<br>
+The `libgit2.so` built from <a href=https://github.com/libgit2/libgit2/releases/tag/v1.9.2>libgit2 1.9.2</a>(<a href=https://raw.githubusercontent.com/libgit2/libgit2/main/COPYING>LICENSE</a>)<br>
 The `libssh2.so` built from <a href=https://github.com/libssh2/libssh2/releases/tag/libssh2-1.11.1>libssh2 1.11.1</a>(<a href=https://github.com/libssh2/libssh2/blob/master/COPYING>LICENSE</a>)<br>
 The `libgit24j.so`'s source code is edited from <a href=https://github.com/git24j/git24j>Git24j</a> and <a href=https://github.com/Frank997/git24j>A fork of Git24j</a>(<a href=https://raw.githubusercontent.com/git24j/git24j/master/LICENSE>LICENSE</a>)(I've sent pr after I made changes and tested)<br>
-The `libcrypto.so` and `libssl.so` built from <a href=https://github.com/openssl/openssl/releases/tag/openssl-3.5.0>openssl 3.5.0</a>(<a href=https://raw.githubusercontent.com/openssl/openssl/master/LICENSE.txt>LICENSE</a>)<br>
+The `libcrypto.so` and `libssl.so` built from <a href=https://github.com/openssl/openssl/releases/tag/openssl-3.6.1>openssl 3.6.1</a>(<a href=https://raw.githubusercontent.com/openssl/openssl/master/LICENSE.txt>LICENSE</a>)<br>
 The Editor of PuppyGit is modified from kaleidot725's <a href=https://github.com/kaleidot725/text-editor-compose>text-editor-compose</a>(<a href=https://raw.githubusercontent.com/kaleidot725/text-editor-compose/main/LICENSE>LICENSE</a>)
 
 ### 其他文件
@@ -157,4 +157,5 @@ The Log class `MyLog` changed from: <a href=https://www.cnblogs.com/changyiqiang
 The `MIMEType` related util classes copied from ZhangHai's <a href=https://github.com/zhanghai/MaterialFiles>Material Files</a>(<a href=https://github.com/zhanghai/MaterialFiles/blob/master/LICENSE>LICENSE</a>)<br>
 The `PermissionUtils` copied from <a href=https://github.com/NeoApplications/Neo-Backup/blob/main/src/main/java/com/machiav3lli/backup/utils/PermissionUtils.kt>Neo-Backup PermissionUtils class</a>(<a href=https://github.com/NeoApplications/Neo-Backup/blob/main/LICENSE.md>LICENSE</a>)<br>
 The files about syntax highlighting feature are picked from <a href=https://github.com/Rosemoe/sora-editor>Sora Editor</a>(<a href=https://github.com/Rosemoe/sora-editor/blob/main/LICENSE>LICENSE</a>)
+The openssl build with cmake: https://github.com/jimmy-park/openssl-cmake
 
