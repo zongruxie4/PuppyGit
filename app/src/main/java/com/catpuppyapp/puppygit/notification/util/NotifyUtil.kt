@@ -21,8 +21,8 @@ object NotifyUtil {
         NormalNotify.create(1),
         HttpServiceHoldNotify.create(1),
         HttpServiceExecuteNotify.create(1),
-        AutomationServiceExecuteNotify.create(1),
         AutomationServiceHoldNotify.create(1),
+        AutomationServiceExecuteNotify.create(1),
     )
 
     /**
