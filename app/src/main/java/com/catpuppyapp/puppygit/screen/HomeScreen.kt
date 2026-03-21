@@ -705,6 +705,12 @@ fun HomeScreen(
         refreshServicePage()
     }
 
+    val goToAutomationPage = {
+        //跳转页面
+        currentHomeScreen.intValue = Cons.selectedItem_Automation
+        refreshAutomationPage()
+    }
+
     val goToRepoPage = { targetIdIfHave:String ->
         //跳转到Repos页面不用关过滤模式，因为做了额外处理，
         // 会根据是否开过滤模式决定查哪个列表，并且如果过滤后的列表无条目，
@@ -1902,7 +1908,7 @@ fun HomeScreen(
 
                                     //如果没有导入文件，检查是否需要跳转页面
 
-                                    //如果intent携带了启动页面和仓库，使用
+                                    //如果intent携带了启动页面和仓库，使用 （这个intent是从通知触发的，所以，只实现可能从通知消息会跳转到的页面的函数即可）
                                     val startPage = extras.getString(IntentCons.ExtrasKey.startPage) ?: ""
                                     val startRepoId = extras.getString(IntentCons.ExtrasKey.startRepoId) ?: ""
 
@@ -1918,6 +1924,8 @@ fun HomeScreen(
                                             goToRepoPage(startRepoId)
                                         }else if(startPage == Cons.selectedItem_Service.toString()) {
                                             goToServicePage()
+                                        }else if(startPage == Cons.selectedItem_Automation.toString()) {
+                                            goToAutomationPage()
                                         }
                                         // else if go to other page maybe
                                     }
