@@ -173,7 +173,6 @@ class AutomationService: BaseAccessibilityService() {
 
         // 添加前台服务通知，防止系统杀死进程
         val settings = SettingsUtil.getSettingsSnapshot();
-        // 通知id是常量，我保留了前50个id，其余作为自动生成的候选，用来显示拉取推送通知等，常驻前台服务确保各自独立id，别冲突即可
         val serviceNotify = AutomationServiceHoldNotify.createForegroundServiceNotification()
         // 启动前台服务
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // UPSIDE_DOWN_CAKE is sdk 34

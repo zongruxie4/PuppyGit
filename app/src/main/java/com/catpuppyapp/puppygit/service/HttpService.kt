@@ -173,7 +173,6 @@ class HttpService : BaseService() {
         }else { // start
             val settings = SettingsUtil.getSettingsSnapshot()
 
-            // 入参int值是 service前台通知的通知id，app内全局唯一，必须不能是0，随便个常量就行，如果app要显示其他通知，通知id必须和这个不一样，不然会覆盖
             val serviceNotify = HttpServiceHoldNotify.createForegroundServiceNotification()
             // 启动前台服务
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // UPSIDE_DOWN_CAKE is sdk 34

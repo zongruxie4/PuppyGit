@@ -39,10 +39,12 @@ class HttpServiceHoldNotify private constructor(
 ){
 
     companion object {
+        // 入参int值是 service前台通知的通知id，app内全局唯一，必须不能是0，调用NotifyUtil.genId()生成即可
         fun create(notifyId:Int):NotifyBase {
             return HttpServiceHoldNotify(notifyId)
         }
 
+        // 创建前台服务通知，这个id是常量，必须独占，若和其他通知id冲突，后发送的通知会覆盖之前的
         fun createForegroundServiceNotification(): NotifyBase {
             return create(NotifyId.foregroundServiceHttp)
         }

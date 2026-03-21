@@ -9,6 +9,7 @@ object NotifyId {
     const val reversedId1 = 1;
 
     // > 80 is foreground service notify id （我规定的，不是系统规定的）
+    // 常驻前台服务需确保使用独占id，不然会覆盖，例如，启动前台服务后，显示了前台通知，然后一个动态通知使用了和前台服务相同的id，那么前台通知的内容会被覆盖（我记得是这样）
     const val foregroundServiceHttp = 81
     const val foregroundServiceAutomation = 82
 
