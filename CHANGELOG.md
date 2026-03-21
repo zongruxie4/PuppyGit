@@ -7,7 +7,6 @@
 - optimize english translation (pr #125, thx @clach04)
 - optimize code of `PullToRefreshBox` (pr #128, thx @msmt2018)
 - align c libs to 16KB page size
-- fix automation service killed issue (#130)
 
 
 
@@ -15,7 +14,6 @@
 - 优化英语翻译 (pr #125, thx @clach04)
 - 优化 `PullToRefreshBox` 的代码 (pr #128, thx @msmt2018)
 - 对齐c库为16KB页大小
-- 修复自动化服务被杀 (#130)
 
 ---
 1.1.4.7v123 - 20260228:
