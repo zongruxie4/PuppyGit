@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
 import com.catpuppyapp.puppygit.notification.bean.Action
+import com.catpuppyapp.puppygit.notification.util.NotifyId
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.service.HttpService
 
@@ -42,6 +43,9 @@ class HttpServiceHoldNotify private constructor(
             return HttpServiceHoldNotify(notifyId)
         }
 
+        fun createForegroundServiceNotification(): NotifyBase {
+            return create(NotifyId.foregroundServiceHttp)
+        }
 
         fun createPendingIntentWithAct(context: Context, action:String): PendingIntent {
             val intent = Intent(context, HttpService::class.java) // 替换为您的主活动

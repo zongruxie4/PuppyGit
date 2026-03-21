@@ -3,26 +3,25 @@ package com.catpuppyapp.puppygit.notification.util
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import com.catpuppyapp.puppygit.activity.MainActivity
 import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.notification.AutomationServiceExecuteNotify
+import com.catpuppyapp.puppygit.notification.AutomationServiceHoldNotify
 import com.catpuppyapp.puppygit.notification.HttpServiceExecuteNotify
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
 import com.catpuppyapp.puppygit.notification.NormalNotify
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
-import com.catpuppyapp.puppygit.activity.MainActivity
-import com.catpuppyapp.puppygit.notification.AutomationServiceHoldNotify
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.forEachBetter
-import kotlin.random.Random
 
 object NotifyUtil {
     private val notifyList:List<NotifyBase> = listOf(
         //这创建的实例只是用来注册通知渠道的，通知id随便填个数就行，反正不用
-        NormalNotify.create(1),
-        HttpServiceHoldNotify.create(1),
-        HttpServiceExecuteNotify.create(1),
-        AutomationServiceHoldNotify.create(1),
-        AutomationServiceExecuteNotify.create(1),
+        NormalNotify.create(NotifyId.reversedId1),
+        HttpServiceHoldNotify.create(NotifyId.reversedId1),
+        HttpServiceExecuteNotify.create(NotifyId.reversedId1),
+        AutomationServiceHoldNotify.create(NotifyId.reversedId1),
+        AutomationServiceExecuteNotify.create(NotifyId.reversedId1),
     )
 
     /**
@@ -72,8 +71,7 @@ object NotifyUtil {
     }
 
     fun genId():Int {
-        //I want less than 50 as reserved notification Id,so dont use it
-        return Random.nextInt(51, Int.MAX_VALUE)
+        return NotifyId.randomId()
     }
 
 }

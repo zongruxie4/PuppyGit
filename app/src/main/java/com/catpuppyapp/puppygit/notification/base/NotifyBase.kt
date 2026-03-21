@@ -71,10 +71,10 @@ abstract class NotifyBase(
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
 
-            MyLog.w(TAG, "notify channel '$channelId' registered")
+            MyLog.d(TAG, "notify channel '$channelId' registered")
         }
 
-        // MyLog.w(TAG, "notification '$notifyId' inited")
+        MyLog.d(TAG, "notification '$channelId' inited")
     }
 
     // 发送通知

@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.notification
 
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
+import com.catpuppyapp.puppygit.notification.util.NotifyId
 
 /**
  * 保活前台通知
@@ -17,6 +18,10 @@ class AutomationServiceHoldNotify private constructor(
     companion object {
         fun create(notifyId:Int):NotifyBase {
             return AutomationServiceHoldNotify(notifyId)
+        }
+
+        fun createForegroundServiceNotification(): NotifyBase {
+            return create(NotifyId.foregroundServiceAutomation)
         }
     }
 

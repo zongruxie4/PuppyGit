@@ -5,12 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
+import com.catpuppyapp.puppygit.base.BaseService
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
-import com.catpuppyapp.puppygit.notification.NotifyId
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
-import com.catpuppyapp.puppygit.base.BaseService
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.server.HttpServer
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -175,7 +174,7 @@ class HttpService : BaseService() {
             val settings = SettingsUtil.getSettingsSnapshot()
 
             // 入参int值是 service前台通知的通知id，app内全局唯一，必须不能是0，随便个常量就行，如果app要显示其他通知，通知id必须和这个不一样，不然会覆盖
-            val serviceNotify = HttpServiceHoldNotify.create(NotifyId.foregroundServiceHttp)
+            val serviceNotify = HttpServiceHoldNotify.createForegroundServiceNotification()
             // 启动前台服务
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // UPSIDE_DOWN_CAKE is sdk 34
                 startForeground(serviceNotify.notifyId, getNotification(serviceNotify, settings), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
