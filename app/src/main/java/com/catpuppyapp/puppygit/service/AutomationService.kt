@@ -50,8 +50,8 @@ class AutomationService: BaseAccessibilityService() {
         //app last leaving at, key is package name, value is time in millseconds
         val appLeaveTime = ConcurrentMap<String, Long>()
 
-        private var lastTargetPackageName = ""  // used to check enter/leave app
-        private var lastPackageName = "" // used to skip repeat triggered
+        private var lastTargetPackageName = ""  // last target package name, used to check enter/leave app
+        private var lastPackageName = "" // last event related package name, maybe is target app or not, used to skip repeat triggered
 
         private val ignorePackageNames = listOf<String>(
             "com.android.systemui",  //通知栏或全面屏手势之类的
@@ -69,6 +69,13 @@ class AutomationService: BaseAccessibilityService() {
             ".notification"
         )
 
+        private fun reset() {
+            lastTargetPackageName = ""
+            lastPackageName = ""
+            targetPackageTrueOpenedFalseCloseNullNeverOpenedList.clear()
+            appLeaveTime.clear()
+            AutoSrvCache.setCurPackageName("")
+        }
 
         private fun createNotify(notifyId:Int):ServiceNotify {
             return ServiceNotify(AutomationServiceExecuteNotify.create(notifyId))
@@ -286,6 +293,17 @@ class AutomationService: BaseAccessibilityService() {
             }
 
 
+            val settings = SettingsUtil.getSettingsSnapshot()
+            val targetPackageList = AutomationUtil.getPackageNames(settings.automation)
+
+            //如果目标app列表为空，就不需要后续判断了，直接返回
+            if(targetPackageList.isEmpty()) {
+                reset()
+                return
+            }
+
+
+
             // 若是期望忽略的包名则返回
             if(ignorePackageNames.contains(packageName)) {
                 if(AppModel.devModeOn) {
@@ -328,14 +346,6 @@ class AutomationService: BaseAccessibilityService() {
             // 执行到这里，代表当前包名不是被忽略的包名
 
             lastPackageName = packageName
-
-            val settings = SettingsUtil.getSettingsSnapshot()
-            val targetPackageList = AutomationUtil.getPackageNames(settings.automation)
-
-            //如果目标app列表为空，就不需要后续判断了，直接返回
-            if(targetPackageList.isEmpty()) {
-                return
-            }
 
             doJobThenOffLoading {
                 val event = Unit  //覆盖外部event变量名，避免误用
