@@ -60,6 +60,13 @@ class AutomationService: BaseAccessibilityService() {
 
         )
 
+        // 包名若包含任意关键字，忽略
+        private val ignorePackNameKeywords = listOf(
+            ".systemui",
+            ".overlay",
+            ".notification"
+        )
+
 
         private fun createNotify(notifyId:Int):ServiceNotify {
             return ServiceNotify(AutomationServiceExecuteNotify.create(notifyId))
@@ -86,12 +93,15 @@ class AutomationService: BaseAccessibilityService() {
 
 
         private suspend fun pullRepoList(
-            sessionId:String,
+            sessionId: String,
             settings: AppSettings,
-            repoList:List<RepoEntity>,
+            repoList: List<RepoEntity>,
+            currentPackageName: String,
         ) {
             if(AppModel.devModeOn) {
                 MyLog.d(TAG, "#pullRepoList: generate notifyers for ${repoList.size} repos")
+                val notify = createNotify(NotifyUtil.genId())
+                notify.sendNormalNotification("auto pull", currentPackageName)
             }
 
             repoList.forEachBetter {
@@ -119,13 +129,17 @@ class AutomationService: BaseAccessibilityService() {
 
 
         suspend fun pushRepoList(
-            sessionId:String,
+            sessionId: String,
             settings: AppSettings,
-            repoList:List<RepoEntity>,
+            repoList: List<RepoEntity>,
+            targetPackageName: String,  // leave which app
+            currentPackageName: String, // currently active app
         ) {
 
             if(AppModel.devModeOn) {
                 MyLog.d(TAG, "#pushRepoList: generate notifyers for ${repoList.size} repos")
+                val notify = createNotify(NotifyUtil.genId())
+                notify.sendNormalNotification("auto push", "leave: $targetPackageName\nnow: $currentPackageName")
             }
 
             repoList.forEachBetter {
@@ -254,9 +268,16 @@ class AutomationService: BaseAccessibilityService() {
 
             // 若是期望忽略的包名则返回
             if(ignorePackageNames.contains(packageName)) {
-
                 if(AppModel.devModeOn) {
                     MyLog.d(TAG, "ignore package name: '$packageName'")
+                }
+
+                return
+            }
+
+            if(ignorePackNameKeywords.any { packageName.contains(it) }) {
+                if(AppModel.devModeOn) {
+                    MyLog.d(TAG, "ignore package name (contains keywords): '$packageName'")
                 }
 
                 return
@@ -336,7 +357,7 @@ class AutomationService: BaseAccessibilityService() {
 
                             repoListWillDoAct.let {
                                 if(it.isNotEmpty()) {
-                                    pullRepoList(sessionId, settings, it)
+                                    pullRepoList(sessionId, settings, it, packageName)
                                 }
                             }
                         }else {
@@ -347,6 +368,7 @@ class AutomationService: BaseAccessibilityService() {
                         AutoSrvCache.setCurPackageName("")
 
                         if(lastTargetPackageName.isNotBlank()) { //当前app不是我们关注的app，但上个是
+                            val currentPackageName = packageName
                             val packageName = Unit  //避免在这个代码块误调用这个变量名
 
                             val lastOpenedTarget = lastTargetPackageName
@@ -453,7 +475,7 @@ class AutomationService: BaseAccessibilityService() {
                                                         //因为在外部检查了若repoList为空则不启动协程，所以执行到这里如果列表为空，必然是当前app全面覆盖了要推送的仓库
                                                         MyLog.d(TAG, "push cancelled, current app full-covered target repoList, will do push after current app leave")
                                                     }else {
-                                                        pushRepoList(sessionId, settings, repoList)
+                                                        pushRepoList(sessionId, settings, repoList, targetPackageName = lastOpenedTarget, currentPackageName = currentPackageName)
                                                     }
 
                                                 }

@@ -26,4 +26,8 @@ open class ServiceNotify(val notify: NotifyBase) {
         sendNotification(repoNameOrId, progress, Cons.selectedItem_Never, "")
     }
 
+    fun sendNormalNotification(title:String, msg:String) {
+        sendNotification(title, msg, Cons.selectedItem_Never, "")
+    }
+
 }

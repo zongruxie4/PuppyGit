@@ -88,7 +88,7 @@ class ScreenOnOffReceiver : BroadcastReceiver() {
                                 }
                             }
 
-                            AutomationService.pushRepoList(sessionId = "ScrOffAutoPush_"+generateRandomString(), settings, repoList)
+                            AutomationService.pushRepoList(sessionId = "ScrOffAutoPush_"+generateRandomString(), settings, repoList, targetPackageName = lastPackage, currentPackageName = "screen off")
                         }else {
                             MyLog.d(TAG, "push delay less than 0, push canceled")
                         }

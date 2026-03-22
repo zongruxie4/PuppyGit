@@ -58,7 +58,7 @@
 
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Automation Service to do pull/push when enter/leave app"
+                android:value="Automation Service to do pull/push when enter/leave apps"
                 />
         </service>
 
