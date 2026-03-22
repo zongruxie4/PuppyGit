@@ -282,7 +282,6 @@ class AutomationService: BaseAccessibilityService() {
                 return
             }
 
-            lastPackageName = packageName
 
             // 若是期望忽略的包名则返回
             if(ignorePackageNames.contains(packageName)) {
@@ -315,6 +314,10 @@ class AutomationService: BaseAccessibilityService() {
                 MyLog.d(TAG, "get enabledInputMethodList err: ${e.stackTraceToString()}")
             }
 
+            // 执行到这里，代表当前包名不是被忽略的包名
+
+            lastPackageName = packageName
+
             val settings = SettingsUtil.getSettingsSnapshot()
             val targetPackageList = AutomationUtil.getPackageNames(settings.automation)
 
@@ -322,7 +325,6 @@ class AutomationService: BaseAccessibilityService() {
             if(targetPackageList.isEmpty()) {
                 return
             }
-
 
             doJobThenOffLoading {
                 val event = Unit  //覆盖外部event变量名，避免误用
