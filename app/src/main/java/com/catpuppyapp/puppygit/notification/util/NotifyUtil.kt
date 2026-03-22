@@ -77,7 +77,9 @@ object NotifyUtil {
         return NotifyId.randomId()
     }
 
-    fun sendNormalNotification(title: String, msg: String, context: Context? = null, pendingIntent: PendingIntent? = null) {
-        NormalNotify.create(genId()).sendNotification(context, title, msg, pendingIntent)
+    fun send(title: String, msg: String, notifyer: NotifyBase? = null, context: Context? = null, pendingIntent: PendingIntent? = null) {
+        // 下面的代码分两行是为了方便debug打断点
+        val notifyer2 = (notifyer ?: NormalNotify.create(genId()))
+        notifyer2.sendNotification(context, title, msg, pendingIntent)
     }
 }
