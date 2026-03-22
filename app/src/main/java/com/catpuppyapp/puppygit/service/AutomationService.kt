@@ -249,10 +249,18 @@ class AutomationService: BaseAccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if(event == null) {
+        try {
+            onAccessibilityEventNoCatch(event)
+        }catch (e: Exception) {
+            MyLog.d(TAG, "#onAccessibilityEvent err: ${e.stackTraceToString()}")
+        }
+    }
 
+    fun onAccessibilityEventNoCatch(event: AccessibilityEvent?) {
+        val funName = "onAccessibilityEventNoCatch"
+        if(event == null) {
             if(AppModel.devModeOn) {
-                MyLog.d(TAG, "#onAccessibilityEvent: event is null")
+                MyLog.d(TAG, "#$funName: event is null")
             }
 
             return
