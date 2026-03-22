@@ -21,6 +21,7 @@ import com.catpuppyapp.puppygit.server.bean.NotificationSender
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.settings.util.AutomationUtil
+import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.RepoActUtil
@@ -269,10 +270,12 @@ class AutomationService: BaseAccessibilityService() {
 
         if(event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             //必须在外部获取，放到协程里会null
-            val packageName = event.packageName?.toString() ?: return;
+            val packageName = event.packageName?.toString() ?: return
+            // class name, usually is Activities names of app
+            val className = event.className?.toString() ?: return
 
             if(AppModel.devModeOn) {
-                MyLog.v(TAG, "TYPE_WINDOW_STATE_CHANGED: $packageName")
+                MyLog.v(TAG, "TYPE_WINDOW_STATE_CHANGED: $packageName, className(activity name): $className")
             }
 
             if(lastPackageName == packageName) {
@@ -313,6 +316,14 @@ class AutomationService: BaseAccessibilityService() {
             }catch (e:Exception) {
                 MyLog.d(TAG, "get enabledInputMethodList err: ${e.stackTraceToString()}")
             }
+
+
+            val activitiesOfPackage = ActivityUtil.getActivitiesOfPackage(applicationContext, packageName)
+            if(!activitiesOfPackage.contains(className)) {
+                MyLog.d(TAG, "skip: app not contains className, packageName: $packageName, className: $className")
+                return
+            }
+
 
             // 执行到这里，代表当前包名不是被忽略的包名
 

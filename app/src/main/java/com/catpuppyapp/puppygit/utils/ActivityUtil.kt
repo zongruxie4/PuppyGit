@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -95,5 +96,21 @@ object ActivityUtil {
             Msg.requireShowLongDuration("err: ${e.localizedMessage}")
             MyLog.e(TAG, "#startActivitySafe() err: ${e.localizedMessage}")
         }
+    }
+
+
+    fun getActivitiesOfPackage(context: Context, packageName: String) : List<String> {
+        val activities = mutableListOf<String>()
+        try {
+            val pkgInfo = context.packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
+            pkgInfo.activities?.forEachBetter {
+                activities.add(it.name)
+            }
+        }catch (e: Exception) {
+            // package not installed or other errors
+            MyLog.e(TAG, "getActivitiesOfPackage() err: ${e.stackTraceToString()}")
+        }
+
+        return activities
     }
 }
