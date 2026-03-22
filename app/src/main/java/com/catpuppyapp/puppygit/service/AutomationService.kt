@@ -49,7 +49,8 @@ class AutomationService: BaseAccessibilityService() {
         //app last leaving at, key is package name, value is time in millseconds
         val appLeaveTime = ConcurrentMap<String, Long>()
 
-        private var lastTargetPackageName = ""  // use to check enter/leave app
+        private var lastTargetPackageName = ""  // used to check enter/leave app
+        private var lastPackageName = "" // used to skip repeat triggered
 
         private val ignorePackageNames = listOf<String>(
             "com.android.systemui",  //通知栏或全面屏手势之类的
@@ -274,12 +275,14 @@ class AutomationService: BaseAccessibilityService() {
                 MyLog.v(TAG, "TYPE_WINDOW_STATE_CHANGED: $packageName")
             }
 
-            if(lastTargetPackageName == packageName) {
+            if(lastPackageName == packageName) {
                 if(AppModel.devModeOn) {
                     MyLog.d(TAG, "skip: last and current package names are the same: '$packageName'")
                 }
                 return
             }
+
+            lastPackageName = packageName
 
             // 若是期望忽略的包名则返回
             if(ignorePackageNames.contains(packageName)) {
