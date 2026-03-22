@@ -31,9 +31,6 @@ object NotifyUtil {
         notifyList.forEachBetter {
             it.init(appContext)
         }
-
-//        sendNormalNotification("test", "test msg",);
-//        sendNormalNotification("test2", "test msg2",);
     }
 
     fun sendNotificationClickGoToSpecifiedPage(notify: NotifyBase, title:String, msg:String, startPage:Int, startRepoId:String) {
