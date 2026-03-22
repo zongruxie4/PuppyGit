@@ -268,10 +268,17 @@ class AutomationService: BaseAccessibilityService() {
 
         if(event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             //必须在外部获取，放到协程里会null
-            val packageName = event.packageName?.toString() ?: return
+            val packageName = event.packageName?.toString() ?: return;
 
             if(AppModel.devModeOn) {
                 MyLog.v(TAG, "TYPE_WINDOW_STATE_CHANGED: $packageName")
+            }
+
+            if(lastTargetPackageName == packageName) {
+                if(AppModel.devModeOn) {
+                    MyLog.d(TAG, "skip: last and current package names are the same: '$packageName'")
+                }
+                return
             }
 
             // 若是期望忽略的包名则返回
