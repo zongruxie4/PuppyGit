@@ -293,6 +293,14 @@ class AutomationService: BaseAccessibilityService() {
             }
 
 
+            if(lastTargetPackageName == packageName) {
+                if(AppModel.devModeOn) {
+                    MyLog.d(TAG, "skip: lastTargetPackageName same as packageName: '$packageName'")
+                }
+                return
+            }
+
+
             val settings = SettingsUtil.getSettingsSnapshot()
             val targetPackageList = AutomationUtil.getPackageNames(settings.automation)
 
