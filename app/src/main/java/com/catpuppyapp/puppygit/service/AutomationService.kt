@@ -293,6 +293,7 @@ class AutomationService: BaseAccessibilityService() {
             }
 
 
+            // 注：好像有上面的检查 lastPackageName == packageName，就不需要这个检查了，但若不检查我浑身难受，总觉得搞不好会出错
             if(lastTargetPackageName == packageName) {
                 if(AppModel.devModeOn) {
                     MyLog.d(TAG, "skip: lastTargetPackageName same as packageName: '$packageName'")
