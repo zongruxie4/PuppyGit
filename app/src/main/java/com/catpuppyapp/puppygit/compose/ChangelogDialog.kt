@@ -15,12 +15,12 @@ import com.catpuppyapp.puppygit.utils.AppModel
 
 
 private val changelog = """
-- upgrade dependencies: ligit2 to 1.9.2, openssl to 3.6.1
+- upgrade dependencies: libgit2 to 1.9.2, openssl to 3.6.1
 - optimize english translation (pr #125, thx @clach04)
 - optimize code of `PullToRefreshBox` (pr #128, thx @msmt2018)
 - align c libs to 16KB page size
 - fix Automation service bug (issue #130)
-- 升级依赖: ligit2 to 1.9.2, openssl to 3.6.1
+- 升级依赖: libgit2 to 1.9.2, openssl to 3.6.1
 - 优化英语翻译 (pr #125, thx @clach04)
 - 优化 `PullToRefreshBox` 的代码 (pr #128, thx @msmt2018)
 - 对齐c库为16KB页大小

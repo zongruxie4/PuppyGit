@@ -278,7 +278,7 @@ object Libgit2Helper {
 
 
     /**
-     * 获取仓库对应的锁，不要直接调用这个变量，用 `Ligit2Helper.getRepoLock()` 来获取仓库的锁
+     * 获取仓库对应的锁，不要直接调用这个变量，用 `Libgit2Helper.getRepoLock()` 来获取仓库的锁
      */
     private val repoLockMap:MutableMap<String, Mutex> = ConcurrentMap()
 
