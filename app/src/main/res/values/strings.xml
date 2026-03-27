@@ -1184,6 +1184,8 @@
     <string name="list_of_ips">List of ips</string>
     <string name="api">Api</string>
     <string name="progress_notification">Progress Notification</string>
+    <string name="progress_notification_auto_dismiss">Notification Auto Dismiss</string>
+    <string name="progress_notification_auto_dismiss_desc">Progress Notification as a reminder but doesn't stay in the notification bar</string>
     <string name="do_you_want_to_edit_the_file_or_import_it">Do you want to edit the file or import it?</string>
     <string name="ask">Ask</string>
     <string name="accessibility_service_description">For auto pull/push when enter/exit specified apps</string>
