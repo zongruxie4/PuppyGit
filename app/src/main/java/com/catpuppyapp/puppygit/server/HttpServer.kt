@@ -246,6 +246,7 @@ internal class HttpServer(
                      *    and will check index, if index empty, will not pushing;
                      *    if disable, will only do push, no commit changes,
                      *    no index empty check, no conflict items check.
+                     *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
                      *
                      * e.g.
                      * request: http://127.0.0.1/push?repoNameOrId=abc
@@ -295,7 +296,7 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
-                            doJobThenOffLoading {
+                            val task = suspend {
 
                                 MyLog.d(TAG, "generate notifyers for ${validRepoListFromDb.size} repos")
 
@@ -323,6 +324,17 @@ internal class HttpServer(
                                     autoCommit = autoCommit,
                                     force = force,
                                 )
+                            }
+
+
+                            val asyncRunTask = call.request.queryParameters.get("async") == "0"
+
+                            if(asyncRunTask) {
+                                doJobThenOffLoading {
+                                    task()
+                                }
+                            }else {
+                                task()
                             }
 
                             call.respond(createSuccessResult())
@@ -355,6 +367,8 @@ internal class HttpServer(
                      *    and will check index, if index empty, will not pushing;
                      *    if disable, will only do push, no commit changes,
                      *    no index empty check, no conflict items check.
+                     *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
+
                      */
                     get("/sync") {
                         val sessionId = generateRandomString()
@@ -403,7 +417,7 @@ internal class HttpServer(
                             }
 
 
-                            doJobThenOffLoading {
+                            val task = suspend {
 
                                 MyLog.d(TAG, "generate notifyers for ${validRepoListFromDb.size} repos")
 
@@ -434,6 +448,17 @@ internal class HttpServer(
                                 )
                             }
 
+
+                            val asyncRunTask = call.request.queryParameters.get("async") == "0"
+
+                            if(asyncRunTask) {
+                                doJobThenOffLoading {
+                                    task()
+                                }
+                            }else {
+                                task()
+                            }
+
                             call.respond(createSuccessResult())
 
                         }catch (e:Exception) {
@@ -457,6 +482,7 @@ internal class HttpServer(
                      *  gitUsername: using for create commit, if null, will use PuppyGit settings
                      *  gitEmail: using for create commit, if null, will use PuppyGit settings
                      *  token: token is required
+                     *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
 
                      * e.g.
                      * request: http://127.0.0.1/pullAll?gitUsername=username&gitEmail=email&token=your_token
@@ -486,7 +512,7 @@ internal class HttpServer(
 
 
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
-                            doJobThenOffLoading {
+                            val task = suspend {
 
                                 val allRepos = AppModel.dbContainer.repoRepository.getAll()
                                 MyLog.d(TAG, "generate notifyers for ${allRepos.size} repos")
@@ -514,6 +540,17 @@ internal class HttpServer(
                                 )
                             }
 
+
+                            val asyncRunTask = call.request.queryParameters.get("async") == "0"
+
+                            if(asyncRunTask) {
+                                doJobThenOffLoading {
+                                    task()
+                                }
+                            }else {
+                                task()
+                            }
+
                             call.respond(createSuccessResult())
                         }catch (e:Exception) {
                             val errMsg = e.localizedMessage ?: "unknown err"
@@ -533,6 +570,7 @@ internal class HttpServer(
                      *  autoCommit: same as '/push'
                      *  force: 1 enable , 0 disable, default 0
                      *  token: token is required
+                     *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
                      *
                      * e.g.
                      * request: http://127.0.0.1/pushAll?token=your_token
@@ -565,7 +603,7 @@ internal class HttpServer(
 
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
-                            doJobThenOffLoading {
+                            val task = suspend {
                                 val allRepos = AppModel.dbContainer.repoRepository.getAll()
                                 MyLog.d(TAG, "generate notifyers for ${allRepos.size} repos")
 
@@ -591,6 +629,17 @@ internal class HttpServer(
                                     autoCommit = autoCommit,
                                     force = force,
                                 )
+                            }
+
+
+                            val asyncRunTask = call.request.queryParameters.get("async") == "0"
+
+                            if(asyncRunTask) {
+                                doJobThenOffLoading {
+                                    task()
+                                }
+                            }else {
+                                task()
                             }
 
                             call.respond(createSuccessResult())
@@ -638,7 +687,7 @@ internal class HttpServer(
 
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
-                            doJobThenOffLoading {
+                            val task = suspend {
 
                                 val allRepos = AppModel.dbContainer.repoRepository.getAll()
                                 MyLog.d(TAG, "generate notifyers for ${allRepos.size} repos")
@@ -666,6 +715,17 @@ internal class HttpServer(
                                     force = force,
                                     pullWithRebase = pullWithRebase,
                                 )
+                            }
+
+
+                            val asyncRunTask = call.request.queryParameters.get("async") == "0"
+
+                            if(asyncRunTask) {
+                                doJobThenOffLoading {
+                                    task()
+                                }
+                            }else {
+                                task()
                             }
 
                             call.respond(createSuccessResult())
