@@ -1429,18 +1429,48 @@ fun RepoInnerPage(
     }
 
     val apiPullUrl = rememberSaveable { mutableStateOf("") }
+    val apiPullUrlAsync = rememberSaveable { mutableStateOf("") }
     val apiPushUrl = rememberSaveable { mutableStateOf("") }
+    val apiPushUrlAsync = rememberSaveable { mutableStateOf("") }
     val apiSyncUrl = rememberSaveable { mutableStateOf("") }
+    val apiSyncUrlAsync = rememberSaveable { mutableStateOf("") }
+    val apiAsync = rememberSaveable { mutableStateOf(false) }
     val showApiDialog2 = rememberSaveable { mutableStateOf(false) }
+    fun getPullUrl() : String {
+        if(apiAsync.value) {
+            return apiPullUrlAsync.value
+        }else {
+            return apiPullUrl.value
+        }
+    }
+    fun getPushUrl() : String {
+        if(apiAsync.value) {
+            return apiPushUrlAsync.value
+        }else {
+            return apiPushUrl.value
+        }
+    }
+    fun getSyncUrl() : String {
+        if(apiAsync.value) {
+            return apiSyncUrlAsync.value
+        }else {
+            return apiSyncUrl.value
+        }
+    }
+
     if(showApiDialog2.value) {
         ConfirmDialog2(
             title = stringResource(R.string.api),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    val pullurl = apiPullUrl.value
-                    val pushurl = apiPushUrl.value
-                    val syncurl = apiSyncUrl.value
+                    MyCheckBox(stringResource(R.string.async), apiAsync)
+
+                    Spacer(Modifier.height(10.dp))
+
+                    val pullurl = getPullUrl()
+                    val pushurl = getPushUrl()
+                    val syncurl = getSyncUrl()
 
                     Box(
                         modifier = Modifier.fillMaxWidth(),
@@ -2401,9 +2431,15 @@ fun RepoInnerPage(
                     sbsync.append(repoNameOrId)
                 }
 
-                apiPullUrl.value = sbpull.toString()
-                apiPushUrl.value = sbpush.toString()
-                apiSyncUrl.value = sbsync.toString()
+                val apiPullUrlValue = sbpull.toString()
+                val apiPushUrlValue = sbpush.toString()
+                val apiSyncUrlValue = sbsync.toString()
+                apiPullUrl.value = apiPullUrlValue + "&async=0"
+                apiPushUrl.value = apiPushUrlValue + "&async=0"
+                apiSyncUrl.value = apiSyncUrlValue + "&async=0"
+                apiPullUrlAsync.value = apiPullUrlValue + "&async=1"
+                apiPushUrlAsync.value = apiPushUrlValue + "&async=1"
+                apiSyncUrlAsync.value = apiSyncUrlValue + "&async=1"
 
                 showApiDialog2.value = true
             },
