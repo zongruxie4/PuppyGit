@@ -113,7 +113,7 @@ class AutomationService: BaseAccessibilityService() {
         ) {
             if(AppModel.devModeOn) {
                 MyLog.d(TAG, "#pullRepoList: generate notifyers for ${repoList.size} repos")
-                val notify = createNotify(NotifyUtil.genId())
+                val notify = createNotify(NotifyUtil.genId(), settings)
                 notify.sendNormalNotification("auto pull", currentPackageName)
             }
 
