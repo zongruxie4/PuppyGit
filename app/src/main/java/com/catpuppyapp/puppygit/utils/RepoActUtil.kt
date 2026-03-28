@@ -42,6 +42,8 @@ object RepoActUtil {
         autoCommit:Boolean,
         force:Boolean,  // force push
         pullWithRebase: Boolean, // true rebase, else merge
+        asyncRunTask:Boolean,
+
     ){
         val funName = "syncRepoList"
 
@@ -56,7 +58,7 @@ object RepoActUtil {
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
 
         repoList.forEachBetter { repoFromDb ->
-            doJobThenOffLoading {
+            val task = suspend {
                 val notiSender = getNotifySender(repoFromDb.id, sessionId)
 
                 try {
@@ -93,6 +95,12 @@ object RepoActUtil {
                 }finally {
                     removeNotifySender(repoFromDb.id, sessionId)
                 }
+            }
+
+            if(asyncRunTask) {
+                doJobThenOffLoading { task() }
+            }else {
+                task()
             }
 
         }
@@ -160,6 +168,8 @@ object RepoActUtil {
         gitUsernameFromUrl:String,  // leave empty to read from config
         gitEmailFromUrl:String,  // leave empty to read from config
         pullWithRebase: Boolean,
+        asyncRunTask:Boolean,
+
     ) {
         val funName = "pullRepoList"
 
@@ -174,7 +184,7 @@ object RepoActUtil {
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
 
         repoList.forEachBetter { repoFromDb ->
-            doJobThenOffLoading {
+            val task = suspend {
                 val notiSender = getNotifySender(repoFromDb.id, sessionId)
 
                 try {
@@ -206,6 +216,12 @@ object RepoActUtil {
                     removeNotifySender(repoFromDb.id, sessionId)
 
                 }
+            }
+
+            if(asyncRunTask) {
+                doJobThenOffLoading { task() }
+            }else {
+                task()
             }
 
         }
@@ -325,7 +341,7 @@ object RepoActUtil {
         gitEmailFromUrl:String,    // leave empty to read from config
         autoCommit:Boolean,
         force:Boolean,
-
+        asyncRunTask:Boolean,
     ) {
         val funName = "pushRepoList"
 
@@ -341,7 +357,7 @@ object RepoActUtil {
 
         repoList.forEachBetter { repoFromDb ->
             //每仓库一协程并发执行
-            doJobThenOffLoading {
+            val task = suspend {
                 val notiSender = getNotifySender(repoFromDb.id, sessionId)
                 try {
                     notiSender?.sendProgressNotification?.invoke(repoFromDb.repoName, "pushing...")
@@ -376,6 +392,12 @@ object RepoActUtil {
                     removeNotifySender(repoFromDb.id, sessionId)
 
                 }
+            }
+
+            if(asyncRunTask) {
+                doJobThenOffLoading { task() }
+            }else {
+                task();
             }
 
         }

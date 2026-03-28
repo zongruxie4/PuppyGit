@@ -176,6 +176,7 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
                             val task = suspend {
@@ -202,11 +203,11 @@ internal class HttpServer(
                                     routeName = routeName,
                                     gitUsernameFromUrl = gitUsernameFromUrl,
                                     gitEmailFromUrl = gitEmailFromUrl,
-                                    pullWithRebase = pullWithRebase
+                                    pullWithRebase = pullWithRebase,
+                                    asyncRunTask = asyncRunTask
                                 )
                             }
 
-                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             if(asyncRunTask) {
                                 doJobThenOffLoading {
@@ -296,6 +297,8 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
+
                             val task = suspend {
 
                                 MyLog.d(TAG, "generate notifyers for ${validRepoListFromDb.size} repos")
@@ -323,11 +326,11 @@ internal class HttpServer(
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     autoCommit = autoCommit,
                                     force = force,
+                                    asyncRunTask = asyncRunTask,
                                 )
                             }
 
 
-                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             if(asyncRunTask) {
                                 doJobThenOffLoading {
@@ -416,6 +419,7 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             val task = suspend {
 
@@ -445,11 +449,12 @@ internal class HttpServer(
                                     autoCommit = autoCommit,
                                     force = force,
                                     pullWithRebase = pullWithRebase,
+                                    asyncRunTask = asyncRunTask,
+
                                 )
                             }
 
 
-                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             if(asyncRunTask) {
                                 doJobThenOffLoading {
@@ -510,6 +515,7 @@ internal class HttpServer(
 
                             val pullWithRebase = call.request.queryParameters.get("pullWithRebase")?.let { it == "1" } ?: PrefUtil.getGlobalGitConfigPullWithRebase(AppModel.realAppContext)
 
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
                             val task = suspend {
@@ -537,11 +543,11 @@ internal class HttpServer(
                                     gitUsernameFromUrl = gitUsernameFromUrl,
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     pullWithRebase = pullWithRebase,
+                                    asyncRunTask = asyncRunTask,
                                 )
                             }
 
 
-                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             if(asyncRunTask) {
                                 doJobThenOffLoading {
@@ -601,6 +607,8 @@ internal class HttpServer(
                             val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
                             val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
 
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
+
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
                             val task = suspend {
@@ -628,11 +636,11 @@ internal class HttpServer(
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     autoCommit = autoCommit,
                                     force = force,
+                                    asyncRunTask = asyncRunTask,
                                 )
                             }
 
 
-                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             if(asyncRunTask) {
                                 doJobThenOffLoading {
@@ -685,6 +693,8 @@ internal class HttpServer(
 
                             val pullWithRebase = call.request.queryParameters.get("pullWithRebase")?.let { it == "1" } ?: PrefUtil.getGlobalGitConfigPullWithRebase(AppModel.realAppContext)
 
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
+
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
                             val task = suspend {
@@ -714,11 +724,11 @@ internal class HttpServer(
                                     autoCommit = autoCommit,
                                     force = force,
                                     pullWithRebase = pullWithRebase,
+                                    asyncRunTask = asyncRunTask,
                                 )
                             }
 
 
-                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             if(asyncRunTask) {
                                 doJobThenOffLoading {
@@ -846,6 +856,7 @@ internal class HttpServer(
         gitUsernameFromUrl:String,
         gitEmailFromUrl:String,
         pullWithRebase: Boolean, // true rebase, else merge
+        asyncRunTask: Boolean,
     ) {
         RepoActUtil.pullRepoList(
             sessionId = sessionId,
@@ -856,6 +867,7 @@ internal class HttpServer(
             gitEmailFromUrl = gitEmailFromUrl,
 
             pullWithRebase = pullWithRebase,
+            asyncRunTask = asyncRunTask
         )
     }
 
@@ -869,6 +881,7 @@ internal class HttpServer(
         gitEmailFromUrl:String,
         autoCommit:Boolean,
         force:Boolean,
+        asyncRunTask: Boolean,
     ) {
         RepoActUtil.pushRepoList(
             sessionId = sessionId,
@@ -878,6 +891,7 @@ internal class HttpServer(
             gitEmailFromUrl = gitEmailFromUrl,
             autoCommit = autoCommit,
             force = force,
+            asyncRunTask = asyncRunTask,
         )
     }
 
@@ -890,7 +904,7 @@ internal class HttpServer(
         autoCommit:Boolean,
         force:Boolean,
         pullWithRebase: Boolean, // true rebase, else merge
-
+        asyncRunTask: Boolean,
     ) {
         RepoActUtil.syncRepoList(
             sessionId = sessionId,
@@ -901,6 +915,7 @@ internal class HttpServer(
             autoCommit = autoCommit,
             force = force,
             pullWithRebase = pullWithRebase,
+            asyncRunTask = asyncRunTask,
         )
     }
 }
