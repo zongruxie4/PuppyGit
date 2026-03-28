@@ -206,7 +206,7 @@ internal class HttpServer(
                                 )
                             }
 
-                            val asyncRunTask = call.request.queryParameters.get("async") == "0"
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             if(asyncRunTask) {
                                 doJobThenOffLoading {
@@ -327,7 +327,7 @@ internal class HttpServer(
                             }
 
 
-                            val asyncRunTask = call.request.queryParameters.get("async") == "0"
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             if(asyncRunTask) {
                                 doJobThenOffLoading {
@@ -449,7 +449,7 @@ internal class HttpServer(
                             }
 
 
-                            val asyncRunTask = call.request.queryParameters.get("async") == "0"
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             if(asyncRunTask) {
                                 doJobThenOffLoading {
@@ -541,7 +541,7 @@ internal class HttpServer(
                             }
 
 
-                            val asyncRunTask = call.request.queryParameters.get("async") == "0"
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             if(asyncRunTask) {
                                 doJobThenOffLoading {
@@ -632,7 +632,7 @@ internal class HttpServer(
                             }
 
 
-                            val asyncRunTask = call.request.queryParameters.get("async") == "0"
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             if(asyncRunTask) {
                                 doJobThenOffLoading {
@@ -718,7 +718,7 @@ internal class HttpServer(
                             }
 
 
-                            val asyncRunTask = call.request.queryParameters.get("async") == "0"
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             if(asyncRunTask) {
                                 doJobThenOffLoading {
