@@ -132,6 +132,7 @@ internal class HttpServer(
                      *  gitEmail: using for create commit, if null, will use PuppyGit settings
                      *  forceUseIdMatchRepo: 1 enable or 0 disable, default 0, if enable, will force match repo by repo id, else will match by name first, if no match, then match by id
                      *  token: token is required
+                     *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
 
                      * e.g.
                      * request: http://127.0.0.1/pull?repoNameOrId=abc
@@ -175,8 +176,9 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
+
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
-                            doJobThenOffLoading {
+                            val task = suspend {
 
                                 MyLog.d(TAG, "generate notifyers for ${validRepoListFromDb.size} repos")
 
@@ -202,6 +204,16 @@ internal class HttpServer(
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     pullWithRebase = pullWithRebase
                                 )
+                            }
+
+                            val asyncRunTask = call.request.queryParameters.get("async") == "0"
+
+                            if(asyncRunTask) {
+                                doJobThenOffLoading {
+                                    task()
+                                }
+                            }else {
+                                task()
                             }
 
                             call.respond(createSuccessResult())
