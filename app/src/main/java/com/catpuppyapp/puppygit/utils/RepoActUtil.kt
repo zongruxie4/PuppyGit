@@ -57,6 +57,9 @@ object RepoActUtil {
         val settings = SettingsUtil.getSettingsSnapshot()
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
 
+        // 同步执行时，一个任务出错，全部取消
+        val throwIfAnyErr = !asyncRunTask
+
         repoList.forEachBetter { repoFromDb ->
             val task = suspend {
                 val notiSender = getNotifySender(repoFromDb.id, sessionId)
@@ -92,6 +95,10 @@ object RepoActUtil {
 
 
                     MyLog.e(TAG, "#$funName: route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+
+                    if(throwIfAnyErr) {
+                        throw e
+                    }
                 }finally {
                     removeNotifySender(repoFromDb.id, sessionId)
                 }
@@ -182,6 +189,7 @@ object RepoActUtil {
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
+        val throwIfAnyErr = !asyncRunTask
 
         repoList.forEachBetter { repoFromDb ->
             val task = suspend {
@@ -212,6 +220,11 @@ object RepoActUtil {
 
 
                     MyLog.e(TAG, "#$funName: route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+
+
+                    if(throwIfAnyErr) {
+                        throw e
+                    }
                 }finally {
                     removeNotifySender(repoFromDb.id, sessionId)
 
@@ -354,6 +367,7 @@ object RepoActUtil {
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
+        val throwIfAnyErr = !asyncRunTask
 
         repoList.forEachBetter { repoFromDb ->
             //每仓库一协程并发执行
@@ -388,6 +402,11 @@ object RepoActUtil {
 
 
                     MyLog.e(TAG, "#$funName: route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+
+
+                    if(throwIfAnyErr) {
+                        throw e
+                    }
                 }finally {
                     removeNotifySender(repoFromDb.id, sessionId)
 
