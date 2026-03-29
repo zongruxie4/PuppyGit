@@ -11,6 +11,7 @@ import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
+import com.github.git24j.core.Reset
 
 
 private const val TAG = "RepoActUtil"
@@ -568,7 +569,35 @@ object RepoActUtil {
                     masterPassword = masterPassword
                 )
 
-                Libgit2Helper.push(gitRepo, upstream.remote, listOf(upstream.pushRefSpec), credential, force)
+                try {
+                    Libgit2Helper.push(gitRepo, upstream.remote, listOf(upstream.pushRefSpec), credential, force)
+                }catch (e: Exception) {
+                    // 若为真，push出错时，尝试reset
+                    if(resetIfErr) {
+                        try {
+                            var resetType: Reset.ResetT? = null;
+                            if(resetMethod == "hard") {
+                                resetType = Reset.ResetT.HARD
+                            }else if(resetMethod == "soft") {
+                                resetType = Reset.ResetT.SOFT
+                            }else if(resetMethod == "mixed") {
+                                resetType = Reset.ResetT.MIXED
+                            }else {
+                                resetType = null
+                            }
+
+                            if(resetType != null) {
+                                val curBranch = Libgit2Helper.getRepoCurBranchShortRefSpec(gitRepo)
+                                val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, curBranch)
+                                Libgit2Helper.resetToRevspec(gitRepo, upstream.remoteOid, resetType)
+                            }
+                        }catch (e2: Exception) {
+                            MyLog.e(TAG, "reset err (code: 14394129): ${e2.stackTraceToString()}")
+                        }
+                    }
+
+                    throw e
+                }
 
                 // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
                 val repoDb = AppModel.dbContainer.repoRepository
