@@ -355,6 +355,11 @@ object RepoActUtil {
         autoCommit:Boolean,
         force:Boolean,
         asyncRunTask:Boolean,
+
+        // reset
+        resetIfErr:Boolean = false,
+        resetMethod:String = "",
+
     ) {
         val funName = "pushRepoList"
 
@@ -388,7 +393,9 @@ object RepoActUtil {
                             force = force,
                             sendSuccessNotification = notiSender?.sendSuccessNotification,
                             db = db,
-                            masterPassword = masterPassword
+                            masterPassword = masterPassword,
+                            resetIfErr = resetIfErr,
+                            resetMethod = resetMethod,
                         )
 
 
@@ -433,7 +440,9 @@ object RepoActUtil {
         force: Boolean,
         sendSuccessNotification: ((title: String?, msg: String?, startPage: Int?, startRepoId: String?) -> Unit)?,
         db: AppContainer,
-        masterPassword: String
+        masterPassword: String,
+        resetIfErr:Boolean = false,
+        resetMethod:String = "",
     ) {
         val funName = "pushSingle"
         val prefix = "push"
