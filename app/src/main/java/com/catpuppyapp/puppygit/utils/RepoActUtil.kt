@@ -595,7 +595,7 @@ object RepoActUtil {
                                 }
 
                                 // reset successfully notification
-                                val errMsgAndPrefix = "$prefix: push err, but reset $resetMethod successfully"
+                                val errMsgAndPrefix = "$prefix: push err, but reset $resetMethod successfully: before reset, commit oid is: '${upstream.localOid}', after reset: '${upstream.remoteOid}'"
                                 sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
                                 createAndInsertError(repoFromDb.id, errMsgAndPrefix)
                             }
