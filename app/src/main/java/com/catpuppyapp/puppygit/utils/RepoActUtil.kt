@@ -591,8 +591,16 @@ object RepoActUtil {
                                 val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, curBranch)
                                 Libgit2Helper.resetToRevspec(gitRepo, upstream.remoteOid, resetType)
                             }
+
+                            val errMsgAndPrefix = "$prefix: push err, but reset $resetMethod successfully"
+                            sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
+                            createAndInsertError(repoFromDb.id, errMsgAndPrefix)
                         }catch (e2: Exception) {
                             MyLog.e(TAG, "reset err (code: 14394129): ${e2.stackTraceToString()}")
+
+                            val errMsgAndPrefix = "$prefix: push err, and reset $resetMethod failed: ${e2.localizedMessage}"
+                            sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
+                            createAndInsertError(repoFromDb.id, errMsgAndPrefix)
                         }
                     }
 
