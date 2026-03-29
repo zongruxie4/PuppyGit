@@ -132,6 +132,7 @@ internal class HttpServer(
                      *  gitEmail: using for create commit, if null, will use PuppyGit settings
                      *  forceUseIdMatchRepo: 1 enable or 0 disable, default 0, if enable, will force match repo by repo id, else will match by name first, if no match, then match by id
                      *  token: token is required
+                     *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
 
                      * e.g.
                      * request: http://127.0.0.1/pull?repoNameOrId=abc
@@ -175,8 +176,10 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
+
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
-                            doJobThenOffLoading {
+                            val task = suspend {
 
                                 MyLog.d(TAG, "generate notifyers for ${validRepoListFromDb.size} repos")
 
@@ -200,8 +203,18 @@ internal class HttpServer(
                                     routeName = routeName,
                                     gitUsernameFromUrl = gitUsernameFromUrl,
                                     gitEmailFromUrl = gitEmailFromUrl,
-                                    pullWithRebase = pullWithRebase
+                                    pullWithRebase = pullWithRebase,
+                                    asyncRunTask = asyncRunTask
                                 )
+                            }
+
+
+                            if(asyncRunTask) {
+                                doJobThenOffLoading {
+                                    task()
+                                }
+                            }else {
+                                task()
                             }
 
                             call.respond(createSuccessResult())
@@ -234,6 +247,7 @@ internal class HttpServer(
                      *    and will check index, if index empty, will not pushing;
                      *    if disable, will only do push, no commit changes,
                      *    no index empty check, no conflict items check.
+                     *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
                      *
                      * e.g.
                      * request: http://127.0.0.1/push?repoNameOrId=abc
@@ -283,7 +297,9 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
-                            doJobThenOffLoading {
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
+
+                            val task = suspend {
 
                                 MyLog.d(TAG, "generate notifyers for ${validRepoListFromDb.size} repos")
 
@@ -310,7 +326,18 @@ internal class HttpServer(
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     autoCommit = autoCommit,
                                     force = force,
+                                    asyncRunTask = asyncRunTask,
                                 )
+                            }
+
+
+
+                            if(asyncRunTask) {
+                                doJobThenOffLoading {
+                                    task()
+                                }
+                            }else {
+                                task()
                             }
 
                             call.respond(createSuccessResult())
@@ -343,6 +370,8 @@ internal class HttpServer(
                      *    and will check index, if index empty, will not pushing;
                      *    if disable, will only do push, no commit changes,
                      *    no index empty check, no conflict items check.
+                     *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
+
                      */
                     get("/sync") {
                         val sessionId = generateRandomString()
@@ -390,8 +419,9 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
-                            doJobThenOffLoading {
+                            val task = suspend {
 
                                 MyLog.d(TAG, "generate notifyers for ${validRepoListFromDb.size} repos")
 
@@ -419,7 +449,19 @@ internal class HttpServer(
                                     autoCommit = autoCommit,
                                     force = force,
                                     pullWithRebase = pullWithRebase,
+                                    asyncRunTask = asyncRunTask,
+
                                 )
+                            }
+
+
+
+                            if(asyncRunTask) {
+                                doJobThenOffLoading {
+                                    task()
+                                }
+                            }else {
+                                task()
                             }
 
                             call.respond(createSuccessResult())
@@ -445,6 +487,7 @@ internal class HttpServer(
                      *  gitUsername: using for create commit, if null, will use PuppyGit settings
                      *  gitEmail: using for create commit, if null, will use PuppyGit settings
                      *  token: token is required
+                     *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
 
                      * e.g.
                      * request: http://127.0.0.1/pullAll?gitUsername=username&gitEmail=email&token=your_token
@@ -472,9 +515,10 @@ internal class HttpServer(
 
                             val pullWithRebase = call.request.queryParameters.get("pullWithRebase")?.let { it == "1" } ?: PrefUtil.getGlobalGitConfigPullWithRebase(AppModel.realAppContext)
 
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
-                            doJobThenOffLoading {
+                            val task = suspend {
 
                                 val allRepos = AppModel.dbContainer.repoRepository.getAll()
                                 MyLog.d(TAG, "generate notifyers for ${allRepos.size} repos")
@@ -499,7 +543,18 @@ internal class HttpServer(
                                     gitUsernameFromUrl = gitUsernameFromUrl,
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     pullWithRebase = pullWithRebase,
+                                    asyncRunTask = asyncRunTask,
                                 )
+                            }
+
+
+
+                            if(asyncRunTask) {
+                                doJobThenOffLoading {
+                                    task()
+                                }
+                            }else {
+                                task()
                             }
 
                             call.respond(createSuccessResult())
@@ -521,6 +576,7 @@ internal class HttpServer(
                      *  autoCommit: same as '/push'
                      *  force: 1 enable , 0 disable, default 0
                      *  token: token is required
+                     *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
                      *
                      * e.g.
                      * request: http://127.0.0.1/pushAll?token=your_token
@@ -551,9 +607,11 @@ internal class HttpServer(
                             val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
                             val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
 
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
+
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
-                            doJobThenOffLoading {
+                            val task = suspend {
                                 val allRepos = AppModel.dbContainer.repoRepository.getAll()
                                 MyLog.d(TAG, "generate notifyers for ${allRepos.size} repos")
 
@@ -578,7 +636,18 @@ internal class HttpServer(
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     autoCommit = autoCommit,
                                     force = force,
+                                    asyncRunTask = asyncRunTask,
                                 )
+                            }
+
+
+
+                            if(asyncRunTask) {
+                                doJobThenOffLoading {
+                                    task()
+                                }
+                            }else {
+                                task()
                             }
 
                             call.respond(createSuccessResult())
@@ -624,9 +693,11 @@ internal class HttpServer(
 
                             val pullWithRebase = call.request.queryParameters.get("pullWithRebase")?.let { it == "1" } ?: PrefUtil.getGlobalGitConfigPullWithRebase(AppModel.realAppContext)
 
+                            val asyncRunTask = call.request.queryParameters.get("async") != "0"
+
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
-                            doJobThenOffLoading {
+                            val task = suspend {
 
                                 val allRepos = AppModel.dbContainer.repoRepository.getAll()
                                 MyLog.d(TAG, "generate notifyers for ${allRepos.size} repos")
@@ -653,7 +724,18 @@ internal class HttpServer(
                                     autoCommit = autoCommit,
                                     force = force,
                                     pullWithRebase = pullWithRebase,
+                                    asyncRunTask = asyncRunTask,
                                 )
+                            }
+
+
+
+                            if(asyncRunTask) {
+                                doJobThenOffLoading {
+                                    task()
+                                }
+                            }else {
+                                task()
                             }
 
                             call.respond(createSuccessResult())
@@ -774,6 +856,7 @@ internal class HttpServer(
         gitUsernameFromUrl:String,
         gitEmailFromUrl:String,
         pullWithRebase: Boolean, // true rebase, else merge
+        asyncRunTask: Boolean,
     ) {
         RepoActUtil.pullRepoList(
             sessionId = sessionId,
@@ -784,6 +867,7 @@ internal class HttpServer(
             gitEmailFromUrl = gitEmailFromUrl,
 
             pullWithRebase = pullWithRebase,
+            asyncRunTask = asyncRunTask
         )
     }
 
@@ -797,6 +881,7 @@ internal class HttpServer(
         gitEmailFromUrl:String,
         autoCommit:Boolean,
         force:Boolean,
+        asyncRunTask: Boolean,
     ) {
         RepoActUtil.pushRepoList(
             sessionId = sessionId,
@@ -806,6 +891,7 @@ internal class HttpServer(
             gitEmailFromUrl = gitEmailFromUrl,
             autoCommit = autoCommit,
             force = force,
+            asyncRunTask = asyncRunTask,
         )
     }
 
@@ -818,7 +904,7 @@ internal class HttpServer(
         autoCommit:Boolean,
         force:Boolean,
         pullWithRebase: Boolean, // true rebase, else merge
-
+        asyncRunTask: Boolean,
     ) {
         RepoActUtil.syncRepoList(
             sessionId = sessionId,
@@ -829,6 +915,7 @@ internal class HttpServer(
             autoCommit = autoCommit,
             force = force,
             pullWithRebase = pullWithRebase,
+            asyncRunTask = asyncRunTask,
         )
     }
 }

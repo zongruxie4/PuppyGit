@@ -1206,5 +1206,6 @@
     <string name="activity_not_found">لم يتم العثور على تطبيق للتعامل مع هذا الإجراء</string>
     <string name="share">مشاركة</string>
     <string name="line_break">Line Break</string>
+    <string name="async">Async</string>
 
 </resources>

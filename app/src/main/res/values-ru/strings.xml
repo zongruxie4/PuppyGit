@@ -1309,5 +1309,6 @@
     <string name="activity_not_found">Приложение не найдено для обработки данного действия</string>
     <string name="share">Поделиться</string>
     <string name="line_break">Line Break</string>
+    <string name="async">Async</string>
 
 </resources>

@@ -42,6 +42,8 @@ object RepoActUtil {
         autoCommit:Boolean,
         force:Boolean,  // force push
         pullWithRebase: Boolean, // true rebase, else merge
+        asyncRunTask:Boolean,
+
     ){
         val funName = "syncRepoList"
 
@@ -55,8 +57,11 @@ object RepoActUtil {
         val settings = SettingsUtil.getSettingsSnapshot()
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
 
+        // 同步执行时，一个任务出错，全部取消
+        val throwIfAnyErr = !asyncRunTask
+
         repoList.forEachBetter { repoFromDb ->
-            doJobThenOffLoading {
+            val task = suspend {
                 val notiSender = getNotifySender(repoFromDb.id, sessionId)
 
                 try {
@@ -90,9 +95,19 @@ object RepoActUtil {
 
 
                     MyLog.e(TAG, "#$funName: route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+
+                    if(throwIfAnyErr) {
+                        throw e
+                    }
                 }finally {
                     removeNotifySender(repoFromDb.id, sessionId)
                 }
+            }
+
+            if(asyncRunTask) {
+                doJobThenOffLoading { task() }
+            }else {
+                task()
             }
 
         }
@@ -160,6 +175,8 @@ object RepoActUtil {
         gitUsernameFromUrl:String,  // leave empty to read from config
         gitEmailFromUrl:String,  // leave empty to read from config
         pullWithRebase: Boolean,
+        asyncRunTask:Boolean,
+
     ) {
         val funName = "pullRepoList"
 
@@ -172,9 +189,10 @@ object RepoActUtil {
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
+        val throwIfAnyErr = !asyncRunTask
 
         repoList.forEachBetter { repoFromDb ->
-            doJobThenOffLoading {
+            val task = suspend {
                 val notiSender = getNotifySender(repoFromDb.id, sessionId)
 
                 try {
@@ -202,10 +220,21 @@ object RepoActUtil {
 
 
                     MyLog.e(TAG, "#$funName: route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+
+
+                    if(throwIfAnyErr) {
+                        throw e
+                    }
                 }finally {
                     removeNotifySender(repoFromDb.id, sessionId)
 
                 }
+            }
+
+            if(asyncRunTask) {
+                doJobThenOffLoading { task() }
+            }else {
+                task()
             }
 
         }
@@ -325,7 +354,7 @@ object RepoActUtil {
         gitEmailFromUrl:String,    // leave empty to read from config
         autoCommit:Boolean,
         force:Boolean,
-
+        asyncRunTask:Boolean,
     ) {
         val funName = "pushRepoList"
 
@@ -338,10 +367,11 @@ object RepoActUtil {
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
+        val throwIfAnyErr = !asyncRunTask
 
         repoList.forEachBetter { repoFromDb ->
             //每仓库一协程并发执行
-            doJobThenOffLoading {
+            val task = suspend {
                 val notiSender = getNotifySender(repoFromDb.id, sessionId)
                 try {
                     notiSender?.sendProgressNotification?.invoke(repoFromDb.repoName, "pushing...")
@@ -372,10 +402,21 @@ object RepoActUtil {
 
 
                     MyLog.e(TAG, "#$funName: route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+
+
+                    if(throwIfAnyErr) {
+                        throw e
+                    }
                 }finally {
                     removeNotifySender(repoFromDb.id, sessionId)
 
                 }
+            }
+
+            if(asyncRunTask) {
+                doJobThenOffLoading { task() }
+            }else {
+                task();
             }
 
         }

@@ -137,6 +137,7 @@ class AutomationService: BaseAccessibilityService() {
                 gitUsernameFromUrl="",
                 gitEmailFromUrl="",
                 pullWithRebase = PrefUtil.getGlobalGitConfigPullWithRebase(AppModel.realAppContext),
+                asyncRunTask = true,
             )
         }
 
@@ -176,6 +177,7 @@ class AutomationService: BaseAccessibilityService() {
                 gitEmailFromUrl="",
                 autoCommit=true,
                 force=false,
+                asyncRunTask = true,
             )
         }
 
