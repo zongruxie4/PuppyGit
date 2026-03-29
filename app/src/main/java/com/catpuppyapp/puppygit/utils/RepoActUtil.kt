@@ -589,15 +589,20 @@ object RepoActUtil {
                             if(resetType != null) {
                                 val curBranch = Libgit2Helper.getRepoCurBranchShortRefSpec(gitRepo)
                                 val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, curBranch)
-                                Libgit2Helper.resetToRevspec(gitRepo, upstream.remoteOid, resetType)
-                            }
+                                val result = Libgit2Helper.resetToRevspec(gitRepo, upstream.remoteOid, resetType)
+                                if(result.hasError()) {
+                                    throw result.exception ?: RuntimeException(result.msg)
+                                }
 
-                            val errMsgAndPrefix = "$prefix: push err, but reset $resetMethod successfully"
-                            sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
-                            createAndInsertError(repoFromDb.id, errMsgAndPrefix)
+                                // reset successfully notification
+                                val errMsgAndPrefix = "$prefix: push err, but reset $resetMethod successfully"
+                                sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
+                                createAndInsertError(repoFromDb.id, errMsgAndPrefix)
+                            }
                         }catch (e2: Exception) {
                             MyLog.e(TAG, "reset err (code: 14394129): ${e2.stackTraceToString()}")
 
+                            // reset failed notification
                             val errMsgAndPrefix = "$prefix: push err, and reset $resetMethod failed: ${e2.localizedMessage}"
                             sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
                             createAndInsertError(repoFromDb.id, errMsgAndPrefix)

@@ -1170,7 +1170,7 @@ object Libgit2Helper {
             return Ret.createSuccess(null)
         }catch (e:Exception) {
             MyLog.e(TAG, "#resetToRevspec() error: "+e.stackTraceToString())
-            return Ret.createError(null, "reset err: ${e.localizedMessage}", Ret.ErrCode.resetErr)
+            return Ret.createError(null, "reset err: ${e.localizedMessage}", Ret.ErrCode.resetErr, exception = e)
         }
     }
 
