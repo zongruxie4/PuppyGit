@@ -599,11 +599,11 @@ object RepoActUtil {
                                 sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
                                 createAndInsertError(repoFromDb.id, errMsgAndPrefix)
                             }
-                        }catch (e2: Exception) {
-                            MyLog.e(TAG, "reset err (code: 14394129): ${e2.stackTraceToString()}")
+                        }catch (e: Exception) {
+                            MyLog.e(TAG, "reset err (code: 14394129): ${e.stackTraceToString()}")
 
                             // reset failed notification
-                            val errMsgAndPrefix = "$prefix: push err, and reset $resetMethod failed: ${e2.localizedMessage}"
+                            val errMsgAndPrefix = "$prefix: push err, and reset $resetMethod failed: ${e.localizedMessage}"
                             sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
                             createAndInsertError(repoFromDb.id, errMsgAndPrefix)
                         }

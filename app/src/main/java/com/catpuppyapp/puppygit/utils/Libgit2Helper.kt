@@ -6488,8 +6488,8 @@ object Libgit2Helper {
                 try {
                     Repository.open(submoduleFullPath)
 
-                }catch (e2:Exception) {
-                    MyLog.e(TAG,"#cloneSubmodules: open submodule '$name' err: ${e2.localizedMessage}")
+                }catch (e:Exception) {
+                    MyLog.e(TAG,"#cloneSubmodules: open submodule '$name' err: ${e.localizedMessage}")
                     null
                 }
             }else{  // do clone

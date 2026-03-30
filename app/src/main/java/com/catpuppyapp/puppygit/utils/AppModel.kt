@@ -462,9 +462,9 @@ object AppModel {
                 SettingsUtil.copyBakToOrigin()  //init成功，所以这里肯定初始化了原始和备用配置文件的File对象，因此不用传参数
 
                 MyLog.w(TAG, "#$funName restore bak settings to origin success")
-            }catch (e2:Exception) {
+            }catch (e: Exception) {
                 //用备用文件初始化设置也异常，尝试重建设置项，用户设置会丢失
-                MyLog.e(TAG, "#$funName init settings with bak err: "+e2.stackTraceToString())
+                MyLog.e(TAG, "#$funName init settings with bak err: "+e.stackTraceToString())
                 MyLog.w(TAG, "#$funName init bak settings err, will clear origin settings, user settings will lost!")
 
                 // delete settings files

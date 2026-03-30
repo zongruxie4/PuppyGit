@@ -3008,9 +3008,9 @@ fun FilesInnerPage(
                                         curTarget!!.delete()
                                     }
                                 }
-                            } catch (e2: Exception) {
+                            } catch (e: Exception) {
                                 // 不记录日志了，万一用户拷贝大量文件且出错，会记一堆，不太好
-//                                e2.printStackTrace()
+//                                e.printStackTrace()
                             }
                         }
                     }
