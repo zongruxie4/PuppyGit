@@ -248,8 +248,7 @@ internal class HttpServer(
                      *    if disable, will only do push, no commit changes,
                      *    no index empty check, no conflict items check.
                      *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
-                     *  resetIfErr: 1 enable, 0 disable, default 0
-                     *  resetMethod: soft/mixed/hard, default is null(disable reset)
+                     *  resetIfErr: one of values: soft/mixed/hard, any other values will disable this feature, default is null(disable reset if err)
                      * e.g.
                      * request: http://127.0.0.1/push?repoNameOrId=abc
                      */
@@ -301,8 +300,7 @@ internal class HttpServer(
                             val asyncRunTask = call.request.queryParameters.get("async") != "0"
 
                             // reset
-                            val resetIfErr = call.request.queryParameters.get("resetIfErr") == "1"
-                            val resetMethod = call.request.queryParameters.get("resetMethod") ?:""
+                            val resetIfErr = call.request.queryParameters.get("resetIfErr") ?:""
 
                             val task = suspend {
 
@@ -333,7 +331,6 @@ internal class HttpServer(
                                     force = force,
                                     asyncRunTask = asyncRunTask,
                                     resetIfErr = resetIfErr,
-                                    resetMethod = resetMethod,
                                 )
                             }
 
@@ -890,8 +887,7 @@ internal class HttpServer(
         force:Boolean,
         asyncRunTask: Boolean,
 
-        resetIfErr:Boolean = false,
-        resetMethod:String = "",
+        resetIfErr:String = "",
     ) {
         RepoActUtil.pushRepoList(
             sessionId = sessionId,
@@ -903,7 +899,6 @@ internal class HttpServer(
             force = force,
             asyncRunTask = asyncRunTask,
             resetIfErr = resetIfErr,
-            resetMethod = resetMethod,
         )
     }
 
