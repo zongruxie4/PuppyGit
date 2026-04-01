@@ -16,6 +16,26 @@ import com.github.git24j.core.Reset
 
 private const val TAG = "RepoActUtil"
 
+
+object ResetIfErrValue {
+    const val hard = "hard"
+    const val soft = "soft"
+    const val mixed = "mixed"
+
+    fun toResetType(resetIfErr: String) : Reset.ResetT? {
+        if(resetIfErr == hard) {
+            return Reset.ResetT.HARD
+        }else if(resetIfErr == soft) {
+            return Reset.ResetT.SOFT
+        }else if(resetIfErr == mixed) {
+            return Reset.ResetT.MIXED
+        }else {
+            return null
+        }
+    }
+}
+
+
 object RepoActUtil {
     //若获取锁失败，等5秒，再获取，若还获取不到就返回仓库忙
     private const val waitInMillSecIfApiBusy = 5000L  //5s
@@ -584,18 +604,8 @@ object RepoActUtil {
                 }catch (e: Exception) {
                     // 若为真，push出错时，尝试reset
                     if(resetIfErr.isNotBlank()) {
+                        val resetType = ResetIfErrValue.toResetType(resetIfErr)
                         try {
-                            var resetType: Reset.ResetT? = null;
-                            if(resetIfErr == "hard") {
-                                resetType = Reset.ResetT.HARD
-                            }else if(resetIfErr == "soft") {
-                                resetType = Reset.ResetT.SOFT
-                            }else if(resetIfErr == "mixed") {
-                                resetType = Reset.ResetT.MIXED
-                            }else {
-                                resetType = null
-                            }
-
                             if(resetType != null) {
                                 val curBranch = Libgit2Helper.getRepoCurBranchShortRefSpec(gitRepo)
                                 val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, curBranch)
@@ -605,7 +615,7 @@ object RepoActUtil {
                                 }
 
                                 // reset successfully notification
-                                val errMsgAndPrefix = "$prefix: push err, but reset $resetIfErr successfully: before reset, commit oid is: '${upstream.localOid}', after reset: '${upstream.remoteOid}'"
+                                val errMsgAndPrefix = "$prefix: push err, but reset(type: $resetType) successfully: before reset, commit oid is: '${upstream.localOid}', after reset: '${upstream.remoteOid}'"
                                 sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
                                 createAndInsertError(repoFromDb.id, errMsgAndPrefix)
                             }
@@ -613,7 +623,7 @@ object RepoActUtil {
                             MyLog.e(TAG, "reset err (code: 14394129): ${e.stackTraceToString()}")
 
                             // reset failed notification
-                            val errMsgAndPrefix = "$prefix: push err, and reset $resetIfErr failed: ${e.localizedMessage}"
+                            val errMsgAndPrefix = "$prefix: push err, and reset(type: $resetType) failed: ${e.localizedMessage}"
                             sendErrNotification?.invoke(repoFromDb.repoName, errMsgAndPrefix, Cons.selectedItem_ChangeList, repoFromDb.id)
                             createAndInsertError(repoFromDb.id, errMsgAndPrefix)
                         }
