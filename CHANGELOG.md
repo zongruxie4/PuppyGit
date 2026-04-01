@@ -2,6 +2,11 @@
 
 
 ---
+1.1.4.9v125 - 20260401:
+- support call http api in sync way
+- support auto dismiss automation service notification (pr #132, thx @jiesou)
+
+---
 1.1.4.8v124 - 20260311:
 - upgrade dependencies: libgit2 to 1.9.2, openssl to 3.6.1
 - optimize english translation (pr #125, thx @clach04)
