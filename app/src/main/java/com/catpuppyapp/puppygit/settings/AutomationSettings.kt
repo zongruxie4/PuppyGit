@@ -29,6 +29,12 @@ data class AutomationSettings (
      */
     var showNotifyWhenProgress:Boolean = true,
 
+    /**
+     * auto dismiss progress notification after a timeout
+     * 进度通知自动消除，开启后通知会在一段时间后自动消失
+     */
+    var progressNotifyAutoDismiss:Boolean = false,
+
 
     /**
      * 在一段时间间隔内重复进入app只有第一次才会执行pull

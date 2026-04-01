@@ -36,6 +36,11 @@ abstract class NotifyBase(
     abstract val notifyId:Int
 
     /**
+     * if > 0, notification will auto dismiss after this milliseconds
+     */
+    var timeoutAfterMs:Long = 0
+
+    /**
      * 用来避免重复执行init出错
      */
     private val inited:MutableState<Boolean> = mutableStateOf(false)
@@ -82,6 +87,10 @@ abstract class NotifyBase(
         val context = context ?: appContext
 
         val builder = getNotificationBuilder(context, title, message, pendingIntent) // 点击后自动消失
+
+        if (timeoutAfterMs > 0) {
+            builder.setTimeoutAfter(timeoutAfterMs)
+        }
 
         NotificationManagerCompat.from(context).apply {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {

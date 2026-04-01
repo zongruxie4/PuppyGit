@@ -77,8 +77,12 @@ class AutomationService: BaseAccessibilityService() {
             AutoSrvCache.setCurPackageName("")
         }
 
-        private fun createNotify(notifyId:Int):ServiceNotify {
-            return ServiceNotify(AutomationServiceExecuteNotify.create(notifyId))
+        private fun createNotify(notifyId:Int, settings: AppSettings):ServiceNotify {
+            val notify = AutomationServiceExecuteNotify.create(notifyId)
+            if (settings.automation.progressNotifyAutoDismiss) {
+                notify.timeoutAfterMs = 5000
+            }
+            return ServiceNotify(notify)
         }
 
 
@@ -109,13 +113,13 @@ class AutomationService: BaseAccessibilityService() {
         ) {
             if(AppModel.devModeOn) {
                 MyLog.d(TAG, "#pullRepoList: generate notifyers for ${repoList.size} repos")
-                val notify = createNotify(NotifyUtil.genId())
+                val notify = createNotify(NotifyUtil.genId(), settings)
                 notify.sendNormalNotification("auto pull", currentPackageName)
             }
 
             repoList.forEachBetter {
                 //notify
-                val serviceNotify = createNotify(NotifyUtil.genId())
+                val serviceNotify = createNotify(NotifyUtil.genId(), settings)
                 NotifySenderMap.set(
                     NotifySenderMap.genKey(it.id, sessionId),
                     NotificationSender(
@@ -148,13 +152,13 @@ class AutomationService: BaseAccessibilityService() {
 
             if(AppModel.devModeOn) {
                 MyLog.d(TAG, "#pushRepoList: generate notifyers for ${repoList.size} repos")
-                val notify = createNotify(NotifyUtil.genId())
+                val notify = createNotify(NotifyUtil.genId(), settings)
                 notify.sendNormalNotification("auto push", "leave: $targetPackageName\nnow: $currentPackageName")
             }
 
             repoList.forEachBetter {
                 //notify
-                val serviceNotify = createNotify(NotifyUtil.genId())
+                val serviceNotify = createNotify(NotifyUtil.genId(), settings)
                 NotifySenderMap.set(
                     NotifySenderMap.genKey(it.id, sessionId),
                     NotificationSender(
