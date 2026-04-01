@@ -44,6 +44,7 @@ object RepoActUtil {
         force:Boolean,  // force push
         pullWithRebase: Boolean, // true rebase, else merge
         asyncRunTask:Boolean,
+        resetIfErr:String,
         cmtMsgPrefix:String,
 
     ){
@@ -85,6 +86,7 @@ object RepoActUtil {
                             pullWithRebase = pullWithRebase,
                             sendErrNotification = notiSender?.sendErrNotification,
                             force = force,
+                            resetIfErr = resetIfErr,
                             cmtMsgPrefix = cmtMsgPrefix,
                         )
 
@@ -131,6 +133,7 @@ object RepoActUtil {
         pullWithRebase: Boolean,
         sendErrNotification: ((title: String, msg: String, startPage: Int, startRepoId: String) -> Unit)?,
         force: Boolean,
+        resetIfErr:String,
         cmtMsgPrefix:String,
 
     ) {
@@ -164,6 +167,7 @@ object RepoActUtil {
                 sendSuccessNotification = sendSuccessNotification,
                 db = db,
                 masterPassword = masterPassword,
+                resetIfErr = resetIfErr,
                 cmtMsgPrefix = cmtMsgPrefix,
             )
 
@@ -447,7 +451,7 @@ object RepoActUtil {
         sendSuccessNotification: ((title: String?, msg: String?, startPage: Int?, startRepoId: String?) -> Unit)?,
         db: AppContainer,
         masterPassword: String,
-        resetIfErr:String = "",
+        resetIfErr:String,
         cmtMsgPrefix:String,
     ) {
         val funName = "pushSingle"

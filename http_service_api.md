@@ -116,6 +116,7 @@ params:
 - autoCommit: 1 enable or 0 disable, default 1: if enable and no conflict items exists, will auto commit all changes, and will check index, if index empty, will not pushing; if disable, will only do push, no commit changes, no index empty check, no conflict items check.
 - pullWithRebase: 1 or 0, if 1, will use rebase when pulling, else merge, if omitted, will follow settings
 - async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
+- resetIfErr: one of values: soft/mixed/hard, any other values will disable this feature, default is null(disable reset if err)
 - cmtMsgPrefix: prefix will add to auto generated commit msg, default is null(no prefix will add)
 
 example:<br>
@@ -162,6 +163,7 @@ params:
 - autoCommit: 1 enable or 0 disable, default 1: if enable and no conflict items exists, will auto commit all changes, and will check index, if index empty, will not pushing; if disable, will only do push, no commit changes, no index empty check, no conflict items check.
 - token: a valid token in your token list
 - async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
+- resetIfErr: one of values: soft/mixed/hard, any other values will disable this feature, default is null(disable reset if err)
 - cmtMsgPrefix: prefix will add to auto generated commit msg, default is null(no prefix will add)
 
 
@@ -186,6 +188,7 @@ params:
 - token: a valid token in your token list
 - pullWithRebase: 1 or 0, if 1, will use rebase when pulling, else merge, if omitted, will follow settings
 - async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
+- resetIfErr: one of values: soft/mixed/hard, any other values will disable this feature, default is null(disable reset if err)
 - cmtMsgPrefix: prefix will add to auto generated commit msg, default is null(no prefix will add)
 
 
