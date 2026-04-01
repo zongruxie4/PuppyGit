@@ -1218,4 +1218,6 @@
     <string name="line_break">Line Break</string>
     <string name="async">Async</string>
 
+    <string name="progress_notification_auto_dismiss">Bildirim Otomatik Kapatma</string>
+    <string name="progress_notification_auto_dismiss_desc">Bildirimler gösterildikten sonra otomatik olarak kapatılacaktır</string>
 </resources>

@@ -1311,4 +1311,6 @@
     <string name="line_break">Line Break</string>
     <string name="async">Async</string>
 
+    <string name="progress_notification_auto_dismiss">Автоотклонение уведомления</string>
+    <string name="progress_notification_auto_dismiss_desc">Уведомления будут автоматически закрываться после отображения</string>
 </resources>
