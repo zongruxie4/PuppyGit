@@ -174,6 +174,7 @@ class AutomationService: BaseAccessibilityService() {
                 autoCommit=true,
                 force=false,
                 asyncRunTask = true,
+                cmtMsgPrefix = "PuppyGit Automation: ",
             )
         }
 

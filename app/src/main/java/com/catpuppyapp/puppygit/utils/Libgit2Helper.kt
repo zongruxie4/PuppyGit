@@ -2501,7 +2501,10 @@ object Libgit2Helper {
         amend:Boolean = false,
         overwriteAuthorWhenAmend:Boolean = false,
         cleanRepoStateIfSuccess:Boolean,
-        settings: AppSettings
+        settings: AppSettings,
+        // 若非空，自动生成的消息，会添加此前缀
+        // prefix for auto generated commit msg
+        cmtMsgPrefix: String = "",
     ):Ret<Oid?> {
         val funName = "createCommit"
 
@@ -2577,7 +2580,7 @@ object Libgit2Helper {
                 // 只要用户重新提交一下再手动填入一个提交信息就行了
                 null
             }else {  //生成提交信息
-                genCommitMsgNoFault(repo, indexItemList, settings.commitMsgTemplate)
+                cmtMsgPrefix + genCommitMsgNoFault(repo, indexItemList, settings.commitMsgTemplate)
             }
         }else {
             msg

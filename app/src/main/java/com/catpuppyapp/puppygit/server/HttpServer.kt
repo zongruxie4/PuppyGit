@@ -249,6 +249,7 @@ internal class HttpServer(
                      *    no index empty check, no conflict items check.
                      *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
                      *  resetIfErr: one of values: soft/mixed/hard, any other values will disable this feature, default is null(disable reset if err)
+                     *  cmtMsgPrefix: prefix will add to auto generated commit msg, default is null(no prefix will add)
                      * e.g.
                      * request: http://127.0.0.1/push?repoNameOrId=abc
                      */
@@ -301,6 +302,7 @@ internal class HttpServer(
 
                             // reset
                             val resetIfErr = call.request.queryParameters.get("resetIfErr") ?:""
+                            val cmtMsgPrefix = call.request.queryParameters.get("cmtMsgPrefix") ?:""
 
                             val task = suspend {
 
@@ -331,6 +333,7 @@ internal class HttpServer(
                                     force = force,
                                     asyncRunTask = asyncRunTask,
                                     resetIfErr = resetIfErr,
+                                    cmtMsgPrefix = cmtMsgPrefix,
                                 )
                             }
 
@@ -375,6 +378,7 @@ internal class HttpServer(
                      *    if disable, will only do push, no commit changes,
                      *    no index empty check, no conflict items check.
                      *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
+                     *  cmtMsgPrefix: prefix will add to auto generated commit msg, default is null(no prefix will add)
 
                      */
                     get("/sync") {
@@ -404,6 +408,7 @@ internal class HttpServer(
                             // get git username and email for merge
                             val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
                             val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
+                            val cmtMsgPrefix = call.request.queryParameters.get("cmtMsgPrefix") ?:""
 
                             val pullWithRebase = call.request.queryParameters.get("pullWithRebase")?.let { it == "1" } ?: PrefUtil.getGlobalGitConfigPullWithRebase(AppModel.realAppContext)
 
@@ -454,7 +459,7 @@ internal class HttpServer(
                                     force = force,
                                     pullWithRebase = pullWithRebase,
                                     asyncRunTask = asyncRunTask,
-
+                                    cmtMsgPrefix = cmtMsgPrefix,
                                 )
                             }
 
@@ -581,6 +586,7 @@ internal class HttpServer(
                      *  force: 1 enable , 0 disable, default 0
                      *  token: token is required
                      *  async: 1 enable or 0 disable, default 1 (for backward-compatible), if enable, will start task then return response immediately, else will waiting for task finished
+                     *  cmtMsgPrefix: prefix will add to auto generated commit msg, default is null(no prefix will add)
                      *
                      * e.g.
                      * request: http://127.0.0.1/pushAll?token=your_token
@@ -612,6 +618,7 @@ internal class HttpServer(
                             val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
 
                             val asyncRunTask = call.request.queryParameters.get("async") != "0"
+                            val cmtMsgPrefix = call.request.queryParameters.get("cmtMsgPrefix") ?:""
 
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
@@ -641,6 +648,7 @@ internal class HttpServer(
                                     autoCommit = autoCommit,
                                     force = force,
                                     asyncRunTask = asyncRunTask,
+                                    cmtMsgPrefix = cmtMsgPrefix,
                                 )
                             }
 
@@ -669,6 +677,7 @@ internal class HttpServer(
 
                     }
 
+                    // please to check document
                     get("/syncAll") {
                         val sessionId = generateRandomString()
 
@@ -698,6 +707,7 @@ internal class HttpServer(
                             val pullWithRebase = call.request.queryParameters.get("pullWithRebase")?.let { it == "1" } ?: PrefUtil.getGlobalGitConfigPullWithRebase(AppModel.realAppContext)
 
                             val asyncRunTask = call.request.queryParameters.get("async") != "0"
+                            val cmtMsgPrefix = call.request.queryParameters.get("cmtMsgPrefix") ?:""
 
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
@@ -729,6 +739,7 @@ internal class HttpServer(
                                     force = force,
                                     pullWithRebase = pullWithRebase,
                                     asyncRunTask = asyncRunTask,
+                                    cmtMsgPrefix = cmtMsgPrefix,
                                 )
                             }
 
@@ -888,6 +899,7 @@ internal class HttpServer(
         asyncRunTask: Boolean,
 
         resetIfErr:String = "",
+        cmtMsgPrefix:String,
     ) {
         RepoActUtil.pushRepoList(
             sessionId = sessionId,
@@ -899,6 +911,7 @@ internal class HttpServer(
             force = force,
             asyncRunTask = asyncRunTask,
             resetIfErr = resetIfErr,
+            cmtMsgPrefix = cmtMsgPrefix,
         )
     }
 
@@ -912,6 +925,7 @@ internal class HttpServer(
         force:Boolean,
         pullWithRebase: Boolean, // true rebase, else merge
         asyncRunTask: Boolean,
+        cmtMsgPrefix: String,
     ) {
         RepoActUtil.syncRepoList(
             sessionId = sessionId,
@@ -923,6 +937,7 @@ internal class HttpServer(
             force = force,
             pullWithRebase = pullWithRebase,
             asyncRunTask = asyncRunTask,
+            cmtMsgPrefix = cmtMsgPrefix,
         )
     }
 }

@@ -44,6 +44,7 @@ object RepoActUtil {
         force:Boolean,  // force push
         pullWithRebase: Boolean, // true rebase, else merge
         asyncRunTask:Boolean,
+        cmtMsgPrefix:String,
 
     ){
         val funName = "syncRepoList"
@@ -83,7 +84,8 @@ object RepoActUtil {
                             routeName = routeName,
                             pullWithRebase = pullWithRebase,
                             sendErrNotification = notiSender?.sendErrNotification,
-                            force = force
+                            force = force,
+                            cmtMsgPrefix = cmtMsgPrefix,
                         )
 
                     }
@@ -128,7 +130,9 @@ object RepoActUtil {
         routeName: String,
         pullWithRebase: Boolean,
         sendErrNotification: ((title: String, msg: String, startPage: Int, startRepoId: String) -> Unit)?,
-        force: Boolean
+        force: Boolean,
+        cmtMsgPrefix:String,
+
     ) {
         val prefix = "sync"
 
@@ -159,7 +163,8 @@ object RepoActUtil {
                 force = force,
                 sendSuccessNotification = sendSuccessNotification,
                 db = db,
-                masterPassword = masterPassword
+                masterPassword = masterPassword,
+                cmtMsgPrefix = cmtMsgPrefix,
             )
 
             sendProgressNotification?.invoke(repoFromDb.repoName, "sync successfully")
@@ -359,6 +364,7 @@ object RepoActUtil {
 
         // reset
         resetIfErr:String = "",
+        cmtMsgPrefix:String,
 
     ) {
         val funName = "pushRepoList"
@@ -395,6 +401,7 @@ object RepoActUtil {
                             db = db,
                             masterPassword = masterPassword,
                             resetIfErr = resetIfErr,
+                            cmtMsgPrefix = cmtMsgPrefix,
                         )
 
 
@@ -441,6 +448,7 @@ object RepoActUtil {
         db: AppContainer,
         masterPassword: String,
         resetIfErr:String = "",
+        cmtMsgPrefix:String,
     ) {
         val funName = "pushSingle"
         val prefix = "push"
@@ -505,7 +513,8 @@ object RepoActUtil {
                             if (!Libgit2Helper.indexIsEmpty(gitRepo)) {
                                 val ret = Libgit2Helper.createCommit(
                                     repo = gitRepo,
-                                    msg = "",
+                                    msg = "",  // empty to auto generate
+                                    cmtMsgPrefix = cmtMsgPrefix,  // prefix for auto generated msg
                                     username = username,
                                     email = email,
                                     indexItemList = null,
