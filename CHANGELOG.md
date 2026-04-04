@@ -6,6 +6,11 @@
 - support call http api in sync way
 - support auto dismiss automation service notification (pr #132, thx @jiesou)
 
+
+
+- 支持以同步方式调用http api
+- 支持自动忽略自动化服务的通知消息 (pr #132, thx @jiesou)
+
 ---
 1.1.4.8v124 - 20260311:
 - upgrade dependencies: libgit2 to 1.9.2, openssl to 3.6.1

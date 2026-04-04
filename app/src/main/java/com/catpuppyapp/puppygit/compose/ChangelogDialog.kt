@@ -15,16 +15,10 @@ import com.catpuppyapp.puppygit.utils.AppModel
 
 
 private val changelog = """
-- upgrade dependencies: libgit2 to 1.9.2, openssl to 3.6.1
-- optimize english translation (pr #125, thx @clach04)
-- optimize code of `PullToRefreshBox` (pr #128, thx @msmt2018)
-- align c libs to 16KB page size
-- fix Automation service bug (issue #130)
-- 升级依赖: libgit2 to 1.9.2, openssl to 3.6.1
-- 优化英语翻译 (pr #125, thx @clach04)
-- 优化 `PullToRefreshBox` 的代码 (pr #128, thx @msmt2018)
-- 对齐c库为16KB页大小
-- 修复自动化服务bug (issue #130)
+- support call http api in sync way
+- support auto dismiss automation service notification (pr #132, thx @jiesou)
+- 支持以同步方式调用http api
+- 支持自动忽略自动化服务的通知消息 (pr #132, thx @jiesou)
 """.trimIndent()
 
 
