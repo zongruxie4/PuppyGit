@@ -897,22 +897,36 @@ fun FilesInnerPage(
 
                     //不管是目录还是文件，直接梭哈
                     file.deleteRecursively()
+
+                    // 从已选中条目列表移除条目
+                    selectedItems.value.removeIf({selectedItem -> it.fullPath == selectedItem.fullPath} )
                 }
 
 
                 Msg.requireShow(activityContext.getString(R.string.success))
-                //退出选择模式并刷新目录
-                filesPageQuitSelectionMode()
+
+                //如果选择条目为空则退出选择模式并刷新目录
+                if(selectedItems.value.isEmpty()) {
+                    filesPageQuitSelectionMode()
+                }
 
                 if (enableFilterState.value) {  //filter模式刷新会重新递归查找，太重量级，直接更新下过滤结果即可
                     val filterList = filterList.value
                     targets.forEachBetter { filterList.remove(it) }
                 } else {
-                    //这里不刷新页面也和过滤模式一样更新下列表其实也行，
-                    // 但是，其实有可能用户会把当前所在目录给删掉，
-                    // 只要通过面包屑进行跳转再选中当前目录，再通过面包屑返回当前目录，再删除即可
-                    // 这种情况一般不会触发，没必要严格限制，确保这里刷新页面，这样如果触发上述情况，当前目录就会正确显示为不可读，若不刷新页面仅更新列表，就会错误显示已经不存在的条目
-                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+                    // 如果当前路径依然存在，仅从条目列表移除对应删除的条目
+                    // 否则刷新页面
+                    if(File(currentPath()).exists()) {
+                        // 不刷新页面，只从当前目录移除对应条目
+                        val list = currentPathFileList.value
+                        targets.forEachBetter { list.remove(it) }
+                    }else {
+                        // 有可能用户会把当前所在目录给删掉，
+                        // 只要通过面包屑进行跳转再选中当前目录，再通过面包屑返回当前目录，再删除即可
+                        // 这种情况一般不会触发，没必要严格限制，确保这里刷新页面，这样如果触发上述情况，
+                        // 当前目录就会正确显示为不可读，若不刷新页面仅更新列表，就会错误显示已经不存在的条目
+                        changeStateTriggerRefreshPage(needRefreshFilesPage)
+                    }
                 }
             }
         }
