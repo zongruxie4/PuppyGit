@@ -7,5 +7,7 @@ import androidx.compose.runtime.Composable
 fun DialogTitle(
     text:String,
 ) {
-    ScrollableRow { Text(text) }
+    MySelectionContainer {
+        ScrollableRow { Text(text) }
+    }
 }

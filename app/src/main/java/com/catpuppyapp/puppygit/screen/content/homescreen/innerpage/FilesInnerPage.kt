@@ -795,10 +795,12 @@ fun FilesInnerPage(
 
     // init repo dialog variables block start
     val showInitRepoDialog = rememberSaveable { mutableStateOf(false) }
+    val initRepoAsBare = rememberSaveable { mutableStateOf(false) }
     val initRepoList = mutableCustomStateListOf(stateKeyTag, "initRepoList", listOf<String>())
     val initInitRepoDialog = { pathList: List<String> ->
         initRepoList.value.clear()
         initRepoList.value.addAll(pathList)
+        initRepoAsBare.value = false
         showInitRepoDialog.value = true
     }
     // init repo dialog variables block end
@@ -2376,17 +2378,29 @@ fun FilesInnerPage(
         } else {
             ConfirmDialog(
                 title = stringResource(R.string.init_repo),
-                text = stringResource(R.string.will_init_selected_folders_to_git_repos_are_you_sure),
+                requireShowTextCompose = true,
+                textCompose = {
+                    ScrollableColumn {
+                        MySelectionContainer {
+                            Text(stringResource(R.string.will_init_selected_folders_to_git_repos_are_you_sure))
+                        }
+
+                        Spacer(Modifier.height(10.dp))
+
+                        MyCheckBox(text = "bare", value = initRepoAsBare)
+                    }
+                },
                 okBtnEnabled = selctedDirs.isNotEmpty(),
                 onCancel = { showInitRepoDialog.value = false }
             ) {
                 showInitRepoDialog.value = false
+                val isBbare = initRepoAsBare.value
                 doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                     try {
                         var successCnt = 0
                         selctedDirs.forEachBetter { dirPath ->
                             try {
-                                Libgit2Helper.initGitRepo(dirPath)
+                                Libgit2Helper.initGitRepo(dirPath, isBbare)
                                 successCnt++
                             } catch (e: Exception) {
 //                            Msg.requireShowLongDuration(e.localizedMessage ?: "err")

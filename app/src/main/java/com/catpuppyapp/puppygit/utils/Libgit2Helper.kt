@@ -6879,8 +6879,7 @@ object Libgit2Helper {
     /**
      * init git repo, if do init for a inited repo, nothing change
      */
-    fun initGitRepo(path: String) {
-        val isBare = false
+    fun initGitRepo(path: String, isBare: Boolean) {
         Repository.init(path, isBare)
     }
 
