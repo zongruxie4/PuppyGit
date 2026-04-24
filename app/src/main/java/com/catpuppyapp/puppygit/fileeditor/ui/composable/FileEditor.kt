@@ -1077,10 +1077,10 @@ fun FileEditor(
                         Icons.AutoMirrored.Filled.FormatIndentDecrease,  // shift + tab
                         Icons.AutoMirrored.Filled.FormatIndentIncrease,  // tab
                         Icons.Filled.Delete,
+                        Icons.Filled.CleaningServices,  // clear line content
                         Icons.Filled.ContentCut,
                         Icons.Filled.ContentCopy,
                         Icons.Filled.ContentPaste,
-                        Icons.Filled.CleaningServices,  // clear line content
                         Icons.AutoMirrored.Filled.KeyboardReturn,  // append a line
                         Icons.Filled.SelectAll
                     )
@@ -1088,10 +1088,10 @@ fun FileEditor(
                         "Shift + Tab",
                         "Tab",
                         stringResource(R.string.delete),
+                        stringResource(R.string.clear),
                         stringResource(R.string.cut),
                         stringResource(R.string.copy),
                         stringResource(R.string.paste),
-                        stringResource(R.string.clear),
                         stringResource(R.string.append_a_line),
                         stringResource(R.string.select_all),
                     )
@@ -1125,6 +1125,19 @@ fun FileEditor(
                             }
 
                             showDeleteDialog.value = true
+                        },
+                        onClear@{
+                            if (readOnlyMode) {
+                                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
+                                return@onClear
+                            }
+
+                            //不用确认，直接清空，若后悔可用undo撤销
+                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#clearSelectedFields") { textEditorState ->
+                                textEditorState.clearSelectedFields()
+                            }
+
+                            Unit
                         },
                         onCut@{
                             val selectedLinesNum = textEditorState.value.getSelectedCount();
@@ -1181,19 +1194,6 @@ fun FileEditor(
                             Unit
                         },
 
-                        onClear@{
-                            if (readOnlyMode) {
-                                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
-                                return@onClear
-                            }
-
-                            //不用确认，直接清空，若后悔可用undo撤销
-                            textEditorState.value.codeEditor?.doActWithLatestEditorStateInCoroutine("#clearSelectedFields") { textEditorState ->
-                                textEditorState.clearSelectedFields()
-                            }
-
-                            Unit
-                        },
                         onAppendALine@{
                             if (readOnlyMode) {
                                 Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
@@ -1232,10 +1232,10 @@ fun FileEditor(
                         onShiftTab@{ hasLineSelectedAndNotReadOnly },  // outdent
                         onTab@{ hasLineSelectedAndNotReadOnly },  // indent
                         onDelete@{ hasLineSelectedAndNotReadOnly },  // delete
+                        onClear@{ hasLineSelectedAndNotReadOnly },  // clear the line
                         onCut@{ hasLineSelectedAndNotReadOnly },  // cut
                         onCopy@{ hasLineSelected },  // copy
                         onPaste@{ hasLineSelectedAndNotReadOnly },  // paste，只要 "选中某行" 就启用，执行时再检查剪贴板是否为空
-                        onClear@{ hasLineSelectedAndNotReadOnly },  // clear the line
                         onAppendALine@{ hasLineSelectedAndNotReadOnly },  // append a line
                         onSelectAll@{ true },  // select all
                     )
