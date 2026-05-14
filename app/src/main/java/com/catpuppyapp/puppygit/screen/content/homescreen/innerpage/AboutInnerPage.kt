@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
+import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Android
+import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Link
@@ -43,6 +46,7 @@ import com.catpuppyapp.puppygit.compose.AppIcon
 import com.catpuppyapp.puppygit.compose.AppIconMonoChrome
 import com.catpuppyapp.puppygit.compose.MyHorizontalDivider
 import com.catpuppyapp.puppygit.compose.ScrollableRow
+import com.catpuppyapp.puppygit.compose.ShowThumbnailForImage
 import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -86,6 +90,22 @@ private data class Contributor(
 private data class Link(
     val title: String,
     val link: String,
+)
+
+private data class App(
+    val name: String,
+    val desc: String,
+    val link: String,
+    val iconLink: String,
+)
+
+private val myOtherAppList = listOf(
+    App(
+        name = "HahaNote",
+        desc = "HahaNote is an e2ee note sync app",
+        link = "https://github.com/catpuppyapp/HahaNote-Release",
+        iconLink = "https://raw.githubusercontent.com/catpuppyapp/HahaNote-Release/main/icon.png",
+    )
 )
 
 private val openSourceList = listOf(
@@ -237,6 +257,25 @@ fun AboutInnerPage(
 
         SectionSpacer()
 
+        SectionCard(
+            title = "My Other Apps",
+            icon = Icons.Outlined.Apps
+        ) {
+            val lastIndex = myOtherAppList.size - 1
+            myOtherAppList.forEachIndexedBetter { index, it ->
+                CardItem(
+                    context = activityContext,
+                    line1 = it.name,
+                    line2 = it.desc,
+                    isLast = index == lastIndex,
+                    headingIconLink = it.iconLink,
+                    onClick = { ActivityUtil.openUrl(activityContext, it.link) }
+                )
+            }
+        }
+
+        SectionSpacer()
+
         // Links Section
         SectionCard(
             title = stringResource(R.string.url_links),
@@ -245,6 +284,7 @@ fun AboutInnerPage(
             val lastIndex = links.size - 1
             links.forEachIndexedBetter { index, it ->
                 CardItem(
+                    context = activityContext,
                     line1 = it.title,
                     line2 = "",
                     isLast = index == lastIndex,
@@ -263,6 +303,7 @@ fun AboutInnerPage(
             val lastIndex = openSourceList.size - 1
             openSourceList.forEachIndexedBetter { index, openSource ->
                 CardItem(
+                    context = activityContext,
                     line1 = openSource.projectName,
                     line2 = stringResource(R.string.license),
                     isLast = index == lastIndex,
@@ -282,6 +323,7 @@ fun AboutInnerPage(
             val lastIndex = contributorList.size - 1
             contributorList.forEachIndexedBetter { index, contributor ->
                 CardItem(
+                    context = activityContext,
                     line1 = contributor.name,
                     line2 = contributor.desc,
                     isLast = index == lastIndex,
@@ -349,9 +391,11 @@ private fun SectionCard(
 
 @Composable
 private fun CardItem(
+    context: Context,
     line1: String,
     line2: String,
     isLast: Boolean,
+    headingIconLink: String = "",
     line2OnClick: (() -> Unit)? = null,
     onClick: () -> Unit
 ) {
@@ -359,9 +403,19 @@ private fun CardItem(
         modifier = Modifier
             .clickable { onClick() }
             .fillMaxWidth()
-            .padding(10.dp)
-        ,
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
+        if(headingIconLink.isNotBlank()) {
+            ShowThumbnailForImage(
+                context = context,
+                filePath = headingIconLink,
+                contentDescription = null,
+                fallbackIcon = Icons.Outlined.Android,
+                modifier = Modifier.padding(end = 10.dp),
+            )
+        }
+
         Column(
             modifier = Modifier.padding(vertical = 12.dp)
         ) {
