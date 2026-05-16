@@ -918,15 +918,19 @@ fun HomeScreen(
 //        {},  //Subscription页面
     )
 
-    val openDrawer = {  //打开侧栏(抽屉)
-        scope.launch {
-            drawerState.apply {
-                if (isClosed) open()
-            }
-        }
+    // 由于打开抽屉，退出app，实际上只是销毁Activity，而改成杀进程又容易误操作中止正在执行的操作（比如正在pull，一按返回进程直接被杀了，很无语）
+    // 所以，禁用按返回退出app（假退出，只是销毁Activity）的逻辑了，改成切换到后台，但如果切换到后台，下次打开页面时抽屉还会保持打开状态，很难看，所以取消按返回打开抽屉的逻辑
+//    val openDrawer = {  //打开侧栏(抽屉)
+//        scope.launch {
+//            drawerState.apply {
+//                if (isClosed) open()
+//            }
+//        }
+//
+//        Unit
+//    }
 
-        Unit
-    }
+    val openDrawer = {}
 
     val menuButton:@Composable ()->Unit = {
         LongPressAbleIconBtn(
@@ -967,7 +971,7 @@ fun HomeScreen(
                     drawIdList = drawIdList,
                     drawIconList = drawIconList,
                     drawerItemOnClick = drawerItemOnClick,
-                    showExit = true,
+                    showExit = false,
                     filesPageKeepFilterResultOnce = filesPageKeepFilterResultOnce,
 
                 )
