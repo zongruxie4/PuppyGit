@@ -105,7 +105,14 @@ private val myOtherAppList = listOf(
         desc = "HahaNote is an e2ee note sync app",
         link = "https://github.com/catpuppyapp/HahaNote-Release",
         iconLink = "https://raw.githubusercontent.com/catpuppyapp/HahaNote-Release/main/icon.png",
-    )
+    ),
+    App(
+        name = "SshKeyMan",
+        desc = "SshKeyMan is an ed25519/rsa key generator",
+        link = "https://github.com/catpuppyapp/SshKeyMan",
+        iconLink = "https://raw.githubusercontent.com/catpuppyapp/SshKeyMan/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+    ),
+
 )
 
 private val openSourceList = listOf(
