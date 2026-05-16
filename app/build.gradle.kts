@@ -206,7 +206,7 @@ dependencies {
 
 
     implementation("androidx.documentfile:documentfile:1.1.0")
-    val lifecycleVersion = "2.9.2"
+    val lifecycleVersion = "2.10.0"
     implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
 
@@ -221,7 +221,7 @@ dependencies {
 //    implementation("com.github.kaleidot725:text-editor-compose:0.6.0")
 
     // room start
-    val room_version = "2.7.2"
+    val room_version = "2.8.4"
     implementation("androidx.room:room-runtime:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
     // To use Kotlin Symbol Processing (KSP)
@@ -242,7 +242,7 @@ dependencies {
 
     // javax NonNull annotation for git24j
     implementation("com.google.code.findbugs:jsr305:3.0.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 // https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit
 //    implementation("org.eclipse.jgit:org.eclipse.jgit:v6.6.1.202309021850-r")
 // https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit.pgm
@@ -251,7 +251,7 @@ dependencies {
 // 不过不知道里面的类是否能直接用？比如我想用clone命令，可不可以直接调用这里的Clone类？
 //    implementation("org.eclipse.jgit:org.eclipse.jgit.pgm:6.8.0.202311291450-r")
 //    implementation(files("libs/git24j-1.0.4.20241114.jar"))
-    implementation("androidx.navigation:navigation-compose:2.9.0")
+    implementation("androidx.navigation:navigation-compose:2.9.8")
 
     //查询支付状态的api，如果前端取消订单后不久就过期，就不需要这个了，否则需要
 //    implementation("com.google.auth:google-auth-library-oauth2-http:1.23.0")
@@ -267,15 +267,15 @@ dependencies {
 
 
     //启动屏幕
-    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("androidx.core:core-splashscreen:1.2.0")
 
 
     //对应组件的实际版本号，参见：https://developer.android.com/develop/ui/compose/bom/bom-mapping
-    val composeBom = platform("androidx.compose:compose-bom:2025.07.00")
+    val composeBom = platform("androidx.compose:compose-bom:2026.04.01")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
-    implementation("androidx.core:core-ktx:1.16.0")
-    implementation("androidx.activity:activity-compose:1.10.1")
+    implementation("androidx.core:core-ktx:1.18.0")
+    implementation("androidx.activity:activity-compose:1.13.0")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
@@ -300,8 +300,8 @@ dependencies {
 
     testImplementation(composeBom)
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation(composeBom)
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
