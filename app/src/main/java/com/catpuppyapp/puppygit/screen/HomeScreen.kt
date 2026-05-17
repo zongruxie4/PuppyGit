@@ -500,10 +500,14 @@ fun HomeScreen(
     }
     val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { EditorPreviewNavStack("") }
 
-    val editorQuitPreviewMode = {
+    val editorQuitPreviewModeWithoutReloadCheck = {
         editorBasePath.value = ""
         editorMdText.value = ""
         editorIsPreviewModeOn.value = false
+    }
+
+    val editorQuitPreviewMode = {
+        editorQuitPreviewModeWithoutReloadCheck()
 
         editorPageRequestFromParent.value = PageRequest.reloadIfChanged
     }
@@ -655,7 +659,7 @@ fun HomeScreen(
     val requireInnerEditorOpenFileWithFileName = r@{ fullPath:String, expectReadOnly:Boolean ->
 
         //请求打开文件，先退出预览模式
-        editorQuitPreviewMode()
+        editorQuitPreviewModeWithoutReloadCheck()
 
 
         editorPageShowingFileIsReady.value=false
