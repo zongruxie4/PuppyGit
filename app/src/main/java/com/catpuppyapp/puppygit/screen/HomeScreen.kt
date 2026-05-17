@@ -657,13 +657,18 @@ fun HomeScreen(
     //给Files页面点击打开文件用的
     //第2个参数是期望值，只有当文件路径不属于app内置禁止edit的目录时才会使用那个值，否则强制开启readonly模式
     val requireInnerEditorOpenFileWithFileName = r@{ fullPath:String, expectReadOnly:Boolean ->
+        val filePath = FilePath(fullPath)
+        // 路径相同，跳过重载
+        if(filePath.ioPath == editorPageShowingFilePath.value.ioPath) {
+            return@r
+        }
 
         //请求打开文件，先退出预览模式
         editorQuitPreviewModeWithoutReloadCheck()
 
 
         editorPageShowingFileIsReady.value=false
-        editorPageShowingFilePath.value = FilePath(fullPath)
+        editorPageShowingFilePath.value = filePath
         editorPageShowingFileDto.value.fullPath = ""
         currentHomeScreen.intValue = Cons.selectedItem_Editor
 
