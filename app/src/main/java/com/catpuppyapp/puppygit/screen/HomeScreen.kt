@@ -1081,6 +1081,7 @@ fun HomeScreen(
                                 isEdited = editorPageIsEdited,
                                 showReloadDialog = showReloadDialog,
                                 showCloseDialog = editorPageShowCloseDialog,
+                                editorPageTextEditorState = editorPageTextEditorState,
                                 editorNeedSave = editorNeedSave,
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {

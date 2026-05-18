@@ -366,7 +366,7 @@ fun SubPageEditor(
                         isEdited = editorPageIsEdited,
                         showReloadDialog = showReloadDialog,
                         showCloseDialog = showCloseDialog,
-
+                        editorPageTextEditorState = editorPageTextEditorState,
                         editorNeedSave = editorNeedSave,
                     )
 

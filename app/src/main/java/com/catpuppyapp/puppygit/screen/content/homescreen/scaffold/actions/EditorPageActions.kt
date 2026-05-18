@@ -428,7 +428,6 @@ fun EditorPageActions(
 
             if(!isSubPageMode) {
                 DropdownMenuItem(
-                    //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
                     enabled = enableMenuItem,
                     text = { Text(stringResource(R.string.show_in_files)) },
                     onClick = {
@@ -442,8 +441,6 @@ fun EditorPageActions(
             }
 
             DropdownMenuItem(
-                //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
-//                enabled = enableMenuItem && !FsUtils.isReadOnlyDir(editorPageShowingFilePath.value),
                 enabled = enableMenuItem,
                 text = { Text(stringResource(R.string.show_undo_redo)) },
                 trailingIcon = {
@@ -468,7 +465,6 @@ fun EditorPageActions(
 
 
             DropdownMenuItem(
-                //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
                 enabled = enableMenuItem,
                 text = { Text(stringResource(R.string.show_line_num)) },
                 trailingIcon = {
@@ -522,7 +518,6 @@ fun EditorPageActions(
 
             val autoCloseSymbolPair = remember { mutableStateOf(SettingsUtil.isEditorAutoCloseSymbolPairEnabled()) }
             DropdownMenuItem(
-                //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
                 enabled = enableMenuItem,
                 text = { Text(stringResource(R.string.symbol_pair)) },
                 trailingIcon = {
@@ -547,16 +542,14 @@ fun EditorPageActions(
                 val selectModeOn = editorPageTextEditorState.value.isMultipleSelectionMode
 
                 DropdownMenuItem(
-                    //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
                     enabled = enableMenuItem,
                     text = { Text(stringResource(R.string.select_mode)) },
                     trailingIcon = {
                         SimpleCheckBox(selectModeOn)
                     },
                     onClick = {
-//                        closeMenu()
+                        closeMenu()
 
-                        //如果是从非readonly mode切换到readonly mode，则执行一次保存，然后再切换readonly mode
                         editorPageRequest.value = PageRequest.editorSwitchSelectMode
                     }
 
