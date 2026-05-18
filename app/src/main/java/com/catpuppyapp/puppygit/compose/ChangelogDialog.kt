@@ -18,8 +18,12 @@ private const val hahaNoteLink = "https://github.com/catpuppyapp/HahaNote-Releas
 private val changelog = """
 - support create bare repo
 - support rename remotes (issue #136)
+- change on back behavior
+- upgrade ui libs
 - 支持创建bare仓库
 - 支持重命名远程仓库 (issue #136)
+- 修改返回键行为
+- 升级ui库
 """.trimIndent()
 
 

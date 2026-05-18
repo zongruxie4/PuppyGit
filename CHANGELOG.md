@@ -5,11 +5,15 @@
 1.1.5.0v126 - 20260502:
 - support create bare repo
 - support rename remotes (issue #136)
+- change on back behavior
+- upgrade ui libs
 
 
 
 - 支持创建bare仓库
 - 支持重命名远程仓库 (issue #136)
+- 修改返回键行为
+- 升级ui库
 
 ---
 1.1.4.9v125 - 20260401:
