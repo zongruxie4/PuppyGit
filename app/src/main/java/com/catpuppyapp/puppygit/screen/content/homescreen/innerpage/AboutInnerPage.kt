@@ -67,6 +67,7 @@ const val madeByLink = "https://github.com/Bandeapart1964"
 const val sourceCodeLink = "https://github.com/catpuppyapp/PuppyGit"
 const val privacyPolicyLink = "$sourceCodeLink/blob/main/PrivacyPolicy.md"
 const val discussionLink = "$sourceCodeLink/discussions"
+const val appReleasesLink = "$sourceCodeLink/releases"
 const val reportBugsLink = "$sourceCodeLink/issues/new"
 const val faqLink = "$sourceCodeLink/blob/main/FAQ.md"
 const val httpServiceApiUrl = "$sourceCodeLink/blob/main/http_service_api.md"
@@ -155,6 +156,7 @@ fun AboutInnerPage(
     val donateLink = Link(title = "💖 "+stringResource(R.string.donate)+" 💖", link = donateLink)
 
     val links = listOf(
+        Link(title = stringResource(R.string.update), link = appReleasesLink),
         Link(title = stringResource(R.string.source_code), link = sourceCodeLink),
         Link(title = stringResource(R.string.discussions), link = discussionLink),
         Link(title = stringResource(R.string.report_bugs), link = reportBugsLink),
