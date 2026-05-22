@@ -4,6 +4,9 @@
 # 小狗Git
 小狗Git 是一个安卓Git客户端，免费开源无广告
 
+# 我的新软件
+[HahaNote, 端到端加密的笔记同步应用，可将本地目录作为笔记仓库同步到你的 Dropbox/WebDav/GitHub](https://github.com/catpuppyapp/HahaNote-Release)
+
 
 ## 作者
 小狗Git由catpuppyapp的Bandeapart1964倾情奉献

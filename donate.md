@@ -1,15 +1,19 @@
 ### Expect and appreciate your donation to make my day!
 
-#### welcome follow my twitter: https://x.com/catpuppyapp
-#### btw: due to patreon can't withdraw in my country, so I will update news on twitter, my patreon page maybe will close in future.
+### My New App
+[HahaNote, an e2ee note sync app, can treat a folder as a note repo and sync it to your Dropbox/WebDav/GitHub](https://github.com/catpuppyapp/HahaNote-Release)
 
 
 ---
 #### Ko-fi
 https://ko-fi.com/bandeapart1964
 
+#### Patreon
+https://www.patreon.com/c/catpuppyapp
+
 #### bitcoin:
 bc1q0yzt0kxvj4f4qvamrx2q7mahr40leun57m7sfd
 
-
+#### my twitter: 
+https://x.com/catpuppyapp
 

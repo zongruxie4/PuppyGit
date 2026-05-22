@@ -6,6 +6,9 @@
 # PuppyGit
 PuppyGit is A Git Client for Android, Open Source and No Ads and Free to use
 
+# My New App
+[HahaNote, an e2ee note sync app, can treat a folder as a note repo and sync it to your Dropbox/WebDav/GitHub](https://github.com/catpuppyapp/HahaNote-Release)
+
 
 ## Author
 PuppyGit made by Bandeapart1964 of catpuppyapp
