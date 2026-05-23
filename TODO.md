@@ -14,13 +14,52 @@ force pull 功能实现备忘 20260523：
 
 ---
 git lfs功能实现备忘 20260523：
-编译安卓版本的git lfs，应该会得到一个可执行文件。
+lfs指针文件内容示例：
+version https://git-lfs.github.com/spec/v1
+oid sha256:4d7a214614b8a2e1d8a3614614b8a2e1d8a3614614b8a2e1d8a3614614b8a2e1
+size 1458273
+
+解析：可读取文件，如果只有3行，并且三行开头匹配 version oid size，则视作lfs指针文件
+
+=======
+实现方案：
+
+方案 17251000：
+参见 <a href="ai给的git-lfs方案-20260523.txt">libgit2注册filter</a>
+参见 libgit2源码：[tests\libgit2\filter\wildcard.c](https://github.com/libgit2/libgit2/blob/main/tests/libgit2/filter/wildcard.c)
+
+
+编译安卓版本的[git lfs](https://git-lfs.com/)，应该会得到一个可执行文件。
 
 可执行文件放到app里，解压到app内部data目录，加执行权限。
 
 注册libgit2过滤器。
 
 我目前还没用过lfs，所以不太确定，配置完之后应该会根据gitattribute文件来对符合条件的文件自动使用gitlfs命令上传和下载。
+
+创建一个lfs管理页面，可使用git lfs命令列出未下载的lfs条目，针对下载，支持多选。
+
+需要看下怎么限制git lfs最大后台进程数量，不要太多，最好先实现成同步逐个下载，简化逻辑，日后再考虑并发后台下载。
+
+
+优点：完全不用自己实现上传下载管理了，直接调用命令就行，甚至list仓库内所有条目也可以调用命令，并且用现成的实现，bug应该更少。
+缺点：调用库，编译库，麻烦，而且还要考虑调用git lfs命令时，凭据怎么传过去？
+
+=======
+方案 13986311：
+0. 这个方案的核心在于在java层自己实现上传和下载，不依赖外部可执行文件
+1. 手动管理（适用于拉取和推送未支持lfs时被遗漏的条目，或者期望上传指定文件为lfs）：
+  创建一个lfs管理页面，扫描仓库目录内所有lfs文件（参考上面的文件格式解析） ，可批量下载（先实现成同步）
+  在内置文件管理器，可选择任意文件，将其转换为lfs上传，链接格式：https://remote.url/info/lfs
+  上传和下载先实现成同步且不可取消（可杀进程强制取消），日后可实现成任务队列+后台任务+可取消
+
+2. 自动管理： 
+  注册libgit2 filter，在拉取和推送时自动转换lfs文件和对象：
+  参见 "ai给的git-lfs方案-20260523.txt"
+
+
+优点：直接调用java代码，上传下载完全可控，凭据传递更容易
+缺点：自己实现的话，我不确定复杂度如何，解析attribute的任务可在libgit2完成，只需要自己实现上传下载和替换workdir和.git lfs obj，应该问题不大，可以试试。
 
 ---
 git sign commit 功能实现备忘 20260523:
