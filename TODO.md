@@ -1,5 +1,18 @@
 
 ---
+force pull 功能实现备忘 20260523：
+在changelist页面添加一个强制拉取，明确提示用户：
+会重置workdir为远程仓库最新版本。
+界面上有一个选项：Delete Untracked，若勾选，将会在重置workdir为远程数据后进一步移除untracked文件。
+
+
+执行操作：
+1 fetch
+2 hard reset local branch to upstream
+3 pull
+4 如果勾选了移除untracked文件，则调用status，删除untracked文件。（由于之前reset过，所以这时status应该无条目，或者只有untracked条目）
+
+---
 git lfs功能实现备忘 20260523：
 编译安卓版本的git lfs，应该会得到一个可执行文件。
 
