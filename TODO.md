@@ -25,6 +25,8 @@ size 1458273
 实现方案：
 
 方案 17251000：
+参见：这个app应该是调用的git lfs可执行文件：[app/src/main/java/com/lfgit/executors/GitExec.java](https://github.com/MarekPetr/LFGit/blob/1656e936176e5cbb92601feed5b4337fe2dfc6e2/app/src/main/java/com/lfgit/executors/GitExec.java#L4)
+
 参见 <a href="ai给的git-lfs方案-20260523.txt">libgit2注册filter</a>
 参见 libgit2源码：[tests\libgit2\filter\wildcard.c](https://github.com/libgit2/libgit2/blob/main/tests/libgit2/filter/wildcard.c)
 
