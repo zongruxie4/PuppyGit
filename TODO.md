@@ -1,9 +1,8 @@
 
 ---
 force pull 功能实现备忘 20260523：
-在changelist页面添加一个强制拉取，明确提示用户：
+在changelist页面添加一个强制拉取，点击弹窗，明确提示用户：
 会重置workdir为远程仓库最新版本。
-界面上有一个选项：Delete Untracked，若勾选，将会在重置workdir为远程数据后进一步移除untracked文件。
 
 
 执行操作：
@@ -11,6 +10,11 @@ force pull 功能实现备忘 20260523：
 2 hard reset local branch to upstream
 3 pull
 4 如果勾选了移除untracked文件，则调用status，删除untracked文件。（由于之前reset过，所以这时status应该无条目，或者只有untracked条目）
+
+
+
+x 废弃）弹窗上有一个选项：Delete Untracked，若勾选，将会在重置workdir为远程数据后进一步移除untracked文件。
+  废弃原因：影响性能(因为git status)且可能误删文件，若用户拉取后想删除Untracked文件，下次提交时会看到对应文件，手动删下就行了(在ChangeList页面可通过Revert选项来删除)
 
 ---
 git lfs功能实现备忘 20260523：
