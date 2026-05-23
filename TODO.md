@@ -8,8 +8,8 @@ force pull 功能实现备忘 20260523：
 执行操作：
 1 fetch
 2 hard reset local branch to upstream
-3 pull
-4 如果勾选了移除untracked文件，则调用status，删除untracked文件。（由于之前reset过，所以这时status应该无条目，或者只有untracked条目）
+x 不需要，hard reset完了，还pull啥pull，多此一举）3 pull
+x 不实现这个功能了，影响性能且可能误删文件）4 如果勾选了移除untracked文件，则调用status，删除untracked文件。（由于之前reset过，所以这时status应该无条目，或者只有untracked条目）
 
 
 
