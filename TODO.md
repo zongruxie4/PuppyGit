@@ -4,6 +4,7 @@ TODO 20260524:
 实现lfs
 实现提交签名
 更新 libgit2/openssl等依赖版本，更新openssl时，尝试启用asm，若报错则禁用，启用asm有性能提升，但兼容性差
+ppgit侧栏，顶部加个banner，现在这样太丑
 测试一段时间再发布新版
 
 ---
