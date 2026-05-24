@@ -1,10 +1,10 @@
 
 ---
 TODO 20260524:
-实现lfs
+实现lfs(git-lfs用go写的，编译安卓版很简单，直接调用git-lfs吧，不要自己处理了，细节很麻烦)
 实现提交签名
 更新 libgit2/openssl等依赖版本，更新openssl时，尝试启用asm，若报错则禁用，启用asm有性能提升，但兼容性差
-ppgit侧栏，顶部加个banner，现在这样太丑
+ppgit侧栏，顶部加个banner，现在这样太丑（加了好像也不会很好看？）
 测试一段时间再发布新版
 
 ---
@@ -52,7 +52,20 @@ pc上lfs相关配置：
 参见 libgit2源码：[tests\libgit2\filter\wildcard.c](https://github.com/libgit2/libgit2/blob/main/tests/libgit2/filter/wildcard.c)
 
 
-编译安卓版本的[git lfs](https://git-lfs.com/)，应该会得到一个可执行文件。
+编译安卓版本的[git lfs](https://git-lfs.com/)，会得到一个可执行文件。
+编译命令：
+$env:GOOS="android"; $env:GOARCH="arm64"; $env:CGO_ENABLED="0"; go build -v -ldflags="-s -w" -o git-lfs-android-arm64
+$env:GOOS="android"; $env:GOARCH="arm"; $env:CGO_ENABLED="0"; go build -v -ldflags="-s -w" -o git-lfs-android-arm
+# 这个是x8664
+$env:GOOS="android"; $env:GOARCH="amd64"; $env:CGO_ENABLED="0"; go build -v -ldflags="-s -w" -o git-lfs-android-x86_64
+编译出来大概 14M ，打包进app有点大，可在关于页面加个下载链接，下载到app的内部目录，必须内部目录不然可能无法加执行权限，下载后验证hash，加执行权限，然后就能用了，若启用lfs执行，则在每次启动app时注册lg2的filter。
+只注册filter似乎不够，注册过滤器后，本地的提交和检出会自动处理，但推送lfs objs可能需要手动处理（未验证），若需手动处理：
+手动模拟 pre-push 钩子： 在调用 libgit2 的推送 API 之前，你必须在宿主程序中手动调用一次 git-lfs pre-push <remote> <url>，或者自己写一段网络代码把本地缓存的大文件上传到 LFS 接口。
+模拟pre-push应该就够了，其余的本地操作filter应该会自动处理（未验证）。
+应该还可以使用 git-lfs 命令执行一些 lfs 相关的操作，比如列出仓库的lfs文件、下载指定文件，之类的，先实现基础的lfs下载和推送后再弄这些边脚料。
+先注册过滤器，然后再看能不能弄 process 模式，process模式可常驻个进程负责上传下载，文件多时比单独启动进程要节省资源。
+好麻烦，要不然以后再写吧，反正用这个功能的应该不多，烦了，先这样吧。
+
 
 若使用可执行文件，从apk提取lfs可执行文件时先放到临时目录再重命名，避免写入中断，文件损坏
 
@@ -64,8 +77,7 @@ pc上lfs相关配置：
 
 注册libgit2过滤器。
 
-注册过滤器后，本地的提交和检出会自动处理，但推送lfs objs可能需要手动处理（未验证），若需手动处理：
-手动模拟 pre-push 钩子： 在调用 libgit2 的推送 API 之前，你必须在宿主程序中手动调用一次 git-lfs pre-push <remote> <url>，或者自己写一段网络代码把本地缓存的大文件上传到 LFS 接口。
+
 
 git lfs似乎有长进程模式和独立进程模式（每次调用都启动一个新进程），先测试独立进程模式，因为实现简单，若可用，再使用长进程模式，因为更稳定，省内存(大概，类似tcp连接，每次都开个连接和长连接的区别)。
 
