@@ -3694,11 +3694,11 @@ object Libgit2Helper {
         // 必须检查，因为实测如果平台报错，libgit2可能检测不到，比如token过期、仓库容量超额，都可能报错，远程会返回错误信息，但libgit2可能检测不到
         val branchShortName = upstream.downstreamLocalBranchShortRefSpec
         val requeriedUpstream = Libgit2Helper.getUpstreamOfBranch(repo, branchShortName)
-        val (ahead, behind) = Libgit2Helper.getAheadBehind(repo, Oid.of(requeriedUpstream.localOid), Oid.of(requeriedUpstream.remoteOid))
-        if(ahead != 0 || behind != 0) {
-            throw RuntimeException("local branch and upstream branch are not same after pushing, branch: $branchShortName, ahead: $ahead, behind: $behind")
+        if(requeriedUpstream.localOid != requeriedUpstream.remoteOid) {
+            throw RuntimeException("local branch and upstream branch are not same after pushing, branch: $branchShortName, local: ${requeriedUpstream.localOid}, upstream: ${requeriedUpstream.remoteOid}")
         }
     }
+
     /**
      * 注意：pushRefSpec不要带加号+，若想强制推送，传force=true。不过这里没强制要求，若你非带加号同时force传false，也能强制push
      */
