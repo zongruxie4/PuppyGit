@@ -600,7 +600,7 @@ object RepoActUtil {
                 )
 
                 try {
-                    Libgit2Helper.push(gitRepo, upstream.remote, listOf(upstream.pushRefSpec), credential, force)
+                    Libgit2Helper.pushSingleBranch(gitRepo, upstream, credential, force)
                 }catch (e: Exception) {
                     // 若为真，push出错时，尝试reset
                     if(resetIfErr.isNotBlank()) {
