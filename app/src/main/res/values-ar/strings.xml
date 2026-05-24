@@ -1210,4 +1210,5 @@
 
     <string name="progress_notification_auto_dismiss">إغلاق الإشعار تلقائيًا</string>
     <string name="progress_notification_auto_dismiss_desc">سيتم إغلاق الإشعارات تلقائيًا بعد عرضها</string>
+    <string name="pull_force"> سحب(إجباري)</string>
 </resources>

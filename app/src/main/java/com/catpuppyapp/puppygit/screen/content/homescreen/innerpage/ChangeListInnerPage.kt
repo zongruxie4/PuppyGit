@@ -644,6 +644,11 @@ fun ChangeListInnerPage(
         }
     }
 
+    val initForcePullDialog = {
+        //TODO 12090621
+        // 执行操作：fetch并确保refspec包含+号（默认是包含的，但需要检查下确保万无一失）
+        // 然后执行hard reset to upstream就行了f
+    }
 
     val forcePush_ShowDialog = rememberSaveable { mutableStateOf(false) }
     val forcePush_pushWithLease = rememberSaveable { mutableStateOf(false) }
@@ -957,6 +962,8 @@ fun ChangeListInnerPage(
 
                     }else if(requireAct == PageRequest.pushForce) {
                         initForcePushDialog()
+                    }else if(requireAct == PageRequest.pullForce) {
+                        initForcePullDialog()
                     }else if(requireAct == PageRequest.mergeAbort) {
                         initMergeAbortDialog()
                     }else if(requireAct == PageRequest.stageAll) {

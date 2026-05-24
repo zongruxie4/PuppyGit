@@ -1313,4 +1313,5 @@
 
     <string name="progress_notification_auto_dismiss">Автоотклонение уведомления</string>
     <string name="progress_notification_auto_dismiss_desc">Уведомления будут автоматически закрываться после отображения</string>
+    <string name="pull_force">Пул(Принудительно)</string>
 </resources>

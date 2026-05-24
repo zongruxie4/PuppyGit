@@ -1292,4 +1292,5 @@
 
     <string name="progress_notification_auto_dismiss">进度通知自动消除</string>
     <string name="progress_notification_auto_dismiss_desc">通知显示后将自动清除</string>
+    <string name="pull_force">拉取(强制)</string>
 </resources>

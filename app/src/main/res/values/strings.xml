@@ -1316,4 +1316,5 @@
 
     <string name="progress_notification_auto_dismiss">Notification Auto Dismiss</string>
     <string name="progress_notification_auto_dismiss_desc">Notifications will be dismissed automatically after being shown</string>
+    <string name="pull_force">Pull(Force)</string>
 </resources>

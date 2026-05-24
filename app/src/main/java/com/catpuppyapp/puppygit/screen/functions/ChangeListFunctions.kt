@@ -25,6 +25,7 @@ import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
 import com.github.git24j.core.Repository
+import com.github.git24j.core.Reset
 import com.github.git24j.core.Tree
 
 private const val TAG = "ChangeListFunctions"
@@ -826,6 +827,7 @@ object ChangeListFunctions {
         loadingText:MutableState<String>,
         bottomBarActDoneCallback:(String, RepoEntity)->Unit,
         changeListRequireRefreshFromParentPage:(RepoEntity) -> Unit,
+        force: Boolean = false,
     ) {
         try {
             //执行操作
@@ -836,11 +838,22 @@ object ChangeListFunctions {
                 requireShowToast = requireShowToast,
                 activityContext = activityContext,
                 loadingText = loadingText,
-                dbContainer = dbContainer
+                dbContainer = dbContainer,
             )
 
             if(!fetchSuccess) {
                 requireShowToast(activityContext.getString(R.string.fetch_failed))
+            }else if(force) {
+                // force pull, reset local branch to upstream
+                Repository.open(curRepo.fullSavePath).use { gitRepo ->
+                    val curBranch = Libgit2Helper.getRepoCurBranchShortRefSpec(gitRepo)
+                    val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, curBranch)
+                    val resetType = Reset.ResetT.HARD;
+                    val result = Libgit2Helper.resetToRevspec(gitRepo, upstream.remoteOid, resetType)
+                    if(result.hasError()) {
+                        throw result.exception ?: RuntimeException(result.msg)
+                    }
+                }
             }else {
 //                val mergeSuccess = doMerge(true, null, true)
                 val mergeSuccess = doMerge(
