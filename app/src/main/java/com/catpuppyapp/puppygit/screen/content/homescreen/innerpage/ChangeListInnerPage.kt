@@ -644,11 +644,75 @@ fun ChangeListInnerPage(
         }
     }
 
+
+    val forcePull_ShowDialog = rememberSaveable { mutableStateOf(false) }
     val initForcePullDialog = {
-        //TODO 12090621
-        // 执行操作：fetch并确保refspec包含+号（默认是包含的，但需要检查下确保万无一失）
-        // 然后执行hard reset to upstream就行了f
+        val curRepo = curRepoFromParentPage.value;
+        doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+            forcePull_ShowDialog.value = true
+        }
     }
+
+    if(forcePull_ShowDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.pull_force),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    MySelectionContainer {
+                        PaddingText(
+                            stringResource(R.string.force_pull_desc),
+                            color = MyStyleKt.TextColor.danger(),
+                            fontWeight = null, // 默认字体宽度
+                        )
+                    }
+                }
+            },
+            okTextColor = MyStyleKt.TextColor.danger(),
+            okBtnText = stringResource(R.string.pull),
+            onCancel = { forcePull_ShowDialog.value = false }
+        ) {
+            forcePull_ShowDialog.value = false
+
+            val curRepo = curRepoFromParentPage.value
+
+            doJobThenOffLoading(
+                loadingOn,  //注：这函数内会自动禁用顶栏按钮，无需手动 `enableActionFromParent.value=false`
+                loadingOff,
+                activityContext.getString(R.string.force_pulling)
+            ) {
+                doActWithLock(curRepo) {
+                    try {
+                        ChangeListFunctions.doPull(
+                            curRepo = curRepo,
+                            activityContext = activityContext,
+                            dbContainer = dbContainer,
+                            requireShowToast = requireShowToast,
+                            loadingText = loadingText,
+                            bottomBarActDoneCallback = bottomBarActDoneCallback,
+                            changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+                            trueMergeFalseRebase = !PrefUtil.getGlobalGitConfigPullWithRebase(AppModel.realAppContext),
+                            requireCloseBottomBar = true,
+                            force = true,
+                        )
+
+                    }catch (e:Exception){
+                        showErrAndSaveLog(
+                            logTag = TAG,
+                            logMsg = "Pull(Force) error: "+e.stackTraceToString(),
+                            showMsg = activityContext.getString(R.string.pull_force_failed)+": "+e.localizedMessage,
+                            showMsgMethod = requireShowToast,
+                            repoId = curRepo.id
+                        )
+                    }finally {
+                        changeListRequireRefreshFromParentPage(curRepo)
+                    }
+                }
+            }
+        }
+    }
+
+
 
     val forcePush_ShowDialog = rememberSaveable { mutableStateOf(false) }
     val forcePush_pushWithLease = rememberSaveable { mutableStateOf(false) }

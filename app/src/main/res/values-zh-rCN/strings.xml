@@ -1293,4 +1293,8 @@
     <string name="progress_notification_auto_dismiss">进度通知自动消除</string>
     <string name="progress_notification_auto_dismiss_desc">通知显示后将自动清除</string>
     <string name="pull_force">拉取(强制)</string>
+    <string name="force_pull_desc">将进行下载（fetch）然后硬重置（hard reset）本地分支到上游分支</string>
+    <string name="force_pulling">正在强制拉取…</string>
+    <string name="pull_force_success">拉取(强制) 成功</string>
+    <string name="pull_force_failed">拉取(强制) 失败</string>
 </resources>

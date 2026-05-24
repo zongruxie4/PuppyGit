@@ -831,7 +831,6 @@ object ChangeListFunctions {
     ) {
         try {
             //执行操作
-//            val fetchSuccess = doFetch(null)
             val fetchSuccess = doFetch(
                 remoteNameParam = null,
                 curRepoFromParentPage = curRepo,
@@ -848,12 +847,14 @@ object ChangeListFunctions {
                 Repository.open(curRepo.fullSavePath).use { gitRepo ->
                     val curBranch = Libgit2Helper.getRepoCurBranchShortRefSpec(gitRepo)
                     val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, curBranch)
-                    val resetType = Reset.ResetT.HARD;
+                    val resetType = Reset.ResetT.HARD
                     val result = Libgit2Helper.resetToRevspec(gitRepo, upstream.remoteOid, resetType)
                     if(result.hasError()) {
                         throw result.exception ?: RuntimeException(result.msg)
                     }
                 }
+
+                requireShowToast(activityContext.getString(R.string.pull_force_success))
             }else {
 //                val mergeSuccess = doMerge(true, null, true)
                 val mergeSuccess = doMerge(
@@ -884,8 +885,8 @@ object ChangeListFunctions {
 
             showErrAndSaveLog(
                 logTag = TAG,
-                logMsg = "doPull(trueMergeFalseRebase=$trueMergeFalseRebase) err: "+e.stackTraceToString(),
-                showMsg = activityContext.getString(if(trueMergeFalseRebase) R.string.pull_merge_failed else R.string.pull_rebase_failed)+": "+e.localizedMessage,
+                logMsg = "doPull(trueMergeFalseRebase=$trueMergeFalseRebase, force=$force) err: "+e.stackTraceToString(),
+                showMsg = activityContext.getString(if(force) R.string.pull_force_failed else if(trueMergeFalseRebase) R.string.pull_merge_failed else R.string.pull_rebase_failed)+": "+e.localizedMessage,
                 showMsgMethod = requireShowToast,
                 repoId = curRepo.id
             )

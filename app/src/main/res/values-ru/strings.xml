@@ -1314,4 +1314,8 @@
     <string name="progress_notification_auto_dismiss">Автоотклонение уведомления</string>
     <string name="progress_notification_auto_dismiss_desc">Уведомления будут автоматически закрываться после отображения</string>
     <string name="pull_force">Пул(Принудительно)</string>
+    <string name="force_pull_desc">Будет выполнен fetch, затем жесткий сброс (hard reset) локальной ветки на upstream</string>
+    <string name="force_pulling">Выполняется принудительный пул…</string>
+    <string name="pull_force_success">Пул(Принудительно) успешно завершен</string>
+    <string name="pull_force_failed">Пул(Принудительно) не удался</string>
 </resources>

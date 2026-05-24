@@ -2896,7 +2896,7 @@ object Libgit2Helper {
     //操作成功返回true，发生异常返回false
     //remoteList元素为 Pair(remoteName, credentialObj)
     //入参requireUnshallow如果为真，会执行unshallowfetch，如果为假，会判断仓库是否是shallow，如果是则取出其depth值，否则会fetch all(depth=0，fetch的默认depth)
-    // TODO 按理来说，如果是force fetch，应该确保refspec前有+号，不过，实际上仓库配置文件默认的refspec前都是有加号的，所以可以先不做判断
+    // TODO 加个force参数，若为true，确保refspec前有+号(无则添加)，不过，实际上仓库配置文件默认的refspec前都是有加号的，所以多数情况下无需指定 force fetch本身多数情况下的就是默认行为，除非用户手动改配置文件，删除+号
     fun fetchRemoteListForRepo(
         repo: Repository,
         remoteList:List<RemoteAndCredentials>,
