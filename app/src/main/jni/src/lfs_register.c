@@ -202,7 +202,7 @@ int register_android_git_lfs_filter(void)
  * 【全局公开注销接口】
  * 在 App 退出或不再需要 Git 服务时调用
  */
-void unregister_android_git_lfs_filter(void)
+int unregister_android_git_lfs_filter(void)
 {
-    git_filter_unregister("lfs");
+    return git_filter_unregister("lfs");
 }

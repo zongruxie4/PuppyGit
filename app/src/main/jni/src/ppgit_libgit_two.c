@@ -158,6 +158,10 @@ JNIEXPORT jint JNICALL J_MAKE_METHOD(LibgitTwo_jniLibgitTwoRegisterLfsFilter)(JN
     return (jint)register_android_git_lfs_filter();
 }
 
+JNIEXPORT jint JNICALL J_MAKE_METHOD(LibgitTwo_jniLibgitTwoUnregisterLfsFilter)(JNIEnv *env, jclass callerJavaClass, jstring lfsBinaryPath) {
+    return (jint)unregister_android_git_lfs_filter();
+}
+
 //用https时，openssl验证证书失败也直接放行，解决证书无效的方法，若有其他解决方案则可删
 int passCertCheck(git_cert *cert, int valid, const char *host, void *payload) {
 /* 返回值说明：0允许连接；小于0拒绝连接；大于0表示这个callback不做决策，遵循其他验证器的结果。
