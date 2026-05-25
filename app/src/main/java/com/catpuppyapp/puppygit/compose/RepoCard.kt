@@ -192,6 +192,7 @@ fun RepoCard(
                 Button(
                     onClick = {
                         LfsUtil.makeGitLfsBinExecutable()
+                        LfsUtil.test()
                         LfsUtil.runGitLfs(repoDto.fullSavePath)
                     }
                 ) {
