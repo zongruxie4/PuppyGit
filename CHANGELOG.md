@@ -1,5 +1,9 @@
 
 
+---
+next version - 20260526:
+- support force pull (issue #135)
+- upgrade libgit2 and openssl libs
 
 ---
 1.1.5.0v126 - 20260502:
