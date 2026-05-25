@@ -178,6 +178,7 @@ static void lfs_filter_free(git_filter *f)
 /**
  * 【全局公开注册接口】
  * 在你的安卓 JNI 项目初始化 Git 业务时调用（必须在 git_libgit2_init() 之后）
+ * @return 0 on successful registry, error code <0 on failure
  */
 int register_android_git_lfs_filter(void)
 {
@@ -193,7 +194,7 @@ int register_android_git_lfs_filter(void)
     filter->cleanup    = lfs_filter_cleanup;
     filter->shutdown   = lfs_filter_free;
 
-    return git_filter_register("lfs", filter, 200);
+    return git_filter_register("lfs", filter, GIT_FILTER_DRIVER_PRIORITY);
 }
 
 /**

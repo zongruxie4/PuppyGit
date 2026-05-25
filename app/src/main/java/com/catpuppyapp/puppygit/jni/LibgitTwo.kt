@@ -10,6 +10,7 @@ object LibgitTwo {
 //    private val jniCRepoPtr: Long = 0
 
     external fun jniLibgitTwoInit()
+    external fun jniLibgitTwoRegisterLfsFilter(): Int
     external fun jniClone(url: String?, local_path: String?, jniCloneOptionsPtr: Long, allowInsecure: Boolean): Long
 
     /**
@@ -113,4 +114,10 @@ object LibgitTwo {
         return ptrs ?: arrayOf()
     }
 
+    fun registerLfsFilter() {
+        val errno = jniLibgitTwoRegisterLfsFilter()
+        if(errno < 0) {
+            throw RuntimeException("register lfs failed, errno: $errno")
+        }
+    }
 }
