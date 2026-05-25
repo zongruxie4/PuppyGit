@@ -55,11 +55,8 @@ pc上lfs相关配置：
 
 
 编译安卓版本的[git lfs](https://git-lfs.com/)，会得到一个可执行文件。
-编译命令：
-$env:GOOS="android"; $env:GOARCH="arm64"; $env:CGO_ENABLED="0"; go build -v -ldflags="-s -w" -o git-lfs-android-arm64
-$env:GOOS="android"; $env:GOARCH="arm"; $env:CGO_ENABLED="0"; go build -v -ldflags="-s -w" -o git-lfs-android-arm
-# 这个是x8664
-$env:GOOS="android"; $env:GOARCH="amd64"; $env:CGO_ENABLED="0"; go build -v -ldflags="-s -w" -o git-lfs-android-x86_64
+编译命令：去dev/scrpits找build_gitlfs.ps1，放到gitlfs源码根目录，执行即可
+
 编译出来大概 14M ，打包进app有点大，可在关于页面加个下载链接，下载到app的内部目录，必须内部目录不然可能无法加执行权限，下载后验证hash，加执行权限，然后就能用了，若启用lfs执行，则在每次启动app时注册lg2的filter。
 只注册filter似乎不够，注册过滤器后，本地的提交和检出会自动处理，但推送lfs objs可能需要手动处理（未验证），若需手动处理：
 手动模拟 pre-push 钩子： 在调用 libgit2 的推送 API 之前，你必须在宿主程序中手动调用一次 git-lfs pre-push <remote> <url>，或者自己写一段网络代码把本地缓存的大文件上传到 LFS 接口。
