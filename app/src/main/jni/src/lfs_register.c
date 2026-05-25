@@ -28,8 +28,14 @@ typedef struct {
 /**
  * 针对安卓优化的外部进程调用核心：纯 C 内存手工追加，零依赖 libgit2 的 Buffer 函数
  */
-static int execute_lfs_command(const char *action, const char *filename, git_buf *to, const char *from_bytes, size_t from_len)
-{
+static int execute_lfs_command(
+        const char *action,
+        const char *filename,
+        git_buf *to,
+        const char *from_bytes,
+        size_t from_len,
+        const char *repo_path
+) {
     int in_pipe[2];  int out_pipe[2];
     if (pipe(in_pipe) < 0 || pipe(out_pipe) < 0) return -1;
 
@@ -44,6 +50,13 @@ static int execute_lfs_command(const char *action, const char *filename, git_buf
         dup2(in_pipe[0], STDIN_FILENO);
         dup2(out_pipe[1], STDOUT_FILENO);
         close(in_pipe[1]); close(out_pipe[0]);
+
+        // =========================================================================
+        // 【动态工作目录切换】如果成功拿到仓库路径，就在 execv 之前切过去
+        // =========================================================================
+        if (repo_path && chdir(repo_path) < 0) {
+            exit(126);
+        }
 
         char *args[] = {(char *)G_LFS_BINARY_PATH, (char *)action, "--", (char *)filename, NULL};
         execv(G_LFS_BINARY_PATH, args);
@@ -121,13 +134,19 @@ static int lfs_filter_apply(
     const char *filename = (const char *)*payload;
     git_filter_mode_t mode = git_filter_source_mode(source);
 
-    // 通过强转我们的镜像，安全拿到输入端的纯 char* 和长度
+    // =========================================================================
+    // 【动态获取仓库路径】通过 source 拿到当前正在操作的 repo，再拿到工作区绝对路径
+    // =========================================================================
+    git_repository *repo = git_filter_source_repo(source);
+    const char *repo_workdir = git_repository_workdir(repo);
+    // 注意：repo_workdir 拿到的路径通常自带尾部斜杠 '/'，例如 "/sdcard/my_repo/"
+
     const local_git_buf_mirror *from_mirror = (const local_git_buf_mirror *)from;
-    const char *raw_input_bytes = from_mirror->ptr;
-    size_t raw_input_len        = from_mirror->size;
 
     const char *action = (mode == GIT_FILTER_SMUDGE) ? "smudge" : "clean";
-    return execute_lfs_command(action, filename, to, raw_input_bytes, raw_input_len);
+
+    // 把提取出来的 repo_workdir 作为一个新参数传给执行命令的函数
+    return execute_lfs_command(action, filename, to, from_mirror->ptr, from_mirror->size, repo_workdir);
 }
 
 /**
