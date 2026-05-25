@@ -6,9 +6,10 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 
-// 引入标准的公开 libgit2 头文件
 #include "git2.h"
 #include "git2/sys/filter.h"
+
+
 
 // =========================================================================
 // 【配置项】请在这里填入你在安卓系统上的 git-lfs 可执行文件的真实绝对路径
@@ -37,12 +38,20 @@ static int execute_lfs_command(
         size_t from_len,
         const char *repo_path
 ) {
-    int in_pipe[2];  int out_pipe[2];
-    if (pipe(in_pipe) < 0 || pipe(out_pipe) < 0) return -1;
+    __android_log_print(ANDROID_LOG_DEBUG, "lfs_register", "execute_lfs_command: begin");
+
+    int in_pipe[2]; int out_pipe[2]; int err_pipe[2];
+    if (pipe(in_pipe) < 0 || pipe(out_pipe) < 0 || pipe(err_pipe) < 0) {
+        __android_log_print(ANDROID_LOG_DEBUG, "lfs_register", "execute_lfs_command: pipe failed, repoPath=%s", repo_path ? repo_path : "NULL");
+        return -1;
+    }
 
     pid_t pid = fork();
     if (pid < 0) {
-        close(in_pipe[0]); close(in_pipe[1]); close(out_pipe[0]); close(out_pipe[1]);
+        close(in_pipe[0]); close(in_pipe[1]);
+        close(out_pipe[0]); close(out_pipe[1]);
+        close(err_pipe[0]); close(err_pipe[1]);
+        __android_log_print(ANDROID_LOG_DEBUG, "lfs_register", "execute_lfs_command: fork failed, repoPath=%s", repo_path ? repo_path : "NULL");
         return -1;
     }
 
@@ -50,32 +59,35 @@ static int execute_lfs_command(
         // ------ 子进程逻辑 ------
         dup2(in_pipe[0], STDIN_FILENO);
         dup2(out_pipe[1], STDOUT_FILENO);
-        close(in_pipe[1]); close(out_pipe[0]);
+        dup2(err_pipe[1], STDERR_FILENO); // 重定向标准错误到错误管道
 
-        // =========================================================================
-        // 【动态工作目录切换】如果成功拿到仓库路径，就在 execv 之前切过去
-        // =========================================================================
+        close(in_pipe[0]); close(in_pipe[1]);
+        close(out_pipe[0]); close(out_pipe[1]);
+        close(err_pipe[0]); close(err_pipe[1]);
+
         if (repo_path && chdir(repo_path) < 0) {
             exit(126);
         }
 
         char *args[] = {(char *)G_LFS_BINARY_PATH, (char *)action, "--", (char *)filename, NULL};
         execv(G_LFS_BINARY_PATH, args);
+        __android_log_print(ANDROID_LOG_ERROR, "git-lfs-stderr", "G_LFS_BINARY_PATH=%s", G_LFS_BINARY_PATH);
+
         exit(127);
     } else {
         // ------ 父进程逻辑 ------
-        close(in_pipe[0]); close(out_pipe[1]);
+        close(in_pipe[0]); close(out_pipe[1]); close(err_pipe[1]); // 关闭父进程不需要的端口
 
         // 1. 将数据写入 git-lfs 进程
         if (from_bytes && from_len > 0) {
             if (write(in_pipe[1], from_bytes, from_len) < 0) {
-                close(in_pipe[1]); close(out_pipe[0]);
+                close(in_pipe[1]); close(out_pipe[0]); close(err_pipe[0]);
                 return -1;
             }
         }
-        close(in_pipe[1]); // 写完立刻关闭，向 git-lfs 发送 EOF
+        close(in_pipe[1]); // 写完立刻发送 EOF
 
-        // 2. 用我们自己的纯 C 变量接住 git-lfs 的标准输出
+        // 2. 接收 git-lfs 的标准输出 (stdout)
         char *out_mem = NULL;
         size_t out_size = 0;
         size_t out_allocated = 0;
@@ -90,7 +102,7 @@ static int execute_lfs_command(
                 char *new_ptr = realloc(out_mem, new_alloc);
                 if (!new_ptr) {
                     free(out_mem);
-                    close(out_pipe[0]);
+                    close(out_pipe[0]); close(err_pipe[0]);
                     return -1;
                 }
                 out_mem = new_ptr;
@@ -101,20 +113,30 @@ static int execute_lfs_command(
         }
         close(out_pipe[0]);
 
+        // 3. 接收并打印 git-lfs 的错误输出 (stderr)
+        char err_buffer[1024];
+        ssize_t err_bytes_read;
+        while ((err_bytes_read = read(err_pipe[0], err_buffer, sizeof(err_buffer) - 1)) > 0) {
+            err_buffer[err_bytes_read] = '\0';
+            __android_log_print(ANDROID_LOG_ERROR, "git-lfs-stderr", "[LFS Output]: %s", err_buffer);
+        }
+        close(err_pipe[0]);
+
         int status;
         waitpid(pid, &status, 0);
 
         if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-            // =========================================================================
-            // 通过强转成我们自己的镜像结构体指针，直接给隐藏的 to 变量赋值
-            // 绕过所有 to->asize 不存在、git_buf_set 找不到的阴间报错
-            // =========================================================================
             local_git_buf_mirror *mirror = (local_git_buf_mirror *)to;
             mirror->ptr = out_mem;
             mirror->asize = out_allocated;
             mirror->size = out_size;
             return 0;
         } else {
+            if (WIFEXITED(status)) {
+                __android_log_print(ANDROID_LOG_ERROR, "lfs_register", "execute_lfs_command: exit code = %d, repoPath=%s", WEXITSTATUS(status), repo_path ? repo_path : "NULL");
+            } else if (WIFSIGNALED(status)) {
+                __android_log_print(ANDROID_LOG_ERROR, "lfs_register", "execute_lfs_command: killed by signal = %d, repoPath=%s", WTERMSIG(status), repo_path ? repo_path : "NULL");
+            }
             free(out_mem);
             return -1;
         }

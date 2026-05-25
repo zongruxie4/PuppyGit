@@ -245,7 +245,6 @@ int cred_acquire_cb(git_credential **out, const char *url, const char *username_
 }
 
 JNIEXPORT void JNICALL J_MAKE_METHOD(LibgitTwo_jniSetCredentialCbTest)(JNIEnv *env, jclass callerJavaClass, jlong remoteCallbacks) {
-    ALOGD("LibgitTwo_jniSetCredentialCbTest::");
     globalEnv = env;
     git_remote_callbacks *ptr = (git_remote_callbacks *)remoteCallbacks;
     ptr->credentials = cred_acquire_cb;
