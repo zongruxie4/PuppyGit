@@ -1644,4 +1644,17 @@ object FsUtils {
         ActivityUtil.startActivitySafe(activityContext.findActivity(), intent)
     }
 
+    fun getInnerFilesBinDir(): File {
+        val filesDir = getInnerDataFilesDirOrThrowException(AppModel.realAppContext)
+        val binDir = File(filesDir.canonicalPath+"/bin")
+        if(!binDir.exists()) {
+            binDir.mkdirs()
+        }
+        return binDir
+    }
+
+    fun getLfsBinPath(): String {
+        return getInnerFilesBinDir().canonicalPath + "/git-lfs"
+    }
+
 }

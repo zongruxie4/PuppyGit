@@ -65,6 +65,7 @@ import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dev.DevItem
 import com.catpuppyapp.puppygit.dev.lfsTestPassed
+import com.catpuppyapp.puppygit.jni.LibgitTwo
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -74,6 +75,7 @@ import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.EditCache
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.HashUtil
 import com.catpuppyapp.puppygit.utils.LanguageUtil
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
@@ -1345,6 +1347,17 @@ fun SettingsInnerPage(
                     //save
                     lfsEnabled.value = newValue
                     PrefUtil.setGlobalGitConfigLfsEnabled(AppModel.realAppContext, newValue)
+
+                    try {
+                        if(newValue) {
+                            LibgitTwo.registerLfsFilter(FsUtils.getLfsBinPath())
+                        }else {
+                            LibgitTwo.unregisterLfsFilter()
+                        }
+                    }catch (e: Exception) {
+                        Msg.requireShowLongDuration("err: $e")
+                        MyLog.e(TAG, e.printStackTrace())
+                    }
                 }
             )
         }
