@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
-#include "lfs_register.c"
+#include "lfs_register.h"
 
 #define LOG_TAG "JNI_libgit_two"
 
