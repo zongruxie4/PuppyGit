@@ -1290,4 +1290,5 @@
     <string name="force_pulling">জোরপূর্বক পুল (Force Pull) করা হচ্ছে…</string>
     <string name="pull_force_success">পুল(জোরপূর্বক) সফল হয়েছে</string>
     <string name="pull_force_failed">পুল(জোরপূর্বক) ব্যর্থ হয়েছে</string>
+    <string name="lfs">LFS</string>
 </resources>

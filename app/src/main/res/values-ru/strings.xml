@@ -1318,4 +1318,5 @@
     <string name="force_pulling">Выполняется принудительный пул…</string>
     <string name="pull_force_success">Пул(Принудительно) успешно завершен</string>
     <string name="pull_force_failed">Пул(Принудительно) не удался</string>
+    <string name="lfs">LFS</string>
 </resources>

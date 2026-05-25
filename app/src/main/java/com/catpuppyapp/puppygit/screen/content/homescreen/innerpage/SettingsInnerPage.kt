@@ -64,6 +64,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StrCons
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dev.DevItem
+import com.catpuppyapp.puppygit.dev.lfsTestPassed
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -157,6 +158,7 @@ fun SettingsInnerPage(
     val enableSnapshot_Content = rememberSaveable { mutableStateOf(settingsState.value.editor.enableContentSnapshot) }
     val diff_CreateSnapShotForOriginFileBeforeSave = rememberSaveable { mutableStateOf(settingsState.value.diff.createSnapShotForOriginFileBeforeSave) }
     val pullWithRebase = rememberSaveable { mutableStateOf(PrefUtil.getGlobalGitConfigPullWithRebase(AppModel.realAppContext)) }
+    val lfsEnabled = rememberSaveable { mutableStateOf(PrefUtil.getGlobalGitConfigLfsEnabled(AppModel.realAppContext)) }
 
 
     val fileAssociationList = mutableCustomStateListOf(stateKeyTag, "fileAssociationList") { settingsState.value.editor.fileAssociationList }
@@ -1325,6 +1327,27 @@ fun SettingsInnerPage(
                 PrefUtil.setGlobalGitConfigPullWithRebase(AppModel.realAppContext, newValue)
             }
         )
+
+        if(lfsTestPassed || AppModel.devModeOn) {
+            SettingsContentSwitcher(
+                left = {
+                    Text(stringResource(R.string.lfs), fontSize = itemFontSize)
+                },
+                right = {
+                    Switch(
+                        checked = lfsEnabled.value,
+                        onCheckedChange = null
+                    )
+                },
+                onClick = {
+                    val newValue = !lfsEnabled.value
+
+                    //save
+                    lfsEnabled.value = newValue
+                    PrefUtil.setGlobalGitConfigLfsEnabled(AppModel.realAppContext, newValue)
+                }
+            )
+        }
 
 
 

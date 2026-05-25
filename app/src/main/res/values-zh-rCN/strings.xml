@@ -1297,4 +1297,5 @@
     <string name="force_pulling">正在强制拉取…</string>
     <string name="pull_force_success">拉取(强制) 成功</string>
     <string name="pull_force_failed">拉取(强制) 失败</string>
+    <string name="lfs">LFS</string>
 </resources>
