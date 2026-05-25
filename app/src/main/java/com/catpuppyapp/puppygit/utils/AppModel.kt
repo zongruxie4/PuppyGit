@@ -23,6 +23,7 @@ import com.catpuppyapp.puppygit.data.AppDataContainer
 import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
+import com.catpuppyapp.puppygit.dev.lfsTestPassed
 import com.catpuppyapp.puppygit.jni.LibLoader
 import com.catpuppyapp.puppygit.jni.LibgitTwo
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
@@ -418,7 +419,7 @@ object AppModel {
         }
 
         // init lfs
-        if(PrefUtil.getGlobalGitConfigLfsEnabled(realAppContext)) {
+        if(lfsTestPassed && PrefUtil.getGlobalGitConfigLfsEnabled(realAppContext)) {
             try {
                 LibgitTwo.registerLfsFilter(FsUtils.getLfsBinPath())
             }catch (e: Exception) {

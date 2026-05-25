@@ -1330,7 +1330,7 @@ fun SettingsInnerPage(
             }
         )
 
-        if(lfsTestPassed || AppModel.devModeOn) {
+        if(lfsTestPassed) {
             SettingsContentSwitcher(
                 left = {
                     Text(stringResource(R.string.lfs), fontSize = itemFontSize)

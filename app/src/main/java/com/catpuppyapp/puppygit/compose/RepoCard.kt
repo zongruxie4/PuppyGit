@@ -188,7 +188,8 @@ fun RepoCard(
             MyHorizontalDivider()
 
             // 若测试通过就不要显示这个按钮了
-            if(!lfsTestPassed) {
+            if(lfsTestPassed) {
+                // 测试的按钮，以后真测试通过的时候把这个删除
                 Button(
                     onClick = {
                         LfsUtil.makeGitLfsBinExecutable()
@@ -196,7 +197,7 @@ fun RepoCard(
                         LfsUtil.runGitLfs(repoDto.fullSavePath)
                     }
                 ) {
-                    Text("LFS GO")
+                    Text("LFS TEST")
                 }
             }
 
