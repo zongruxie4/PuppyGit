@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 
 // 引入标准的公开 libgit2 头文件
 #include "git2.h"
@@ -161,6 +162,7 @@ static void lfs_filter_free(git_filter *f)
  */
 int register_android_git_lfs_filter(void)
 {
+    chmod(G_LFS_BINARY_PATH, 0755);
     git_filter *filter = calloc(1, sizeof(git_filter));
     if (!filter) return -1;
 
