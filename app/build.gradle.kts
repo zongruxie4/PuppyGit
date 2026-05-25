@@ -271,7 +271,7 @@ dependencies {
 
 
     //对应组件的实际版本号，参见：https://developer.android.com/develop/ui/compose/bom/bom-mapping
-    val composeBom = platform("androidx.compose:compose-bom:2026.04.01")
+    val composeBom = platform("androidx.compose:compose-bom:2026.05.00")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     implementation("androidx.core:core-ktx:1.18.0")
