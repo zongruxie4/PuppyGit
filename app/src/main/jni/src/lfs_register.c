@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <android/log.h>
 
 #include "git2.h"
 #include "git2/sys/filter.h"
