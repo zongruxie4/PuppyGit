@@ -13,7 +13,8 @@
 // =========================================================================
 // 【配置项】请在这里填入你在安卓系统上的 git-lfs 可执行文件的真实绝对路径
 // =========================================================================
-static const char *G_LFS_BINARY_PATH = "/data/data/com.your.app/files/bin/git-lfs";
+// 默认值，初始化lfs过滤器时会修改
+static char *G_LFS_BINARY_PATH = "/data/data/com.catpuppyapp.puppygit.play.pro/files/bin/git-lfs";
 
 // =========================================================================
 // 【硬核破解】既然 libgit2 把真实的公开 git_buf 变成了不透明的隐藏结构，

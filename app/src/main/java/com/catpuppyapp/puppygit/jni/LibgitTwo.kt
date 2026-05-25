@@ -10,7 +10,7 @@ object LibgitTwo {
 //    private val jniCRepoPtr: Long = 0
 
     external fun jniLibgitTwoInit()
-    external fun jniLibgitTwoRegisterLfsFilter(): Int
+    external fun jniLibgitTwoRegisterLfsFilter(lfsBinaryPath: String): Int
     external fun jniClone(url: String?, local_path: String?, jniCloneOptionsPtr: Long, allowInsecure: Boolean): Long
 
     /**
@@ -114,8 +114,10 @@ object LibgitTwo {
         return ptrs ?: arrayOf()
     }
 
-    fun registerLfsFilter() {
-        val errno = jniLibgitTwoRegisterLfsFilter()
+    fun registerLfsFilter(lfsBinaryPath: String) {
+        val errno = jniLibgitTwoRegisterLfsFilter(lfsBinaryPath)
+        // 这个值应该不会太大，而且不是指针，以及最终调用的libgit2 函数 git_filter_register 注释里写的 <0 则有错，所以就用小于0判断了
+        // 如果是指针的话，必须用等于0判断，因为c里的unsigned int转换到java的int，会变成有符号，若用小于0判断，即使指针有效，java这也会误判当作无效
         if(errno < 0) {
             throw RuntimeException("register lfs failed, errno: $errno")
         }
