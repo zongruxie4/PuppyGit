@@ -1355,8 +1355,8 @@ fun SettingsInnerPage(
                             LibgitTwo.unregisterLfsFilter()
                         }
                     }catch (e: Exception) {
-                        Msg.requireShowLongDuration("err: $e")
-                        MyLog.e(TAG, e.printStackTrace())
+                        Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                        MyLog.e(TAG, "register or unregister lfs filter err: register=$newValue, err:\n${e.stackTraceToString()}")
                     }
                 }
             )

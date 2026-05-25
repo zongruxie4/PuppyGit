@@ -24,6 +24,7 @@ import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.jni.LibLoader
+import com.catpuppyapp.puppygit.jni.LibgitTwo
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
 import com.catpuppyapp.puppygit.play.pro.R
@@ -416,6 +417,15 @@ object AppModel {
             false
         }
 
+        // init lfs
+        if(PrefUtil.getGlobalGitConfigLfsEnabled(realAppContext)) {
+            try {
+                LibgitTwo.registerLfsFilter(FsUtils.getLfsBinPath())
+            }catch (e: Exception) {
+                Msg.requireShowLongDuration("register lfs filter failed: ${e.localizedMessage}")
+                MyLog.e(TAG, "register lfs filter failed: ${e.stackTraceToString()}")
+            }
+        }
     }
 
     fun updateExitApp(
