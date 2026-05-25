@@ -5,6 +5,15 @@ import kotlin.concurrent.thread
 object LfsUtil {
     private const val TAG = "LfsUtil"
 
+    fun makeGitLfsBinExecutable() {
+        val file = File(FsUtils.getLfsBinPath())
+        MyLog.d(TAG, "file can execute: ${file.canExecute()}")
+        if(!file.canExecute()) {
+            val chmodProcess = Runtime.getRuntime().exec(arrayOf("chmod", "0755", file.canonicalPath))
+            chmodProcess.waitFor()
+        }
+    }
+
     fun runGitLfs(repoPath: String) {
         try {
             val process = ProcessBuilder(FsUtils.getLfsBinPath(), "fetch")
@@ -32,7 +41,7 @@ object LfsUtil {
 
             // 3. 主线程同步等待子进程结束
             val exitCode = process.waitFor()
-            MyLog.d(TAG, "Git-LFS 执行完毕，退出码: $exitCode")
+            MyLog.d(TAG, "Git-LFS finished, exitCode: $exitCode")
 
         } catch (e: Exception) {
             throw e

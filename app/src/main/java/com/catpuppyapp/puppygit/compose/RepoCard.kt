@@ -26,6 +26,7 @@ import androidx.compose.material.icons.outlined.Dangerous
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.dev.lfsTestPassed
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.goToCloneScreen
 import com.catpuppyapp.puppygit.screen.functions.goToCommitListScreen
@@ -56,6 +58,7 @@ import com.catpuppyapp.puppygit.screen.shared.CommitListFrom
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.LfsUtil
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -183,6 +186,18 @@ fun RepoCard(
             )
 
             MyHorizontalDivider()
+
+            // 若测试通过就不要显示这个按钮了
+            if(!lfsTestPassed) {
+                Button(
+                    onClick = {
+                        LfsUtil.makeGitLfsBinExecutable()
+                        LfsUtil.runGitLfs(repoDto.fullSavePath)
+                    }
+                ) {
+                    Text("LFS GO")
+                }
+            }
 
             //以下开始区分 正常仓库 和 出错的仓库(一般是克隆出错)
             if (Libgit2Helper.isRepoStatusNoErr(repoDto)) {
