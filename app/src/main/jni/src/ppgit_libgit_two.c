@@ -158,7 +158,7 @@ JNIEXPORT jint JNICALL J_MAKE_METHOD(LibgitTwo_jniLibgitTwoRegisterLfsFilter)(JN
     return (jint)register_android_git_lfs_filter();
 }
 
-JNIEXPORT jint JNICALL J_MAKE_METHOD(LibgitTwo_jniLibgitTwoUnregisterLfsFilter)(JNIEnv *env, jclass callerJavaClass, jstring lfsBinaryPath) {
+JNIEXPORT jint JNICALL J_MAKE_METHOD(LibgitTwo_jniLibgitTwoUnregisterLfsFilter)(JNIEnv *env, jclass callerJavaClass) {
     return (jint)unregister_android_git_lfs_filter();
 }
 
