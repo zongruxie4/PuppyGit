@@ -9,7 +9,7 @@ object LfsUtil {
         val file = File(FsUtils.getLfsBinPath())
         MyLog.d(TAG, "file can execute: ${file.canExecute()}")
         if(!file.canExecute()) {
-            val chmodProcess = Runtime.getRuntime().exec(arrayOf("chmod", "0755", file.canonicalPath))
+            val chmodProcess = Runtime.getRuntime().exec(arrayOf("chmod", "+x", file.canonicalPath))
             chmodProcess.waitFor()
         }
     }

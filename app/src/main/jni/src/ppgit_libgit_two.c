@@ -775,7 +775,7 @@ static void lfs_filter_free(git_filter *f)
  */
 int register_android_git_lfs_filter(void)
 {
-    chmod(G_LFS_BINARY_PATH, 0755);
+//    chmod(G_LFS_BINARY_PATH, 0755);
     git_filter *filter = calloc(1, sizeof(git_filter));
     if (!filter) return -1;
 

@@ -192,9 +192,9 @@ fun RepoCard(
                 // 测试的按钮，以后真测试通过的时候把这个删除
                 Button(
                     onClick = {
-                        LfsUtil.makeGitLfsBinExecutable()
+//                        LfsUtil.makeGitLfsBinExecutable()
                         LfsUtil.test()
-                        LfsUtil.runGitLfs(repoDto.fullSavePath)
+//                        LfsUtil.runGitLfs(repoDto.fullSavePath)
                     }
                 ) {
                     Text("LFS TEST")
