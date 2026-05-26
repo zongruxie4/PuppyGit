@@ -584,13 +584,16 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
 }
 
 
-// LFS REGISTER: BEGIN
-static char *G_LFS_BINARY_PATH = "/data/data/com.catpuppyapp.puppygit.play.pro/files/bin/git-lfs";
 
-// =========================================================================
-// 【硬核破解】既然 libgit2 把真实的公开 git_buf 变成了不透明的隐藏结构，
-// 我们直接在本地声明一个完全对齐的镜像结构体，用来进行无视版本的内存强灌。
-// =========================================================================
+// ===================== LFS REGISTER: BEGIN ===================
+
+// 调用时再设置此值
+// 注：不要把可执行文件放在 "/data/data/app包名" 下，
+// 这个目录app能写，不能执行，若想携带2进制文件，应该放到app的jni .so lib目录，
+// 然后开启 useLegacyPackaging，然后执行对应路径下的文件
+static char *G_LFS_BINARY_PATH = "";
+
+// 用来对标libgit2的git buf，AI给的垃圾代码，我记得libgit2的gitbuf似乎被git_str取代了？还是怎么回事，总之，这个先凑合用，以后再说
 typedef struct {
     char   *ptr;
     size_t asize;
@@ -809,4 +812,5 @@ JNIEXPORT jint JNICALL J_MAKE_METHOD(LibgitTwo_jniLibgitTwoUnregisterLfsFilter)(
     return (jint)unregister_android_git_lfs_filter();
 }
 
-// LFS REGISTER: END
+// ===================== LFS REGISTER: END ===================
+
