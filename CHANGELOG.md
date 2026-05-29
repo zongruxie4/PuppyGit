@@ -1,9 +1,14 @@
 
 
 ---
-next version - 20260526:
+1.1.5.1v127 - 20260526:
 - support force pull (issue #135)
 - upgrade libgit2 and openssl libs
+
+
+
+- 支持强制拉取 (issue #135)
+- 升级 libgit2 和 openssl 依赖库
 
 ---
 1.1.5.0v126 - 20260502:
