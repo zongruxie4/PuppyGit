@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       # with:
           # submodules: true
           # repository: catpuppyapp/PuppyGit
@@ -22,7 +22,7 @@ jobs:
 
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'  # 设置 JDK 版本
           distribution: 'temurin'  # 指定 JDK 发行版（例如 'adopt', 'zulu', 'temurin', 'oracle' 等）
@@ -60,7 +60,7 @@ jobs:
         run: ls -R $GITHUB_WORKSPACE/app/src/main/jniLibs
              
       - name: Upload C Libs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: c_libs
           path: ${{ github.workspace }}/app/src/main/jniLibs/
@@ -74,7 +74,7 @@ jobs:
           ./gradlew assembleRelease -q
 
       - name: Upload Release APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-release-unsigned.apk
           path: ${{ github.workspace }}/app/build/outputs/apk/release/app-release-unsigned.apk
@@ -88,7 +88,7 @@ jobs:
           ./gradlew assembleDebug -q
 
       - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-debug-unsigned.apk
           path: ${{ github.workspace }}/app/build/outputs/apk/debug/app-debug.apk
