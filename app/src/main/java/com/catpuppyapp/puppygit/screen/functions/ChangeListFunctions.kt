@@ -22,6 +22,7 @@ import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getSecFromTime
+import com.catpuppyapp.puppygit.utils.pref.PrefUtil
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
 import com.github.git24j.core.Repository
@@ -519,7 +520,7 @@ object ChangeListFunctions {
         dbContainer: AppContainer,
         forcePush_pushWithLease: Boolean = false,
         forcePush_expectedRefspecForLease:String = "",
-
+        commitOnPush: Boolean = PrefUtil.getGlobalGitConfigCommitOnPush(AppModel.realAppContext),
     ) : Boolean {
         try {
 //            MyLog.d(TAG, "#doPush: start")
@@ -555,9 +556,57 @@ object ChangeListFunctions {
 
                 }
 
+                // 执行到这里，必定有上游
+                // 检查是否需要先提交
+                if(commitOnPush) {
+                    val settings = SettingsUtil.getSettingsSnapshot()
+
+                    val (username, email) = Libgit2Helper.getGitUsernameAndEmail(repo)
+
+                    if (username == null || username.isBlank() || email == null || email.isBlank()) {
+                        throw RuntimeException("push err(from changelist): auto commit err: username or email invalid")
+                    } else {
+                        //检查是否存在冲突，如果存在，将不会创建提交
+                        if (Libgit2Helper.hasConflictItemInRepo(repo)) {
+                            throw RuntimeException("push err(from changelist): auto commit enabled but have conflicts, please resolve conflicts first")
+                        } else {
+                            loadingText.value = activityContext.getString(R.string.committing)
+
+                            // 有username 和 email，且无冲突
+
+                            // stage worktree changes
+                            Libgit2Helper.stageAll(repo, curRepoFromParentPage.id)
+
+
+                            //如果index不为空，则创建提交
+                            if (!Libgit2Helper.indexIsEmpty(repo)) {
+                                val ret = Libgit2Helper.createCommit(
+                                    repo = repo,
+                                    msg = "",  // empty to auto generate
+                                    cmtMsgPrefix = "",  // prefix for auto generated msg
+                                    username = username,
+                                    email = email,
+                                    indexItemList = null,
+                                    amend = false,
+                                    overwriteAuthorWhenAmend = false,
+                                    settings = settings,
+                                    cleanRepoStateIfSuccess = true,
+                                )
+
+                                if (ret.hasError()) {
+                                    throw RuntimeException("commit on push error(from changelist): ${ret.msg}")
+                                } else if(ret.data != null){
+                                    //更新上游本地oid为最新值
+                                    upstream.localOid = ret.data!!.toString()
+                                }
+                            }
+                        }
+                    }
+                }
+
                 loadingText.value = activityContext.getString(if(force) R.string.force_pushing else R.string.pushing)
 
-                //执行到这里，必定有上游，push
+                // push
                 val credential = Libgit2Helper.getRemoteCredential(
                     dbContainer.remoteRepository,
                     dbContainer.credentialRepository,

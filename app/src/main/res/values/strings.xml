@@ -1322,4 +1322,5 @@
     <string name="pull_force_success">Pull(Force) Success</string>
     <string name="pull_force_failed">Pull(Force) Failed</string>
     <string name="lfs">LFS</string>
+    <string name="commit_on_push">Commit on Push</string>
 </resources>

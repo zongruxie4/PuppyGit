@@ -2492,7 +2492,7 @@ object Libgit2Helper {
      */
     fun createCommit(
         repo: Repository,
-        msg: String,
+        msg: String,  // empty to auto generate
         username: String,
         email: String,
         branchFullRefName:String="",
@@ -2504,7 +2504,7 @@ object Libgit2Helper {
         settings: AppSettings,
         // 若非空，自动生成的消息，会添加此前缀
         // prefix for auto generated commit msg
-        cmtMsgPrefix: String = "",
+        cmtMsgPrefix: String = "",  // prefix for auto generated msg
     ):Ret<Oid?> {
         val funName = "createCommit"
 

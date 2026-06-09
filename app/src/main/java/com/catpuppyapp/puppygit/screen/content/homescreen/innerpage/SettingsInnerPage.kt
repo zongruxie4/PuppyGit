@@ -160,6 +160,7 @@ fun SettingsInnerPage(
     val enableSnapshot_Content = rememberSaveable { mutableStateOf(settingsState.value.editor.enableContentSnapshot) }
     val diff_CreateSnapShotForOriginFileBeforeSave = rememberSaveable { mutableStateOf(settingsState.value.diff.createSnapShotForOriginFileBeforeSave) }
     val pullWithRebase = rememberSaveable { mutableStateOf(PrefUtil.getGlobalGitConfigPullWithRebase(AppModel.realAppContext)) }
+    val commitOnPush = rememberSaveable { mutableStateOf(PrefUtil.getGlobalGitConfigCommitOnPush(AppModel.realAppContext)) }
     val lfsEnabled = rememberSaveable { mutableStateOf(PrefUtil.getGlobalGitConfigLfsEnabled(AppModel.realAppContext)) }
 
 
@@ -1327,6 +1328,25 @@ fun SettingsInnerPage(
                 //save
                 pullWithRebase.value = newValue
                 PrefUtil.setGlobalGitConfigPullWithRebase(AppModel.realAppContext, newValue)
+            }
+        )
+
+        SettingsContentSwitcher(
+            left = {
+                Text(stringResource(R.string.commit_on_push), fontSize = itemFontSize)
+            },
+            right = {
+                Switch(
+                    checked = commitOnPush.value,
+                    onCheckedChange = null
+                )
+            },
+            onClick = {
+                val newValue = !commitOnPush.value
+
+                //save
+                commitOnPush.value = newValue
+                PrefUtil.setGlobalGitConfigCommitOnPush(AppModel.realAppContext, newValue)
             }
         )
 

@@ -14,7 +14,7 @@
 4. if the host set to 0.0.0.0 will allow any ip of your device to access the service, else will only allow request to specified ip
 
 
-### You must know if you allow external network access the http service, your traffics are plain text, everyone on your route link can see what you transfered if they want.
+### You must know if you allow external network access the http service, your traffics are plain text, everyone on your route link can see what you transferred if they want.
 
 ### You can go to `PuppyGit -> Service` to manage your tokens and ip whitelist  
 

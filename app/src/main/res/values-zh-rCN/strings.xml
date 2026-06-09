@@ -1298,4 +1298,5 @@
     <string name="pull_force_success">拉取(强制) 成功</string>
     <string name="pull_force_failed">拉取(强制) 失败</string>
     <string name="lfs">LFS</string>
+    <string name="commit_on_push">推送时提交</string>
 </resources>

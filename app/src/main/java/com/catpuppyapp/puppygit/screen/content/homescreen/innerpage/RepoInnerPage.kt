@@ -662,9 +662,56 @@ fun RepoInnerPage(
                     throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
                 }
             }
+
+            // 执行到这里，必定有上游
+            // 检查是否需要先提交
+            if(PrefUtil.getGlobalGitConfigCommitOnPush(AppModel.realAppContext)) {
+                val settings = SettingsUtil.getSettingsSnapshot()
+
+                val (username, email) = Libgit2Helper.getGitUsernameAndEmail(repo)
+
+                if (username == null || username.isBlank() || email == null || email.isBlank()) {
+                    throw RuntimeException("push err(from repo page): auto commit err: username or email invalid")
+                } else {
+                    //检查是否存在冲突，如果存在，将不会创建提交
+                    if (Libgit2Helper.hasConflictItemInRepo(repo)) {
+                        throw RuntimeException("push err(from repo page): auto commit enabled but have conflicts, please resolve conflicts first")
+                    } else {
+                        // 有username 和 email，且无冲突
+
+                        // stage worktree changes
+                        Libgit2Helper.stageAll(repo, curRepo.id)
+
+
+                        //如果index不为空，则创建提交
+                        if (!Libgit2Helper.indexIsEmpty(repo)) {
+                            val ret = Libgit2Helper.createCommit(
+                                repo = repo,
+                                msg = "",  // empty to auto generate
+                                cmtMsgPrefix = "",  // prefix for auto generated msg
+                                username = username,
+                                email = email,
+                                indexItemList = null,
+                                amend = false,
+                                overwriteAuthorWhenAmend = false,
+                                settings = settings,
+                                cleanRepoStateIfSuccess = true,
+                            )
+
+                            if (ret.hasError()) {
+                                throw RuntimeException("commit on push error(from repo page): ${ret.msg}")
+                            } else if(ret.data != null){
+                                //更新上游本地oid为最新值
+                                upstream!!.localOid = ret.data!!.toString()
+                            }
+                        }
+                    }
+                }
+            }
+
             MyLog.d(TAG, "#doPush: upstream.remote="+upstream!!.remote+", upstream.branchFullRefSpec="+upstream!!.branchRefsHeadsFullRefSpec)
 
-            //执行到这里，必定有上游，push
+            // push
             val credential = Libgit2Helper.getRemoteCredential(
                 dbContainer.remoteRepository,
                 dbContainer.credentialRepository,

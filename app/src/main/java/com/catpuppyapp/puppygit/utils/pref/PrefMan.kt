@@ -74,6 +74,7 @@ object PrefMan {
         const val globalGitConfigUser = "globalGitConfigUser"
         const val globalGitConfigEmail = "globalGitConfigEmail"
         const val globalGitConfigPullWithRebase = "globalGitConfigPullWithRebase"
+        const val globalGitConfigCommitOnPush = "globalGitConfigCommitOnPush"
         const val globalGitConfigLfsEnabled = "globalGitConfigLfsEnabled"
     }
 

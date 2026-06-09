@@ -1291,4 +1291,5 @@
     <string name="pull_force_success">পুল(জোরপূর্বক) সফল হয়েছে</string>
     <string name="pull_force_failed">পুল(জোরপূর্বক) ব্যর্থ হয়েছে</string>
     <string name="lfs">LFS</string>
+    <string name="commit_on_push">পুশ করার সময় কমিট</string>
 </resources>
