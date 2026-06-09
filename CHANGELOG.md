@@ -1,6 +1,14 @@
 
 
 ---
+1.1.5.2v128 - 20260609:
+- support commit on push (discussions #140)
+
+
+
+- 支持推送时提交 (discussions #140)
+
+---
 1.1.5.1v127 - 20260526:
 - support force pull (issue #135)
 - upgrade libgit2 and openssl libs

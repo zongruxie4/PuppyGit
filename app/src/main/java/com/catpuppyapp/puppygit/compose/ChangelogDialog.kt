@@ -16,10 +16,8 @@ import com.catpuppyapp.puppygit.utils.AppModel
 private const val hahaNoteLink = "https://github.com/catpuppyapp/HahaNote-Release"
 
 private val changelog = """
-- support force pull (issue #135)
-- upgrade libgit2 and openssl libs
-- 支持强制拉取 (issue #135)
-- 升级 libgit2 和 openssl 依赖库
+- support commit on push (discussions #140)
+- 支持推送时提交 (discussions #140)
 """.trimIndent()
 
 
