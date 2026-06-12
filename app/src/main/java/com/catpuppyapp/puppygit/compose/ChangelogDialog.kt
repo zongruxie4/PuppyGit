@@ -16,8 +16,8 @@ import com.catpuppyapp.puppygit.utils.AppModel
 private const val hahaNoteLink = "https://github.com/catpuppyapp/HahaNote-Release"
 
 private val changelog = """
-- support commit on push (discussions #140)
-- 支持推送时提交 (discussions #140)
+- support pin repos (issue #141)
+- 支持置顶仓库 (issue #141)
 """.trimIndent()
 
 

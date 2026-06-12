@@ -1,6 +1,14 @@
 
 
 ---
+1.1.5.3v129 - 20260612:
+- support pin repos (issue #141)
+
+
+
+- 支持置顶仓库 (issue #141)
+
+---
 1.1.5.2v128 - 20260609:
 - support commit on push (discussions #140)
 
