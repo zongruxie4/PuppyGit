@@ -21,12 +21,15 @@ import androidx.compose.material.icons.filled.Commit
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.outlined.Dangerous
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,6 +58,7 @@ import com.catpuppyapp.puppygit.screen.functions.goToCloneScreen
 import com.catpuppyapp.puppygit.screen.functions.goToCommitListScreen
 import com.catpuppyapp.puppygit.screen.functions.goToErrScreen
 import com.catpuppyapp.puppygit.screen.shared.CommitListFrom
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -89,6 +93,7 @@ fun RepoCard(
     requireBlinkIdx:MutableIntState,
     pageRequest:MutableState<String>,
     isSelectionMode:Boolean,
+    pinnedRepos: Map<String, Long>,
     onClick: (RepoEntity) -> Unit,
     onLongClick:(RepoEntity)->Unit,
     copyErrMsg: (String) -> Unit,
@@ -96,7 +101,8 @@ fun RepoCard(
     doCloneSingle:(RepoEntity)->Unit,
     initErrMsgDialog:(RepoEntity, errMsg: String)->Unit,
     initCommitMsgDialog:(RepoEntity)->Unit,
-    workStatusOnclick:(clickedRepo:RepoEntity, status:Int)->Unit
+    refreshPage:()->Unit,
+    workStatusOnclick:(clickedRepo:RepoEntity, status:Int)->Unit,
 ) {
     val navController = AppModel.navController
     val haptic = LocalHapticFeedback.current
@@ -181,8 +187,10 @@ fun RepoCard(
                 repoDto = repoDto,
                 isSelectionMode = isSelectionMode,
                 itemSelected = itemSelected,
+                pinnedRepos = pinnedRepos,
+                refreshPage = refreshPage,
                 titleOnClick = titleOnClick,
-                titleOnLongClick = onLongClick
+                titleOnLongClick = onLongClick,
             )
 
             MyHorizontalDivider()
@@ -631,6 +639,8 @@ private fun RepoTitle(
     repoDto: RepoEntity,
     isSelectionMode:Boolean,
     itemSelected: Boolean,
+    pinnedRepos: Map<String, Long>,
+    refreshPage: () -> Unit,
     // title的onClick和卡片主体的onClick区别在于卡片的onClick仅在启用选择模式时才可切换选择；title的即使没启用选择模式也可单击选择仓库并启用选择模式。
     titleOnClick: (RepoEntity) -> Unit,
     //title的onLongClick和卡片主体的没区别，都是长按启用选择模式，若选择模式已启用则执行区域选择
@@ -665,6 +675,22 @@ private fun RepoTitle(
                 .padding(start = 5.dp, end = MyStyleKt.defaultIconSize),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Icon(
+                if (pinnedRepos.contains(repoDto.id)) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                contentDescription = if (pinnedRepos.contains(repoDto.id)) "pinned" else "not pinned",
+                modifier = Modifier.size(18.dp).clickable {
+                    SettingsUtil.update {
+                        if(it.pinnedRepos.contains(repoDto.id)) {
+                            it.pinnedRepos.remove(repoDto.id)
+                        }else {
+                            it.pinnedRepos[repoDto.id] = System.currentTimeMillis()
+                        }
+                    }
+
+                    refreshPage()
+                }
+            )
+
             RepoCardTitleText(repoDto.repoName)
         }
 
