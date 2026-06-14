@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Preview
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -258,6 +259,17 @@ fun EditorPageActions(
                 }
             ) {
                 editorPageRequest.value = PageRequest.nextConflict
+            }
+        }else {
+            // 若非合并模式，显示预览markdown按钮
+            // 若是合并模式，可能 撤销重做 加上 合并按钮，顶栏已经有超过4个按钮，
+            // 所以就不显示这个预览了，而且合并时一般不会有预览的需求
+            LongPressAbleIconBtn(
+                tooltipText = stringResource(R.string.preview),
+                icon = Icons.Filled.Preview,
+                iconContentDesc = stringResource(R.string.preview),
+            ) {
+                initPreviewMode()
             }
         }
     }
