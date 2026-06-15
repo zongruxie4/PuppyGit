@@ -12,8 +12,8 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Preview
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
@@ -266,7 +266,7 @@ fun EditorPageActions(
             // 所以就不显示这个预览了，而且合并时一般不会有预览的需求
             LongPressAbleIconBtn(
                 tooltipText = stringResource(R.string.preview),
-                icon = Icons.Filled.Preview,
+                icon = Icons.Filled.RemoveRedEye,
                 iconContentDesc = stringResource(R.string.preview),
             ) {
                 initPreviewMode()
