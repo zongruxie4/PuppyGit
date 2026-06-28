@@ -1,6 +1,13 @@
 
 
 ---
+1.1.5.4v130 - 20260628:
+- add preview button to editor topbar actions
+
+
+- 在编辑器顶栏添加预览按钮
+
+---
 1.1.5.3v129 - 20260612:
 - support pin repos (issue #141)
 
