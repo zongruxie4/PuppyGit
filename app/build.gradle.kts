@@ -133,6 +133,12 @@ android {
 //            excludes.add("META-INF/DEPENDENCIES")
 
         }
+
+        // dex.useLegacyPackaging + jniLibs.useLegacyPackaging can be make app installer smaller,
+        // maybe compress the libs? if it is, then maybe make install process slower a little bit
+        dex {
+            useLegacyPackaging = true
+        }
         jniLibs {
             // 此参数作用是: "安装apk后把 .so libs 导出到对应架构的目录"，不然可能不会导出
             //
