@@ -1,6 +1,7 @@
 小狗Git是一款现代安卓git客户端
 
-特性：
+特性
+
 - 进入/退出 指定app时 拉取/推送
 - 支持tasker调用http接口执行操作
 - fetch/合并/拉取/推送/同步/检出/重置
@@ -11,4 +12,3 @@
 - 变基/标签/reflog
 - 等等...
 
-https://github.com/catpuppyapp/PuppyGit

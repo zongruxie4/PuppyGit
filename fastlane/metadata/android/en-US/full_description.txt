@@ -1,6 +1,6 @@
 PuppyGit is a modern git client for Android. Open Source, no Ads and free to use.
 
-Features：
+Features
 
 - pull/push when enter/exit specified apps
 - tasker supported via http service
@@ -12,4 +12,3 @@ Features：
 - rebase/tags/reflog
 - and more...
 
-https://github.com/catpuppyapp/PuppyGit
