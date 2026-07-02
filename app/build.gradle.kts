@@ -136,6 +136,13 @@ android {
 
         // dex.useLegacyPackaging + jniLibs.useLegacyPackaging can be make app installer smaller,
         // maybe compress the libs? if it is, then maybe make install process slower a little bit
+        // AI说 dex.useLegacyPackaging 和 jniLibs.useLegacyPackaging ，若开启，安装包小，性能差，因为需解压才能使用文件；
+        // 若关闭则安装包大，性能好，因为不需要解压lib出来，可直接对apk文件执行mmap映射lib到内存中，可能不开的话，只是归档，无压缩，所以才能这样。
+        // 所以这本质上也是空间换时间的选项，若开启，安装包更小，省空间，安装和运行性能可能受影响，并且安装后实际会占用更多空间，
+        // 因为apk里有一份压缩的库，apk外还有一份解压的库；若关闭，则安装包更大。综合来说，若无特殊需求，关闭更好。
+        // 特殊需求：由于安卓多数目录都没执行权限，app也不可擅自加执行权限，但jniLib例外，app内部lib目录下的so库一律有执行权限，因此，如果
+        // 你的app需要执行二进制文件，可以通过把二进制文件放到so库来解决，但是，若关闭 jniLibs.useLegacyPackaging ，则不会解压库到lib目录，
+        // 所以，若你的应用依赖外部二进制文件，并且想在app使用时运行它，就必须启用jniLibs.useLegacyPackaging
         dex {
             useLegacyPackaging = true
         }
