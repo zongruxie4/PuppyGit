@@ -16,8 +16,8 @@ import com.catpuppyapp.puppygit.utils.AppModel
 private const val hahaNoteLink = "https://github.com/catpuppyapp/HahaNote-Release"
 
 private val changelog = """
-- add preview button to editor topbar actions
-- 在编辑器顶栏添加预览按钮
+- update bundled certs
+- 更新内置证书
 """.trimIndent()
 
 

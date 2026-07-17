@@ -1,6 +1,14 @@
 
 
 ---
+1.1.5.5v131 - 20260717:
+- update bundled certs
+
+
+- 更新内置证书
+
+
+---
 1.1.5.4v130 - 20260628:
 - add preview button to editor topbar actions
 
