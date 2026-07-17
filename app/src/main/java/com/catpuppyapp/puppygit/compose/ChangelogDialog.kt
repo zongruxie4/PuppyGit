@@ -49,7 +49,7 @@ fun ChangelogDialog(
 
                 Spacer(Modifier.height(15.dp))
 
-                MultiLineClickableText("Try my new app: Haha Note, an e2ee note sync app") {
+                MultiLineClickableText("Try my new app: HahaNote, a cross-platform note-taking app, supports e2ee sync") {
                     ActivityUtil.openUrl(activityContext, hahaNoteLink)
                 }
 
