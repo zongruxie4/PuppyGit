@@ -1,6 +1,6 @@
 ### my first appeal got rejected by google(without a properly reason), below is my 2nd appeal, still got rejected(tell me appeal over 180days, can not unban)
 
-if you got alert by google when use my app, you can complain to them: 
+if you got alert by google when using my app, you can complain to them: 
 https://support.google.com/googleplay/android-developer/contact/general_contact
 
 just tell them they are wrong banned the developer catpuppyapp.

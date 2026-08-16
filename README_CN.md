@@ -1,6 +1,11 @@
 <img src="screenshots/banner.png"/>
 
 
+# 谷歌封禁了我的账号
+[谷歌封禁了我的账号](GooglePlayIsShit.md)
+[我的申诉](my_appeal_to_google.md)
+
+
 # 小狗Git
 小狗Git 是一个安卓Git客户端，免费开源无广告
 
