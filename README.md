@@ -4,9 +4,8 @@
 <a href="README_CN.md">简体中文</a>
 
 
-# Google banned my account
-[Google banned my account](GooglePlayIsShit.md)
-[my_appeal_to_google](my_appeal_to_google.md)
+# Google banned my account because of their mistake
+[If you want to know the story](my_appeal_to_google.md)
 
 # PuppyGit
 PuppyGit is A Git Client for Android, Open Source and No Ads and Free to use
