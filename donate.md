@@ -1,8 +1,5 @@
 ### Expect and appreciate your donation to make my day!
 
-### My New App
-[HahaNote, an e2ee note sync app, can treat a folder as a note repo and sync it to your Dropbox/WebDav/GitHub](https://github.com/catpuppyapp/HahaNote-Release)
-
 
 ---
 #### Ko-fi
@@ -17,3 +14,5 @@ bc1q0yzt0kxvj4f4qvamrx2q7mahr40leun57m7sfd
 #### my twitter: 
 https://x.com/catpuppyapp
 
+### My New App
+[HahaNote, an e2ee note sync app, can treat a folder as a note repo and sync it to your Dropbox/WebDav/GitHub](https://github.com/catpuppyapp/HahaNote-Release)
