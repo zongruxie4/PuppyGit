@@ -1,6 +1,15 @@
 
 
 ---
+1.1.5.6v132 - 20260821:
+- update libgit2 and openssl version
+- update bundled certs
+
+
+- 更新libgit2和openssl版本
+- 更新内置证书
+
+---
 1.1.5.5v131 - 20260717:
 - update bundled certs
 

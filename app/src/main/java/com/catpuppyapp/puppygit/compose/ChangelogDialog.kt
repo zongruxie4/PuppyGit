@@ -16,7 +16,9 @@ import com.catpuppyapp.puppygit.utils.AppModel
 private const val hahaNoteLink = "https://github.com/catpuppyapp/HahaNote-Release"
 
 private val changelog = """
+- update libgit2 and openssl version
 - update bundled certs
+- 更新libgit2和openssl版本
 - 更新内置证书
 """.trimIndent()
 
