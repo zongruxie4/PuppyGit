@@ -1,6 +1,13 @@
 
 
 ---
+更新app流程 20260822：
+更新 app/build.gradle.kts 中的版本versionCode和versionName
+更新 CHANGELOG.md 日志
+更新 ChangeDialog.kt 中的日志
+更新 fastlane 下的 新版本号.txt
+
+---
 update libgit2 procedure 20250816:
 1. replace header files: delete previous and copy latest headers to `src/main/jni/include`
 2. copy .so libs to repo for developing: build .so libs on github workflow then put them in to `src/main/jniLibs` (only for development, when build release version, will build the .so libs from source of libgit2 and it's dependencies)
