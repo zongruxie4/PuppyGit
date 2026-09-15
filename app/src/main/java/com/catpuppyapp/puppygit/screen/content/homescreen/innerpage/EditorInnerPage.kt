@@ -1599,6 +1599,8 @@ fun EditorInnerPage(
                     doJobThenOffLoading {
                         targetList.forEachBetter {
                             recentFileList.value.remove(it)
+                            editorFilterRecentList.remove(it)
+
                             selectedRecentFileList.value.remove(it)
                             FileOpenHistoryMan.remove(it.file.path.ioPath)
 
