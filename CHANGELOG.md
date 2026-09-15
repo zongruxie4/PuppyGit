@@ -1,6 +1,13 @@
 
 
 ---
+1.1.5.7v133 - 20260915:
+- fix recent files reload bug
+
+
+- 修复最近文件列表重载bug
+
+---
 1.1.5.6v132 - 20260821:
 - update libgit2 and openssl version
 - update bundled certs
