@@ -1466,6 +1466,8 @@ fun EditorInnerPage(
                         }
                     }
 
+                    changeStateTriggerRefreshPage(editorFilterRecentListResultNeedRefresh)
+
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration(e.localizedMessage ?: "get recent files err")
                     MyLog.e(TAG, "Recent Files onClick err: ${e.stackTraceToString()}")
