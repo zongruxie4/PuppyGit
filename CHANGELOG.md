@@ -1,6 +1,14 @@
 
 
 ---
+1.1.5.8v134 - 20260923:
+- fix jni mem leak (issue: #144, #145, #146)
+
+
+- 修复 jni 内存泄漏 (issue: #144, #145, #146)
+
+
+---
 1.1.5.7v133 - 20260915:
 - fix recent files reload bug
 

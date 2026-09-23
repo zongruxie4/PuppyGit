@@ -16,8 +16,8 @@ import com.catpuppyapp.puppygit.utils.AppModel
 private const val hahaNoteLink = "https://github.com/catpuppyapp/HahaNote-Release"
 
 private val changelog = """
-- fix recent files reload bug
-- 修复最近文件列表重载bug
+- fix jni mem leak (issue: #144, #145, #146)
+- 修复 jni 内存泄漏 (issue: #144, #145, #146)
 """.trimIndent()
 
 
