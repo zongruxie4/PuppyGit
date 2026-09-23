@@ -550,28 +550,28 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
 
 
         jobject dto = createStatusEntryDto(
-                env,
-                statusEntryDtoClass,
-                constructor,
+            env,
+            statusEntryDtoClass,
+            constructor,
 
-                index2WorkDirDeltaOldFilePath,
-                index2WorkDirDeltaNewFilePath,
-                head2IndexDeltaOldFilePath,
-                head2IndexDeltaNewFilePath,
+            index2WorkDirDeltaOldFilePath,
+            index2WorkDirDeltaNewFilePath,
+            head2IndexDeltaOldFilePath,
+            head2IndexDeltaNewFilePath,
 
-                index2WorkDirDeltaOldFileSize,
-                index2WorkDirDeltaNewFileSize,
-                head2IndexDeltaOldFileSize,
-                head2IndexDeltaNewFileSize,
+            index2WorkDirDeltaOldFileSize,
+            index2WorkDirDeltaNewFileSize,
+            head2IndexDeltaOldFileSize,
+            head2IndexDeltaNewFileSize,
 
-                entry->status
+            entry->status
         );
 
         (*env)->SetObjectArrayElement(
-                env,
-                statusEntryDtoArray,
-                i,
-                dto
+            env,
+            statusEntryDtoArray,
+            i,
+            dto
         );
 
         // fix issue #144: https://github.com/catpuppyapp/PuppyGit/issues/144
