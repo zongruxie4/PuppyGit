@@ -149,12 +149,25 @@ JNIEXPORT jlong JNICALL J_MAKE_METHOD(Odb_jniExpandIdsNew)(JNIEnv *env, jclass o
     for (jsize i = 0; i < len; i++)
     {
         jstring oidStr = (jstring)(*env)->GetObjectArrayElement(env, shortIds, i);
+        if (oidStr == NULL) {
+            if ((*env)->ExceptionCheck(env)) {
+                (*env)->ExceptionDescribe(env); // 可选：打印异常
+                return -11732296;
+            }
+
+            // 数组元素为 null 时的处理
+            continue;
+        }
+
         int short_id_len;
         j_git_short_id_from_java(env, oidStr, &(expand_ids[i].id), &short_id_len);
         if (i == 0 || expand_ids->length > short_id_len)
         {
             expand_ids->length = short_id_len;
         }
+
+        // fix issue #145: https://github.com/catpuppyapp/PuppyGit/issues/145
+        (*env)->DeleteLocalRef(env, oidStr);
     }
     return (jlong)expand_ids;
 }
